@@ -22,12 +22,10 @@ func cleanDirectory() error {
 		err = os.Remove(path)
 		return err
 	}
-	err := filepath.Walk(siteConfig.DestinationDir, removeFiles)
-	if err != nil {
+	if err := filepath.Walk(siteConfig.DestinationDir, removeFiles); err != nil {
 		return err
 	}
-	err = removeEmptyDirectories(siteConfig.DestinationDir)
-	return err
+	return removeEmptyDirectories(siteConfig.DestinationDir)
 }
 
 func build() error {

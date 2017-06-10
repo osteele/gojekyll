@@ -23,6 +23,7 @@ type Page struct {
 	Permalink string
 	Static    bool
 	Expanded  bool
+	Published bool
 	Body      []byte
 }
 
@@ -65,17 +66,18 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 	// 	title = title[:len(title)-len(ext)]
 	// }
 
-	permalink := "/" + path[:len(path)-len(ext)]
+	permalink := path
 	if val, ok := data["permalink"]; ok {
 		permalink, ok = val.(string)
 		if !ok {
 			return nil, errors.New("Required string value for permalink")
 		}
 	}
-	templateVariables := map[string]string{}
-	templateVariables["output_ext"] = ".html"
-	templateVariables["path"] = regexp.MustCompile(`\.md$`).ReplaceAllLiteralString(path, "")
-	templateVariables["name"] = nonAlphanumericSequenceMatcher.ReplaceAllString(filepath.Base(path), "-")
+	templateVariables := map[string]string{
+		"output_ext": ".html",
+		"path":       regexp.MustCompile(`\.md$`).ReplaceAllLiteralString(path, ""),
+		"name":       nonAlphanumericSequenceMatcher.ReplaceAllString(filepath.Base(path), "-"),
+	}
 	if val, found := data["collection"]; found {
 		collectionName := val.(string)
 		collectionPath := "_" + collectionName + "/"
@@ -86,17 +88,18 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 		return templateVariables[m[1:]]
 	})
 
-	if expand && ext == ".md" {
+	if expand {
 		template, err := liquid.Parse(body, nil)
 		if err != nil {
 			return nil, err
 		}
 		writer := new(bytes.Buffer)
 		template.Render(writer, stringMap(data))
-		body = blackfriday.MarkdownBasic(writer.Bytes())
-	}
-
-	if !expand {
+		body = writer.Bytes()
+		if ext == ".md" {
+			body = blackfriday.MarkdownBasic(body)
+		}
+	} else {
 		body = []byte{}
 	}
 
@@ -105,6 +108,7 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 		Permalink: permalink,
 		Expanded:  expand,
 		Static:    static,
+		Published: getBool(data, "published", true),
 		Body:      body,
 	}, nil
 }

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -80,28 +81,30 @@ func buildSiteMap() (map[string]*Page, error) {
 		if err != nil {
 			return err
 		}
-		fileMap[p.Permalink] = p
+		if p.Published {
+			fileMap[p.Permalink] = p
+		}
 		return nil
 	}
-	err := filepath.Walk(basePath, walkFn)
-	if err != nil {
+
+	if err := filepath.Walk(basePath, walkFn); err != nil {
 		return nil, err
 	}
 
 	for name, colVal := range siteConfig.Collections {
-		data := colVal.(map[interface{}]interface{})
-		output := false
-		if val, found := data["output"]; found {
-			output = val.(bool)
+		data, ok := colVal.(map[interface{}]interface{})
+		if !ok {
+			panic("expected collection value to be a map")
 		}
+		output := getBool(data, "output", false)
 		if output {
-			err = addCollectionFiles(fileMap, name, data)
-			if err != nil {
+			if err := addCollectionFiles(fileMap, name, data); err != nil {
 				return nil, err
 			}
 		}
 	}
-	return fileMap, err
+
+	return fileMap, nil
 }
 
 func addCollectionFiles(fileMap map[string]*Page, name string, data map[interface{}]interface{}) error {
@@ -111,6 +114,13 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			// if the issue is simply that the directory doesn't exist, ignore the error
+			if pathErr, ok := err.(*os.PathError); ok {
+				if pathErr.Err == syscall.ENOENT {
+					fmt.Println("Missing directory for collection", name)
+					return nil
+				}
+			}
 			return err
 		}
 		relPath, err := filepath.Rel(basePath, path)
@@ -126,13 +136,12 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 		}
 		if p.Static {
 			fmt.Printf("skipping static file inside collection: %s\n", path)
-		} else {
+		} else if p.Published {
 			fileMap[p.Permalink] = p
 		}
 		return nil
 	}
-	err := filepath.Walk(filepath.Join(basePath, "_"+name), walkFn)
-	return err
+	return filepath.Walk(filepath.Join(basePath, "_"+name), walkFn)
 }
 
 func getFileURL(path string) (string, bool) {

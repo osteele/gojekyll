@@ -7,6 +7,15 @@ import (
 	"path/filepath"
 )
 
+func getBool(m map[interface{}]interface{}, k string, defaultValue bool) bool {
+	if val, found := m[k]; found {
+		if v, ok := val.(bool); ok {
+			return v
+		}
+	}
+	return defaultValue
+}
+
 // alternative to http://left-pad.io
 func leftPad(s string, n int) string {
 	ws := make([]byte, n)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/acstech/liquid"
@@ -31,13 +32,16 @@ func main() {
 
 	flag.StringVar(&siteConfig.DestinationDir, "destination", siteConfig.DestinationDir, "Destination directory")
 	flag.StringVar(&siteConfig.SourceDir, "source", siteConfig.SourceDir, "Source directory")
+
+	// routes subcommand
+	dynamic := flag.Bool("dynamic", false, "Dynamic routes only")
+
 	flag.Parse()
 
 	configPath := filepath.Join(siteConfig.SourceDir, "_config.yml")
 	// TODO error if file is e.g. unreadable
 	if _, err := os.Stat(configPath); err == nil {
-		err := siteConfig.read(configPath)
-		if err != nil {
+		if err := siteConfig.read(configPath); err != nil {
 			fmt.Println(err)
 			return
 		}
@@ -66,8 +70,15 @@ func main() {
 		printSetting("", fmt.Sprintf("done in %.2fs.", elapsed.Seconds()))
 	case "routes":
 		fmt.Printf("\nRoutes:\n")
-		for url, p := range siteMap {
-			fmt.Printf("  %s -> %s\n", url, p.Path)
+		urls := []string{}
+		for u, p := range siteMap {
+			if !(*dynamic && p.Static) {
+				urls = append(urls, u)
+			}
+		}
+		sort.Strings(urls)
+		for _, u := range urls {
+			fmt.Printf("  %s -> %s\n", u, siteMap[u].Path)
 		}
 	case "render":
 		// build a single page, and print it to stdout; for testing
