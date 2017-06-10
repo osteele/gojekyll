@@ -13,7 +13,9 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-var frontmatterRe = regexp.MustCompile(`(?s)^---\n(.+?)\n---\n`)
+var frontmatterMatcher = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
+var templateVariableMatcher = regexp.MustCompile(`:(?:collection|path|name|title)\b`)
+var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 
 // A Page represents an HTML page.
 type Page struct {
@@ -25,10 +27,11 @@ type Page struct {
 }
 
 func (p Page) String() string {
-	return fmt.Sprintf("Page{Path=%v, Permalink=%v}", p.Path, p.Permalink)
+	return fmt.Sprintf("Page{Path=%v, Permalink=%v, Static=%v}",
+		p.Path, p.Permalink, p.Static)
 }
 
-func readFile(path string, expand bool) (*Page, error) {
+func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*Page, error) {
 	// TODO don't read, parse binary files
 
 	source, err := ioutil.ReadFile(filepath.Join(siteConfig.SourceDir, path))
@@ -37,48 +40,51 @@ func readFile(path string, expand bool) (*Page, error) {
 	}
 
 	static := true
-	data := map[string]interface{}{}
+	data := defaults
 	body := source
 
-	fmMatchIndex := frontmatterRe.FindSubmatchIndex(source)
-	if fmMatchIndex != nil {
+	if match := frontmatterMatcher.FindSubmatchIndex(source); match != nil {
 		static = false
-		body = source[fmMatchIndex[1]:]
-		fmBytes := source[fmMatchIndex[2]:fmMatchIndex[3]]
-		var fmMap interface{}
-		err = yaml.Unmarshal(fmBytes, &fmMap)
+		body = source[match[1]:]
+		fm := map[interface{}]interface{}{}
+		err = yaml.Unmarshal(source[match[2]:match[3]], &fm)
 		if err != nil {
 			return nil, err
 		}
-		fmStringMap, ok := fmMap.(map[interface{}]interface{})
-		if !ok {
-			return nil, errors.New("YAML frontmatter is not a map")
-		}
-		for k, v := range fmStringMap {
-			stringer, ok := k.(fmt.Stringer)
-			if ok {
-				data[stringer.String()] = v
-			} else {
-				data[fmt.Sprintf("%v", k)] = v
-			}
-		}
+
+		data = mergeMaps(data, fm)
 	}
 
 	ext := filepath.Ext(path)
 
-	var title string
-	if val, ok := data["permalink"]; ok {
-		title = fmt.Sprintf("%v", val)
-	} else {
-		title = filepath.Base(path)
-		title = title[:len(title)-len(ext)]
-	}
+	// var title string
+	// if val, ok := data["permalink"]; ok {
+	// 	title = fmt.Sprintf("%v", val)
+	// } else {
+	// 	title = filepath.Base(path)
+	// 	title = title[:len(title)-len(ext)]
+	// }
 
-	// TODO use site, collection default; expand components
 	permalink := "/" + path[:len(path)-len(ext)]
 	if val, ok := data["permalink"]; ok {
-		permalink = val.(string) // TODO what if it's not a string?
+		permalink, ok = val.(string)
+		if !ok {
+			return nil, errors.New("Required string value for permalink")
+		}
 	}
+	templateVariables := map[string]string{}
+	templateVariables["output_ext"] = ".html"
+	templateVariables["path"] = regexp.MustCompile(`\.md$`).ReplaceAllLiteralString(path, "")
+	templateVariables["name"] = nonAlphanumericSequenceMatcher.ReplaceAllString(filepath.Base(path), "-")
+	if val, found := data["collection"]; found {
+		collectionName := val.(string)
+		collectionPath := "_" + collectionName + "/"
+		templateVariables["collection"] = collectionName
+		templateVariables["path"] = templateVariables["path"][len(collectionPath):]
+	}
+	permalink = templateVariableMatcher.ReplaceAllStringFunc(permalink, func(m string) string {
+		return templateVariables[m[1:]]
+	})
 
 	if expand && ext == ".md" {
 		template, err := liquid.Parse(body, nil)
@@ -86,7 +92,7 @@ func readFile(path string, expand bool) (*Page, error) {
 			return nil, err
 		}
 		writer := new(bytes.Buffer)
-		template.Render(writer, data)
+		template.Render(writer, stringMap(data))
 		body = blackfriday.MarkdownBasic(writer.Bytes())
 	}
 

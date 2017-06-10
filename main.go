@@ -33,10 +33,10 @@ func main() {
 	flag.StringVar(&siteConfig.SourceDir, "source", siteConfig.SourceDir, "Source directory")
 	flag.Parse()
 
-	configPath := filepath.Join(siteConfig.SourceDir, "_siteConfig.yml")
+	configPath := filepath.Join(siteConfig.SourceDir, "_config.yml")
 	// TODO error if file is e.g. unreadable
 	if _, err := os.Stat(configPath); err == nil {
-		err := siteConfig.readFromDirectory(siteConfig.SourceDir)
+		err := siteConfig.read(configPath)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -48,7 +48,7 @@ func main() {
 	printPathSetting("Source:", siteConfig.SourceDir)
 	printPathSetting("Destination:", siteConfig.DestinationDir)
 
-	fileMap, err := buildFileMap()
+	fileMap, err := buildSiteMap()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -66,11 +66,12 @@ func main() {
 		printSetting("", fmt.Sprintf("done in %.2fs.", elapsed.Seconds()))
 	case "routes":
 		fmt.Printf("\nRoutes:\n")
-		for urlPath, p := range siteMap {
-			fmt.Printf("  %s -> %s\n", urlPath, p.Path)
+		for url, p := range siteMap {
+			fmt.Printf("  %s -> %s\n", url, p.Path)
 		}
-	case "build1":
-		page, err2 := readFile("index.md", true)
+	case "render":
+		// build a single page, and print it to stdout; for testing
+		page, err2 := readFile("index.md", siteData, true)
 		if err2 != nil {
 			err = err2
 			break

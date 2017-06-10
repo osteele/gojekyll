@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,9 +15,9 @@ type SiteConfig struct {
 	Permalink      string
 	SourceDir      string
 	DestinationDir string
-	// Safe           bool
-	Exclude []string
-	Include []string
+	Safe           bool
+	Exclude        []string
+	Include        []string
 	// KeepFiles      []string
 	// TimeZone       string
 	// Encoding       string
@@ -33,7 +34,9 @@ var siteConfig = SiteConfig{
 // A map from URL path -> *Page
 var siteMap map[string]*Page
 
-func (config *SiteConfig) readFromDirectory(path string) error {
+var siteData = map[interface{}]interface{}{}
+
+func (config *SiteConfig) read(path string) error {
 	configBytes, err := ioutil.ReadFile(path)
 	if err == nil {
 		err = yaml.Unmarshal(configBytes, &config)
@@ -43,7 +46,7 @@ func (config *SiteConfig) readFromDirectory(path string) error {
 	return err
 }
 
-func buildFileMap() (map[string]*Page, error) {
+func buildSiteMap() (map[string]*Page, error) {
 	basePath := siteConfig.SourceDir
 	fileMap := map[string]*Page{}
 	exclusionMap := stringArrayToMap(siteConfig.Exclude)
@@ -52,13 +55,8 @@ func buildFileMap() (map[string]*Page, error) {
 		if err != nil {
 			return err
 		}
-		if path == siteConfig.SourceDir {
+		if path == basePath {
 			return nil
-		}
-		// TODO replace by info.IsDir
-		stat, err := os.Stat(path)
-		if err != nil {
-			return err
 		}
 
 		relPath, err := filepath.Rel(basePath, path)
@@ -70,25 +68,74 @@ func buildFileMap() (map[string]*Page, error) {
 		_, exclude := exclusionMap[relPath]
 		exclude = exclude || strings.HasPrefix(base, ".") || strings.HasPrefix(base, "_")
 		if exclude {
-			if stat.IsDir() {
+			if info.IsDir() {
 				return filepath.SkipDir
 			}
 			return nil
 		}
-		if !stat.IsDir() {
-			page, err := readFile(relPath, false)
-			if err != nil {
-				return err
-			}
-			fileMap[page.Permalink] = page
+		if info.IsDir() {
+			return nil
 		}
+		p, err := readFile(relPath, siteData, false)
+		if err != nil {
+			return err
+		}
+		fileMap[p.Permalink] = p
 		return nil
 	}
 	err := filepath.Walk(basePath, walkFn)
+	if err != nil {
+		return nil, err
+	}
+
+	for name, colVal := range siteConfig.Collections {
+		data := colVal.(map[interface{}]interface{})
+		output := false
+		if val, found := data["output"]; found {
+			output = val.(bool)
+		}
+		if output {
+			err = addCollectionFiles(fileMap, name, data)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 	return fileMap, err
 }
 
-func getFilePermalink(path string) (string, bool) {
+func addCollectionFiles(fileMap map[string]*Page, name string, data map[interface{}]interface{}) error {
+	basePath := siteConfig.SourceDir
+	collData := mergeMaps(siteData, data)
+	collData["collection"] = name
+
+	walkFn := func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		relPath, err := filepath.Rel(basePath, path)
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		p, err := readFile(relPath, collData, false)
+		if err != nil {
+			return err
+		}
+		if p.Static {
+			fmt.Printf("skipping static file inside collection: %s\n", path)
+		} else {
+			fileMap[p.Permalink] = p
+		}
+		return nil
+	}
+	err := filepath.Walk(filepath.Join(basePath, "_"+name), walkFn)
+	return err
+}
+
+func getFileURL(path string) (string, bool) {
 	for _, v := range siteMap {
 		if v.Path == path {
 			return v.Permalink, true

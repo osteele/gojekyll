@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,6 +14,30 @@ func leftPad(s string, n int) string {
 		ws[i] = ' '
 	}
 	return string(ws) + s
+}
+
+func mergeMaps(a map[interface{}]interface{}, b map[interface{}]interface{}) map[interface{}]interface{} {
+	result := map[interface{}]interface{}{}
+	for k, v := range a {
+		result[k] = v
+	}
+	for k, v := range b {
+		result[k] = v
+	}
+	return result
+}
+
+func stringMap(m map[interface{}]interface{}) map[string]interface{} {
+	result := map[string]interface{}{}
+	for k, v := range m {
+		stringer, ok := k.(fmt.Stringer)
+		if ok {
+			result[stringer.String()] = v
+		} else {
+			result[fmt.Sprintf("%v", k)] = v
+		}
+	}
+	return result
 }
 
 func postfixWalk(path string, walkFn filepath.WalkFunc) error {

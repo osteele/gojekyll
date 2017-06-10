@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -10,15 +9,13 @@ import (
 
 func cleanDirectory() error {
 	removeFiles := func(path string, info os.FileInfo, err error) error {
-		stat, err := os.Stat(path)
-		if os.IsNotExist(err) {
-			return nil
-		}
 		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
 			return err
 		}
-
-		if stat.IsDir() {
+		if info.IsDir() {
 			return nil
 		}
 		// TODO check for inclusion in KeepFiles
@@ -26,9 +23,10 @@ func cleanDirectory() error {
 		return err
 	}
 	err := filepath.Walk(siteConfig.DestinationDir, removeFiles)
-	if err == nil {
-		err = removeEmptyDirectories(siteConfig.DestinationDir)
+	if err != nil {
+		return err
 	}
+	err = removeEmptyDirectories(siteConfig.DestinationDir)
 	return err
 }
 
@@ -39,7 +37,7 @@ func build() error {
 	}
 	for _, page := range siteMap {
 		if !page.Static {
-			page, err = readFile(page.Path, true)
+			page, err = readFile(page.Path, siteData, true)
 		}
 		if err != nil {
 			return err
@@ -54,7 +52,7 @@ func build() error {
 		if page.Static {
 			os.Link(filepath.Join(siteConfig.SourceDir, page.Path), destPath)
 		} else {
-			fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", destPath)
+			// fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", destPath)
 			ioutil.WriteFile(destPath, page.Body, 0644)
 		}
 	}

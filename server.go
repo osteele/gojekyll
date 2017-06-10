@@ -33,7 +33,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := readFile(p.Path, true)
+	p, err := readFile(p.Path, siteData, true)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Printf("Error expanding %s\n%s", p.Path, err)
