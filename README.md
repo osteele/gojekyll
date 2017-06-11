@@ -6,22 +6,23 @@ When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyl
 
 This project is missing more functionality than it implements. It may accidentally work on tiny or simple sites, but I'd be surprised. Most egregious are an insufficiency of template variables, and limitations in the **liquid** library.
 
-I'm writing this to learn my way around Go. It's not good for anytihng yet, and it may never come to anything.
+I'm writing this to learn my way around Go. It's not good for anything yet, and it may never come to anything.
 
 ## Install
 
 ```bash
-go get
+go get -t
 ```
 
-Sometimes this relies on unmerged improvements to the **acstech/liquid** library. If you want this branch instead:
+Sometimes this package benefits from my unmerged improvements to the **acstech/liquid** library. If you want to use [my fork](https://github.com/osteele/liquid) instead:
 
 ```bash
 cd $(go env GOPATH)/src/github.com/acstech/liquid
-git remote set-url origin https://github.com/osteele/liquid.git
-git fetch
-git reset --hard origin/master
+git remote add osteele https://github.com/osteele/liquid.git
+git pull -f osteele
 ```
+
+(See articles by [Shlomi Noach](http://code.openark.org/blog/development/forking-golang-repositories-on-github-and-managing-the-import-path) and [Francesc Campoy](http://blog.campoy.cat/2014/03/github-and-go-forking-pull-requests-and.html) for how this works and why it is necessary.)
 
 ## Run
 
@@ -34,13 +35,17 @@ git reset --hard origin/master
 
 `--source DIR` is optional.
 
-`build` needn't be run before `server`. It serves from memory, and doesn't currently rebuild.
+`build` needn't be run before `server`. Tbe latter serves from memory.
 
-`render` renders a single file, identified by permalink if it starts with `/` and by pathname (relative to the source directory) if it doesn't.
+`server` only rebuilds individual changed pages, doesn't rebuild collections, and doesn't detect new pages.
+
+`render` renders a single file, identified by permalink if it starts with `/`, and by pathname (relative to the source directory) if it doesn't.
+
+`./scripts/gojekyll` invokes `go run` each time. Alternatives to `./scripts/gojekyll` are: `go build && ./gojekyll ...`; or `go install && gojekyll ...` (if `$GOPATH/bin` is on your `$PATH`). These would be nicer for actual use (where the gojekyll sources don't change between invocations), but they aren't as handy during development.
 
 ## Credits
 
-The [acstech/liquid](https://github.com/acstech/liquid) fork of [karlseguin/liquid](https://github.com/karlseguin/liquid).
+For rendering Liquid templates: the [acstech/liquid](https://github.com/acstech/liquid) fork of [karlseguin/liquid](https://github.com/karlseguin/liquid).
 
 ## Related
 
