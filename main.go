@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/acstech/liquid"
@@ -37,6 +38,10 @@ func main() {
 	dynamic := flag.Bool("dynamic", false, "Dynamic routes only")
 
 	flag.Parse()
+	if len(flag.Args()) < 1 {
+		fmt.Println("A subcommand is required.")
+		return
+	}
 
 	configPath := filepath.Join(siteConfig.SourceDir, "_config.yml")
 	// TODO error if file is e.g. unreadable
@@ -50,8 +55,8 @@ func main() {
 		printSetting(configurationFileLabel, "none")
 	}
 	printPathSetting("Source:", siteConfig.SourceDir)
-	printPathSetting("Destination:", siteConfig.DestinationDir)
 
+	start := time.Now()
 	fileMap, err := buildSiteMap()
 	if err != nil {
 		fmt.Println(err)
@@ -61,15 +66,13 @@ func main() {
 
 	switch flag.Arg(0) {
 	case "s", "serve", "server":
-		err = server()
-		if err != nil {
+		if err = server(); err != nil {
 			fmt.Println(err)
 		}
 	case "b", "build":
+		printPathSetting("Destination:", siteConfig.DestinationDir)
 		printSetting("Generating...", "")
-		start := time.Now()
-		err = build()
-		if err != nil {
+		if err = build(); err != nil {
 			fmt.Println(err)
 			break
 		}
@@ -88,12 +91,25 @@ func main() {
 			fmt.Printf("  %s -> %s\n", u, siteMap[u].Path)
 		}
 	case "render":
-		// build a single page, and print it to stdout; for testing
-		page, err2 := readFile("index.md", siteData, true)
-		if err2 != nil {
-			fmt.Println(err2)
+		path := flag.Arg(1)
+		if path == "" {
+			path = "index.md"
+		}
+		if strings.HasPrefix(path, "/") {
+			if page, found := siteMap[path]; found {
+				path = page.Path
+			} else {
+				fmt.Println("No page at", path)
+				return
+			}
+		}
+		page, e := readFile(path, siteData, true)
+		if e != nil {
+			fmt.Println(e)
 			break
 		}
+		printPathSetting("Render:", filepath.Join(siteConfig.SourceDir, path))
+		printSetting("URL:", page.Permalink)
 		fmt.Println(string(page.Body))
 	default:
 		fmt.Println("A subcommand is required.")
