@@ -62,10 +62,17 @@ func main() {
 	switch flag.Arg(0) {
 	case "s", "serve", "server":
 		err = server()
+		if err != nil {
+			fmt.Println(err)
+		}
 	case "b", "build":
 		printSetting("Generating...", "")
 		start := time.Now()
 		err = build()
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
 		elapsed := time.Since(start)
 		printSetting("", fmt.Sprintf("done in %.2fs.", elapsed.Seconds()))
 	case "routes":
@@ -84,14 +91,11 @@ func main() {
 		// build a single page, and print it to stdout; for testing
 		page, err2 := readFile("index.md", siteData, true)
 		if err2 != nil {
-			err = err2
+			fmt.Println(err2)
 			break
 		}
 		fmt.Println(string(page.Body))
 	default:
 		fmt.Println("A subcommand is required.")
-	}
-	if err != nil {
-		fmt.Println(err)
 	}
 }

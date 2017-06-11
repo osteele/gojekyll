@@ -88,7 +88,8 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 	if expand {
 		template, err := liquid.Parse(body, nil)
 		if err != nil {
-			err := &os.PathError{Op: "render", Path: path, Err: err}
+			fmt.Println(data)
+			err := &os.PathError{Op: "Liquid Error", Path: path, Err: err}
 			return nil, err
 		}
 		writer := new(bytes.Buffer)

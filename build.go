@@ -29,21 +29,20 @@ func cleanDirectory() error {
 }
 
 func build() error {
-	err := cleanDirectory()
-	if err != nil {
+	if err := cleanDirectory(); err != nil {
 		return err
 	}
-	for _, page := range siteMap {
+	for path, page := range siteMap {
 		if !page.Static {
-			page, err = readFile(page.Path, siteData, true)
+			p, err := readFile(page.Path, siteData, true)
+			if err != nil {
+				return err
+			}
+			page = p
 		}
-		if err != nil {
-			return err
-		}
-		path := page.Permalink
-		// TODO only do this for MIME pages
+		// TODO don't do this for js, css, etc. pages
 		if !page.Static && !strings.HasSuffix(path, ".html") {
-			path += "/index.html"
+			path = filepath.Join(path, "/index.html")
 		}
 		destPath := filepath.Join(siteConfig.DestinationDir, path)
 		os.MkdirAll(filepath.Dir(destPath), 0777)
