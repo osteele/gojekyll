@@ -35,7 +35,9 @@ var siteConfig = SiteConfig{
 // A map from URL path -> *Page
 var siteMap map[string]*Page
 
-var siteData = map[interface{}]interface{}{}
+var siteData = map[interface{}]interface{}{
+	"site": map[string]interface{}{},
+}
 
 func (config *SiteConfig) read(path string) error {
 	configBytes, err := ioutil.ReadFile(path)
@@ -111,6 +113,7 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 	basePath := siteConfig.SourceDir
 	collData := mergeMaps(siteData, data)
 	collData["collection"] = name
+	pages := []*Page{}
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -138,10 +141,19 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 			fmt.Printf("skipping static file inside collection: %s\n", path)
 		} else if p.Published {
 			fileMap[p.Permalink] = p
+			pages = append(pages, p)
 		}
 		return nil
 	}
-	return filepath.Walk(filepath.Join(basePath, "_"+name), walkFn)
+	if err := filepath.Walk(filepath.Join(basePath, "_"+name), walkFn); err != nil {
+		return err
+	}
+	pageData := []interface{}{}
+	for _, p := range pages {
+		pageData = append(pageData, p.CollectionItemData())
+	}
+	siteData["site"].(map[string]interface{})[name] = pageData
+	return nil
 }
 
 func getFileURL(path string) (string, bool) {

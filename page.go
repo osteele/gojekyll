@@ -14,6 +14,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+const (
+	printFrontmatter = false
+)
+
 var (
 	frontmatterMatcher             = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
 	templateVariableMatcher        = regexp.MustCompile(`:(?:collection|file_ext|name|path|title)\b`)
@@ -29,12 +33,13 @@ var permalinkStyles = map[string]string{
 
 // A Page represents an HTML page.
 type Page struct {
-	Path      string
-	Permalink string
-	Static    bool
-	Expanded  bool
-	Published bool
-	Body      []byte
+	Path        string
+	Permalink   string
+	Static      bool
+	Expanded    bool
+	Published   bool
+	FrontMatter *map[interface{}]interface{}
+	Body        []byte
 }
 
 func (p Page) String() string {
@@ -42,15 +47,31 @@ func (p Page) String() string {
 		p.Path, p.Permalink, p.Static)
 }
 
-func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*Page, error) {
-	// TODO don't read, parse binary files
+// CollectionItemData returns metadata for use in the representation of the page as a collection item
+func (p Page) CollectionItemData() map[interface{}]interface{} {
+	// should have title, parts, url, description, due_date
+	data := map[interface{}]interface{}{
+		"url": p.Permalink,
+	}
+	// TODO additional variables from https://jekyllrb.com/docs/collections/#documents
+	if p.FrontMatter != nil {
+		data = mergeMaps(data, *p.FrontMatter)
+	}
+	return data
+}
 
+func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*Page, error) {
+	var (
+		frontMatter *map[interface{}]interface{}
+		static      = true
+	)
+
+	// TODO don't read, parse binary files
 	source, err := ioutil.ReadFile(filepath.Join(siteConfig.SourceDir, path))
 	if err != nil {
 		return nil, err
 	}
 
-	static := true
 	data := defaults
 	body := source
 
@@ -62,14 +83,14 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 				regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
 				source[match[1]:]...)
 		}
-		fm := map[interface{}]interface{}{}
-		err = yaml.Unmarshal(source[match[2]:match[3]], &fm)
+		frontMatter = &map[interface{}]interface{}{}
+		err = yaml.Unmarshal(source[match[2]:match[3]], &frontMatter)
 		if err != nil {
 			err := &os.PathError{Op: "read frontmatter", Path: path, Err: err}
 			return nil, err
 		}
 
-		data = mergeMaps(data, fm)
+		data = mergeMaps(data, *frontMatter)
 	}
 
 	ext := filepath.Ext(path)
@@ -93,6 +114,10 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 			return nil, err
 		}
 		writer := new(bytes.Buffer)
+		if printFrontmatter {
+			b, _ := yaml.Marshal(stringMap(data))
+			println(string(b))
+		}
 		template.Render(writer, stringMap(data))
 		body = writer.Bytes()
 		if ext == ".md" {
@@ -103,12 +128,13 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 	}
 
 	return &Page{
-		Path:      path,
-		Permalink: permalink,
-		Expanded:  expand,
-		Static:    static,
-		Published: getBool(data, "published", true),
-		Body:      body,
+		Path:        path,
+		Permalink:   permalink,
+		Expanded:    expand,
+		Static:      static,
+		Published:   getBool(data, "published", true),
+		FrontMatter: frontMatter,
+		Body:        body,
 	}, nil
 }
 

@@ -1,3 +1,10 @@
+---
+permalink: /:name
+---
+
 # About
 
-A page without frontmatter.
+{% assign pages = site.collection | sort: 'weight' %}
+{% for p in pages %}
+* {{p.title}}
+{% endfor %}
