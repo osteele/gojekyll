@@ -123,7 +123,7 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 		localPath      = path
 		outputExt      = ext
 		name           = filepath.Base(localPath)
-		title          = getString(data, "title", name)
+		title          = getString(data, "title", name[:len(name)-len(ext)])
 	)
 
 	if ext == ".md" {
@@ -137,16 +137,16 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 		localPath = localPath[len(collectionPath):]
 	}
 
-	hyphenize := func(s string) string {
+	replaceNonalphumericsByHyphens := func(s string) string {
 		return nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
 	}
 
 	templateVariables := map[string]string{
 		"collection": collectionName,
-		"name":       hyphenize(name),
+		"name":       replaceNonalphumericsByHyphens(name),
 		"output_ext": outputExt,
 		"path":       localPath,
-		"title":      hyphenize(title),
+		"title":      replaceNonalphumericsByHyphens(title),
 		// TODO year month imonth day i_day short_year hour minute second slug categories
 	}
 

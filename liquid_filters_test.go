@@ -2,20 +2,14 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/acstech/liquid"
+	"github.com/stretchr/testify/assert"
 )
 
-func assertExpected(t *testing.T, actual, expected string) {
-	if actual != expected {
-		t.Fatalf(fmt.Sprintf("expected %s; got %s", expected, actual))
-	}
-}
-
-func testTemplateRender(t *testing.T, tmpl string, data map[string]interface{}, expected string) {
+func assertTemplateRender(t *testing.T, tmpl string, data map[string]interface{}, expected string) {
 	template, err := liquid.ParseString(tmpl, nil)
 
 	if err != nil {
@@ -25,7 +19,7 @@ func testTemplateRender(t *testing.T, tmpl string, data map[string]interface{}, 
 
 	writer := new(bytes.Buffer)
 	template.Render(writer, data)
-	assertExpected(t, expected, strings.TrimSpace(writer.String()))
+	assert.Equal(t, expected, strings.TrimSpace(writer.String()))
 }
 
 func TestWhereExp(t *testing.T) {
@@ -38,7 +32,7 @@ func TestWhereExp(t *testing.T) {
 		"array": []int{1, 2, 3, 4},
 	}
 
-	testTemplateRender(t, tmpl, data, "34")
+	assertTemplateRender(t, tmpl, data, "34")
 }
 
 func TestWhereExpObjects(t *testing.T) {
@@ -59,5 +53,5 @@ func TestWhereExpObjects(t *testing.T) {
 			},
 		}}
 
-	testTemplateRender(t, tmpl, data, "A")
+	assertTemplateRender(t, tmpl, data, "A")
 }

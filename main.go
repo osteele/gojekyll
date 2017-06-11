@@ -16,7 +16,7 @@ const configurationFileLabel = "Configuration file:"
 
 func printSetting(label string, value string) {
 	fmt.Printf("%s %s\n",
-		leftPad(label, len(configurationFileLabel)-len(label)), value)
+		leftPad(label, len(configurationFileLabel)), value)
 }
 
 func printPathSetting(label string, path string) {

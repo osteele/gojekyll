@@ -27,7 +27,10 @@ func getString(m map[interface{}]interface{}, k string, defaultValue string) str
 
 // alternative to http://left-pad.io
 func leftPad(s string, n int) string {
-	ws := make([]byte, n)
+	if n <= len(s) {
+		return s
+	}
+	ws := make([]byte, n-len(s))
 	for i := range ws {
 		ws[i] = ' '
 	}
@@ -45,6 +48,8 @@ func mergeMaps(a map[interface{}]interface{}, b map[interface{}]interface{}) map
 	return result
 }
 
+// stringMap returns a string-indexed map with the same values as its argument.
+// Non-strings keys are converted to strings.
 func stringMap(m map[interface{}]interface{}) map[string]interface{} {
 	result := map[string]interface{}{}
 	for k, v := range m {
