@@ -15,6 +15,6 @@ go get
 ## Run
 
 ```bash
-go run *.go --source test build
-go run *.go --source test serve
+./scripts/gojekyll --source test build
+./scripts/gojekyll --source test serve
 ```
