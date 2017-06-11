@@ -16,6 +16,15 @@ func getBool(m map[interface{}]interface{}, k string, defaultValue bool) bool {
 	return defaultValue
 }
 
+func getString(m map[interface{}]interface{}, k string, defaultValue string) string {
+	if val, found := m[k]; found {
+		if v, ok := val.(string); ok {
+			return v
+		}
+	}
+	return defaultValue
+}
+
 // alternative to http://left-pad.io
 func leftPad(s string, n int) string {
 	ws := make([]byte, n)

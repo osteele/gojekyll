@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 
@@ -13,9 +14,18 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-var frontmatterMatcher = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
-var templateVariableMatcher = regexp.MustCompile(`:(?:collection|path|name|title)\b`)
-var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
+var (
+	frontmatterMatcher             = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
+	templateVariableMatcher        = regexp.MustCompile(`:(?:collection|file_ext|name|path|title)\b`)
+	nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
+)
+
+var permalinkStyles = map[string]string{
+	"date":    "/:categories/:year/:month/:day/:title.html",
+	"pretty":  "/:categories/:year/:month/:day/:title/",
+	"ordinal": "/:categories/:year/:y_day/:title.html",
+	"none":    "/:categories/:title.html",
+}
 
 // A Page represents an HTML page.
 type Page struct {
@@ -46,10 +56,16 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 
 	if match := frontmatterMatcher.FindSubmatchIndex(source); match != nil {
 		static = false
-		body = source[match[1]:]
+		if expand {
+			// TODO only prepend newlines if it's markdown
+			body = append(
+				regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
+				source[match[1]:]...)
+		}
 		fm := map[interface{}]interface{}{}
 		err = yaml.Unmarshal(source[match[2]:match[3]], &fm)
 		if err != nil {
+			err := &os.PathError{Op: "read frontmatter", Path: path, Err: err}
 			return nil, err
 		}
 
@@ -58,39 +74,21 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 
 	ext := filepath.Ext(path)
 
-	// var title string
-	// if val, ok := data["permalink"]; ok {
-	// 	title = fmt.Sprintf("%v", val)
-	// } else {
-	// 	title = filepath.Base(path)
-	// 	title = title[:len(title)-len(ext)]
-	// }
-
 	permalink := path
 	if val, ok := data["permalink"]; ok {
-		permalink, ok = val.(string)
+		pattern, ok := val.(string)
 		if !ok {
-			return nil, errors.New("Required string value for permalink")
+			err := errors.New("permalink value must be a string")
+			err = &os.PathError{Op: "render", Path: path, Err: err}
+			return nil, err
 		}
+		permalink = expandPermalinkPattern(pattern, data, path)
 	}
-	templateVariables := map[string]string{
-		"output_ext": ".html",
-		"path":       regexp.MustCompile(`\.md$`).ReplaceAllLiteralString(path, ""),
-		"name":       nonAlphanumericSequenceMatcher.ReplaceAllString(filepath.Base(path), "-"),
-	}
-	if val, found := data["collection"]; found {
-		collectionName := val.(string)
-		collectionPath := "_" + collectionName + "/"
-		templateVariables["collection"] = collectionName
-		templateVariables["path"] = templateVariables["path"][len(collectionPath):]
-	}
-	permalink = templateVariableMatcher.ReplaceAllStringFunc(permalink, func(m string) string {
-		return templateVariables[m[1:]]
-	})
 
 	if expand {
 		template, err := liquid.Parse(body, nil)
 		if err != nil {
+			err := &os.PathError{Op: "render", Path: path, Err: err}
 			return nil, err
 		}
 		writer := new(bytes.Buffer)
@@ -111,4 +109,52 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 		Published: getBool(data, "published", true),
 		Body:      body,
 	}, nil
+}
+
+func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, path string) string {
+	if p, found := permalinkStyles[pattern]; found {
+		pattern = p
+	}
+
+	var (
+		collectionName string
+		ext            = filepath.Ext(path)
+		localPath      = path
+		outputExt      = ext
+		name           = filepath.Base(localPath)
+		title          = getString(data, "title", name)
+	)
+
+	if ext == ".md" {
+		outputExt = ""
+		localPath = localPath[:len(localPath)-len(ext)]
+	}
+
+	if val, found := data["collection"]; found {
+		collectionName = val.(string)
+		collectionPath := "_" + collectionName + "/"
+		localPath = localPath[len(collectionPath):]
+	}
+
+	hyphenize := func(s string) string {
+		return nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
+	}
+
+	templateVariables := map[string]string{
+		"collection": collectionName,
+		"name":       hyphenize(name),
+		"output_ext": outputExt,
+		"path":       localPath,
+		"title":      hyphenize(title),
+		// TODO year month imonth day i_day short_year hour minute second slug categories
+	}
+
+	return templateVariableMatcher.ReplaceAllStringFunc(pattern, func(m string) string {
+		varname := m[1:]
+		value := templateVariables[varname]
+		if value == "" {
+			fmt.Printf("%s: unknown variable %s in permalink template\n", varname)
+		}
+		return value
+	})
 }

@@ -21,7 +21,7 @@ func server() error {
 func handler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 
-	// w.Header().Set("Content-Type", "text/plain; charset=utf-8") // normal header
+	// w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 	p, found := siteMap[path]
 	if !found {
@@ -35,9 +35,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	p, err := readFile(p.Path, siteData, true)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("Error expanding %s\n%s", p.Path, err)
-		fmt.Fprintf(w, "Error expanding %s\n%s", p.Path, err)
+		fmt.Printf("Error rendering %s: %s", p.Path, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	w.Write(p.Body)
 }
