@@ -64,20 +64,18 @@ func stringMap(m map[interface{}]interface{}) map[string]interface{} {
 }
 
 func postfixWalk(path string, walkFn filepath.WalkFunc) error {
-	files, err := ioutil.ReadDir(path)
-	if err != nil {
-		return err
-	}
-
-	for _, stat := range files {
-		if stat.IsDir() {
-			postfixWalk(filepath.Join(path, stat.Name()), walkFn)
+	if files, err := ioutil.ReadDir(path); err == nil {
+		for _, stat := range files {
+			if stat.IsDir() {
+				if err = postfixWalk(filepath.Join(path, stat.Name()), walkFn); err != nil {
+					return err
+				}
+			}
 		}
 	}
 
 	info, err := os.Stat(path)
-	err = walkFn(path, info, err)
-	if err != nil {
+	if err = walkFn(path, info, err); err != nil {
 		return err
 	}
 	return nil
@@ -86,24 +84,28 @@ func postfixWalk(path string, walkFn filepath.WalkFunc) error {
 func removeEmptyDirectories(path string) error {
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			if os.IsNotExist(err) {
+				return nil
+			}
 			return err
 		}
 
-		stat, err := os.Stat(path)
-		if os.IsNotExist(err) {
-			return nil
+		if info.IsDir() {
+			if err := os.Remove(path); err != nil {
+				if os.IsNotExist(err) {
+					return nil
+				}
+				// TODO swallow the error if it's because the directory isn't
+				// empty. This can happen if there's an entry in _config.keepfiles
+				return err
+			}
 		}
-		if err != nil {
-			return nil
-		}
-		if stat.IsDir() {
-			err = os.Remove(path)
-			// TODO swallow the error if it's because the directory isn't
-			// empty. This can happen if there's an entry in _config.keepfiles
-		}
-		return err
+		return nil
 	}
-	return postfixWalk(path, walkFn)
+	println("before")
+	err := postfixWalk(path, walkFn)
+	fmt.Println("after", err)
+	return err
 }
 
 func stringArrayToMap(strings []string) map[string]bool {
