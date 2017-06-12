@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -114,7 +115,7 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 }
 
 // Render applies Liquid and Markdown, as appropriate.
-func (p Page) Render() ([]byte, error) {
+func (p Page) Render(w io.Writer) error {
 	var (
 		path = p.Path
 		ext  = filepath.Ext(path)
@@ -129,7 +130,7 @@ func (p Page) Render() ([]byte, error) {
 	template, err := liquid.Parse(p.Content, nil)
 	if err != nil {
 		err := &os.PathError{Op: "Liquid Error", Path: path, Err: err}
-		return nil, err
+		return err
 	}
 
 	writer := new(bytes.Buffer)
@@ -137,10 +138,11 @@ func (p Page) Render() ([]byte, error) {
 	body := writer.Bytes()
 
 	if ext == ".md" {
-		body = blackfriday.MarkdownBasic(body)
+		body = blackfriday.MarkdownCommon(body)
 	}
 
-	return body, nil
+	_, err = w.Write(body)
+	return err
 }
 
 func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, path string) string {

@@ -108,14 +108,12 @@ func main() {
 			fmt.Println(err)
 			break
 		}
-		body, err := page.Render()
-		if err != nil {
+		printPathSetting("Render:", filepath.Join(siteConfig.SourceDir, path))
+		printSetting("URL:", page.Permalink)
+		if err := page.Render(os.Stdout); err != nil {
 			fmt.Println(err)
 			break
 		}
-		printPathSetting("Render:", filepath.Join(siteConfig.SourceDir, path))
-		printSetting("URL:", page.Permalink)
-		fmt.Println(string(body))
 	default:
 		fmt.Println("A subcommand is required.")
 	}

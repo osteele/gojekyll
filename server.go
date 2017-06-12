@@ -28,12 +28,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := p.Render()
+	err := p.Render(w)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", path, err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	if _, err := w.Write(body); err != nil {
-		fmt.Printf("Error writing %s: %s", path, err)
 	}
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,11 +53,12 @@ func build() error {
 			}
 		} else {
 			// fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", destPath)
-			body, err := page.Render()
+			f, err := os.Create(destPath)
 			if err != nil {
 				return err
 			}
-			if err = ioutil.WriteFile(destPath, body, 0644); err != nil {
+			defer f.Close()
+			if err := page.Render(f); err != nil {
 				return err
 			}
 		}
