@@ -5,7 +5,7 @@ variable: variable substitution
 
 # Site Title
 
-Here is a test with {{ variable }} and [a link]({% link about.md %}).
+Here is a test with {{ page.variable }} and [a link]({% link about.md %}).
 
 ## Subsection
 

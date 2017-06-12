@@ -32,32 +32,31 @@ func build() error {
 		return err
 	}
 	for path, page := range siteMap {
-		if !page.Static {
-			p, err := readPage(page.Path, siteData)
-			if err != nil {
-				return err
-			}
-			page = p
-		}
 		// TODO don't do this for js, css, etc. pages
 		if !page.Static && !strings.HasSuffix(path, ".html") {
 			path = filepath.Join(path, "/index.html")
 		}
-		destPath := filepath.Join(siteConfig.DestinationDir, path)
-		if err := os.MkdirAll(filepath.Dir(destPath), 0777); err != nil {
+		src := filepath.Join(siteConfig.SourceDir, page.Path)
+		dst := filepath.Join(siteConfig.DestinationDir, path)
+		if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 			return err
 		}
-		if page.Static {
-			if err := os.Link(filepath.Join(siteConfig.SourceDir, page.Path), destPath); err != nil {
+		switch {
+		case page.Static && options.useHardLinks:
+			if err := os.Link(src, dst); err != nil {
 				return err
 			}
-		} else {
-			// fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", destPath)
-			f, err := os.Create(destPath)
+		case page.Static:
+			if err := copyFile(dst, src, 0644); err != nil {
+				return err
+			}
+		default:
+			// fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", dst)
+			f, err := os.Create(dst)
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer func() { _ = f.Close() }()
 			if err := page.Render(f); err != nil {
 				return err
 			}

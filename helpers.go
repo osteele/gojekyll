@@ -2,10 +2,30 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 )
+
+// copyFile implements non-atomic copy without copying metadata.
+// This is sufficient for its use within this package.
+func copyFile(dst, src string, perm os.FileMode) error {
+	inf, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer inf.Close()
+	outf, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	if _, err = io.Copy(outf, inf); err != nil {
+		_ = os.Remove(dst)
+		return err
+	}
+	return outf.Close()
+}
 
 func getBool(m map[interface{}]interface{}, k string, defaultValue bool) bool {
 	if val, found := m[k]; found {

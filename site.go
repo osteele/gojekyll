@@ -11,25 +11,47 @@ import (
 )
 
 // SiteConfig is the Jekyll site configuration, typically read from _config.yml.
+// See https://jekyllrb.com/docs/configuration/#default-configuration
 type SiteConfig struct {
-	Permalink      string
-	SourceDir      string
-	DestinationDir string
-	Safe           bool
-	Exclude        []string
-	Include        []string
-	// KeepFiles      []string
-	// TimeZone       string
-	// Encoding       string
-	Collections map[string]interface{}
+	//Where things are:
+	SourceDir      string // `source`
+	DestinationDir string `yaml:"destination"`
+	Collections    map[string]interface{}
+
+	Permalink string
+	Safe      bool
+	Exclude   []string
+	Include   []string
 }
 
-// Initialize with defaults.
-var siteConfig = SiteConfig{
-	SourceDir:      "./",
-	DestinationDir: "./_site",
-	Permalink:      "/:categories/:year/:month/:day/:title.html",
-}
+const siteConfigDefaults = `
+# Where things are
+source:       .
+destination:  ./_site
+include: [".htaccess"]
+data_dir:     _data
+includes_dir: _includes
+collections:
+  posts:
+    output:   true
+
+# Handling Reading
+include:              [".htaccess"]
+exclude:              ["Gemfile", "Gemfile.lock", "node_modules", "vendor/bundle/", "vendor/cache/", "vendor/gems/", "vendor/ruby/"]
+keep_files:           [".git", ".svn"]
+encoding:             "utf-8"
+markdown_ext:         "markdown,mkdown,mkdn,mkd,md"
+strict_front_matter: false
+
+# Outputting
+permalink:     date
+paginate_path: /page:num
+timezone:      null
+`
+
+//permalink:      "/:categories/:year/:month/:day/:title.html",
+
+var siteConfig SiteConfig
 
 // A map from URL path -> *Page
 var siteMap map[string]*Page
@@ -38,20 +60,26 @@ var siteData = map[interface{}]interface{}{
 	"site": map[string]interface{}{},
 }
 
-func (config *SiteConfig) read(path string) error {
-	configBytes, err := ioutil.ReadFile(path)
-	if err == nil {
-		err = yaml.Unmarshal(configBytes, &config)
-	} else if os.IsNotExist(err) {
-		err = nil
+func (c *SiteConfig) read(path string) error {
+	if err := yaml.Unmarshal([]byte(siteConfigDefaults), c); err != nil {
+		return err
 	}
-	return err
+	switch configBytes, err := ioutil.ReadFile(path); {
+	case err != nil && !os.IsNotExist(err):
+		return nil
+	case err != nil:
+		return err
+	default:
+		return yaml.Unmarshal(configBytes, c)
+	}
 }
 
 func buildSiteMap() (map[string]*Page, error) {
 	basePath := siteConfig.SourceDir
 	fileMap := map[string]*Page{}
 	exclusionMap := stringArrayToMap(siteConfig.Exclude)
+
+	defaultPageData := map[interface{}]interface{}{}
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -78,7 +106,7 @@ func buildSiteMap() (map[string]*Page, error) {
 		if info.IsDir() {
 			return nil
 		}
-		p, err := readPage(relPath, siteData)
+		p, err := readPage(relPath, defaultPageData)
 		if err != nil {
 			return err
 		}
@@ -108,17 +136,21 @@ func buildSiteMap() (map[string]*Page, error) {
 	return fileMap, nil
 }
 
-func addCollectionFiles(fileMap map[string]*Page, name string, data map[interface{}]interface{}) error {
+func addCollectionFiles(fileMap map[string]*Page, collectionName string, data map[interface{}]interface{}) error {
 	basePath := siteConfig.SourceDir
-	collData := mergeMaps(siteData, data)
-	collData["collection"] = name
 	pages := []*Page{}
+	defaultPageData := map[interface{}]interface{}{
+		"site":       siteData,
+		"collection": collectionName,
+	}
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			// if the issue is simply that the directory doesn't exist, ignore the error
 			if os.IsNotExist(err) {
-				fmt.Println("Missing directory for collection", name)
+				if collectionName != "posts" {
+					fmt.Println("Missing directory for collection", collectionName)
+				}
 				return nil
 			}
 			return err
@@ -130,7 +162,7 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 		if info.IsDir() {
 			return nil
 		}
-		p, err := readPage(relPath, collData)
+		p, err := readPage(relPath, defaultPageData)
 		if err != nil {
 			return err
 		}
@@ -142,14 +174,14 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 		}
 		return nil
 	}
-	if err := filepath.Walk(filepath.Join(basePath, "_"+name), walkFn); err != nil {
+	if err := filepath.Walk(filepath.Join(basePath, "_"+collectionName), walkFn); err != nil {
 		return err
 	}
-	pageData := []interface{}{}
+	collectionPageData := []interface{}{}
 	for _, p := range pages {
-		pageData = append(pageData, p.CollectionItemData())
+		collectionPageData = append(collectionPageData, p.PageData())
 	}
-	siteData["site"].(map[string]interface{})[name] = pageData
+	siteData[collectionName] = collectionPageData
 	return nil
 }
 

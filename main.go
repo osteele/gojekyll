@@ -9,8 +9,15 @@ import (
 	"strings"
 	"time"
 
+	yaml "gopkg.in/yaml.v2"
+
 	"github.com/acstech/liquid"
 )
+
+// Command-line options
+var options struct {
+	useHardLinks bool
+}
 
 // This is the longest label. Pull it out here so we can both use it, and measure it for alignment.
 const configurationFileLabel = "Configuration file:"
@@ -31,8 +38,12 @@ func printPathSetting(label string, path string) {
 func main() {
 	liquid.Tags["link"] = LinkFactory
 
+	// general options
 	flag.StringVar(&siteConfig.DestinationDir, "destination", siteConfig.DestinationDir, "Destination directory")
 	flag.StringVar(&siteConfig.SourceDir, "source", siteConfig.SourceDir, "Source directory")
+
+	// maybe add flags for these
+	// options.useHardLinks = true
 
 	// routes subcommand
 	dynamic := flag.Bool("dynamic", false, "Dynamic routes only")
@@ -44,15 +55,19 @@ func main() {
 	}
 
 	configPath := filepath.Join(siteConfig.SourceDir, "_config.yml")
-	// TODO error if file is e.g. unreadable
-	if _, err := os.Stat(configPath); err == nil {
-		if err := siteConfig.read(configPath); err != nil {
+	_, err := os.Stat(configPath)
+	switch {
+	case err == nil:
+		if err = siteConfig.read(configPath); err != nil {
 			fmt.Println(err)
 			return
 		}
 		printPathSetting(configurationFileLabel, configPath)
-	} else {
+	case os.IsNotExist(err):
 		printSetting(configurationFileLabel, "none")
+	default:
+		fmt.Println(err)
+		return
 	}
 	printPathSetting("Source:", siteConfig.SourceDir)
 
@@ -78,6 +93,20 @@ func main() {
 		}
 		elapsed := time.Since(start)
 		printSetting("", fmt.Sprintf("done in %.2fs.", elapsed.Seconds()))
+	case "data":
+		path := flag.Arg(1)
+		page := findPageForCLIArg(path)
+		if page == nil {
+			fmt.Println("No page at", path)
+			return
+		}
+		for c := range siteConfig.Collections {
+			siteData[c] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c].([]interface{}))) //"..."
+		}
+		b, _ := yaml.Marshal(stringMap(page.Data()))
+		fmt.Println(string(b))
+	default:
+		fmt.Println("A subcommand is required.")
 	case "routes":
 		fmt.Printf("\nRoutes:\n")
 		urls := []string{}
@@ -92,29 +121,35 @@ func main() {
 		}
 	case "render":
 		path := flag.Arg(1)
-		if path == "" {
-			path = "index.md"
+		page := findPageForCLIArg(path)
+		if page == nil {
+			fmt.Println("No page at", path)
+			return
 		}
-		if strings.HasPrefix(path, "/") {
-			if page, found := siteMap[path]; found {
-				path = page.Path
-			} else {
-				fmt.Println("No page at", path)
-				return
-			}
-		}
-		page, err := readPage(path, siteData)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		printPathSetting("Render:", filepath.Join(siteConfig.SourceDir, path))
+		printPathSetting("Render:", filepath.Join(siteConfig.SourceDir, page.Path))
 		printSetting("URL:", page.Permalink)
 		if err := page.Render(os.Stdout); err != nil {
 			fmt.Println(err)
 			break
 		}
-	default:
-		fmt.Println("A subcommand is required.")
 	}
+}
+
+func findPageForCLIArg(path string) *Page {
+	if path == "" {
+		path = "/"
+	}
+	if strings.HasPrefix(path, "/") {
+		return siteMap[path]
+	}
+	return findPageByFilePath(path)
+}
+
+func findPageByFilePath(path string) *Page {
+	for _, p := range siteMap {
+		if p.Path == path {
+			return p
+		}
+	}
+	return nil
 }

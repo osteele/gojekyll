@@ -15,10 +15,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-const (
-	printFrontmatter = false
-)
-
 var (
 	frontmatterMatcher             = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
 	templateVariableMatcher        = regexp.MustCompile(`:(?:collection|file_ext|name|path|title)\b`)
@@ -34,7 +30,7 @@ var permalinkStyles = map[string]string{
 
 // A Page represents an HTML page.
 type Page struct {
-	Path        string
+	Path        string // this is the relative path
 	Permalink   string
 	Static      bool
 	Published   bool
@@ -47,20 +43,36 @@ func (p Page) String() string {
 		p.Path, p.Permalink, p.Static)
 }
 
-// CollectionItemData returns metadata for use in the representation of the page as a collection item
-func (p Page) CollectionItemData() map[interface{}]interface{} {
+// PageData returns metadata for use in the representation of the page as a collection item
+func (p Page) PageData() map[interface{}]interface{} {
 	// should have title, parts, url, description, due_date
 	data := map[interface{}]interface{}{
 		"url": p.Permalink,
+		// TODO Posts should get date, category, categories, tags
+		// TODO only do the following if it's a collection document?
+		"path":          filepath.Join(siteConfig.SourceDir, p.Path),
+		"relative_path": p.Path,
+		// TODO collections: content output collection(name) date(of the collection)
 	}
-	// TODO additional variables from https://jekyllrb.com/docs/collections/#documents
-	if p.FrontMatter != nil {
-		data = mergeMaps(data, p.FrontMatter)
+	for k, v := range p.FrontMatter {
+		switch k {
+		case "layout", "permalink", "published":
+		default:
+			data[k] = v
+		}
 	}
 	return data
 }
 
-func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) {
+// Data returns the variable context for Liquid evaluation
+func (p Page) Data() map[interface{}]interface{} {
+	return map[interface{}]interface{}{
+		"page": p.PageData(),
+		"site": siteData,
+	}
+}
+
+func readPage(path string, defaults map[interface{}]interface{}) (p *Page, err error) {
 	var (
 		frontMatter map[interface{}]interface{}
 		static      = true
@@ -72,8 +84,6 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 	if err != nil {
 		return nil, err
 	}
-
-	data := defaults
 
 	if match := frontmatterMatcher.FindSubmatchIndex(source); match != nil {
 		static = false
@@ -88,10 +98,12 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 			return nil, err
 		}
 
-		data = mergeMaps(data, frontMatter)
+		frontMatter = mergeMaps(defaults, frontMatter)
 	} else {
 		body = []byte{}
 	}
+
+	data := frontMatter
 
 	permalink := "/" + path
 	if val, ok := data["permalink"]; ok {
@@ -104,14 +116,16 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 		permalink = expandPermalinkPattern(pattern, data, path)
 	}
 
-	return &Page{
+	p = &Page{
 		Path:        path,
 		Permalink:   permalink,
 		Static:      static,
 		Published:   getBool(data, "published", true),
-		FrontMatter: frontMatter,
+		FrontMatter: data,
 		Content:     body,
-	}, nil
+	}
+
+	return p, nil
 }
 
 // Render applies Liquid and Markdown, as appropriate.
@@ -128,22 +142,15 @@ func (p Page) Render(w io.Writer) error {
 	var (
 		path = p.Path
 		ext  = filepath.Ext(path)
-		data = p.FrontMatter
 	)
-
-	if printFrontmatter {
-		b, _ := yaml.Marshal(stringMap(data))
-		println(string(b))
-	}
 
 	template, err := liquid.Parse(p.Content, nil)
 	if err != nil {
 		err := &os.PathError{Op: "Liquid Error", Path: path, Err: err}
 		return err
 	}
-
 	writer := new(bytes.Buffer)
-	template.Render(writer, stringMap(data))
+	template.Render(writer, stringMap(p.Data()))
 	body := writer.Bytes()
 
 	if ext == ".md" {
