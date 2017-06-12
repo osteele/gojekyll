@@ -78,7 +78,7 @@ func buildSiteMap() (map[string]*Page, error) {
 		if info.IsDir() {
 			return nil
 		}
-		p, err := readFile(relPath, siteData, false)
+		p, err := readPage(relPath, siteData)
 		if err != nil {
 			return err
 		}
@@ -130,7 +130,7 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 		if info.IsDir() {
 			return nil
 		}
-		p, err := readFile(relPath, collData, false)
+		p, err := readPage(relPath, collData)
 		if err != nil {
 			return err
 		}

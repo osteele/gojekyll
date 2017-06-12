@@ -36,10 +36,9 @@ type Page struct {
 	Path        string
 	Permalink   string
 	Static      bool
-	Expanded    bool
 	Published   bool
 	FrontMatter *map[interface{}]interface{}
-	Body        []byte
+	Content     []byte
 }
 
 func (p Page) String() string {
@@ -60,7 +59,7 @@ func (p Page) CollectionItemData() map[interface{}]interface{} {
 	return data
 }
 
-func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*Page, error) {
+func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) {
 	var (
 		frontMatter *map[interface{}]interface{}
 		static      = true
@@ -77,12 +76,10 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 
 	if match := frontmatterMatcher.FindSubmatchIndex(source); match != nil {
 		static = false
-		if expand {
-			// TODO only prepend newlines if it's markdown
-			body = append(
-				regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
-				source[match[1]:]...)
-		}
+		// TODO only prepend newlines if it's markdown
+		body = append(
+			regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
+			source[match[1]:]...)
 		frontMatter = &map[interface{}]interface{}{}
 		err = yaml.Unmarshal(source[match[2]:match[3]], &frontMatter)
 		if err != nil {
@@ -91,9 +88,9 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 		}
 
 		data = mergeMaps(data, *frontMatter)
+	} else {
+		body = []byte{}
 	}
-
-	ext := filepath.Ext(path)
 
 	permalink := path
 	if val, ok := data["permalink"]; ok {
@@ -106,36 +103,43 @@ func readFile(path string, defaults map[interface{}]interface{}, expand bool) (*
 		permalink = expandPermalinkPattern(pattern, data, path)
 	}
 
-	if expand {
-		template, err := liquid.Parse(body, nil)
-		if err != nil {
-			fmt.Println(data)
-			err := &os.PathError{Op: "Liquid Error", Path: path, Err: err}
-			return nil, err
-		}
-		writer := new(bytes.Buffer)
-		if printFrontmatter {
-			b, _ := yaml.Marshal(stringMap(data))
-			println(string(b))
-		}
-		template.Render(writer, stringMap(data))
-		body = writer.Bytes()
-		if ext == ".md" {
-			body = blackfriday.MarkdownBasic(body)
-		}
-	} else {
-		body = []byte{}
-	}
-
 	return &Page{
 		Path:        path,
 		Permalink:   permalink,
-		Expanded:    expand,
 		Static:      static,
 		Published:   getBool(data, "published", true),
 		FrontMatter: frontMatter,
-		Body:        body,
+		Content:     body,
 	}, nil
+}
+
+func (p Page) Render() ([]byte, error) {
+	var (
+		path = p.Path
+		ext  = filepath.Ext(path)
+		data = *p.FrontMatter
+	)
+
+	if printFrontmatter {
+		b, _ := yaml.Marshal(stringMap(data))
+		println(string(b))
+	}
+
+	template, err := liquid.Parse(p.Content, nil)
+	if err != nil {
+		err := &os.PathError{Op: "Liquid Error", Path: path, Err: err}
+		return nil, err
+	}
+
+	writer := new(bytes.Buffer)
+	template.Render(writer, stringMap(data))
+	body := writer.Bytes()
+
+	if ext == ".md" {
+		body = blackfriday.MarkdownBasic(body)
+	}
+
+	return []byte(body), nil
 }
 
 func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, path string) string {

@@ -28,12 +28,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p, err := readFile(p.Path, siteData, true)
+	body, err := p.Render()
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", path, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	if _, err := w.Write(p.Body); err != nil {
+	if _, err := w.Write(body); err != nil {
 		fmt.Printf("Error writing %s: %s", path, err)
 	}
 }

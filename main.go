@@ -103,14 +103,19 @@ func main() {
 				return
 			}
 		}
-		page, e := readFile(path, siteData, true)
-		if e != nil {
-			fmt.Println(e)
+		page, err := readPage(path, siteData)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		body, err := page.Render()
+		if err != nil {
+			fmt.Println(err)
 			break
 		}
 		printPathSetting("Render:", filepath.Join(siteConfig.SourceDir, path))
 		printSetting("URL:", page.Permalink)
-		fmt.Println(string(page.Body))
+		fmt.Println(string(body))
 	default:
 		fmt.Println("A subcommand is required.")
 	}

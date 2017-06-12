@@ -34,7 +34,7 @@ func build() error {
 	}
 	for path, page := range siteMap {
 		if !page.Static {
-			p, err := readFile(page.Path, siteData, true)
+			p, err := readPage(page.Path, siteData)
 			if err != nil {
 				return err
 			}
@@ -54,7 +54,11 @@ func build() error {
 			}
 		} else {
 			// fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", destPath)
-			if err := ioutil.WriteFile(destPath, page.Body, 0644); err != nil {
+			body, err := page.Render()
+			if err != nil {
+				return err
+			}
+			if err = ioutil.WriteFile(destPath, body, 0644); err != nil {
 				return err
 			}
 		}

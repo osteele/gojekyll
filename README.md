@@ -36,13 +36,13 @@ git pull -f osteele
 
 `--source DIR` is optional.
 
-`build` needn't be run before `server`. Tbe latter serves from memory.
+`build` needn't be run before `server`. The latter serves from memory.
 
 `server` only rebuilds individual changed pages, doesn't rebuild collections, and doesn't detect new pages.
 
 `render` renders a single file, identified by permalink if it starts with `/`, and by pathname (relative to the source directory) if it doesn't.
 
-`./scripts/gojekyll` invokes `go run` each time. Alternatives to `./scripts/gojekyll` are: `go build && ./gojekyll ...`; or `go install && gojekyll ...` (if `$GOPATH/bin` is on your `$PATH`). These would be nicer for actual use (where the gojekyll sources don't change between invocations), but they aren't as handy during development.
+`./scripts/gojekyll` uses `go run` each time it's invoked. Alternatives to it are: `go build && ./gojekyll ...`; or `go install && gojekyll ...` (if `$GOPATH/bin` is on your `$PATH`). These would be nicer for actual use (where the **gojekyll** sources don't change between invocations), but they aren't as handy during development.
 
 ## Credits
 
@@ -51,6 +51,8 @@ For rendering Liquid templates: the [acstech/liquid](https://github.com/acstech/
 ## Related
 
 [Hugo](https://gohugo.io) isn't Jekyll-compatible (-), but actually works (+++).
+
+[Jekyll](https://jekyllrb.com), of course.
 
 ## License
 
