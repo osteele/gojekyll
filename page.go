@@ -37,7 +37,7 @@ type Page struct {
 	Permalink   string
 	Static      bool
 	Published   bool
-	FrontMatter *map[interface{}]interface{}
+	FrontMatter map[interface{}]interface{}
 	Content     []byte
 }
 
@@ -54,15 +54,16 @@ func (p Page) CollectionItemData() map[interface{}]interface{} {
 	}
 	// TODO additional variables from https://jekyllrb.com/docs/collections/#documents
 	if p.FrontMatter != nil {
-		data = mergeMaps(data, *p.FrontMatter)
+		data = mergeMaps(data, p.FrontMatter)
 	}
 	return data
 }
 
 func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) {
 	var (
-		frontMatter *map[interface{}]interface{}
+		frontMatter map[interface{}]interface{}
 		static      = true
+		body        []byte
 	)
 
 	// TODO don't read, parse binary files
@@ -72,7 +73,6 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 	}
 
 	data := defaults
-	body := source
 
 	if match := frontmatterMatcher.FindSubmatchIndex(source); match != nil {
 		static = false
@@ -80,14 +80,14 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 		body = append(
 			regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
 			source[match[1]:]...)
-		frontMatter = &map[interface{}]interface{}{}
+		frontMatter = map[interface{}]interface{}{}
 		err = yaml.Unmarshal(source[match[2]:match[3]], &frontMatter)
 		if err != nil {
 			err := &os.PathError{Op: "read frontmatter", Path: path, Err: err}
 			return nil, err
 		}
 
-		data = mergeMaps(data, *frontMatter)
+		data = mergeMaps(data, frontMatter)
 	} else {
 		body = []byte{}
 	}
@@ -113,11 +113,12 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 	}, nil
 }
 
+// Render applies Liquid and Markdown, as appropriate.
 func (p Page) Render() ([]byte, error) {
 	var (
 		path = p.Path
 		ext  = filepath.Ext(path)
-		data = *p.FrontMatter
+		data = p.FrontMatter
 	)
 
 	if printFrontmatter {
@@ -139,7 +140,7 @@ func (p Page) Render() ([]byte, error) {
 		body = blackfriday.MarkdownBasic(body)
 	}
 
-	return []byte(body), nil
+	return body, nil
 }
 
 func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, path string) string {
