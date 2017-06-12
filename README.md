@@ -3,6 +3,7 @@
 When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyll](https://jekyllrb.com).
 
 ## Status
+[![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 
 This project is missing more functionality than it implements. It may accidentally work on tiny or simple sites, but I'd be surprised. Most egregious are an insufficiency of template variables, and limitations in the **liquid** library.
 
