@@ -93,7 +93,7 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 		body = []byte{}
 	}
 
-	permalink := path
+	permalink := "/" + path
 	if val, ok := data["permalink"]; ok {
 		pattern, ok := val.(string)
 		if !ok {
@@ -116,6 +116,15 @@ func readPage(path string, defaults map[interface{}]interface{}) (*Page, error) 
 
 // Render applies Liquid and Markdown, as appropriate.
 func (p Page) Render(w io.Writer) error {
+	if p.Static {
+		source, err := ioutil.ReadFile(filepath.Join(siteConfig.SourceDir, p.Path))
+		if err != nil {
+			return err
+		}
+		_, err = w.Write(source)
+		return err
+	}
+
 	var (
 		path = p.Path
 		ext  = filepath.Ext(path)

@@ -48,6 +48,8 @@ git pull -f osteele
 
 For rendering Liquid templates: the [acstech/liquid](https://github.com/acstech/liquid) fork of [karlseguin/liquid](https://github.com/karlseguin/liquid).
 
+The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
+
 ## Related
 
 [Hugo](https://gohugo.io) isn't Jekyll-compatible (-), but actually works (+++).
