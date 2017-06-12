@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -118,11 +117,9 @@ func addCollectionFiles(fileMap map[string]*Page, name string, data map[interfac
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			// if the issue is simply that the directory doesn't exist, ignore the error
-			if pathErr, ok := err.(*os.PathError); ok {
-				if pathErr.Err == syscall.ENOENT {
-					fmt.Println("Missing directory for collection", name)
-					return nil
-				}
+			if os.IsNotExist(err) {
+				fmt.Println("Missing directory for collection", name)
+				return nil
 			}
 			return err
 		}

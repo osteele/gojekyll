@@ -45,7 +45,9 @@ func (l *Link) LastSibling() core.Tag {
 
 // Execute is required by the Liquid tag interface
 func (l *Link) Execute(writer io.Writer, data map[string]interface{}) core.ExecuteState {
-	writer.Write([]byte(l.path))
+	if _, err := writer.Write([]byte(l.path)); err != nil {
+		panic(err)
+	}
 	return core.Normal
 }
 

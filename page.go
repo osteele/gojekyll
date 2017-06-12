@@ -180,7 +180,7 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 		varname := m[1:]
 		value := templateVariables[varname]
 		if value == "" {
-			fmt.Printf("%s: unknown variable %s in permalink template\n", varname)
+			fmt.Printf("unknown variable %s in permalink template\n", varname)
 		}
 		return value
 	})

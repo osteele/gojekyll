@@ -45,12 +45,18 @@ func build() error {
 			path = filepath.Join(path, "/index.html")
 		}
 		destPath := filepath.Join(siteConfig.DestinationDir, path)
-		os.MkdirAll(filepath.Dir(destPath), 0777)
+		if err := os.MkdirAll(filepath.Dir(destPath), 0777); err != nil {
+			return err
+		}
 		if page.Static {
-			os.Link(filepath.Join(siteConfig.SourceDir, page.Path), destPath)
+			if err := os.Link(filepath.Join(siteConfig.SourceDir, page.Path), destPath); err != nil {
+				return err
+			}
 		} else {
 			// fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", destPath)
-			ioutil.WriteFile(destPath, page.Body, 0644)
+			if err := ioutil.WriteFile(destPath, page.Body, 0644); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

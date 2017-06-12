@@ -10,12 +10,7 @@ func server() error {
 	printSetting("Server address:", "http://"+address+"/")
 	printSetting("Server running...", "press ctrl-c to stop.")
 	http.HandleFunc("/", handler)
-	err := http.ListenAndServe(address, nil)
-	if err != nil {
-		// TODO pick another port
-		return err
-	}
-	return nil
+	return http.ListenAndServe(address, nil)
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -35,8 +30,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	p, err := readFile(p.Path, siteData, true)
 	if err != nil {
-		fmt.Printf("Error rendering %s: %s", p.Path, err)
+		fmt.Printf("Error rendering %s: %s", path, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	w.Write(p.Body)
+	if _, err := w.Write(p.Body); err != nil {
+		fmt.Printf("Error writing %s: %s", path, err)
+	}
 }

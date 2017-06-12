@@ -75,10 +75,7 @@ func postfixWalk(path string, walkFn filepath.WalkFunc) error {
 	}
 
 	info, err := os.Stat(path)
-	if err = walkFn(path, info, err); err != nil {
-		return err
-	}
-	return nil
+	return walkFn(path, info, err)
 }
 
 func removeEmptyDirectories(path string) error {
@@ -102,10 +99,7 @@ func removeEmptyDirectories(path string) error {
 		}
 		return nil
 	}
-	println("before")
-	err := postfixWalk(path, walkFn)
-	fmt.Println("after", err)
-	return err
+	return postfixWalk(path, walkFn)
 }
 
 func stringArrayToMap(strings []string) map[string]bool {
