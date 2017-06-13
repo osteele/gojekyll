@@ -56,8 +56,7 @@ var siteConfig SiteConfig
 // A map from URL path -> *Page
 var siteMap map[string]*Page
 
-var siteData = map[interface{}]interface{}{
-	"site": map[string]interface{}{},
+var siteData = map[interface{}]interface{}{}
 }
 
 func (c *SiteConfig) read(path string) error {
@@ -70,6 +69,9 @@ func (c *SiteConfig) read(path string) error {
 	case err != nil:
 		return err
 	default:
+		if err := yaml.Unmarshal(configBytes, siteData); err != nil {
+			return err
+		}
 		return yaml.Unmarshal(configBytes, c)
 	}
 }

@@ -1,3 +1,5 @@
+variable: site variable
+
 collections:
   collection:
     output: true

@@ -1,11 +1,11 @@
 ---
 permalink: /
-variable: variable substitution
+variable: page variable
 ---
 
 # Site Title
 
-Here is a test with {{ page.variable }} and [a link]({% link about.md %}).
+Here is a test with a {{ site.variable}}, a {{ page.variable }} and [a link]({% link about.md %}).
 
 ## Subsection
 
