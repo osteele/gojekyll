@@ -137,14 +137,16 @@ func (s *Site) GetFileURL(path string) (string, bool) {
 // Exclude returns true iff a site excludes a file.
 func (s *Site) Exclude(path string) bool {
 	// TODO exclude based on glob, not exact match
+	inclusionMap := stringArrayToMap(s.config.Include)
 	exclusionMap := stringArrayToMap(s.config.Exclude)
 	base := filepath.Base(path)
 	switch {
+	case inclusionMap[path]:
+		return false
 	case path == ".":
 		return false
 	case exclusionMap[path]:
 		return true
-		// TODO check Include
 	case strings.HasPrefix(base, "."), strings.HasPrefix(base, "_"):
 		return true
 	default:
