@@ -26,10 +26,10 @@ func (s *Site) Clean() error {
 		}
 		return nil
 	}
-	if err := filepath.Walk(s.Config.DestinationDir, removeFiles); err != nil {
+	if err := filepath.Walk(s.Dest, removeFiles); err != nil {
 		return err
 	}
-	return RemoveEmptyDirectories(s.Config.DestinationDir)
+	return RemoveEmptyDirectories(s.Dest)
 }
 
 // Build cleans the destination and create files in it.
@@ -42,8 +42,8 @@ func (s *Site) Build() error {
 		if !page.Static && filepath.Ext(path) == "" {
 			path = filepath.Join(path, "/index.html")
 		}
-		src := filepath.Join(s.Config.SourceDir, page.Path)
-		dst := filepath.Join(s.Config.DestinationDir, path)
+		src := filepath.Join(s.Source, page.Path)
+		dst := filepath.Join(s.Dest, path)
 		if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 			return err
 		}

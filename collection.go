@@ -40,12 +40,12 @@ func (c *Collection) Posts() bool {
 
 // SourceDir returns the source directory for pages in the collection.
 func (c *Collection) SourceDir() string {
-	return filepath.Join(c.Site.Config.SourceDir, "_"+c.Name)
+	return filepath.Join(c.Site.Source, "_"+c.Name)
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
 func (c *Collection) ReadPages() error {
-	basePath := c.Site.Config.SourceDir
+	basePath := c.Site.Source
 	d := map[interface{}]interface{}{
 		"collection": c.Name,
 	}

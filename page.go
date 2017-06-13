@@ -82,7 +82,7 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 	)
 
 	// TODO don't read, parse binary files
-	source, err := ioutil.ReadFile(filepath.Join(site.Config.SourceDir, path))
+	source, err := ioutil.ReadFile(filepath.Join(site.Source, path))
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 
 // Source returns the file path of the page source.
 func (p *Page) Source() string {
-	return filepath.Join(site.Config.SourceDir, p.Path)
+	return filepath.Join(site.Source, p.Path)
 }
 
 // Render applies Liquid and Markdown, as appropriate.

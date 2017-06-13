@@ -11,11 +11,15 @@ import (
 
 // Site is a Jekyll site.
 type Site struct {
-	Config SiteConfig
-	Source string
-	Dest   string
-	Data   map[interface{}]interface{}
-	Paths  map[string]*Page // URL path -> *Page
+	ConfigFile *string
+	Source     string
+	Dest       string
+
+	Collections []*Collection
+	Data        map[interface{}]interface{}
+	Paths       map[string]*Page // URL path -> *Page
+
+	config SiteConfig
 }
 
 // For now (and maybe always?), there's just one site.
@@ -25,9 +29,9 @@ var site Site
 // See https://jekyllrb.com/docs/configuration/#default-configuration
 type SiteConfig struct {
 	// Where things are:
-	SourceDir      string `yaml:"source"`
-	DestinationDir string `yaml:"destination"`
-	Collections    map[string]interface{}
+	Source      string
+	Destination string
+	Collections map[string]interface{}
 
 	// Handling Reading
 	Include     []string
@@ -70,9 +74,10 @@ func init() {
 	site.Initialize()
 }
 
+// Initialize sets the defaults
 func (s *Site) Initialize() {
 	y := []byte(siteConfigDefaults)
-	if err := yaml.Unmarshal(y, &s.Config); err != nil {
+	if err := yaml.Unmarshal(y, &s.config); err != nil {
 		panic(err)
 	}
 	if err := yaml.Unmarshal(y, &s.Data); err != nil {
@@ -81,15 +86,38 @@ func (s *Site) Initialize() {
 	s.Paths = make(map[string]*Page)
 }
 
+// ReadConfiguration reads the configuration file, if it's present
+func ReadConfiguration(source, dest string) error {
+	site.Initialize()
+	configPath := filepath.Join(source, "_config.yml")
+	_, err := os.Stat(configPath)
+	switch {
+	case err == nil:
+		if err = site.ReadConfig(configPath); err != nil {
+			return err
+		}
+		site.Source = filepath.Join(source, site.config.Source)
+		site.Dest = filepath.Join(site.Source, site.config.Destination)
+		if dest != "" {
+			site.Dest = dest
+		}
+		site.ConfigFile = &configPath
+		return nil
+	case os.IsNotExist(err):
+		return nil
+	default:
+		return err
+	}
+}
+
 func (s *Site) ReadConfig(path string) error {
-	s.Initialize()
 	switch configBytes, err := ioutil.ReadFile(path); {
 	case err != nil && !os.IsNotExist(err):
 		return nil
 	case err != nil:
 		return err
 	default:
-		if err := yaml.Unmarshal(configBytes, s.Config); err != nil {
+		if err := yaml.Unmarshal(configBytes, s.config); err != nil {
 			return err
 		}
 		return yaml.Unmarshal(configBytes, s.Data)
@@ -103,7 +131,7 @@ func (s *Site) KeepFile(p string) bool {
 
 // MarkdownExtensions returns a set of markdown extension.
 func (s *Site) MarkdownExtensions() map[string]bool {
-	extns := strings.SplitN(s.Config.MarkdownExt, `,`, -1)
+	extns := strings.SplitN(s.config.MarkdownExt, `,`, -1)
 	return stringArrayToMap(extns)
 }
 
@@ -120,7 +148,7 @@ func (s *Site) GetFileURL(path string) (string, bool) {
 // Exclude returns true iff a site excludes a file.
 func (s *Site) Exclude(path string) bool {
 	// TODO exclude based on glob, not exact match
-	exclusionMap := stringArrayToMap(s.Config.Exclude)
+	exclusionMap := stringArrayToMap(s.config.Exclude)
 	base := filepath.Base(path)
 	switch {
 	case path == ".":
@@ -144,7 +172,7 @@ func (s *Site) ReadFiles() error {
 			return err
 		}
 
-		rel, err := filepath.Rel(s.Config.SourceDir, path)
+		rel, err := filepath.Rel(s.Source, path)
 		if err != nil {
 			return err
 		}
@@ -164,7 +192,7 @@ func (s *Site) ReadFiles() error {
 		return nil
 	}
 
-	if err := filepath.Walk(s.Config.SourceDir, walkFn); err != nil {
+	if err := filepath.Walk(s.Source, walkFn); err != nil {
 		return err
 	}
 	return s.ReadCollections()
@@ -173,12 +201,13 @@ func (s *Site) ReadFiles() error {
 // ReadCollections scans the file system for collections. It adds each collection's
 // pages to the site map, and creates a template site variable for each collection.
 func (s *Site) ReadCollections() error {
-	for name, d := range s.Config.Collections {
+	for name, d := range s.config.Collections {
 		data, ok := d.(map[interface{}]interface{})
 		if !ok {
 			panic("expected collection value to be a map")
 		}
 		c := makeCollection(s, name, data)
+		s.Collections = append(s.Collections, c)
 		if c.Output { // TODO always read the pages; just don't build them / include them in routes
 			if err := c.ReadPages(); err != nil {
 				return err

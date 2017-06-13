@@ -56,41 +56,33 @@ func main() {
 		return
 	}
 
-	configPath := filepath.Join(*source, "_config.yml")
-	_, err := os.Stat(configPath)
-	switch {
-	case err == nil:
-		if err = site.ReadConfig(configPath); err != nil {
-			fmt.Println(err)
-			return
-		}
-		site.Config.SourceDir = *source
-		site.Config.DestinationDir = *dest
-		printPathSetting(configurationFileLabel, configPath)
-	case os.IsNotExist(err):
-		site.Initialize()
-		printSetting(configurationFileLabel, "none")
-	default:
-		fmt.Println(err)
-		return
-	}
-	printPathSetting("Source:", site.Config.SourceDir)
-
 	start := time.Now()
-	if err = site.ReadFiles(); err != nil {
+	if err := ReadConfiguration(*source, *dest); err != nil {
+		fmt.Println(err)
+	}
+
+	if site.ConfigFile != nil {
+		printPathSetting(configurationFileLabel, *site.ConfigFile)
+	} else {
+		printSetting(configurationFileLabel, "none")
+
+	}
+	printPathSetting("Source:", site.Source)
+
+	if err := site.ReadFiles(); err != nil {
 		fmt.Println(err)
 		return
 	}
 
 	switch flag.Arg(0) {
 	case "s", "serve", "server":
-		if err = server(); err != nil {
+		if err := server(); err != nil {
 			fmt.Println(err)
 		}
 	case "b", "build":
-		printPathSetting("Destination:", site.Config.DestinationDir)
+		printPathSetting("Destination:", site.Dest)
 		printSetting("Generating...", "")
-		if err = site.Build(); err != nil {
+		if err := site.Build(); err != nil {
 			fmt.Println(err)
 			break
 		}
@@ -104,18 +96,19 @@ func main() {
 			return
 		}
 
+		printSetting("Data:", "")
 		// The YAML representation including collections is impractically large for debugging.
 		// (Actually it's circular, which the yaml package can't handle.)
 		// Neuter it. This destroys it as Liquid data, but that's okay in this context.
-		for c := range site.Config.Collections {
-			site.Data[c] = fmt.Sprintf("<elided page data for %d items>", len(site.Data[c].([]interface{}))) //"..."
+		for _, c := range site.Collections {
+			site.Data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(site.Data[c.Name].([]interface{})))
 		}
 		b, _ := yaml.Marshal(stringMap(page.Data()))
 		fmt.Println(string(b))
 	default:
 		fmt.Println("A subcommand is required.")
 	case "routes":
-		fmt.Printf("\nRoutes:\n")
+		printSetting("Routes:", "")
 		urls := []string{}
 		for u, p := range site.Paths {
 			if !(*dynamic && p.Static) {
@@ -133,8 +126,9 @@ func main() {
 			fmt.Println("No page at", path)
 			return
 		}
-		printPathSetting("Render:", filepath.Join(site.Config.SourceDir, page.Path))
+		printPathSetting("Render:", filepath.Join(site.Source, page.Path))
 		printSetting("URL:", page.Permalink)
+		printSetting("Content:", "")
 		if err := page.Render(os.Stdout); err != nil {
 			fmt.Println(err)
 			break
