@@ -41,7 +41,7 @@ func main() {
 
 	// general options
 	source := flag.String("source", ".", "Source directory")
-	dest := flag.String("destination", "./_site", "Destination directory")
+	dest := flag.String("destination", "", "Destination directory")
 
 	// maybe add flags for these
 	flag.BoolVar(&options.dryRun, "dry-run", false, "Dry run")
@@ -57,7 +57,7 @@ func main() {
 	}
 
 	start := time.Now()
-	if err := ReadConfiguration(*source, *dest); err != nil {
+	if err := site.ReadConfiguration(*source, *dest); err != nil {
 		fmt.Println(err)
 	}
 

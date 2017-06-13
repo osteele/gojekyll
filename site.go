@@ -23,7 +23,7 @@ type Site struct {
 }
 
 // For now (and maybe always?), there's just one site.
-var site Site
+var site = NewSite()
 
 // SiteConfig is the Jekyll site configuration, typically read from _config.yml.
 // See https://jekyllrb.com/docs/configuration/#default-configuration
@@ -69,39 +69,31 @@ timezone:      null
 
 //TODO permalink:      "/:categories/:year/:month/:day/:title.html",
 
-// For unit tests
-func init() {
-	site.Initialize()
-}
-
-// Initialize sets the defaults
-func (s *Site) Initialize() {
-	y := []byte(siteConfigDefaults)
-	if err := yaml.Unmarshal(y, &s.config); err != nil {
-		panic(err)
-	}
-	if err := yaml.Unmarshal(y, &s.Data); err != nil {
-		panic(err)
-	}
+// NewSite creates a new site.
+func NewSite() *Site {
+	s := new(Site)
 	s.Paths = make(map[string]*Page)
+	if err := s.readConfig([]byte(siteConfigDefaults)); err != nil {
+		panic(err)
+	}
+	return s
 }
 
-// ReadConfiguration reads the configuration file, if it's present
-func ReadConfiguration(source, dest string) error {
-	site.Initialize()
+// ReadConfiguration reads the configuration file, if it exists.
+func (s *Site) ReadConfiguration(source, dest string) error {
 	configPath := filepath.Join(source, "_config.yml")
-	_, err := os.Stat(configPath)
+	bytes, err := ioutil.ReadFile(configPath)
 	switch {
 	case err == nil:
-		if err = site.ReadConfig(configPath); err != nil {
+		if err = site.readConfig(bytes); err != nil {
 			return err
 		}
-		site.Source = filepath.Join(source, site.config.Source)
-		site.Dest = filepath.Join(site.Source, site.config.Destination)
+		s.Source = filepath.Join(source, s.config.Source)
+		s.Dest = filepath.Join(s.Source, s.config.Destination)
+		s.ConfigFile = &configPath
 		if dest != "" {
 			site.Dest = dest
 		}
-		site.ConfigFile = &configPath
 		return nil
 	case os.IsNotExist(err):
 		return nil
@@ -110,21 +102,18 @@ func ReadConfiguration(source, dest string) error {
 	}
 }
 
-func (s *Site) ReadConfig(path string) error {
-	switch configBytes, err := ioutil.ReadFile(path); {
-	case err != nil && !os.IsNotExist(err):
-		return nil
-	case err != nil:
+func (s *Site) readConfig(bytes []byte) error {
+	if err := yaml.Unmarshal(bytes, &s.config); err != nil {
 		return err
-	default:
-		if err := yaml.Unmarshal(configBytes, s.config); err != nil {
-			return err
-		}
-		return yaml.Unmarshal(configBytes, s.Data)
 	}
+	if err := yaml.Unmarshal(bytes, &s.Data); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (s *Site) KeepFile(p string) bool {
+// KeepFile returns true iff clean should leave the file in the destination directory.
+func (s *Site) KeepFile(path string) bool {
 	// TODO
 	return false
 }
