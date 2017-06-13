@@ -34,40 +34,46 @@ func (s *Site) Clean() error {
 
 // Build cleans the destination and create files in it.
 // It attends to the global options.dry_run.
-func (s *Site) Build() error {
-	if err := s.Clean(); err != nil {
+func (s *Site) Build() (count int, err error) {
+	if err = s.Clean(); err != nil {
+		return
+	}
+	for _, page := range s.Paths {
+		count++
+		if err = s.WritePage(page); err != nil {
+			return
+		}
+	}
+	return
+}
+
+// WritePage writes a page to the destination directory.
+func (s *Site) WritePage(page *Page) error {
+	src := filepath.Join(s.Source, page.Path)
+	dst := filepath.Join(s.Dest, page.Path)
+	if !page.Static && filepath.Ext(dst) == "" {
+		dst = filepath.Join(dst, "/index.html")
+	}
+	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}
-	for path, page := range s.Paths {
-		if !page.Static && filepath.Ext(path) == "" {
-			path = filepath.Join(path, "/index.html")
-		}
-		src := filepath.Join(s.Source, page.Path)
-		dst := filepath.Join(s.Dest, path)
-		if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+	switch {
+	case options.dryRun:
+		fmt.Println("create", dst, "from", page.Source())
+		return nil
+	case page.Static && options.useHardLinks:
+		return os.Link(src, dst)
+	case page.Static:
+		return copyFile(dst, src, 0644)
+	default:
+		f, err := os.Create(dst)
+		if err != nil {
 			return err
 		}
-		switch {
-		case options.dryRun:
-			fmt.Println("create", dst, "from", page.Source())
-		case page.Static && options.useHardLinks:
-			if err := os.Link(src, dst); err != nil {
-				return err
-			}
-		case page.Static:
-			if err := copyFile(dst, src, 0644); err != nil {
-				return err
-			}
-		default:
-			f, err := os.Create(dst)
-			if err != nil {
-				return err
-			}
-			defer func() { _ = f.Close() }()
-			if err := page.Render(f); err != nil {
-				return err
-			}
+		if err := page.Render(f); err != nil {
+			_ = f.Close()
+			return err
 		}
+		return f.Close()
 	}
-	return nil
 }

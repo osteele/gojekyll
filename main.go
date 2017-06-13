@@ -82,12 +82,13 @@ func main() {
 	case "b", "build":
 		printPathSetting("Destination:", site.Dest)
 		printSetting("Generating...", "")
-		if err := site.Build(); err != nil {
+		count, err := site.Build()
+		if err != nil {
 			fmt.Println(err)
 			break
 		}
 		elapsed := time.Since(start)
-		printSetting("", fmt.Sprintf("done in %.2fs.", elapsed.Seconds()))
+		printSetting("", fmt.Sprintf("created %d files in %.2fs.", count, elapsed.Seconds()))
 	case "data":
 		path := flag.Arg(1)
 		page := findPageForCLIArg(path)
@@ -105,8 +106,6 @@ func main() {
 		}
 		b, _ := yaml.Marshal(stringMap(page.Data()))
 		fmt.Println(string(b))
-	default:
-		fmt.Println("A subcommand is required.")
 	case "routes":
 		printSetting("Routes:", "")
 		urls := []string{}
@@ -133,6 +132,8 @@ func main() {
 			fmt.Println(err)
 			break
 		}
+	default:
+		fmt.Println("That's not a valid subcommand.")
 	}
 }
 
