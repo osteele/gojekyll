@@ -2,9 +2,9 @@
 permalink: /:name
 ---
 
-# About
+# Archive
 
-{% assign pages = site.collection | sort: 'weight' %}
+{% assign pages = site.c1 | sort: 'weight' %}
 {% for p in pages %}
 * {{p.title}}
 {% endfor %}

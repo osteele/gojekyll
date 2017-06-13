@@ -1,6 +1,6 @@
 variable: site variable
 
 collections:
-  collection:
+  c1:
     output: true
     permalink: /:collection/:path
