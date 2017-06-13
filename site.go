@@ -13,15 +13,18 @@ import (
 // SiteConfig is the Jekyll site configuration, typically read from _config.yml.
 // See https://jekyllrb.com/docs/configuration/#default-configuration
 type SiteConfig struct {
-	//Where things are:
-	SourceDir      string // `source`
+	// Where things are:
+	SourceDir      string `yaml:"source"`
 	DestinationDir string `yaml:"destination"`
 	Collections    map[string]interface{}
 
+	// Handling Reading
+	Include     []string
+	Exclude     []string
+	MarkdownExt string `yaml:"markdown_ext"`
+
+	// Outputting
 	Permalink string
-	Safe      bool
-	Exclude   []string
-	Include   []string
 }
 
 const siteConfigDefaults = `
@@ -57,12 +60,23 @@ var siteConfig SiteConfig
 var siteMap map[string]*Page
 
 var siteData = map[interface{}]interface{}{}
+
+// For unit tests
+func init() {
+	siteConfig.setDefaults()
+}
+
+func (c *SiteConfig) setDefaults() {
+	if err := yaml.Unmarshal([]byte(siteConfigDefaults), &siteData); err != nil {
+		panic(err)
+	}
+	if err := yaml.Unmarshal([]byte(siteConfigDefaults), &siteConfig); err != nil {
+		panic(err)
+	}
 }
 
 func (c *SiteConfig) read(path string) error {
-	if err := yaml.Unmarshal([]byte(siteConfigDefaults), c); err != nil {
-		return err
-	}
+	c.setDefaults()
 	switch configBytes, err := ioutil.ReadFile(path); {
 	case err != nil && !os.IsNotExist(err):
 		return nil
@@ -76,6 +90,11 @@ func (c *SiteConfig) read(path string) error {
 	}
 }
 
+// MarkdownExtensions returns a set of markdown extension.
+func (c *SiteConfig) MarkdownExtensions() map[string]bool {
+	extns := strings.SplitN(siteConfig.MarkdownExt, `,`, -1)
+	return stringArrayToMap(extns)
+}
 func buildSiteMap() (map[string]*Page, error) {
 	basePath := siteConfig.SourceDir
 	fileMap := map[string]*Page{}

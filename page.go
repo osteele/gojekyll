@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/acstech/liquid"
 	"github.com/russross/blackfriday"
@@ -72,7 +73,8 @@ func (p Page) Data() map[interface{}]interface{} {
 	}
 }
 
-func readPage(path string, defaults map[interface{}]interface{}) (p *Page, err error) {
+// ReadPage reads a Page from a file, using defaults as the default front matter.
+func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err error) {
 	var (
 		frontMatter map[interface{}]interface{}
 		static      = true
@@ -128,10 +130,15 @@ func readPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 	return p, nil
 }
 
+// Source returns the file path of the page source.
+func (p *Page) Source() string {
+	return filepath.Join(siteConfig.SourceDir, p.Path)
+}
+
 // Render applies Liquid and Markdown, as appropriate.
-func (p Page) Render(w io.Writer) error {
+func (p *Page) Render(w io.Writer) error {
 	if p.Static {
-		source, err := ioutil.ReadFile(filepath.Join(siteConfig.SourceDir, p.Path))
+		source, err := ioutil.ReadFile(p.Source())
 		if err != nil {
 			return err
 		}
@@ -139,26 +146,27 @@ func (p Page) Render(w io.Writer) error {
 		return err
 	}
 
-	var (
-		path = p.Path
-		ext  = filepath.Ext(path)
-	)
-
+	defer fmt.Println("While processing", p.Source())
 	template, err := liquid.Parse(p.Content, nil)
 	if err != nil {
-		err := &os.PathError{Op: "Liquid Error", Path: path, Err: err}
+		err := &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
 		return err
 	}
 	writer := new(bytes.Buffer)
 	template.Render(writer, stringMap(p.Data()))
 	body := writer.Bytes()
 
-	if ext == ".md" {
+	if isMarkdown(p.Path) {
 		body = blackfriday.MarkdownCommon(body)
 	}
 
 	_, err = w.Write(body)
 	return err
+}
+
+func isMarkdown(path string) bool {
+	ext := filepath.Ext(path)
+	return siteConfig.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
 }
 
 func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, path string) string {
@@ -176,9 +184,8 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 		title          = getString(data, "title", name)
 	)
 
-	if ext == ".md" {
-		outputExt = ""
-		localPath = localPath[:len(localPath)-len(ext)]
+	if isMarkdown(path) {
+		outputExt = ".html"
 	}
 
 	if val, found := data["collection"]; found {

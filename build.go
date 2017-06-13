@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func cleanDirectory() error {
@@ -32,8 +31,7 @@ func build() error {
 		return err
 	}
 	for path, page := range siteMap {
-		// TODO don't do this for js, css, etc. pages
-		if !page.Static && !strings.HasSuffix(path, ".html") {
+		if !page.Static && filepath.Ext(path) == "" {
 			path = filepath.Join(path, "/index.html")
 		}
 		src := filepath.Join(siteConfig.SourceDir, page.Path)
