@@ -17,7 +17,7 @@ import (
 
 var (
 	frontmatterMatcher             = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
-	templateVariableMatcher        = regexp.MustCompile(`:(?:collection|file_ext|name|path|title)\b`)
+	templateVariableMatcher        = regexp.MustCompile(`:\w+\b`)
 	nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 )
 
@@ -168,11 +168,12 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 
 	var (
 		collectionName string
-		ext            = filepath.Ext(path)
 		localPath      = path
+		ext            = filepath.Ext(path)
+		root           = path[:len(path)-len(ext)]
 		outputExt      = ext
-		name           = filepath.Base(localPath)
-		title          = getString(data, "title", name[:len(name)-len(ext)])
+		name           = filepath.Base(root)
+		title          = getString(data, "title", name)
 	)
 
 	if ext == ".md" {
@@ -182,8 +183,8 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 
 	if val, found := data["collection"]; found {
 		collectionName = val.(string)
-		collectionPath := "_" + collectionName + "/"
-		localPath = localPath[len(collectionPath):]
+		prefix := "_" + collectionName + "/"
+		localPath = localPath[len(prefix):]
 	}
 
 	replaceNonalphumericsByHyphens := func(s string) string {
@@ -192,8 +193,9 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 
 	templateVariables := map[string]string{
 		"collection": collectionName,
+		"ext":        strings.TrimLeft(ext, "."),
 		"name":       replaceNonalphumericsByHyphens(name),
-		"output_ext": outputExt,
+		"output_ext": strings.TrimLeft(outputExt, "."),
 		"path":       localPath,
 		"title":      replaceNonalphumericsByHyphens(title),
 		// TODO year month imonth day i_day short_year hour minute second slug categories
