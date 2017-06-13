@@ -95,6 +95,16 @@ func (c *SiteConfig) MarkdownExtensions() map[string]bool {
 	extns := strings.SplitN(siteConfig.MarkdownExt, `,`, -1)
 	return stringArrayToMap(extns)
 }
+
+func getFileURL(path string) (string, bool) {
+	for _, v := range siteMap {
+		if v.Path == path {
+			return v.Permalink, true
+		}
+	}
+	return "", false
+}
+
 func buildSiteMap() (map[string]*Page, error) {
 	basePath := siteConfig.SourceDir
 	fileMap := map[string]*Page{}
@@ -110,13 +120,13 @@ func buildSiteMap() (map[string]*Page, error) {
 			return nil
 		}
 
-		relPath, err := filepath.Rel(basePath, path)
+		rel, err := filepath.Rel(basePath, path)
 		if err != nil {
 			return err
 		}
-		base := filepath.Base(relPath)
+		base := filepath.Base(rel)
 		// TODO exclude based on glob, not exact match
-		_, exclude := exclusionMap[relPath]
+		_, exclude := exclusionMap[rel]
 		exclude = exclude || strings.HasPrefix(base, ".") || strings.HasPrefix(base, "_")
 		if exclude {
 			if info.IsDir() {
@@ -127,7 +137,7 @@ func buildSiteMap() (map[string]*Page, error) {
 		if info.IsDir() {
 			return nil
 		}
-		p, err := readPage(relPath, defaultPageData)
+		p, err := ReadPage(rel, defaultPageData)
 		if err != nil {
 			return err
 		}
@@ -140,77 +150,104 @@ func buildSiteMap() (map[string]*Page, error) {
 	if err := filepath.Walk(basePath, walkFn); err != nil {
 		return nil, err
 	}
-
-	for name, colVal := range siteConfig.Collections {
-		data, ok := colVal.(map[interface{}]interface{})
-		if !ok {
-			panic("expected collection value to be a map")
-		}
-		output := getBool(data, "output", false)
-		if output {
-			if err := addCollectionFiles(fileMap, name, data); err != nil {
-				return nil, err
-			}
-		}
+	if err := ReadCollections(fileMap); err != nil {
+		return nil, err
 	}
-
 	return fileMap, nil
 }
 
-func addCollectionFiles(fileMap map[string]*Page, collectionName string, data map[interface{}]interface{}) error {
-	basePath := siteConfig.SourceDir
-	pages := []*Page{}
-	defaultPageData := map[interface{}]interface{}{
-		"site":       siteData,
-		"collection": collectionName,
+// ReadCollections scans the file system for collections. It adds each collection's
+// pages to the site map, and creates a template site variable for each collection.
+func ReadCollections(fileMap map[string]*Page) error {
+	for s, d := range siteConfig.Collections {
+		data, ok := d.(map[interface{}]interface{})
+		if !ok {
+			panic("expected collection value to be a map")
+		}
+		c := makeCollection(s, data)
+		if c.Output { // TODO always read the pages; just don't build them
+			if err := c.ReadPages(fileMap); err != nil {
+				return err
+			}
+		}
+		siteData[c.Name] = c.PageData()
 	}
+	return nil
+}
+
+// Collection is a Jekyll collection.
+type Collection struct {
+	Name   string
+	Data   map[interface{}]interface{}
+	Output bool
+	Pages  []*Page
+}
+
+func makeCollection(name string, data map[interface{}]interface{}) *Collection {
+	return &Collection{
+		Name:   name,
+		Data:   data,
+		Output: getBool(data, "output", false),
+	}
+}
+
+// PageData returns an array of a page data, for use as the template variable
+// value of the collection.
+func (c *Collection) PageData() (d []interface{}) {
+	for _, p := range c.Pages {
+		d = append(d, p.PageData())
+	}
+	return
+}
+
+// Posts returns true if the collection is the special "posts" collection.
+func (c *Collection) Posts() bool {
+	return c.Name == "posts"
+}
+
+// SourceDir returns the source directory for pages in the collection.
+func (c *Collection) SourceDir() string {
+	return filepath.Join(siteConfig.SourceDir, "_"+c.Name)
+}
+
+// ReadPages scans the file system for collection pages, and adds them to c.Pages.
+func (c *Collection) ReadPages(fileMap map[string]*Page) error {
+	basePath := siteConfig.SourceDir
+	d := map[interface{}]interface{}{
+		"site":       siteData,
+		"collection": c.Name,
+	}
+	d = mergeMaps(c.Data, d)
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			// if the issue is simply that the directory doesn't exist, ignore the error
 			if os.IsNotExist(err) {
-				if collectionName != "posts" {
-					fmt.Println("Missing directory for collection", collectionName)
+				if !c.Posts() {
+					fmt.Println("Missing directory for collection", c.Name)
 				}
 				return nil
 			}
 			return err
 		}
-		relPath, err := filepath.Rel(basePath, path)
-		if err != nil {
+		rel, err := filepath.Rel(basePath, path)
+		switch {
+		case err != nil:
 			return err
-		}
-		if info.IsDir() {
+		case info.IsDir():
 			return nil
 		}
-		p, err := readPage(relPath, defaultPageData)
-		if err != nil {
+		p, err := ReadPage(rel, d)
+		switch {
+		case err != nil:
 			return err
-		}
-		if p.Static {
+		case p.Static:
 			fmt.Printf("skipping static file inside collection: %s\n", path)
-		} else if p.Published {
+		case p.Published:
 			fileMap[p.Permalink] = p
-			pages = append(pages, p)
+			c.Pages = append(c.Pages, p)
 		}
 		return nil
 	}
-	if err := filepath.Walk(filepath.Join(basePath, "_"+collectionName), walkFn); err != nil {
-		return err
-	}
-	collectionPageData := []interface{}{}
-	for _, p := range pages {
-		collectionPageData = append(collectionPageData, p.PageData())
-	}
-	siteData[collectionName] = collectionPageData
-	return nil
-}
-
-func getFileURL(path string) (string, bool) {
-	for _, v := range siteMap {
-		if v.Path == path {
-			return v.Permalink, true
-		}
-	}
-	return "", false
+	return filepath.Walk(c.SourceDir(), walkFn)
 }
