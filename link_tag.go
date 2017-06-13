@@ -17,7 +17,7 @@ func LinkFactory(p *core.Parser, config *core.Configuration) (core.Tag, error) {
 
 	url, ok := site.GetFileURL(path)
 	if !ok {
-		return nil, p.Error(fmt.Sprintf("%s not found", path))
+		return nil, fmt.Errorf("link tag: %s not found", path)
 	}
 
 	return &Link{url}, nil
