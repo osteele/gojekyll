@@ -40,7 +40,7 @@ func main() {
 
 	// general options
 	flag.StringVar(&siteConfig.DestinationDir, "destination", siteConfig.DestinationDir, "Destination directory")
-	flag.StringVar(&siteConfig.SourceDir, "source", siteConfig.SourceDir, "Source directory")
+	source := flag.String("source", ".", "Source directory")
 
 	// maybe add flags for these
 	// options.useHardLinks = true
@@ -54,7 +54,7 @@ func main() {
 		return
 	}
 
-	configPath := filepath.Join(siteConfig.SourceDir, "_config.yml")
+	configPath := filepath.Join(*source, "_config.yml")
 	_, err := os.Stat(configPath)
 	switch {
 	case err == nil:
@@ -62,6 +62,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+		siteConfig.SourceDir = *source
 		printPathSetting(configurationFileLabel, configPath)
 	case os.IsNotExist(err):
 		printSetting(configurationFileLabel, "none")
