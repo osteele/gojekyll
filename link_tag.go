@@ -13,19 +13,19 @@ func LinkFactory(p *core.Parser, config *core.Configuration) (core.Tag, error) {
 	start := p.Position
 	p.SkipPastTag()
 	end := p.Position - 2
-	path := strings.Trim(string(p.Data[start:end]), " ")
+	path := strings.TrimSpace(string(p.Data[start:end]))
 
-	permalink, ok := getFileURL(path)
+	url, ok := getFileURL(path)
 	if !ok {
 		return nil, p.Error(fmt.Sprintf("%s not found", path))
 	}
 
-	return &Link{path: permalink}, nil
+	return &Link{url}, nil
 }
 
 // Link tag data, for passing information from the factory to Execute
 type Link struct {
-	path string
+	url string
 }
 
 // AddCode is equired by the Liquid tag interface
@@ -45,7 +45,7 @@ func (l *Link) LastSibling() core.Tag {
 
 // Execute is required by the Liquid tag interface
 func (l *Link) Execute(writer io.Writer, data map[string]interface{}) core.ExecuteState {
-	if _, err := writer.Write([]byte(l.path)); err != nil {
+	if _, err := writer.Write([]byte(l.url)); err != nil {
 		panic(err)
 	}
 	return core.Normal
