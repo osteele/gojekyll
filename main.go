@@ -24,8 +24,7 @@ var options struct {
 const configurationFileLabel = "Configuration file:"
 
 func printSetting(label string, value string) {
-	fmt.Printf("%s %s\n",
-		leftPad(label, len(configurationFileLabel)), value)
+	fmt.Printf("%s %s\n", LeftPad(label, len(configurationFileLabel)), value)
 }
 
 func printPathSetting(label string, path string) {

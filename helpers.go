@@ -16,13 +16,13 @@ func copyFile(dst, src string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	defer inf.Close()
+	defer inf.Close() // nolint: errcheck, gas
 	outf, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
 	if _, err = io.Copy(outf, inf); err != nil {
-		_ = os.Remove(dst)
+		_ = os.Remove(dst) // nolint: gas
 		return err
 	}
 	return outf.Close()
@@ -46,8 +46,8 @@ func getString(m map[interface{}]interface{}, k string, defaultValue string) str
 	return defaultValue
 }
 
-// alternative to http://left-pad.io
-func leftPad(s string, n int) string {
+// LeftPad pads a string. It's an alternative to http://left-pad.io
+func LeftPad(s string, n int) string {
 	if n <= len(s) {
 		return s
 	}
@@ -84,11 +84,12 @@ func stringMap(m map[interface{}]interface{}) map[string]interface{} {
 	return result
 }
 
-func postfixWalk(path string, walkFn filepath.WalkFunc) error {
+// PostfixWalk is like filepath.Walk, but visits the directory after its contents.
+func PostfixWalk(path string, walkFn filepath.WalkFunc) error {
 	if files, err := ioutil.ReadDir(path); err == nil {
 		for _, stat := range files {
 			if stat.IsDir() {
-				if err = postfixWalk(filepath.Join(path, stat.Name()), walkFn); err != nil {
+				if err = PostfixWalk(filepath.Join(path, stat.Name()), walkFn); err != nil {
 					return err
 				}
 			}
@@ -99,6 +100,7 @@ func postfixWalk(path string, walkFn filepath.WalkFunc) error {
 	return walkFn(path, info, err)
 }
 
+// IsNotEmpty returns returns a boolean indicating whether the error is known to report that a directory is not empty.
 func IsNotEmpty(err error) bool {
 	if err, ok := err.(*os.PathError); ok {
 		return err.Err.(syscall.Errno) == syscall.ENOTEMPTY
@@ -129,7 +131,7 @@ func RemoveEmptyDirectories(path string) error {
 		}
 		return nil
 	}
-	return postfixWalk(path, walkFn)
+	return PostfixWalk(path, walkFn)
 }
 
 func stringArrayToMap(strings []string) map[string]bool {

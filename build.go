@@ -54,6 +54,7 @@ func (s *Site) WritePage(page *Page) error {
 	if !page.Static && filepath.Ext(dst) == "" {
 		dst = filepath.Join(dst, "/index.html")
 	}
+	// nolint: gas
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}

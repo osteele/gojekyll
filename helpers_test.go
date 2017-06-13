@@ -7,9 +7,9 @@ import (
 )
 
 func TestLeftPad(t *testing.T) {
-	assert.Equal(t, "abc", leftPad("abc", 0))
-	assert.Equal(t, "abc", leftPad("abc", 3))
-	assert.Equal(t, "   abc", leftPad("abc", 6))
+	assert.Equal(t, "abc", LeftPad("abc", 0))
+	assert.Equal(t, "abc", LeftPad("abc", 3))
+	assert.Equal(t, "   abc", LeftPad("abc", 6))
 }
 
 func TestGetXXX(t *testing.T) {

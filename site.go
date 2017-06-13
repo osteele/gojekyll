@@ -112,7 +112,7 @@ func (s *Site) readConfig(bytes []byte) error {
 	return nil
 }
 
-// KeepFile returns true iff clean should leave the file in the destination directory.
+// KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
 func (s *Site) KeepFile(path string) bool {
 	// TODO
 	return false
@@ -134,7 +134,7 @@ func (s *Site) GetFileURL(path string) (string, bool) {
 	return "", false
 }
 
-// Exclude returns true iff a site excludes a file.
+// Exclude returns a boolean indicating that the site excludes a file.
 func (s *Site) Exclude(path string) bool {
 	// TODO exclude based on glob, not exact match
 	inclusionMap := stringArrayToMap(s.config.Include)

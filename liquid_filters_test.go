@@ -43,11 +43,11 @@ func TestWhereExpObjects(t *testing.T) {
 
 	data := map[string]interface{}{
 		"array": []map[string]interface{}{
-			map[string]interface{}{
+			{
 				"name": "A",
 				"flag": true,
 			},
-			map[string]interface{}{
+			{
 				"name": "B",
 				"flag": false,
 			},
