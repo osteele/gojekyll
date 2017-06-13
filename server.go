@@ -18,10 +18,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	// w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
-	p, found := siteMap[path]
+	p, found := site.Paths[path]
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
-		p, found = siteMap["404.html"]
+		p, found = site.Paths["404.html"]
 	}
 	if !found {
 		fmt.Fprintf(w, "404 page not found: %s", path)

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"syscall"
 )
 
 // copyFile implements non-atomic copy without copying metadata.
@@ -98,22 +99,31 @@ func postfixWalk(path string, walkFn filepath.WalkFunc) error {
 	return walkFn(path, info, err)
 }
 
-func removeEmptyDirectories(path string) error {
-	walkFn := func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			if os.IsNotExist(err) {
-				return nil
-			}
-			return err
-		}
+func IsNotEmpty(err error) bool {
+	if err, ok := err.(*os.PathError); ok {
+		return err.Err.(syscall.Errno) == syscall.ENOTEMPTY
+	}
+	return false
+}
 
-		if info.IsDir() {
-			if err := os.Remove(path); err != nil {
-				if os.IsNotExist(err) {
-					return nil
-				}
-				// TODO swallow the error if it's because the directory isn't
-				// empty. This can happen if there's an entry in _config.keepfiles
+// RemoveEmptyDirectories recursively removes empty directories.
+func RemoveEmptyDirectories(path string) error {
+	walkFn := func(path string, info os.FileInfo, err error) error {
+		switch {
+		case err != nil && os.IsNotExist(err):
+			return nil
+		case err != nil:
+			return err
+		case info.IsDir():
+			err := os.Remove(path)
+			switch {
+			case err == nil:
+				return nil
+			case os.IsNotExist(err):
+				return nil
+			case IsNotEmpty(err):
+				return nil
+			default:
 				return err
 			}
 		}

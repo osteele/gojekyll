@@ -8,17 +8,19 @@ import (
 
 // Collection is a Jekyll collection.
 type Collection struct {
+	Site   *Site
 	Name   string
 	Data   map[interface{}]interface{}
 	Output bool
 	Pages  []*Page
 }
 
-func makeCollection(name string, data map[interface{}]interface{}) *Collection {
+func makeCollection(s *Site, name string, d map[interface{}]interface{}) *Collection {
 	return &Collection{
+		Site:   s,
 		Name:   name,
-		Data:   data,
-		Output: getBool(data, "output", false),
+		Data:   d,
+		Output: getBool(d, "output", false),
 	}
 }
 
@@ -38,14 +40,13 @@ func (c *Collection) Posts() bool {
 
 // SourceDir returns the source directory for pages in the collection.
 func (c *Collection) SourceDir() string {
-	return filepath.Join(siteConfig.SourceDir, "_"+c.Name)
+	return filepath.Join(c.Site.Config.SourceDir, "_"+c.Name)
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages(fileMap map[string]*Page) error {
-	basePath := siteConfig.SourceDir
+func (c *Collection) ReadPages() error {
+	basePath := c.Site.Config.SourceDir
 	d := map[interface{}]interface{}{
-		"site":       siteData,
 		"collection": c.Name,
 	}
 	d = mergeMaps(c.Data, d)
@@ -75,7 +76,7 @@ func (c *Collection) ReadPages(fileMap map[string]*Page) error {
 		case p.Static:
 			fmt.Printf("skipping static file inside collection: %s\n", path)
 		case p.Published:
-			fileMap[p.Permalink] = p
+			c.Site.Paths[p.Permalink] = p
 			c.Pages = append(c.Pages, p)
 		}
 		return nil

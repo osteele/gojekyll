@@ -15,7 +15,7 @@ func LinkFactory(p *core.Parser, config *core.Configuration) (core.Tag, error) {
 	end := p.Position - 2
 	path := strings.TrimSpace(string(p.Data[start:end]))
 
-	url, ok := getFileURL(path)
+	url, ok := site.GetFileURL(path)
 	if !ok {
 		return nil, p.Error(fmt.Sprintf("%s not found", path))
 	}

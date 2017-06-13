@@ -51,7 +51,7 @@ func (p Page) PageData() map[interface{}]interface{} {
 		"url": p.Permalink,
 		// TODO Posts should get date, category, categories, tags
 		// TODO only do the following if it's a collection document?
-		"path":          filepath.Join(siteConfig.SourceDir, p.Path),
+		"path":          p.Source(),
 		"relative_path": p.Path,
 		// TODO collections: content output collection(name) date(of the collection)
 	}
@@ -69,7 +69,7 @@ func (p Page) PageData() map[interface{}]interface{} {
 func (p Page) Data() map[interface{}]interface{} {
 	return map[interface{}]interface{}{
 		"page": p.PageData(),
-		"site": siteData,
+		"site": site.Data,
 	}
 }
 
@@ -82,7 +82,7 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 	)
 
 	// TODO don't read, parse binary files
-	source, err := ioutil.ReadFile(filepath.Join(siteConfig.SourceDir, path))
+	source, err := ioutil.ReadFile(filepath.Join(site.Config.SourceDir, path))
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 
 // Source returns the file path of the page source.
 func (p *Page) Source() string {
-	return filepath.Join(siteConfig.SourceDir, p.Path)
+	return filepath.Join(site.Config.SourceDir, p.Path)
 }
 
 // Render applies Liquid and Markdown, as appropriate.
@@ -146,8 +146,14 @@ func (p *Page) Render(w io.Writer) error {
 		return err
 	}
 
-	defer fmt.Println("While processing", p.Source())
+	parsingLiquid := true
+	defer func() {
+		if parsingLiquid {
+			fmt.Println("While processing", p.Source())
+		}
+	}()
 	template, err := liquid.Parse(p.Content, nil)
+	parsingLiquid = false
 	if err != nil {
 		err := &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
 		return err
@@ -166,7 +172,7 @@ func (p *Page) Render(w io.Writer) error {
 
 func isMarkdown(path string) bool {
 	ext := filepath.Ext(path)
-	return siteConfig.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
+	return site.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
 }
 
 func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, path string) string {

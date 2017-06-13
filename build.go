@@ -1,45 +1,55 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
 
-func cleanDirectory() error {
+// Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
+// It attends to the global options.dry_run.
+func (s *Site) Clean() error {
 	removeFiles := func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			if os.IsNotExist(err) {
-				return nil
-			}
-			return err
-		}
-		if info.IsDir() {
+		switch {
+		case err != nil && os.IsNotExist(err):
 			return nil
+		case err != nil:
+			return err
+		case info.IsDir():
+			return nil
+		case site.KeepFile(path):
+			return nil
+		case options.dryRun:
+			fmt.Println("rm", path)
+		default:
+			return os.Remove(path)
 		}
-		// TODO check for inclusion in KeepFiles
-		err = os.Remove(path)
+		return nil
+	}
+	if err := filepath.Walk(s.Config.DestinationDir, removeFiles); err != nil {
 		return err
 	}
-	if err := filepath.Walk(siteConfig.DestinationDir, removeFiles); err != nil {
-		return err
-	}
-	return removeEmptyDirectories(siteConfig.DestinationDir)
+	return RemoveEmptyDirectories(s.Config.DestinationDir)
 }
 
-func build() error {
-	if err := cleanDirectory(); err != nil {
+// Build cleans the destination and create files in it.
+// It attends to the global options.dry_run.
+func (s *Site) Build() error {
+	if err := s.Clean(); err != nil {
 		return err
 	}
-	for path, page := range siteMap {
+	for path, page := range s.Paths {
 		if !page.Static && filepath.Ext(path) == "" {
 			path = filepath.Join(path, "/index.html")
 		}
-		src := filepath.Join(siteConfig.SourceDir, page.Path)
-		dst := filepath.Join(siteConfig.DestinationDir, path)
+		src := filepath.Join(s.Config.SourceDir, page.Path)
+		dst := filepath.Join(s.Config.DestinationDir, path)
 		if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 			return err
 		}
 		switch {
+		case options.dryRun:
+			fmt.Println("create", dst, "from", page.Source())
 		case page.Static && options.useHardLinks:
 			if err := os.Link(src, dst); err != nil {
 				return err
@@ -49,7 +59,6 @@ func build() error {
 				return err
 			}
 		default:
-			// fmt.Println("render", filepath.Join(siteConfig.SourceDir, page.Path), "->", dst)
 			f, err := os.Create(dst)
 			if err != nil {
 				return err

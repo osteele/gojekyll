@@ -9,6 +9,18 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Site is a Jekyll site.
+type Site struct {
+	Config SiteConfig
+	Source string
+	Dest   string
+	Data   map[interface{}]interface{}
+	Paths  map[string]*Page // URL path -> *Page
+}
+
+// For now (and maybe always?), there's just one site.
+var site Site
+
 // SiteConfig is the Jekyll site configuration, typically read from _config.yml.
 // See https://jekyllrb.com/docs/configuration/#default-configuration
 type SiteConfig struct {
@@ -51,52 +63,53 @@ paginate_path: /page:num
 timezone:      null
 `
 
-//permalink:      "/:categories/:year/:month/:day/:title.html",
-
-var siteConfig SiteConfig
-
-// A map from URL path -> *Page
-var siteMap map[string]*Page
-
-var siteData = map[interface{}]interface{}{}
+//TODO permalink:      "/:categories/:year/:month/:day/:title.html",
 
 // For unit tests
 func init() {
-	siteConfig.setDefaults()
+	site.Initialize()
 }
 
-func (c *SiteConfig) setDefaults() {
-	if err := yaml.Unmarshal([]byte(siteConfigDefaults), &siteData); err != nil {
+func (s *Site) Initialize() {
+	y := []byte(siteConfigDefaults)
+	if err := yaml.Unmarshal(y, &s.Config); err != nil {
 		panic(err)
 	}
-	if err := yaml.Unmarshal([]byte(siteConfigDefaults), &siteConfig); err != nil {
+	if err := yaml.Unmarshal(y, &s.Data); err != nil {
 		panic(err)
 	}
+	s.Paths = make(map[string]*Page)
 }
 
-func (c *SiteConfig) read(path string) error {
-	c.setDefaults()
+func (s *Site) ReadConfig(path string) error {
+	s.Initialize()
 	switch configBytes, err := ioutil.ReadFile(path); {
 	case err != nil && !os.IsNotExist(err):
 		return nil
 	case err != nil:
 		return err
 	default:
-		if err := yaml.Unmarshal(configBytes, siteData); err != nil {
+		if err := yaml.Unmarshal(configBytes, s.Config); err != nil {
 			return err
 		}
-		return yaml.Unmarshal(configBytes, c)
+		return yaml.Unmarshal(configBytes, s.Data)
 	}
 }
 
+func (s *Site) KeepFile(p string) bool {
+	// TODO
+	return false
+}
+
 // MarkdownExtensions returns a set of markdown extension.
-func (c *SiteConfig) MarkdownExtensions() map[string]bool {
-	extns := strings.SplitN(siteConfig.MarkdownExt, `,`, -1)
+func (s *Site) MarkdownExtensions() map[string]bool {
+	extns := strings.SplitN(s.Config.MarkdownExt, `,`, -1)
 	return stringArrayToMap(extns)
 }
 
-func getFileURL(path string) (string, bool) {
-	for _, v := range siteMap {
+// GetFileURL returns the URL path given a file path, relative to the site source directory.
+func (s *Site) GetFileURL(path string) (string, bool) {
+	for _, v := range s.Paths {
 		if v.Path == path {
 			return v.Permalink, true
 		}
@@ -104,72 +117,74 @@ func getFileURL(path string) (string, bool) {
 	return "", false
 }
 
-func buildSiteMap() (map[string]*Page, error) {
-	basePath := siteConfig.SourceDir
-	fileMap := map[string]*Page{}
-	exclusionMap := stringArrayToMap(siteConfig.Exclude)
+// Exclude returns true iff a site excludes a file.
+func (s *Site) Exclude(path string) bool {
+	// TODO exclude based on glob, not exact match
+	exclusionMap := stringArrayToMap(s.Config.Exclude)
+	base := filepath.Base(path)
+	switch {
+	case path == ".":
+		return false
+	case exclusionMap[path]:
+		return true
+		// TODO check Include
+	case strings.HasPrefix(base, "."), strings.HasPrefix(base, "_"):
+		return true
+	default:
+		return false
+	}
+}
 
-	defaultPageData := map[interface{}]interface{}{}
+// ReadFiles scans the source directory and creates pages and collections.
+func (s *Site) ReadFiles() error {
+	d := map[interface{}]interface{}{}
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if path == basePath {
-			return nil
-		}
 
-		rel, err := filepath.Rel(basePath, path)
+		rel, err := filepath.Rel(s.Config.SourceDir, path)
 		if err != nil {
 			return err
 		}
-		base := filepath.Base(rel)
-		// TODO exclude based on glob, not exact match
-		_, exclude := exclusionMap[rel]
-		exclude = exclude || strings.HasPrefix(base, ".") || strings.HasPrefix(base, "_")
-		if exclude {
-			if info.IsDir() {
-				return filepath.SkipDir
-			}
+		switch {
+		case info.IsDir() && s.Exclude(rel):
+			return filepath.SkipDir
+		case info.IsDir(), s.Exclude(rel):
 			return nil
 		}
-		if info.IsDir() {
-			return nil
-		}
-		p, err := ReadPage(rel, defaultPageData)
+		p, err := ReadPage(rel, d)
 		if err != nil {
 			return err
 		}
 		if p.Published {
-			fileMap[p.Permalink] = p
+			s.Paths[p.Permalink] = p
 		}
 		return nil
 	}
 
-	if err := filepath.Walk(basePath, walkFn); err != nil {
-		return nil, err
+	if err := filepath.Walk(s.Config.SourceDir, walkFn); err != nil {
+		return err
 	}
-	if err := ReadCollections(fileMap); err != nil {
-		return nil, err
-	}
-	return fileMap, nil
+	return s.ReadCollections()
 }
 
 // ReadCollections scans the file system for collections. It adds each collection's
 // pages to the site map, and creates a template site variable for each collection.
-func ReadCollections(fileMap map[string]*Page) error {
-	for s, d := range siteConfig.Collections {
+func (s *Site) ReadCollections() error {
+	for name, d := range s.Config.Collections {
 		data, ok := d.(map[interface{}]interface{})
 		if !ok {
 			panic("expected collection value to be a map")
 		}
-		c := makeCollection(s, data)
-		if c.Output { // TODO always read the pages; just don't build them
-			if err := c.ReadPages(fileMap); err != nil {
+		c := makeCollection(s, name, data)
+		if c.Output { // TODO always read the pages; just don't build them / include them in routes
+			if err := c.ReadPages(); err != nil {
 				return err
 			}
 		}
-		siteData[c.Name] = c.PageData()
+		s.Data[c.Name] = c.PageData()
 	}
 	return nil
 }
