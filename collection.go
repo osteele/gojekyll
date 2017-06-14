@@ -24,11 +24,11 @@ func makeCollection(s *Site, name string, d map[interface{}]interface{}) *Collec
 	}
 }
 
-// PageData returns an array of a page data, for use as the template variable
+// PageArrayVariableValue returns an array of a page data, for use as the template variable
 // value of the collection.
-func (c *Collection) PageData() (d []interface{}) {
+func (c *Collection) PageArrayVariableValue() (d []interface{}) {
 	for _, p := range c.Pages {
-		d = append(d, p.PageData())
+		d = append(d, p.PageVariables())
 	}
 	return
 }

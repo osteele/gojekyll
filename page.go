@@ -39,21 +39,24 @@ type Page struct {
 	Content     []byte
 }
 
-func (p Page) String() string {
+func (p *Page) String() string {
 	return fmt.Sprintf("Page{Path=%v, Permalink=%v, Static=%v}",
 		p.Path, p.Permalink, p.Static)
 }
 
-// PageData returns metadata for use in the representation of the page as a collection item
-func (p Page) PageData() map[interface{}]interface{} {
-	// should have title, parts, url, description, due_date
+// PageVariables returns metadata for use in the representation of the page as a collection item
+func (p *Page) PageVariables() map[interface{}]interface{} {
+	if p.Static {
+		return mergeMaps(p.FrontMatter, p.staticFileData())
+	}
 	data := map[interface{}]interface{}{
-		"url": p.Permalink,
+		"url":  p.Permalink,
+		"path": p.Source(),
+		// TODO content title excerpt date id categories tags next previous
 		// TODO Posts should get date, category, categories, tags
 		// TODO only do the following if it's a collection document?
-		"path":          p.Source(),
 		"relative_path": p.Path,
-		// TODO collections: content output collection(name) date(of the collection)
+		// TODO collections: output collection(name) date(of the collection)
 	}
 	for k, v := range p.FrontMatter {
 		switch k {
@@ -65,11 +68,27 @@ func (p Page) PageData() map[interface{}]interface{} {
 	return data
 }
 
-// Data returns the variable context for Liquid evaluation
-func (p Page) Data() map[interface{}]interface{} {
+func (p *Page) staticFileData() map[interface{}]interface{} {
+	var (
+		path = "/" + p.Path
+		base = filepath.Base(path)
+		ext  = filepath.Ext(path)
+	)
+
 	return map[interface{}]interface{}{
-		"page": p.PageData(),
-		"site": site.Data,
+		"path":          path,
+		"modified_time": 0, // TODO
+		"name":          base,
+		"basename":      base[:len(base)-len(ext)],
+		"extname":       ext,
+	}
+}
+
+// Data returns the variable context for Liquid evaluation
+func (p *Page) Data() map[interface{}]interface{} {
+	return map[interface{}]interface{}{
+		"page": p.PageVariables(),
+		"site": site.Variables,
 	}
 }
 
@@ -102,6 +121,7 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 
 		frontMatter = mergeMaps(defaults, frontMatter)
 	} else {
+		frontMatter = defaults
 		body = []byte{}
 	}
 
@@ -115,7 +135,10 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 			err = &os.PathError{Op: "render", Path: path, Err: err}
 			return nil, err
 		}
-		permalink = expandPermalinkPattern(pattern, data, path)
+		permalink, err = expandPermalinkPattern(pattern, path, data)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	p = &Page{
@@ -175,11 +198,7 @@ func isMarkdown(path string) bool {
 	return site.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
 }
 
-func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, path string) string {
-	if p, found := permalinkStyles[pattern]; found {
-		pattern = p
-	}
-
+func permalinkTemplateVariables(path string, data map[interface{}]interface{}) map[string]string {
 	var (
 		collectionName string
 		localPath      = path
@@ -200,26 +219,43 @@ func expandPermalinkPattern(pattern string, data map[interface{}]interface{}, pa
 		localPath = localPath[len(prefix):]
 	}
 
-	replaceNonalphumericsByHyphens := func(s string) string {
+	// replace each sequence of non-alphanumerics by a single hypen
+	hyphenize := func(s string) string {
 		return nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
 	}
 
-	templateVariables := map[string]string{
+	return map[string]string{
 		"collection": collectionName,
 		"ext":        strings.TrimLeft(ext, "."),
-		"name":       replaceNonalphumericsByHyphens(name),
+		"name":       hyphenize(name),
 		"output_ext": strings.TrimLeft(outputExt, "."),
 		"path":       localPath,
-		"title":      replaceNonalphumericsByHyphens(title),
+		"title":      hyphenize(title),
 		// TODO year month imonth day i_day short_year hour minute second slug categories
 	}
+}
 
-	return templateVariableMatcher.ReplaceAllStringFunc(pattern, func(m string) string {
+func expandPermalinkPattern(pattern string, path string, data map[interface{}]interface{}) (s string, err error) {
+	if p, found := permalinkStyles[pattern]; found {
+		pattern = p
+	}
+	templateVariables := permalinkTemplateVariables(path, data)
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(error); ok {
+				err = e
+			} else {
+				panic(r)
+			}
+		}
+	}()
+	s = templateVariableMatcher.ReplaceAllStringFunc(pattern, func(m string) string {
 		varname := m[1:]
-		value := templateVariables[varname]
-		if value == "" {
-			fmt.Printf("unknown variable %s in permalink template\n", varname)
+		value, found := templateVariables[varname]
+		if !found {
+			panic(fmt.Errorf("unknown variable %s in permalink template %s", varname, pattern))
 		}
 		return value
 	})
+	return
 }

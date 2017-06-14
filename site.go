@@ -16,7 +16,7 @@ type Site struct {
 	Dest       string
 
 	Collections []*Collection
-	Data        map[interface{}]interface{}
+	Variables   map[interface{}]interface{}
 	Paths       map[string]*Page // URL path -> *Page
 
 	config SiteConfig
@@ -72,8 +72,7 @@ timezone:      null
 // NewSite creates a new site.
 func NewSite() *Site {
 	s := new(Site)
-	s.Paths = make(map[string]*Page)
-	if err := s.readConfig([]byte(siteConfigDefaults)); err != nil {
+	if err := s.readConfigBytes([]byte(siteConfigDefaults)); err != nil {
 		panic(err)
 	}
 	return s
@@ -85,7 +84,7 @@ func (s *Site) ReadConfiguration(source, dest string) error {
 	bytes, err := ioutil.ReadFile(configPath)
 	switch {
 	case err == nil:
-		if err = site.readConfig(bytes); err != nil {
+		if err = site.readConfigBytes(bytes); err != nil {
 			return err
 		}
 		s.Source = filepath.Join(source, s.config.Source)
@@ -102,13 +101,15 @@ func (s *Site) ReadConfiguration(source, dest string) error {
 	}
 }
 
-func (s *Site) readConfig(bytes []byte) error {
+func (s *Site) readConfigBytes(bytes []byte) error {
+	configVariables := map[interface{}]interface{}{}
 	if err := yaml.Unmarshal(bytes, &s.config); err != nil {
 		return err
 	}
-	if err := yaml.Unmarshal(bytes, &s.Data); err != nil {
+	if err := yaml.Unmarshal(bytes, &configVariables); err != nil {
 		return err
 	}
+	s.Variables = mergeMaps(s.Variables, configVariables)
 	return nil
 }
 
@@ -156,7 +157,8 @@ func (s *Site) Exclude(path string) bool {
 
 // ReadFiles scans the source directory and creates pages and collections.
 func (s *Site) ReadFiles() error {
-	d := map[interface{}]interface{}{}
+	s.Paths = make(map[string]*Page)
+	defaults := map[interface{}]interface{}{}
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -173,7 +175,7 @@ func (s *Site) ReadFiles() error {
 		case info.IsDir(), s.Exclude(rel):
 			return nil
 		}
-		p, err := ReadPage(rel, d)
+		p, err := ReadPage(rel, defaults)
 		if err != nil {
 			return err
 		}
@@ -186,12 +188,16 @@ func (s *Site) ReadFiles() error {
 	if err := filepath.Walk(s.Source, walkFn); err != nil {
 		return err
 	}
-	return s.ReadCollections()
+	if err := s.readCollections(); err != nil {
+		return err
+	}
+	s.initVariables()
+	return nil
 }
 
-// ReadCollections scans the file system for collections. It adds each collection's
+// readCollections scans the file system for collections. It adds each collection's
 // pages to the site map, and creates a template site variable for each collection.
-func (s *Site) ReadCollections() error {
+func (s *Site) readCollections() error {
 	for name, d := range s.config.Collections {
 		data, ok := d.(map[interface{}]interface{})
 		if !ok {
@@ -204,7 +210,13 @@ func (s *Site) ReadCollections() error {
 				return err
 			}
 		}
-		s.Data[c.Name] = c.PageData()
 	}
 	return nil
+}
+
+func (s *Site) initVariables() {
+	// TODO site: {time, pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG}
+	for _, c := range s.Collections {
+		s.Variables[c.Name] = c.PageArrayVariableValue()
+	}
 }

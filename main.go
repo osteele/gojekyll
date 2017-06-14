@@ -121,7 +121,7 @@ func main() {
 					Usage: "Only show routes to non-static files",
 				},
 			},
-			Action: withSite(routeCommand),
+			Action: withSite(routesCommand),
 		},
 		{
 			Name:   "render",
@@ -158,15 +158,16 @@ func dataCommand(c *cli.Context) error {
 	// The YAML representation including collections is impractically large for debugging.
 	// (Actually it's circular, which the yaml package can't handle.)
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
+	data := site.Variables
 	for _, c := range site.Collections {
-		site.Data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(site.Data[c.Name].([]interface{})))
+		data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(data[c.Name].([]interface{})))
 	}
 	b, _ := yaml.Marshal(stringMap(page.Data()))
 	fmt.Println(string(b))
 	return nil
 }
 
-func routeCommand(c *cli.Context) error {
+func routesCommand(c *cli.Context) error {
 	printSetting("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Paths {
