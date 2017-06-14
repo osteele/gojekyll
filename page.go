@@ -22,6 +22,8 @@ var (
 	nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 )
 
+type VariableMap map[string]interface{}
+
 var permalinkStyles = map[string]string{
 	"date":    "/:categories/:year/:month/:day/:title.html",
 	"pretty":  "/:categories/:year/:month/:day/:title/",
@@ -35,7 +37,7 @@ type Page struct {
 	Permalink   string
 	Static      bool
 	Published   bool
-	FrontMatter map[interface{}]interface{}
+	FrontMatter VariableMap
 	Content     []byte
 }
 
@@ -45,11 +47,11 @@ func (p *Page) String() string {
 }
 
 // PageVariables returns metadata for use in the representation of the page as a collection item
-func (p *Page) PageVariables() map[interface{}]interface{} {
+func (p *Page) PageVariables() VariableMap {
 	if p.Static {
-		return mergeMaps(p.FrontMatter, p.staticFileData())
+		return mergeVariableMaps(p.FrontMatter, p.staticFileData())
 	}
-	data := map[interface{}]interface{}{
+	data := VariableMap{
 		"url":  p.Permalink,
 		"path": p.Source(),
 		// TODO content title excerpt date id categories tags next previous
@@ -68,14 +70,14 @@ func (p *Page) PageVariables() map[interface{}]interface{} {
 	return data
 }
 
-func (p *Page) staticFileData() map[interface{}]interface{} {
+func (p *Page) staticFileData() VariableMap {
 	var (
 		path = "/" + p.Path
 		base = filepath.Base(path)
 		ext  = filepath.Ext(path)
 	)
 
-	return map[interface{}]interface{}{
+	return VariableMap{
 		"path":          path,
 		"modified_time": 0, // TODO
 		"name":          base,
@@ -85,17 +87,17 @@ func (p *Page) staticFileData() map[interface{}]interface{} {
 }
 
 // Data returns the variable context for Liquid evaluation
-func (p *Page) Data() map[interface{}]interface{} {
-	return map[interface{}]interface{}{
+func (p *Page) Data() VariableMap {
+	return VariableMap{
 		"page": p.PageVariables(),
 		"site": site.Variables,
 	}
 }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
-func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err error) {
+func ReadPage(path string, defaults VariableMap) (p *Page, err error) {
 	var (
-		frontMatter map[interface{}]interface{}
+		frontMatter VariableMap
 		static      = true
 		body        []byte
 	)
@@ -112,14 +114,14 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 		body = append(
 			regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
 			source[match[1]:]...)
-		frontMatter = map[interface{}]interface{}{}
+		frontMatter = VariableMap{}
 		err = yaml.Unmarshal(source[match[2]:match[3]], &frontMatter)
 		if err != nil {
 			err := &os.PathError{Op: "read frontmatter", Path: path, Err: err}
 			return nil, err
 		}
 
-		frontMatter = mergeMaps(defaults, frontMatter)
+		frontMatter = mergeVariableMaps(defaults, frontMatter)
 	} else {
 		frontMatter = defaults
 		body = []byte{}
@@ -145,7 +147,7 @@ func ReadPage(path string, defaults map[interface{}]interface{}) (p *Page, err e
 		Path:        path,
 		Permalink:   permalink,
 		Static:      static,
-		Published:   getBool(data, "published", true),
+		Published:   data.Bool("published", true),
 		FrontMatter: data,
 		Content:     body,
 	}
@@ -182,7 +184,7 @@ func (p *Page) Render(w io.Writer) error {
 		return err
 	}
 	writer := new(bytes.Buffer)
-	template.Render(writer, stringMap(p.Data()))
+	template.Render(writer, p.Data())
 	body := writer.Bytes()
 
 	if isMarkdown(p.Path) {
@@ -198,7 +200,7 @@ func isMarkdown(path string) bool {
 	return site.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
 }
 
-func permalinkTemplateVariables(path string, data map[interface{}]interface{}) map[string]string {
+func permalinkTemplateVariables(path string, data VariableMap) map[string]string {
 	var (
 		collectionName string
 		localPath      = path
@@ -206,7 +208,7 @@ func permalinkTemplateVariables(path string, data map[interface{}]interface{}) m
 		root           = path[:len(path)-len(ext)]
 		outputExt      = ext
 		name           = filepath.Base(root)
-		title          = getString(data, "title", name)
+		title          = data.String("title", name)
 	)
 
 	if isMarkdown(path) {
@@ -235,7 +237,7 @@ func permalinkTemplateVariables(path string, data map[interface{}]interface{}) m
 	}
 }
 
-func expandPermalinkPattern(pattern string, path string, data map[interface{}]interface{}) (s string, err error) {
+func expandPermalinkPattern(pattern string, path string, data VariableMap) (s string, err error) {
 	if p, found := permalinkStyles[pattern]; found {
 		pattern = p
 	}

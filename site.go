@@ -16,7 +16,7 @@ type Site struct {
 	Dest       string
 
 	Collections []*Collection
-	Variables   map[interface{}]interface{}
+	Variables   VariableMap
 	Paths       map[string]*Page // URL path -> *Page
 
 	config SiteConfig
@@ -31,7 +31,7 @@ type SiteConfig struct {
 	// Where things are:
 	Source      string
 	Destination string
-	Collections map[string]interface{}
+	Collections map[string]VariableMap
 
 	// Handling Reading
 	Include     []string
@@ -102,14 +102,14 @@ func (s *Site) ReadConfiguration(source, dest string) error {
 }
 
 func (s *Site) readConfigBytes(bytes []byte) error {
-	configVariables := map[interface{}]interface{}{}
+	configVariables := VariableMap{}
 	if err := yaml.Unmarshal(bytes, &s.config); err != nil {
 		return err
 	}
 	if err := yaml.Unmarshal(bytes, &configVariables); err != nil {
 		return err
 	}
-	s.Variables = mergeMaps(s.Variables, configVariables)
+	s.Variables = mergeVariableMaps(s.Variables, configVariables)
 	return nil
 }
 
@@ -158,7 +158,7 @@ func (s *Site) Exclude(path string) bool {
 // ReadFiles scans the source directory and creates pages and collections.
 func (s *Site) ReadFiles() error {
 	s.Paths = make(map[string]*Page)
-	defaults := map[interface{}]interface{}{}
+	defaults := VariableMap{}
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -199,11 +199,7 @@ func (s *Site) ReadFiles() error {
 // pages to the site map, and creates a template site variable for each collection.
 func (s *Site) readCollections() error {
 	for name, d := range s.config.Collections {
-		data, ok := d.(map[interface{}]interface{})
-		if !ok {
-			panic("expected collection value to be a map")
-		}
-		c := makeCollection(s, name, data)
+		c := makeCollection(s, name, d)
 		s.Collections = append(s.Collections, c)
 		if c.Output { // TODO always read the pages; just don't build them / include them in routes
 			if err := c.ReadPages(); err != nil {

@@ -160,9 +160,9 @@ func dataCommand(c *cli.Context) error {
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
 	data := site.Variables
 	for _, c := range site.Collections {
-		data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(data[c.Name].([]interface{})))
+		data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(data[c.Name].([]VariableMap)))
 	}
-	b, _ := yaml.Marshal(stringMap(page.Data()))
+	b, _ := yaml.Marshal(page.Data())
 	fmt.Println(string(b))
 	return nil
 }

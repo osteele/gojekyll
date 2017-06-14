@@ -10,23 +10,23 @@ import (
 type Collection struct {
 	Site   *Site
 	Name   string
-	Data   map[interface{}]interface{}
+	Data   VariableMap
 	Output bool
 	Pages  []*Page
 }
 
-func makeCollection(s *Site, name string, d map[interface{}]interface{}) *Collection {
+func makeCollection(s *Site, name string, d VariableMap) *Collection {
 	return &Collection{
 		Site:   s,
 		Name:   name,
 		Data:   d,
-		Output: getBool(d, "output", false),
+		Output: d.Bool("output", false),
 	}
 }
 
 // PageArrayVariableValue returns an array of a page data, for use as the template variable
 // value of the collection.
-func (c *Collection) PageArrayVariableValue() (d []interface{}) {
+func (c *Collection) PageArrayVariableValue() (d []VariableMap) {
 	for _, p := range c.Pages {
 		d = append(d, p.PageVariables())
 	}
@@ -34,28 +34,27 @@ func (c *Collection) PageArrayVariableValue() (d []interface{}) {
 }
 
 // Posts returns true if the collection is the special "posts" collection.
-func (c *Collection) Posts() bool {
+func (c *Collection) IsPosts() bool {
 	return c.Name == "posts"
 }
 
-// SourceDir returns the source directory for pages in the collection.
-func (c *Collection) SourceDir() string {
+// Source returns the source directory for pages in the collection.
+func (c *Collection) Source() string {
 	return filepath.Join(c.Site.Source, "_"+c.Name)
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
 func (c *Collection) ReadPages() error {
 	basePath := c.Site.Source
-	d := map[interface{}]interface{}{
+	defaults := mergeVariableMaps(c.Data, VariableMap{
 		"collection": c.Name,
-	}
-	d = mergeMaps(c.Data, d)
+	})
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			// if the issue is simply that the directory doesn't exist, ignore the error
+			// if the issue is simply that the directory doesn't exist, warn instead of error
 			if os.IsNotExist(err) {
-				if !c.Posts() {
+				if !c.IsPosts() {
 					fmt.Println("Missing directory for collection", c.Name)
 				}
 				return nil
@@ -69,7 +68,7 @@ func (c *Collection) ReadPages() error {
 		case info.IsDir():
 			return nil
 		}
-		p, err := ReadPage(rel, d)
+		p, err := ReadPage(rel, defaults)
 		switch {
 		case err != nil:
 			return err
@@ -81,5 +80,5 @@ func (c *Collection) ReadPages() error {
 		}
 		return nil
 	}
-	return filepath.Walk(c.SourceDir(), walkFn)
+	return filepath.Walk(c.Source(), walkFn)
 }

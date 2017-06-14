@@ -28,7 +28,7 @@ func copyFile(dst, src string, perm os.FileMode) error {
 	return outf.Close()
 }
 
-func getBool(m map[interface{}]interface{}, k string, defaultValue bool) bool {
+func (m VariableMap) Bool(k string, defaultValue bool) bool {
 	if val, found := m[k]; found {
 		if v, ok := val.(bool); ok {
 			return v
@@ -37,7 +37,7 @@ func getBool(m map[interface{}]interface{}, k string, defaultValue bool) bool {
 	return defaultValue
 }
 
-func getString(m map[interface{}]interface{}, k string, defaultValue string) string {
+func (m VariableMap) String(k string, defaultValue string) string {
 	if val, found := m[k]; found {
 		if v, ok := val.(string); ok {
 			return v
@@ -58,8 +58,8 @@ func LeftPad(s string, n int) string {
 	return string(ws) + s
 }
 
-func mergeMaps(a map[interface{}]interface{}, b map[interface{}]interface{}) map[interface{}]interface{} {
-	result := map[interface{}]interface{}{}
+func mergeVariableMaps(a VariableMap, b VariableMap) VariableMap {
+	result := VariableMap{}
 	for k, v := range a {
 		result[k] = v
 	}
@@ -69,10 +69,10 @@ func mergeMaps(a map[interface{}]interface{}, b map[interface{}]interface{}) map
 	return result
 }
 
-// stringMap returns a string-indexed map with the same values as its argument.
+// makeVariableMap returns a string-indexed map with the same values as its argument.
 // Non-strings keys are converted to strings.
-func stringMap(m map[interface{}]interface{}) map[string]interface{} {
-	result := map[string]interface{}{}
+func makeVariableMap(m map[interface{}]interface{}) VariableMap {
+	result := VariableMap{}
 	for k, v := range m {
 		stringer, ok := k.(fmt.Stringer)
 		if ok {

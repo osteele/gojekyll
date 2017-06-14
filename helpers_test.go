@@ -13,37 +13,37 @@ func TestLeftPad(t *testing.T) {
 }
 
 func TestGetXXX(t *testing.T) {
-	d := map[interface{}]interface{}{
+	d := VariableMap{
 		"t": true,
 		"f": false,
 		"s": "ss",
 	}
-	assert.Equal(t, true, getBool(d, "t", true))
-	assert.Equal(t, true, getBool(d, "t", false))
-	assert.Equal(t, false, getBool(d, "f", true))
-	assert.Equal(t, false, getBool(d, "f", true))
-	assert.Equal(t, true, getBool(d, "-", true))
-	assert.Equal(t, false, getBool(d, "-", false))
-	assert.Equal(t, true, getBool(d, "s", true))
-	assert.Equal(t, false, getBool(d, "s", false))
+	assert.Equal(t, true, d.Bool("t", true))
+	assert.Equal(t, true, d.Bool("t", false))
+	assert.Equal(t, false, d.Bool("f", true))
+	assert.Equal(t, false, d.Bool("f", true))
+	assert.Equal(t, true, d.Bool("-", true))
+	assert.Equal(t, false, d.Bool("-", false))
+	assert.Equal(t, true, d.Bool("s", true))
+	assert.Equal(t, false, d.Bool("s", false))
 
-	assert.Equal(t, "ss", getString(d, "s", "-"))
-	assert.Equal(t, "--", getString(d, "-", "--"))
-	assert.Equal(t, "--", getString(d, "t", "--"))
+	assert.Equal(t, "ss", d.String("s", "-"))
+	assert.Equal(t, "--", d.String("-", "--"))
+	assert.Equal(t, "--", d.String("t", "--"))
 }
 
-func TestMergeMaps(t *testing.T) {
-	m1 := map[interface{}]interface{}{"a": 1, "b": 2}
-	m2 := map[interface{}]interface{}{"b": 3, "c": 4}
-	expected := map[interface{}]interface{}{"a": 1, "b": 3, "c": 4}
-	actual := mergeMaps(m1, m2)
+func TestMakeVariableMap(t *testing.T) {
+	input := map[interface{}]interface{}{"a": 1, 10: 2, false: 3}
+	expected := VariableMap{"a": 1, "10": 2, "false": 3}
+	actual := makeVariableMap(input)
 	assert.Equal(t, expected, actual)
 }
 
-func TestStringMap(t *testing.T) {
-	input := map[interface{}]interface{}{"a": 1, 10: 2, false: 3}
-	expected := map[string]interface{}{"a": 1, "10": 2, "false": 3}
-	actual := stringMap(input)
+func TestMergeVariableMaps(t *testing.T) {
+	m1 := VariableMap{"a": 1, "b": 2}
+	m2 := VariableMap{"b": 3, "c": 4}
+	expected := VariableMap{"a": 1, "b": 3, "c": 4}
+	actual := mergeVariableMaps(m1, m2)
 	assert.Equal(t, expected, actual)
 }
 

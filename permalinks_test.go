@@ -8,7 +8,7 @@ import (
 
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
-		d      = map[interface{}]interface{}{}
+		d      = VariableMap{}
 		path   = "/a/b/c.d"
 		mdPath = "/a/b/c.md"
 	)
