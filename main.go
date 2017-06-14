@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,9 +11,8 @@ import (
 
 	"github.com/urfave/cli"
 
-	yaml "gopkg.in/yaml.v2"
-
 	_ "gopkg.in/urfave/cli.v1"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // Command-line options
@@ -36,6 +36,8 @@ func printPathSetting(label string, path string) {
 	printSetting(label, path)
 }
 
+var commandStartTime = time.Now()
+
 func main() {
 	var source, destination string
 
@@ -58,7 +60,8 @@ func main() {
 		},
 	}
 
-	app.Before = func(c *cli.Context) error {
+	// Load the site specified at destination into the site global, and print the common banner settings.
+	loadSite := func() error {
 		if err := site.ReadConfiguration(source, destination); err != nil {
 			return err
 		}
@@ -72,20 +75,25 @@ func main() {
 		return site.ReadFiles()
 	}
 
-	start := time.Now()
+	// Given a subcommand function, load the site and then call the subcommand.
+	withSite := func(cmd func(c *cli.Context) error) func(c *cli.Context) error {
+		return func(c *cli.Context) error {
+			if err := loadSite(); err != nil {
+				return cli.NewExitError(err, 1)
+			}
+			if err := cmd(c); err != nil {
+				return cli.NewExitError(err, 1)
+			}
+			return nil
+		}
+	}
 
 	app.Commands = []cli.Command{
 		{
 			Name:    "server",
 			Aliases: []string{"s", "serve"},
 			Usage:   "Serve your site locally",
-			Action: func(c *cli.Context) error {
-				if err := server(); err != nil {
-					fmt.Println(err)
-					return err
-				}
-				return nil
-			},
+			Action:  withSite(serveCommand),
 		},
 		{
 			Name:    "build",
@@ -98,106 +106,111 @@ func main() {
 					Destination: &options.dryRun,
 				},
 			},
-
-			Action: func(c *cli.Context) error {
-				printPathSetting("Destination:", site.Dest)
-				printSetting("Generating...", "")
-				count, err := site.Build()
-				if err != nil {
-					fmt.Println(err)
-					return nil
-				}
-				elapsed := time.Since(start)
-				printSetting("", fmt.Sprintf("created %d files in %.2fs.", count, elapsed.Seconds()))
-				return nil
-			},
+			Action: withSite(buildCommand),
 		},
 		{
 			Name:    "data",
 			Aliases: []string{"b"},
-			Action: func(c *cli.Context) error {
-				path := "/"
-				if c.NArg() > 0 {
-					path = c.Args().Get(0)
-				}
-				page := findPageForCLIArg(path)
-				if page == nil {
-					fmt.Println("No page at", path)
-					return nil
-				}
-
-				printSetting("Data:", "")
-				// The YAML representation including collections is impractically large for debugging.
-				// (Actually it's circular, which the yaml package can't handle.)
-				// Neuter it. This destroys it as Liquid data, but that's okay in this context.
-				for _, c := range site.Collections {
-					site.Data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(site.Data[c.Name].([]interface{})))
-				}
-				b, _ := yaml.Marshal(stringMap(page.Data()))
-				fmt.Println(string(b))
-				return nil
-			},
+			Action:  withSite(dataCommand),
 		},
 		{
 			Name: "routes",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "dynamic",
-					Usage: "Dynamic routes only",
+					Usage: "Only show routes to non-static files",
 				},
 			},
-			Action: func(c *cli.Context) error {
-				printSetting("Routes:", "")
-				urls := []string{}
-				for u, p := range site.Paths {
-					if !(c.Bool("dynamic") && p.Static) {
-						urls = append(urls, u)
-					}
-				}
-				sort.Strings(urls)
-				for _, u := range urls {
-					fmt.Printf("  %s -> %s\n", u, site.Paths[u].Path)
-				}
-				return nil
-			},
+			Action: withSite(routeCommand),
 		},
 		{
-			Name: "render",
-			Action: func(c *cli.Context) error {
-				path := "/"
-				if c.NArg() > 0 {
-					path = c.Args().Get(0)
-				}
-				page := findPageForCLIArg(path)
-				if page == nil {
-					fmt.Println("No page at", path)
-					return nil
-				}
-				printPathSetting("Render:", filepath.Join(site.Source, page.Path))
-				printSetting("URL:", page.Permalink)
-				printSetting("Content:", "")
-				if err := page.Render(os.Stdout); err != nil {
-					fmt.Println(err)
-					return nil
-				}
-				return nil
-			},
+			Name:   "render",
+			Action: withSite(renderCommand),
 		},
 	}
 
 	_ = app.Run(os.Args)
 }
 
+func buildCommand(c *cli.Context) error {
+	printPathSetting("Destination:", site.Dest)
+	printSetting("Generating...", "")
+	count, err := site.Build()
+	if err != nil {
+		return err
+	}
+	elapsed := time.Since(commandStartTime)
+	printSetting("", fmt.Sprintf("created %d files in %.2fs.", count, elapsed.Seconds()))
+	return nil
+}
+
+func serveCommand(c *cli.Context) error {
+	return server()
+}
+
+func dataCommand(c *cli.Context) error {
+	page, err := cliPage(c)
+	if err != nil {
+		return err
+	}
+
+	printSetting("Data:", "")
+	// The YAML representation including collections is impractically large for debugging.
+	// (Actually it's circular, which the yaml package can't handle.)
+	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
+	for _, c := range site.Collections {
+		site.Data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(site.Data[c.Name].([]interface{})))
+	}
+	b, _ := yaml.Marshal(stringMap(page.Data()))
+	fmt.Println(string(b))
+	return nil
+}
+
+func routeCommand(c *cli.Context) error {
+	printSetting("Routes:", "")
+	urls := []string{}
+	for u, p := range site.Paths {
+		if !(c.Bool("dynamic") && p.Static) {
+			urls = append(urls, u)
+		}
+	}
+	sort.Strings(urls)
+	for _, u := range urls {
+		fmt.Printf("  %s -> %s\n", u, site.Paths[u].Path)
+	}
+	return nil
+}
+
+func renderCommand(c *cli.Context) error {
+	page, err := cliPage(c)
+	if err != nil {
+		return err
+	}
+	printPathSetting("Render:", filepath.Join(site.Source, page.Path))
+	printSetting("URL:", page.Permalink)
+	printSetting("Content:", "")
+	return page.Render(os.Stdout)
+}
+
 // If path starts with /, it's a URL path. Else it's a file path relative
-// to the site source directory. Either way, return the Page or nil.
-func findPageForCLIArg(path string) *Page {
-	if path == "" {
-		path = "/"
+// to the site source directory.
+func cliPage(c *cli.Context) (page *Page, err error) {
+	path := "/"
+	if c.NArg() > 0 {
+		path = c.Args().Get(0)
 	}
 	if strings.HasPrefix(path, "/") {
-		return site.Paths[path]
+		page = site.Paths[path]
+		if page == nil {
+			err = &os.PathError{Op: "render", Path: path, Err: errors.New("the site does not include a file with this URL path")}
+		}
+	} else {
+		page = site.FindPageByFilePath(path)
+		if page == nil {
+			err = &os.PathError{Op: "render", Path: path, Err: errors.New("no such file")}
+		}
 	}
-	return site.FindPageByFilePath(path)
+	return
 }
 
 // FindPageByFilePath returns a Page or nil, referenced by relative path.
