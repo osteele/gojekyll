@@ -3,10 +3,12 @@ package main
 import (
 	"reflect"
 
+	"github.com/acstech/liquid"
 	"github.com/acstech/liquid/core"
 )
 
 func init() {
+	liquid.Tags["link"] = LinkFactory
 	core.RegisterFilter("where_exp", WhereExpFactory)
 }
 
