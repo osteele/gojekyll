@@ -22,13 +22,6 @@ var (
 	nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 )
 
-var permalinkStyles = map[string]string{
-	"date":    "/:categories/:year/:month/:day/:title.html",
-	"pretty":  "/:categories/:year/:month/:day/:title/",
-	"ordinal": "/:categories/:year/:y_day/:title.html",
-	"none":    "/:categories/:title.html",
-}
-
 // Page is a Jekyll page.
 type Page interface {
 	Path() string
@@ -45,7 +38,7 @@ type pageFields struct {
 	path        string // this is the relative path
 	permalink   string
 	published   bool
-	FrontMatter VariableMap
+	frontMatter VariableMap
 }
 
 func (p *pageFields) String() string {
@@ -76,7 +69,7 @@ func (p *StaticPage) Static() bool { return true }
 
 // TemplateObject returns metadata for use in the representation of the page as a collection item
 func (p *StaticPage) TemplateObject() VariableMap {
-	return mergeVariableMaps(p.FrontMatter, p.pageFields.TemplateObject())
+	return mergeVariableMaps(p.frontMatter, p.pageFields.TemplateObject())
 }
 
 // TemplateObject returns the attributes of the template page object.
@@ -90,7 +83,7 @@ func (p *DynamicPage) TemplateObject() VariableMap {
 		"relative_path": p.Path(),
 		// TODO collections: output collection(name) date(of the collection)
 	}
-	for k, v := range p.FrontMatter {
+	for k, v := range p.frontMatter {
 		switch k {
 		case "layout", "permalink", "published":
 		default:
@@ -177,7 +170,7 @@ func makeDynamicPage(path string, defaults VariableMap, source []byte, match []i
 			path:        path,
 			permalink:   permalink,
 			published:   frontMatter.Bool("published", true),
-			FrontMatter: frontMatter,
+			frontMatter: frontMatter,
 		},
 		Content: body,
 	}
@@ -191,7 +184,7 @@ func makeStaticPage(path string, frontMatter VariableMap) (*StaticPage, error) {
 			path:        path,
 			permalink:   permalink,
 			published:   frontMatter.Bool("published", true),
-			FrontMatter: frontMatter,
+			frontMatter: frontMatter,
 		},
 	}
 	return p, nil
@@ -245,61 +238,4 @@ func isMarkdown(path string) bool {
 // replace each sequence of non-alphanumerics by a single hyphen
 func hyphenateNonAlphaSequence(s string) string {
 	return nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
-}
-
-func permalinkTemplateVariables(path string, data VariableMap) map[string]string {
-	var (
-		collectionName string
-		localPath      = path
-		ext            = filepath.Ext(path)
-		root           = path[:len(path)-len(ext)]
-		outputExt      = ext
-		name           = filepath.Base(root)
-		title          = data.String("title", name)
-	)
-
-	if isMarkdown(path) {
-		outputExt = ".html"
-	}
-
-	if val, found := data["collection"]; found {
-		collectionName = val.(string)
-		prefix := "_" + collectionName + "/"
-		localPath = localPath[len(prefix):]
-	}
-
-	return map[string]string{
-		"collection": collectionName,
-		"ext":        strings.TrimLeft(ext, "."),
-		"name":       hyphenateNonAlphaSequence(name),
-		"output_ext": strings.TrimLeft(outputExt, "."),
-		"path":       localPath,
-		"title":      hyphenateNonAlphaSequence(title),
-		// TODO year month imonth day i_day short_year hour minute second slug categories
-	}
-}
-
-func expandPermalinkPattern(pattern string, path string, data VariableMap) (s string, err error) {
-	if p, found := permalinkStyles[pattern]; found {
-		pattern = p
-	}
-	templateVariables := permalinkTemplateVariables(path, data)
-	defer func() {
-		if r := recover(); r != nil {
-			if e, ok := r.(error); ok {
-				err = e
-			} else {
-				panic(r)
-			}
-		}
-	}()
-	s = templateVariableMatcher.ReplaceAllStringFunc(pattern, func(m string) string {
-		varname := m[1:]
-		value, found := templateVariables[varname]
-		if !found {
-			panic(fmt.Errorf("unknown variable %s in permalink template %s", varname, pattern))
-		}
-		return value
-	})
-	return
 }
