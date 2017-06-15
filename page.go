@@ -18,9 +18,8 @@ import (
 )
 
 var (
-	frontmatterMatcher             = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
-	templateVariableMatcher        = regexp.MustCompile(`:\w+\b`)
-	nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
+	frontMatterMatcher     = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
+	emptyFontMatterMatcher = regexp.MustCompile(`(?s)^---\n+---\n`)
 )
 
 // Page is a Jekyll page.
@@ -85,6 +84,7 @@ func ReadPage(path string, defaults VariableMap) (p Page, err error) {
 		if err != nil {
 			return nil, err
 		}
+		println(path, pattern, permalink)
 		p.setPermalink(permalink)
 	}
 	return
@@ -151,21 +151,26 @@ type DynamicPage struct {
 func (p *DynamicPage) Static() bool { return false }
 
 func makeDynamicPage(data *pageFields, source []byte) (*DynamicPage, error) {
-	match := frontmatterMatcher.FindSubmatchIndex(source)
-	// TODO recognize files that begin with "---\n---\n"
+	var start int
+	if match := frontMatterMatcher.FindSubmatchIndex(source); match != nil {
+		start = match[1]
+		frontMatter := VariableMap{}
+		if err := yaml.Unmarshal(source[match[2]:match[3]], &frontMatter); err != nil {
+			err := &os.PathError{Op: "read frontmatter", Path: data.path, Err: err}
+			return nil, err
+		}
+		data.frontMatter = mergeVariableMaps(data.frontMatter, frontMatter)
+	} else if match := emptyFontMatterMatcher.FindSubmatchIndex(source); match != nil {
+		start = match[1]
+	} else {
+		panic("expecting front matter")
+	}
 
 	// This fixes the line numbers for template errors
 	// TODO find a less hacky solution
 	body := append(
-		regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
-		source[match[1]:]...)
-
-	frontMatter := VariableMap{}
-	if err := yaml.Unmarshal(source[match[2]:match[3]], &frontMatter); err != nil {
-		err := &os.PathError{Op: "read frontmatter", Path: data.path, Err: err}
-		return nil, err
-	}
-	data.frontMatter = mergeVariableMaps(data.frontMatter, frontMatter)
+		regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:start], []byte{}),
+		source[start:]...)
 
 	p := &DynamicPage{
 		pageFields: *data,

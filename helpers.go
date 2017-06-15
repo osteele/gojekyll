@@ -5,11 +5,14 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"syscall"
 )
 
 // VariableMap is a map of strings to interface values, for use in template processing.
 type VariableMap map[string]interface{}
+
+var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 
 // copyFile copies from file src to dst. It's not atomic and doesn't copy permissions or metadata.
 // This is sufficient for its use within this package.

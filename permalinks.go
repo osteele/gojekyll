@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"time"
 )
 
@@ -27,6 +28,8 @@ var permalinkDateVariables = map[string]string{
 	"year":       "2006",
 	"short_year": "06",
 }
+
+var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 
 // See https://jekyllrb.com/docs/permalinks/#template-variables
 func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string]string {
@@ -67,7 +70,7 @@ func expandPermalinkPattern(pattern string, path string, frontMatter VariableMap
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}
-	templateVariables := permalinkTemplateVariables(path, frontMatter)
+	templateVariables := permalinkTemplateVariables("/"+path, frontMatter)
 	// The ReplaceAllStringFunc callback signals errors via panic.
 	// Turn them into return values.
 	defer func() {
