@@ -32,13 +32,6 @@ func TestGetXXX(t *testing.T) {
 	assert.Equal(t, "--", d.String("t", "--"))
 }
 
-func TestMakeVariableMap(t *testing.T) {
-	input := map[interface{}]interface{}{"a": 1, 10: 2, false: 3}
-	expected := VariableMap{"a": 1, "10": 2, "false": 3}
-	actual := makeVariableMap(input)
-	assert.Equal(t, expected, actual)
-}
-
 func TestMergeVariableMaps(t *testing.T) {
 	m1 := VariableMap{"a": 1, "b": 2}
 	m2 := VariableMap{"b": 3, "c": 4}

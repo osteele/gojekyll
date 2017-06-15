@@ -24,16 +24,16 @@ func makeCollection(s *Site, name string, d VariableMap) *Collection {
 	}
 }
 
-// PageArrayVariableValue returns an array of a page data, for use as the template variable
+// PageTemplateObjects returns an array of page objects, for use as the template variable
 // value of the collection.
-func (c *Collection) PageArrayVariableValue() (d []VariableMap) {
+func (c *Collection) PageTemplateObjects() (d []VariableMap) {
 	for _, p := range c.Pages {
-		d = append(d, p.PageVariables())
+		d = append(d, p.TemplateObject())
 	}
 	return
 }
 
-// Posts returns true if the collection is the special "posts" collection.
+// IsPosts returns true if the collection is the special "posts" collection.
 func (c *Collection) IsPosts() bool {
 	return c.Name == "posts"
 }

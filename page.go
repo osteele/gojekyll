@@ -22,8 +22,6 @@ var (
 	nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 )
 
-type VariableMap map[string]interface{}
-
 var permalinkStyles = map[string]string{
 	"date":    "/:categories/:year/:month/:day/:title.html",
 	"pretty":  "/:categories/:year/:month/:day/:title/",
@@ -31,18 +29,18 @@ var permalinkStyles = map[string]string{
 	"none":    "/:categories/:title.html",
 }
 
+// Page is a Jekyll page.
 type Page interface {
 	Path() string
 	Source() string
 	Static() bool
 	Published() bool
 	Permalink() string
-	PageVariables() VariableMap
+	TemplateObject() VariableMap
 	Write(io.Writer) error
 	DebugVariables() VariableMap
 }
 
-// A Page represents an HTML page.
 type pageFields struct {
 	path        string // this is the relative path
 	permalink   string
@@ -59,24 +57,30 @@ func (p *pageFields) Path() string      { return p.path }
 func (p *pageFields) Permalink() string { return p.permalink }
 func (p *pageFields) Published() bool   { return p.published }
 
+// StaticPage is a static page.
 type StaticPage struct {
 	pageFields
 }
 
+// DynamicPage is a static page, that includes frontmatter.
 type DynamicPage struct {
 	pageFields
 	Content []byte
 }
 
+// Static returns a bool indicatingthat the page is a not static page.
 func (p *DynamicPage) Static() bool { return false }
-func (p *StaticPage) Static() bool  { return true }
 
-// PageVariables returns metadata for use in the representation of the page as a collection item
-func (p *StaticPage) PageVariables() VariableMap {
-	return mergeVariableMaps(p.FrontMatter, p.pageFields.PageVariables())
+// Static returns a bool indicating that the page is a static page.
+func (p *StaticPage) Static() bool { return true }
+
+// TemplateObject returns metadata for use in the representation of the page as a collection item
+func (p *StaticPage) TemplateObject() VariableMap {
+	return mergeVariableMaps(p.FrontMatter, p.pageFields.TemplateObject())
 }
 
-func (p *DynamicPage) PageVariables() VariableMap {
+// TemplateObject returns the attributes of the template page object.
+func (p *DynamicPage) TemplateObject() VariableMap {
 	data := VariableMap{
 		"url":  p.Permalink(),
 		"path": p.Source(),
@@ -96,7 +100,8 @@ func (p *DynamicPage) PageVariables() VariableMap {
 	return data
 }
 
-func (p *pageFields) PageVariables() VariableMap {
+// TemplateObject returns the attributes of the template page object.
+func (p *pageFields) TemplateObject() VariableMap {
 	var (
 		path = "/" + p.path
 		base = filepath.Base(path)
@@ -112,20 +117,24 @@ func (p *pageFields) PageVariables() VariableMap {
 	}
 }
 
-// Data returns the variable context for Liquid evaluation
-func (p *DynamicPage) VariableMap() VariableMap {
+// TemplateVariables returns the local variables for template evaluation
+func (p *DynamicPage) TemplateVariables() VariableMap {
 	return VariableMap{
-		"page": p.PageVariables(),
+		"page": p.TemplateObject(),
 		"site": site.Variables,
 	}
 }
 
+// DebugVariables returns a map that's useful to present during diagnostics.
+// For a static page, this is just the page's template object attributes.
 func (p *pageFields) DebugVariables() VariableMap {
-	return p.PageVariables()
+	return p.TemplateObject()
 }
 
+// DebugVariables returns a map that's useful to present during diagnostics.
+// For a dynamic page, this is the local variable map that is used for template evaluation.
 func (p *DynamicPage) DebugVariables() VariableMap {
-	return p.VariableMap()
+	return p.TemplateVariables()
 }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
@@ -217,7 +226,7 @@ func (p *DynamicPage) Write(w io.Writer) error {
 		return err
 	}
 	writer := new(bytes.Buffer)
-	template.Render(writer, p.VariableMap())
+	template.Render(writer, p.TemplateVariables())
 	body := writer.Bytes()
 
 	if isMarkdown(p.path) {
@@ -231,6 +240,11 @@ func (p *DynamicPage) Write(w io.Writer) error {
 func isMarkdown(path string) bool {
 	ext := filepath.Ext(path)
 	return site.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
+}
+
+// replace each sequence of non-alphanumerics by a single hyphen
+func hyphenateNonAlphaSequence(s string) string {
+	return nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
 }
 
 func permalinkTemplateVariables(path string, data VariableMap) map[string]string {
@@ -254,18 +268,13 @@ func permalinkTemplateVariables(path string, data VariableMap) map[string]string
 		localPath = localPath[len(prefix):]
 	}
 
-	// replace each sequence of non-alphanumerics by a single hypen
-	hyphenize := func(s string) string {
-		return nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
-	}
-
 	return map[string]string{
 		"collection": collectionName,
 		"ext":        strings.TrimLeft(ext, "."),
-		"name":       hyphenize(name),
+		"name":       hyphenateNonAlphaSequence(name),
 		"output_ext": strings.TrimLeft(outputExt, "."),
 		"path":       localPath,
-		"title":      hyphenize(title),
+		"title":      hyphenateNonAlphaSequence(title),
 		// TODO year month imonth day i_day short_year hour minute second slug categories
 	}
 }

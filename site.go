@@ -191,7 +191,7 @@ func (s *Site) ReadFiles() error {
 	if err := s.readCollections(); err != nil {
 		return err
 	}
-	s.initVariables()
+	s.initTemplateAttributes()
 	return nil
 }
 
@@ -210,9 +210,9 @@ func (s *Site) readCollections() error {
 	return nil
 }
 
-func (s *Site) initVariables() {
+func (s *Site) initTemplateAttributes() {
 	// TODO site: {time, pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG}
 	for _, c := range s.Collections {
-		s.Variables[c.Name] = c.PageArrayVariableValue()
+		s.Variables[c.Name] = c.PageTemplateObjects()
 	}
 }
