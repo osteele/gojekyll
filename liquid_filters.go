@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"reflect"
 
 	"github.com/acstech/liquid"
@@ -9,15 +10,29 @@ import (
 
 func init() {
 	liquid.Tags["link"] = LinkFactory
+	core.RegisterFilter("jsonify", JsonifyFactory)
 	core.RegisterFilter("where_exp", WhereExpFactory)
+}
+
+// JsonifyFactory implements the Jekyll `json` filter
+func JsonifyFactory(parameters []core.Value) core.Filter {
+	if len(parameters) != 0 {
+		panic("The json filter doesn't accept parameters")
+	}
+	return func(input interface{}, data map[string]interface{}) interface{} {
+		s, err := json.Marshal(input)
+		if err != nil {
+			panic(err)
+		}
+		return s
+	}
 }
 
 // WhereExpFactory implements the Jekyll `where_exp` filter
 func WhereExpFactory(parameters []core.Value) core.Filter {
 	if len(parameters) != 2 {
-		panic("were_exp requires two parameters")
+		panic("The were_exp filter requires two parameters")
 	}
-	// itemName := parameters[0]
 	return (&WhereExpFilter{parameters[0], parameters[1]}).Run
 }
 
