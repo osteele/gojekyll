@@ -36,7 +36,6 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	})
 	t.Run("invalid template variable", func(t *testing.T) {
 		_, err := expandPermalinkPattern("/:invalid", path, d)
-		// assert.Equal(t, "/ext/d", p)
 		assert.Error(t, err)
 	})
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -70,7 +71,11 @@ func expandPermalinkPattern(pattern string, path string, frontMatter VariableMap
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}
-	templateVariables := permalinkTemplateVariables("/"+path, frontMatter)
+	// TODO remove this kludge
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	templateVariables := permalinkTemplateVariables(path, frontMatter)
 	// The ReplaceAllStringFunc callback signals errors via panic.
 	// Turn them into return values.
 	defer func() {
