@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -53,11 +53,12 @@ func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string
 	}
 	vs := map[string]string{
 		"collection": collectionName,
-		"name":       HyphenateNonAlphaSequence(name),
-		"path":       localPath,
-		"title":      HyphenateNonAlphaSequence(title),
-		// TODO slug categories
-		// The following aren't documented, but are evident
+		"name":       name,
+		"path":       "/" + localPath,
+		"title":      title,
+		"slug":       Slugify(name),
+		// TODO categories
+		// The following isn't documented, but is evident
 		"output_ext": outputExt,
 	}
 	d := time.Now() // TODO read from frontMatter or use file modtime
@@ -67,15 +68,11 @@ func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string
 	return vs
 }
 
-func expandPermalinkPattern(pattern string, path string, frontMatter VariableMap) (s string, err error) {
+func expandPermalinkPattern(pattern string, rel string, frontMatter VariableMap) (s string, err error) {
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}
-	// TODO remove this kludge
-	if !strings.HasPrefix(path, "/") {
-		path = "/" + path
-	}
-	templateVariables := permalinkTemplateVariables(path, frontMatter)
+	templateVariables := permalinkTemplateVariables(rel, frontMatter)
 	// The ReplaceAllStringFunc callback signals errors via panic.
 	// Turn them into return values.
 	defer func() {
@@ -95,5 +92,5 @@ func expandPermalinkPattern(pattern string, path string, frontMatter VariableMap
 		}
 		return value
 	})
-	return
+	return path.Clean(s), nil
 }

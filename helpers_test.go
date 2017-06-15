@@ -6,6 +6,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestSlugify(t *testing.T) {
+	assert.Equal(t, "abc", Slugify("abc"))
+	assert.Equal(t, "ab-c", Slugify("ab.c"))
+	assert.Equal(t, "ab-c", Slugify("ab-c"))
+	assert.Equal(t, "ab-c", Slugify("ab()[]c"))
+	assert.Equal(t, "ab123-cde-f-g", Slugify("ab123(cde)[]f.g"))
+}
 func TestLeftPad(t *testing.T) {
 	assert.Equal(t, "abc", LeftPad("abc", 0))
 	assert.Equal(t, "abc", LeftPad("abc", 3))

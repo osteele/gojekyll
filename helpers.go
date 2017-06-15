@@ -53,8 +53,8 @@ func (m VariableMap) String(k string, defaultValue string) string {
 	return defaultValue
 }
 
-// HyphenateNonAlphaSequence replaces each sequence of non-alphanumerics by a single hyphen
-func HyphenateNonAlphaSequence(s string) string {
+// Slugify replaces each sequence of non-alphanumerics by a single hyphen
+func Slugify(s string) string {
 	return nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
 }
 
