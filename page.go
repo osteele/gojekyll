@@ -76,18 +76,46 @@ func (p *StaticPage) TemplateObject() VariableMap {
 
 // TemplateObject returns the attributes of the template page object.
 func (p *DynamicPage) TemplateObject() VariableMap {
+	var (
+		path = p.path
+		ext  = filepath.Ext(path)
+		root = p.path[:len(path)-len(ext)]
+		base = filepath.Base(root)
+	)
+
 	data := VariableMap{
+		"path": p.path,
 		"url":  p.Permalink(),
-		"path": p.Source(),
-		// TODO content title excerpt date id categories tags next previous
-		// TODO Posts should get date, category, categories, tags
-		// TODO only do the following if it's a collection document?
+		// TODO content output
+
+		// not documented, but present in both collection and non-collection pages
+		"permalink": p.Permalink(),
+
+		// TODO only in non-collection pages:
+		// TODO dir
+		// TODO name
+		// TODO next previous
+
+		// TODO Documented as present in all pages, but de facto only defined for collection pages
+		"id":    base,
+		"title": base, // TODO capitalize
+		// TODO date (of the collection?) 2017-06-15 07:44:21 -0400
+		// TODO excerpt category? categories tags
+		// TODO slug
+
+		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
 		"relative_path": p.Path(),
-		// TODO collections: output collection(name) date(of the collection)
+		// TODO collection(name)
+
+		// TODO undocumented; only present in collection pages:
+		"ext": ext,
 	}
 	for k, v := range p.frontMatter {
 		switch k {
-		case "layout", "permalink", "published":
+		// doc implies these aren't present, but they appear to be present in a collection page:
+		// case "layout", "published":
+		case "permalink":
+		// omit this, in order to use the value above
 		default:
 			data[k] = v
 		}
@@ -96,6 +124,7 @@ func (p *DynamicPage) TemplateObject() VariableMap {
 }
 
 // TemplateObject returns the attributes of the template page object.
+// See https://jekyllrb.com/docs/variables/#page-variables
 func (p *pageFields) TemplateObject() VariableMap {
 	var (
 		path = "/" + p.path

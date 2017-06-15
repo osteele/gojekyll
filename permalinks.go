@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
+	"time"
 )
 
 // PermalinkStyles defines built-in styles from https://jekyllrb.com/docs/permalinks/#builtinpermalinkstyles
@@ -14,36 +14,53 @@ var PermalinkStyles = map[string]string{
 	"none":    "/:categories/:title.html",
 }
 
+// permalinkDateVariables maps Jekyll permalink template variable names
+// to time.Format layout strings
+var permalinkDateVariables = map[string]string{
+	"month":      "01",
+	"imonth":     "1",
+	"day":        "02",
+	"i_day":      "2",
+	"hour":       "15",
+	"minute":     "04",
+	"second":     "05",
+	"year":       "2006",
+	"short_year": "06",
+}
+
+// See https://jekyllrb.com/docs/permalinks/#template-variables
 func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string]string {
 	var (
 		collectionName string
 		localPath      = path
 		ext            = filepath.Ext(path)
-		root           = path[:len(path)-len(ext)]
 		outputExt      = ext
+		root           = path[:len(path)-len(ext)]
 		name           = filepath.Base(root)
 		title          = frontMatter.String("title", name)
 	)
-
 	if isMarkdown(path) {
 		outputExt = ".html"
 	}
-
 	if val, found := frontMatter["collection"]; found {
 		collectionName = val.(string)
 		prefix := "_" + collectionName + "/"
 		localPath = localPath[len(prefix):]
 	}
-
-	return map[string]string{
+	vs := map[string]string{
 		"collection": collectionName,
-		"ext":        strings.TrimLeft(ext, "."),
 		"name":       hyphenateNonAlphaSequence(name),
-		"output_ext": strings.TrimLeft(outputExt, "."),
 		"path":       localPath,
 		"title":      hyphenateNonAlphaSequence(title),
-		// TODO year month imonth day i_day short_year hour minute second slug categories
+		// TODO slug categories
+		// The following aren't documented, but are evident
+		"output_ext": outputExt,
 	}
+	d := time.Now() // TODO read from frontMatter or use file modtime
+	for name, f := range permalinkDateVariables {
+		vs[name] = d.Format(f)
+	}
+	return vs
 }
 
 func expandPermalinkPattern(pattern string, path string, frontMatter VariableMap) (s string, err error) {
