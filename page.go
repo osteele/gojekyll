@@ -33,6 +33,8 @@ type Page interface {
 	TemplateObject() VariableMap
 	Write(io.Writer) error
 	DebugVariables() VariableMap
+
+	setPermalink(string)
 }
 
 type pageFields struct {
@@ -53,18 +55,37 @@ func (p *pageFields) Published() bool {
 	return p.frontMatter.Bool("published", true)
 }
 
+func (p *pageFields) setPermalink(permalink string) {
+	p.permalink = permalink
+}
+
 // ReadPage reads a Page from a file, using defaults as the default front matter.
 func ReadPage(path string, defaults VariableMap) (p Page, err error) {
-	// TODO don't read, parse binary files
+	// TODO only read the first four bytes unless it's dynamic
 	source, err := ioutil.ReadFile(filepath.Join(site.Source, path))
 	if err != nil {
 		return nil, err
 	}
 
-	if match := frontmatterMatcher.FindSubmatchIndex(source); match != nil {
-		p, err = makeDynamicPage(path, defaults, source, match)
+	data := pageFields{
+		path:        path,
+		frontMatter: defaults,
+	}
+	if string(source[:4]) == "---\n" {
+		p, err = makeDynamicPage(&data, source)
 	} else {
-		p, err = makeStaticPage(path, defaults)
+		p = &StaticPage{data}
+	}
+	if p != nil {
+		// Compute this after creating the page, to pick up the the front matter.
+		// The permalink is computed once instead of on demand, so that subsequent
+		// access needn't check for an error.
+		pattern := data.frontMatter.String("permalink", ":path")
+		permalink, err := expandPermalinkPattern(pattern, data.path, data.frontMatter)
+		if err != nil {
+			return nil, err
+		}
+		p.setPermalink(permalink)
 	}
 	return
 }
@@ -120,18 +141,6 @@ func (p *StaticPage) TemplateObject() VariableMap {
 	return mergeVariableMaps(p.frontMatter, p.pageFields.TemplateObject())
 }
 
-func makeStaticPage(path string, frontMatter VariableMap) (*StaticPage, error) {
-	permalink := "/" + path // TODO resolve same as for dynamic page
-	p := &StaticPage{
-		pageFields: pageFields{
-			path:        path,
-			permalink:   permalink,
-			frontMatter: frontMatter,
-		},
-	}
-	return p, nil
-}
-
 // DynamicPage is a static page, that includes frontmatter.
 type DynamicPage struct {
 	pageFields
@@ -141,32 +150,26 @@ type DynamicPage struct {
 // Static returns a bool indicatingthat the page is a not static page.
 func (p *DynamicPage) Static() bool { return false }
 
-func makeDynamicPage(path string, defaults VariableMap, source []byte, match []int) (*DynamicPage, error) {
-	// TODO only prepend newlines if it's markdown
+func makeDynamicPage(data *pageFields, source []byte) (*DynamicPage, error) {
+	match := frontmatterMatcher.FindSubmatchIndex(source)
+	// TODO recognize files that begin with "---\n---\n"
+
+	// This fixes the line numbers for template errors
+	// TODO find a less hacky solution
 	body := append(
 		regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:match[1]], []byte{}),
 		source[match[1]:]...)
 
 	frontMatter := VariableMap{}
 	if err := yaml.Unmarshal(source[match[2]:match[3]], &frontMatter); err != nil {
-		err := &os.PathError{Op: "read frontmatter", Path: path, Err: err}
+		err := &os.PathError{Op: "read frontmatter", Path: data.path, Err: err}
 		return nil, err
 	}
-	frontMatter = mergeVariableMaps(defaults, frontMatter)
-
-	pattern := frontMatter.String("permalink", ":path")
-	permalink, err := expandPermalinkPattern(pattern, path, frontMatter)
-	if err != nil {
-		return nil, err
-	}
+	data.frontMatter = mergeVariableMaps(data.frontMatter, frontMatter)
 
 	p := &DynamicPage{
-		pageFields: pageFields{
-			path:        path,
-			permalink:   permalink,
-			frontMatter: frontMatter,
-		},
-		Content: body,
+		pageFields: *data,
+		Content:    body,
 	}
 	return p, nil
 }
