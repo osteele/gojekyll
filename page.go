@@ -37,7 +37,6 @@ type Page interface {
 type pageFields struct {
 	path        string // this is the relative path
 	permalink   string
-	published   bool
 	frontMatter VariableMap
 }
 
@@ -48,7 +47,10 @@ func (p *pageFields) String() string {
 
 func (p *pageFields) Path() string      { return p.path }
 func (p *pageFields) Permalink() string { return p.permalink }
-func (p *pageFields) Published() bool   { return p.published }
+
+func (p *pageFields) Published() bool {
+	return p.frontMatter.Bool("published", true)
+}
 
 // StaticPage is a static page.
 type StaticPage struct {
@@ -169,7 +171,6 @@ func makeDynamicPage(path string, defaults VariableMap, source []byte, match []i
 		pageFields: pageFields{
 			path:        path,
 			permalink:   permalink,
-			published:   frontMatter.Bool("published", true),
 			frontMatter: frontMatter,
 		},
 		Content: body,
@@ -183,7 +184,6 @@ func makeStaticPage(path string, frontMatter VariableMap) (*StaticPage, error) {
 		pageFields: pageFields{
 			path:        path,
 			permalink:   permalink,
-			published:   frontMatter.Bool("published", true),
 			frontMatter: frontMatter,
 		},
 	}
