@@ -49,9 +49,9 @@ func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string
 	}
 	vs := map[string]string{
 		"collection": collectionName,
-		"name":       hyphenateNonAlphaSequence(name),
+		"name":       HyphenateNonAlphaSequence(name),
 		"path":       localPath,
-		"title":      hyphenateNonAlphaSequence(title),
+		"title":      HyphenateNonAlphaSequence(title),
 		// TODO slug categories
 		// The following aren't documented, but are evident
 		"output_ext": outputExt,
