@@ -29,10 +29,11 @@ git pull -f osteele
 ## Run
 
 ```bash
-./scripts/gojekyll --source test build
-./scripts/gojekyll --source test serve
-./scripts/gojekyll --source test render index.md
-./scripts/gojekyll --source test render /
+gojekyll --source test build
+gojekyll --source test serve
+gojekyll --source test render index.md # render a file to stdout
+gojekyll --source test render /        # render a URL to stdout
+gojekyll --source test data /          # print a path's template variables
 ```
 
 `--source DIR` is optional.
@@ -43,7 +44,7 @@ git pull -f osteele
 
 `render` renders a single file, identified by permalink if it starts with `/`, and by pathname (relative to the source directory) if it doesn't.
 
-`./scripts/gojekyll` uses `go run` each time it's invoked. Alternatives to it are: `go build && ./gojekyll ...`; or `go install && gojekyll ...` (if `$GOPATH/bin` is on your `$PATH`). These would be nicer for actual use (where the **gojekyll** sources don't change between invocations), but they aren't as handy during development.
+For develpment, `./scripts/gojekyll` uses `go run` each time it's invoked.
 
 ## Credits
 
