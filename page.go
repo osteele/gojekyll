@@ -84,7 +84,6 @@ func ReadPage(path string, defaults VariableMap) (p Page, err error) {
 		if err != nil {
 			return nil, err
 		}
-		println(path, pattern, permalink)
 		p.setPermalink(permalink)
 	}
 	return
@@ -242,26 +241,56 @@ func (p *DynamicPage) DebugVariables() VariableMap {
 	return p.TemplateVariables()
 }
 
-// Write applies Liquid and Markdown, as appropriate.
-func (p *DynamicPage) Write(w io.Writer) error {
-	parsingLiquid := true
+// renderTemplate is a wrapper around liquid template.Render that turns panics into errors
+func renderTemplate(template *liquid.Template, variables VariableMap) (bs []byte, err error) {
 	defer func() {
-		if parsingLiquid {
-			fmt.Println("While processing", p.Source())
+		if r := recover(); r != nil {
+			if e, ok := r.(error); ok {
+				err = e
+			} else {
+				panic(r)
+			}
 		}
 	}()
-	template, err := liquid.Parse(p.Content, nil)
-	parsingLiquid = false
+	writer := new(bytes.Buffer)
+	template.Render(writer, variables)
+	return writer.Bytes(), nil
+}
+
+// applyTemplate parses and then renders the template.
+func parseAndApplyTemplate(bs []byte, variables VariableMap) ([]byte, error) {
+	template, err := liquid.Parse(bs, nil)
+	if err != nil {
+		return nil, err
+	}
+	return renderTemplate(template, variables)
+}
+
+// Write applies Liquid and Markdown, as appropriate.
+func (p *DynamicPage) Write(w io.Writer) error {
+	body, err := parseAndApplyTemplate(p.Content, p.TemplateVariables())
 	if err != nil {
 		err := &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
 		return err
 	}
-	writer := new(bytes.Buffer)
-	template.Render(writer, p.TemplateVariables())
-	body := writer.Bytes()
 
 	if isMarkdown(p.path) {
 		body = blackfriday.MarkdownCommon(body)
+	}
+
+	layout := p.frontMatter.String("layout", "")
+	if layout != "" {
+		layout, err := site.FindLayout(layout)
+		if err != nil {
+			return err
+		}
+		vars := mergeVariableMaps(p.TemplateVariables(), VariableMap{
+			"content": body,
+		})
+		body, err = renderTemplate(layout, vars)
+		if err != nil {
+			return nil
+		}
 	}
 
 	_, err = w.Write(body)

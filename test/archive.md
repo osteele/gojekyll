@@ -1,8 +1,9 @@
 ---
 permalink: /:name
+layout: default
 ---
 
-# Archive
+## Pages
 
 {% assign pages = site.c1 | sort: 'weight' %}
 {% for p in pages %}
