@@ -17,7 +17,7 @@ type Site struct {
 
 	Collections []*Collection
 	Variables   VariableMap
-	Paths       map[string]*Page // URL path -> *Page
+	Paths       map[string]Page // URL path -> Page
 
 	config SiteConfig
 }
@@ -127,9 +127,9 @@ func (s *Site) MarkdownExtensions() map[string]bool {
 
 // GetFileURL returns the URL path given a file path, relative to the site source directory.
 func (s *Site) GetFileURL(path string) (string, bool) {
-	for _, v := range s.Paths {
-		if v.Path == path {
-			return v.Permalink, true
+	for _, p := range s.Paths {
+		if p.Path() == path {
+			return p.Permalink(), true
 		}
 	}
 	return "", false
@@ -157,7 +157,7 @@ func (s *Site) Exclude(path string) bool {
 
 // ReadFiles scans the source directory and creates pages and collections.
 func (s *Site) ReadFiles() error {
-	s.Paths = make(map[string]*Page)
+	s.Paths = make(map[string]Page)
 	defaults := VariableMap{}
 
 	walkFn := func(path string, info os.FileInfo, err error) error {
@@ -179,8 +179,8 @@ func (s *Site) ReadFiles() error {
 		if err != nil {
 			return err
 		}
-		if p.Published {
-			s.Paths[p.Permalink] = p
+		if p.Published() {
+			s.Paths[p.Permalink()] = p
 		}
 		return nil
 	}

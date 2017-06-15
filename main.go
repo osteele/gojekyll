@@ -149,20 +149,20 @@ func serveCommand(c *cli.Context) error {
 }
 
 func dataCommand(c *cli.Context) error {
-	page, err := cliPage(c)
+	p, err := cliPage(c)
 	if err != nil {
 		return err
 	}
 
-	printSetting("Data:", "")
+	printSetting("Variables:", "")
 	// The YAML representation including collections is impractically large for debugging.
 	// (Actually it's circular, which the yaml package can't handle.)
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
-	data := site.Variables
+	siteData := site.Variables
 	for _, c := range site.Collections {
-		data[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(data[c.Name].([]VariableMap)))
+		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]VariableMap)))
 	}
-	b, _ := yaml.Marshal(page.Data())
+	b, _ := yaml.Marshal(p.DebugVariables())
 	fmt.Println(string(b))
 	return nil
 }
@@ -171,13 +171,13 @@ func routesCommand(c *cli.Context) error {
 	printSetting("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Paths {
-		if !(c.Bool("dynamic") && p.Static) {
+		if !(c.Bool("dynamic") && p.Static()) {
 			urls = append(urls, u)
 		}
 	}
 	sort.Strings(urls)
 	for _, u := range urls {
-		fmt.Printf("  %s -> %s\n", u, site.Paths[u].Path)
+		fmt.Printf("  %s -> %s\n", u, site.Paths[u].Path())
 	}
 	return nil
 }
@@ -187,15 +187,15 @@ func renderCommand(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	printPathSetting("Render:", filepath.Join(site.Source, page.Path))
-	printSetting("URL:", page.Permalink)
+	printPathSetting("Render:", filepath.Join(site.Source, page.Path()))
+	printSetting("URL:", page.Permalink())
 	printSetting("Content:", "")
-	return page.Render(os.Stdout)
+	return page.Write(os.Stdout)
 }
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(c *cli.Context) (page *Page, err error) {
+func cliPage(c *cli.Context) (page Page, err error) {
 	path := "/"
 	if c.NArg() > 0 {
 		path = c.Args().Get(0)
@@ -215,9 +215,9 @@ func cliPage(c *cli.Context) (page *Page, err error) {
 }
 
 // FindPageByFilePath returns a Page or nil, referenced by relative path.
-func (s *Site) FindPageByFilePath(path string) *Page {
+func (s *Site) FindPageByFilePath(path string) Page {
 	for _, p := range s.Paths {
-		if p.Path == path {
+		if p.Path() == path {
 			return p
 		}
 	}

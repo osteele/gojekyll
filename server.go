@@ -28,7 +28,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := p.Render(w)
+	err := p.Write(w)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", path, err)
 	}

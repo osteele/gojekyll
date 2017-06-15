@@ -48,10 +48,10 @@ func (s *Site) Build() (count int, err error) {
 }
 
 // WritePage writes a page to the destination directory.
-func (s *Site) WritePage(page *Page) error {
-	src := filepath.Join(s.Source, page.Path)
-	dst := filepath.Join(s.Dest, page.Path)
-	if !page.Static && filepath.Ext(dst) == "" {
+func (s *Site) WritePage(page Page) error {
+	src := filepath.Join(s.Source, page.Path())
+	dst := filepath.Join(s.Dest, page.Path())
+	if !page.Static() && filepath.Ext(dst) == "" {
 		dst = filepath.Join(dst, "/index.html")
 	}
 	// nolint: gas
@@ -62,16 +62,16 @@ func (s *Site) WritePage(page *Page) error {
 	case options.dryRun:
 		fmt.Println("create", dst, "from", page.Source())
 		return nil
-	case page.Static && options.useHardLinks:
+	case page.Static() && options.useHardLinks:
 		return os.Link(src, dst)
-	case page.Static:
+	case page.Static():
 		return copyFile(dst, src, 0644)
 	default:
 		f, err := os.Create(dst)
 		if err != nil {
 			return err
 		}
-		if err := page.Render(f); err != nil {
+		if err := page.Write(f); err != nil {
 			_ = f.Close()
 			return err
 		}

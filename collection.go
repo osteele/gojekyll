@@ -12,7 +12,7 @@ type Collection struct {
 	Name   string
 	Data   VariableMap
 	Output bool
-	Pages  []*Page
+	Pages  []Page
 }
 
 func makeCollection(s *Site, name string, d VariableMap) *Collection {
@@ -72,10 +72,10 @@ func (c *Collection) ReadPages() error {
 		switch {
 		case err != nil:
 			return err
-		case p.Static:
+		case p.Static():
 			fmt.Printf("skipping static file inside collection: %s\n", path)
-		case p.Published:
-			c.Site.Paths[p.Permalink] = p
+		case p.Published():
+			c.Site.Paths[p.Permalink()] = p
 			c.Pages = append(c.Pages, p)
 		}
 		return nil
