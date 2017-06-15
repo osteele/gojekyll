@@ -1,6 +1,6 @@
 ---
 permalink: /:name
-layout: default
+layout: archive
 ---
 
 ## Pages

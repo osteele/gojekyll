@@ -146,36 +146,41 @@ type DynamicPage struct {
 	Content []byte
 }
 
-// Static returns a bool indicatingthat the page is a not static page.
+// Static returns a bool indicating that the page is a not static page.
 func (p *DynamicPage) Static() bool { return false }
 
 func makeDynamicPage(data *pageFields, source []byte) (*DynamicPage, error) {
-	var start int
-	if match := frontMatterMatcher.FindSubmatchIndex(source); match != nil {
-		start = match[1]
-		frontMatter := VariableMap{}
-		if err := yaml.Unmarshal(source[match[2]:match[3]], &frontMatter); err != nil {
-			err := &os.PathError{Op: "read frontmatter", Path: data.path, Err: err}
-			return nil, err
-		}
-		data.frontMatter = mergeVariableMaps(data.frontMatter, frontMatter)
-	} else if match := emptyFontMatterMatcher.FindSubmatchIndex(source); match != nil {
-		start = match[1]
-	} else {
-		panic("expecting front matter")
+	frontMatter, err := readFrontMatter(&source)
+	if err != nil {
+		return nil, err
 	}
-
-	// This fixes the line numbers for template errors
-	// TODO find a less hacky solution
-	body := append(
-		regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:start], []byte{}),
-		source[start:]...)
-
+	data.frontMatter = mergeVariableMaps(data.frontMatter, frontMatter)
 	p := &DynamicPage{
 		pageFields: *data,
-		Content:    body,
+		Content:    source,
 	}
 	return p, nil
+}
+
+func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
+	var (
+		source = *sourcePtr
+		start  = 0
+	)
+	if match := frontMatterMatcher.FindSubmatchIndex(source); match != nil {
+		start = match[1]
+		if err = yaml.Unmarshal(source[match[2]:match[3]], &frontMatter); err != nil {
+			return
+		}
+	} else if match := emptyFontMatterMatcher.FindSubmatchIndex(source); match != nil {
+		start = match[1]
+	}
+	// This fixes the line numbers for template errors
+	// TODO find a less hacky solution
+	*sourcePtr = append(
+		regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:start], []byte{}),
+		source[start:]...)
+	return
 }
 
 // TemplateObject returns the attributes of the template page object.
@@ -278,16 +283,21 @@ func (p *DynamicPage) Write(w io.Writer) error {
 		body = blackfriday.MarkdownCommon(body)
 	}
 
-	layout := p.frontMatter.String("layout", "")
-	if layout != "" {
-		layout, err := site.FindLayout(layout)
+	layoutFrontMatter := p.frontMatter
+	for {
+		layoutName := layoutFrontMatter.String("layout", "")
+		if layoutName == "" {
+			break
+		}
+		template, err := site.FindLayout(layoutName, &layoutFrontMatter)
 		if err != nil {
 			return err
 		}
 		vars := mergeVariableMaps(p.TemplateVariables(), VariableMap{
 			"content": body,
+			"layout":  layoutFrontMatter,
 		})
-		body, err = renderTemplate(layout, vars)
+		body, err = renderTemplate(template, vars)
 		if err != nil {
 			return nil
 		}
