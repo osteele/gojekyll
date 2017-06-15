@@ -13,7 +13,7 @@ I'm writing this to learn my way around Go. It's not good for anything yet, and 
 ## Install
 
 ```bash
-go get -t
+go install osteele/gojekyll
 ```
 
 Sometimes this package benefits from my unmerged improvements to the **acstech/liquid** library. If you want to use [my fork](https://github.com/osteele/liquid) instead:
