@@ -15,13 +15,28 @@ type Collection struct {
 	Pages  []Page
 }
 
-func makeCollection(s *Site, name string, d VariableMap) *Collection {
+func NewCollection(s *Site, name string, d VariableMap) *Collection {
 	return &Collection{
 		Site:   s,
 		Name:   name,
 		Data:   d,
 		Output: d.Bool("output", false),
 	}
+}
+
+// ReadCollections reads the pages of the collections named in the site configuration.
+// It adds each collection's pages to the site map, and creates a template site variable for each collection.
+func (s *Site) ReadCollections() error {
+	for name, d := range s.config.Collections {
+		c := NewCollection(s, name, d)
+		s.Collections = append(s.Collections, c)
+		if c.Output { // TODO always read the pages; just don't build them / include them in routes
+			if err := c.ReadPages(); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // PageTemplateObjects returns an array of page objects, for use as the template variable
@@ -68,7 +83,7 @@ func (c *Collection) ReadPages() error {
 		case info.IsDir():
 			return nil
 		}
-		p, err := ReadPage(site, rel, defaults)
+		p, err := ReadPage(c.Site, rel, defaults)
 		switch {
 		case err != nil:
 			return err

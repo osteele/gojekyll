@@ -68,16 +68,17 @@ func ReadPage(site *Site, rel string, defaults VariableMap) (p Page, err error) 
 		frontMatter: defaults,
 	}
 	if string(magic) == "---\n" {
-		p, err = readDynamicPage(fields, rel)
+		p, err = NewDynamicPage(fields)
+		if err != nil {
+			return
+		}
 	} else {
 		p = &StaticPage{fields}
 	}
-	if p != nil {
-		// Compute this after creating the page, in order to pick up the front matter.
-		err := p.initPermalink()
-		if err != nil {
-			return nil, err
-		}
+	// Compute this after creating the page, in order to pick up the front matter.
+	err = p.initPermalink()
+	if err != nil {
+		return
 	}
 	return
 }
@@ -117,7 +118,7 @@ func (p *pageFields) DebugVariables() VariableMap {
 
 // Source returns the file path of the page source.
 func (p *pageFields) Source() string {
-	return filepath.Join(site.Source, p.path)
+	return filepath.Join(p.site.Source, p.path)
 }
 
 // StaticPage is a static page.
@@ -142,8 +143,9 @@ type DynamicPage struct {
 // Static returns a bool indicating that the page is a not static page.
 func (p *DynamicPage) Static() bool { return false }
 
-func readDynamicPage(fields pageFields, rel string) (p *DynamicPage, err error) {
-	data, err := ioutil.ReadFile(filepath.Join(site.Source, rel))
+// NewDynamicPage reads the front matter from a file to create a new DynamicPage.
+func NewDynamicPage(fields pageFields) (p *DynamicPage, err error) {
+	data, err := ioutil.ReadFile(filepath.Join(fields.site.Source, fields.path))
 	if err != nil {
 		return
 	}
@@ -234,7 +236,7 @@ func (p *DynamicPage) TemplateObject() VariableMap {
 func (p *DynamicPage) TemplateVariables() VariableMap {
 	return VariableMap{
 		"page": p.TemplateObject(),
-		"site": site.Variables,
+		"site": p.site.Variables,
 	}
 }
 

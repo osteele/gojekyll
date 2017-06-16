@@ -79,27 +79,25 @@ func NewSite() *Site {
 	return s
 }
 
-// ReadConfiguration reads the configuration file, if it exists.
-func (s *Site) ReadConfiguration(source, dest string) error {
+// NewSiteFromDirectory reads the configuration file, if it exists.
+func NewSiteFromDirectory(source string) (*Site, error) {
+	s := NewSite()
 	configPath := filepath.Join(source, "_config.yml")
 	bytes, err := ioutil.ReadFile(configPath)
 	switch {
-	case err == nil:
-		if err = site.readConfigBytes(bytes); err != nil {
-			return err
+	case err != nil && os.IsNotExist(err):
+		// ok
+	case err != nil:
+		return nil, err
+	default:
+		if err = s.readConfigBytes(bytes); err != nil {
+			return nil, err
 		}
 		s.Source = filepath.Join(source, s.config.Source)
-		s.Destination = filepath.Join(s.Source, s.config.Destination)
 		s.ConfigFile = &configPath
-		if dest != "" {
-			site.Destination = dest
-		}
-		return nil
-	case os.IsNotExist(err):
-		return nil
-	default:
-		return err
 	}
+	s.Destination = filepath.Join(s.Source, s.config.Destination)
+	return s, nil
 }
 
 func (s *Site) readConfigBytes(bytes []byte) error {
@@ -170,7 +168,7 @@ func (s *Site) ReadFiles() error {
 		case info.IsDir(), s.Exclude(rel):
 			return nil
 		}
-		p, err := ReadPage(site, rel, defaults)
+		p, err := ReadPage(s, rel, defaults)
 		if err != nil {
 			return err
 		}
@@ -183,25 +181,10 @@ func (s *Site) ReadFiles() error {
 	if err := filepath.Walk(s.Source, walkFn); err != nil {
 		return err
 	}
-	if err := s.readCollections(); err != nil {
+	if err := s.ReadCollections(); err != nil {
 		return err
 	}
 	s.initTemplateAttributes()
-	return nil
-}
-
-// readCollections scans the file system for collections. It adds each collection's
-// pages to the site map, and creates a template site variable for each collection.
-func (s *Site) readCollections() error {
-	for name, d := range s.config.Collections {
-		c := makeCollection(s, name, d)
-		s.Collections = append(s.Collections, c)
-		if c.Output { // TODO always read the pages; just don't build them / include them in routes
-			if err := c.ReadPages(); err != nil {
-				return err
-			}
-		}
-	}
 	return nil
 }
 

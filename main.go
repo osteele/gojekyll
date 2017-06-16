@@ -62,9 +62,14 @@ func main() {
 
 	// Load the site specified at destination into the site global, and print the common banner settings.
 	loadSite := func() error {
-		if err := site.ReadConfiguration(source, destination); err != nil {
+		s, err := NewSiteFromDirectory(source)
+		if err != nil {
 			return err
 		}
+		if destination != "" {
+			s.Destination = destination
+		}
+		site = s
 		if site.ConfigFile != nil {
 			printPathSetting(configurationFileLabel, *site.ConfigFile)
 		} else {
@@ -76,12 +81,12 @@ func main() {
 	}
 
 	// Given a subcommand function, load the site and then call the subcommand.
-	withSite := func(cmd func(c *cli.Context) error) func(c *cli.Context) error {
+	withSite := func(cmd func(*cli.Context, *Site) error) func(*cli.Context) error {
 		return func(c *cli.Context) error {
 			if err := loadSite(); err != nil {
 				return cli.NewExitError(err, 1)
 			}
-			if err := cmd(c); err != nil {
+			if err := cmd(c, site); err != nil {
 				return cli.NewExitError(err, 1)
 			}
 			return nil
@@ -132,7 +137,7 @@ func main() {
 	_ = app.Run(os.Args)
 }
 
-func buildCommand(c *cli.Context) error {
+func buildCommand(c *cli.Context, site *Site) error {
 	printPathSetting("Destination:", site.Destination)
 	printSetting("Generating...", "")
 	count, err := site.Build()
@@ -144,12 +149,12 @@ func buildCommand(c *cli.Context) error {
 	return nil
 }
 
-func serveCommand(c *cli.Context) error {
+func serveCommand(c *cli.Context, site *Site) error {
 	return server()
 }
 
-func dataCommand(c *cli.Context) error {
-	p, err := cliPage(c)
+func dataCommand(c *cli.Context, site *Site) error {
+	p, err := cliPage(c, site)
 	if err != nil {
 		return err
 	}
@@ -167,7 +172,7 @@ func dataCommand(c *cli.Context) error {
 	return nil
 }
 
-func routesCommand(c *cli.Context) error {
+func routesCommand(c *cli.Context, site *Site) error {
 	printSetting("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Paths {
@@ -182,8 +187,8 @@ func routesCommand(c *cli.Context) error {
 	return nil
 }
 
-func renderCommand(c *cli.Context) error {
-	page, err := cliPage(c)
+func renderCommand(c *cli.Context, site *Site) error {
+	page, err := cliPage(c, site)
 	if err != nil {
 		return err
 	}
@@ -195,7 +200,7 @@ func renderCommand(c *cli.Context) error {
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(c *cli.Context) (page Page, err error) {
+func cliPage(c *cli.Context, site *Site) (page Page, err error) {
 	path := "/"
 	if c.NArg() > 0 {
 		path = c.Args().Get(0)

@@ -49,7 +49,7 @@ func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte,
 		if layoutName == "" {
 			break
 		}
-		template, err := site.FindLayout(layoutName, &frontMatter)
+		template, err := p.site.FindLayout(layoutName, &frontMatter)
 		if err != nil {
 			return nil, err
 		}

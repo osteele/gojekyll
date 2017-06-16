@@ -22,7 +22,7 @@ func (p *DynamicPage) writeSass(w io.Writer, data []byte) error {
 	if err != nil {
 		return err
 	}
-	err = comp.Option(libsass.IncludePaths(site.SassIncludePaths()))
+	err = comp.Option(libsass.IncludePaths(p.site.SassIncludePaths()))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,16 +34,16 @@ func (p *DynamicPage) writeSass(w io.Writer, data []byte) error {
 // TODO delete the temp directory when done
 func (s *Site) CopySassFileIncludes() {
 	// TODO use libsass.ImportsOption instead?
-	if site.sassTempDir == "" {
+	if s.sassTempDir == "" {
 		d, err := ioutil.TempDir(os.TempDir(), "_sass")
 		if err != nil {
 			panic(err)
 		}
-		site.sassTempDir = d
+		s.sassTempDir = d
 	}
 
 	src := filepath.Join(s.Source, "_sass")
-	dst := site.sassTempDir
+	dst := s.sassTempDir
 	err := filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return err
@@ -62,9 +62,9 @@ func (s *Site) CopySassFileIncludes() {
 
 // SassIncludePaths returns an array of sass include directories.
 func (s *Site) SassIncludePaths() []string {
-	if site.sassTempDir == "" {
-		site.CopySassFileIncludes()
+	if s.sassTempDir == "" {
+		s.CopySassFileIncludes()
 	}
 	s.CopySassFileIncludes()
-	return []string{site.sassTempDir}
+	return []string{s.sassTempDir}
 }

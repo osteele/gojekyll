@@ -17,7 +17,7 @@ func (s *Site) Clean() error {
 			return err
 		case info.IsDir():
 			return nil
-		case site.KeepFile(path):
+		case s.KeepFile(path):
 			return nil
 		case options.dryRun:
 			fmt.Println("rm", path)
