@@ -49,7 +49,10 @@ func XMLEscapeFactory(parameters []core.Value) core.Filter {
 		panic("The xml_escape filter doesn't accept parameters")
 	}
 	return func(input interface{}, data map[string]interface{}) interface{} {
-		s, err := xml.Marshal(input) // FIXME can't handle maps
+		s, err := xml.Marshal(input)
+		// TODO can't handle maps
+		// eval https://github.com/clbanning/mxj
+		// adapt https://stackoverflow.com/questions/30928770/marshall-map-to-xml-in-go
 		if err != nil {
 			panic(err)
 		}

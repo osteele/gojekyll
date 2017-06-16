@@ -17,20 +17,35 @@ var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 // copyFile copies from file src to dst. It's not atomic and doesn't copy permissions or metadata.
 // This is sufficient for its use within this package.
 func copyFile(dst, src string, perm os.FileMode) error {
-	inf, err := os.Open(src)
+	in, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	defer inf.Close() // nolint: errcheck, gas
-	outf, err := os.Create(dst)
+	defer in.Close() // nolint: errcheck, gas
+	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	if _, err = io.Copy(outf, inf); err != nil {
+	if _, err = io.Copy(out, in); err != nil {
 		_ = os.Remove(dst) // nolint: gas
 		return err
 	}
-	return outf.Close()
+	return out.Close()
+}
+
+// ReadFileMagic returns the first four bytes of the file, with final '\r' replaced by '\n'.
+func ReadFileMagic(p string) (data []byte, err error) {
+	f, err := os.Open(p)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	data = make([]byte, 4)
+	_, err = f.Read(data)
+	if data[3] == '\r' {
+		data[3] = '\n'
+	}
+	return
 }
 
 // Bool returns m[k] if it's a bool; else defaultValue.

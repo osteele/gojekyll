@@ -50,7 +50,7 @@ func (s *Site) Build() (count int, err error) {
 // WritePage writes a page to the destination directory.
 func (s *Site) WritePage(page Page) error {
 	src := filepath.Join(s.Source, page.Path())
-	dst := filepath.Join(s.Destination, page.Path())
+	dst := filepath.Join(s.Destination, page.Permalink())
 	if !page.Static() && filepath.Ext(dst) == "" {
 		dst = filepath.Join(dst, "/index.html")
 	}

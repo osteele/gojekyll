@@ -37,7 +37,6 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string]string {
 	var (
 		collectionName string
-		localPath      = path
 		ext            = filepath.Ext(path)
 		outputExt      = ext
 		root           = path[:len(path)-len(ext)]
@@ -47,16 +46,16 @@ func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string
 	switch {
 	case isMarkdown(path):
 		outputExt = ".html"
-	case ext == ".scss":
-		outputExt = ".html"
+	case isSassPath(path):
+		outputExt = ".css"
 	}
 	if val, found := frontMatter["collection"]; found {
 		collectionName = val.(string)
 		prefix := "_" + collectionName + "/"
-		if !strings.HasPrefix(localPath, prefix) {
-			panic(fmt.Errorf("Expected %s to start with %s", localPath, prefix))
+		if !strings.HasPrefix(path, prefix) {
+			panic(fmt.Errorf("Expected %s to start with %s", path, prefix))
 		}
-		localPath = localPath[len(prefix):]
+		path = path[len(prefix):]
 		root = root[len(prefix):]
 	}
 	vs := map[string]string{

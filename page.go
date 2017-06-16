@@ -61,30 +61,28 @@ func (p *pageFields) setPermalink(permalink string) {
 }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
-func ReadPage(path string, defaults VariableMap) (p Page, err error) {
-	// TODO only read the first four bytes unless it's dynamic
-	source, err := ioutil.ReadFile(filepath.Join(site.Source, path))
+func ReadPage(rel string, defaults VariableMap) (p Page, err error) {
+	magic, err := ReadFileMagic(filepath.Join(site.Source, rel))
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	data := pageFields{
-		path:        path,
+	fields := pageFields{
+		path:        rel,
 		frontMatter: defaults,
 	}
-	if string(source[:4]) == "---\n" {
-		p, err = makeDynamicPage(&data, source)
+	if string(magic) == "---\n" {
+		p, err = readDynamicPage(&fields, rel)
 	} else {
-		p = &StaticPage{data}
+		p = &StaticPage{fields}
 	}
 	if p != nil {
-		// Compute this after creating the page, to pick up the the front matter.
-		pattern := data.frontMatter.String("permalink", ":path:output_ext")
-		permalink, err := expandPermalinkPattern(pattern, data.path, data.frontMatter)
+		// Compute this after creating the page, in order to pick up the front matter.
+		pattern := fields.frontMatter.String("permalink", ":path:output_ext")
+		permalink, err := expandPermalinkPattern(pattern, rel, fields.frontMatter)
 		if err != nil {
 			return nil, err
 		}
-		println(path, pattern, permalink)
 		p.setPermalink(permalink)
 	}
 	return
@@ -150,17 +148,22 @@ type DynamicPage struct {
 // Static returns a bool indicating that the page is a not static page.
 func (p *DynamicPage) Static() bool { return false }
 
-func makeDynamicPage(data *pageFields, source []byte) (*DynamicPage, error) {
-	frontMatter, err := readFrontMatter(&source)
+func readDynamicPage(fields *pageFields, rel string) (p *DynamicPage, err error) {
+	data, err := ioutil.ReadFile(filepath.Join(site.Source, rel))
 	if err != nil {
-		return nil, err
+		return
 	}
-	data.frontMatter = mergeVariableMaps(data.frontMatter, frontMatter)
-	p := &DynamicPage{
-		pageFields: *data,
-		Content:    source,
+	data = bytes.Replace(data, []byte("\r"), []byte("\n"), -1)
+
+	frontMatter, err := readFrontMatter(&data)
+	if err != nil {
+		return
 	}
-	return p, nil
+	fields.frontMatter = mergeVariableMaps(fields.frontMatter, frontMatter)
+	return &DynamicPage{
+		pageFields: *fields,
+		Content:    data,
+	}, nil
 }
 
 func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
@@ -273,39 +276,53 @@ func parseAndApplyTemplate(bs []byte, variables VariableMap) ([]byte, error) {
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (p *DynamicPage) Write(w io.Writer) error {
+func (p *DynamicPage) Write(w io.Writer) (err error) {
 	body, err := parseAndApplyTemplate(p.Content, p.TemplateVariables())
 	if err != nil {
-		err := &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
-		return err
+		err = &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
+		return
 	}
 
 	if isMarkdown(p.path) {
 		body = blackfriday.MarkdownCommon(body)
+		body, err = p.applyLayout(p.frontMatter, body)
+		if err != nil {
+			return
+		}
 	}
 
-	layoutFrontMatter := p.frontMatter
-	for {
-		layoutName := layoutFrontMatter.String("layout", "")
-		if layoutName == "" {
-			break
-		}
-		template, err := site.FindLayout(layoutName, &layoutFrontMatter)
-		if err != nil {
-			return err
-		}
-		vars := mergeVariableMaps(p.TemplateVariables(), VariableMap{
-			"content": body,
-			"layout":  layoutFrontMatter,
-		})
-		body, err = renderTemplate(template, vars)
-		if err != nil {
-			return nil
-		}
+	if isSassPath(p.path) {
+		return p.writeSass(w, body)
 	}
 
 	_, err = w.Write(body)
-	return err
+	return
+}
+
+func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
+	for {
+		layoutName := frontMatter.String("layout", "")
+		if layoutName == "" {
+			break
+		}
+		template, err := site.FindLayout(layoutName, &frontMatter)
+		if err != nil {
+			return nil, err
+		}
+		vars := mergeVariableMaps(p.TemplateVariables(), VariableMap{
+			"content": body,
+			"layout":  frontMatter,
+		})
+		body, err = renderTemplate(template, vars)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return body, nil
+}
+
+func isSassPath(path string) bool {
+	return strings.HasSuffix(path, ".sass") || strings.HasSuffix(path, ".scss")
 }
 
 func isMarkdown(path string) bool {

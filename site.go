@@ -24,6 +24,7 @@ type Site struct {
 	Paths       map[string]Page // URL path -> Page
 
 	config SiteConfig
+	sassTempDir string
 }
 
 // For now (and maybe always?), there's just one site.
