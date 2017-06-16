@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	. "github.com/osteele/gojekyll/helpers"
+
 	"github.com/acstech/liquid"
 )
 
@@ -57,7 +59,7 @@ func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte,
 			"content": body,
 			"layout":  frontMatter,
 		})
-		body, err = renderTemplate(template, vars)
+		body, err = RenderTemplate(template, vars)
 		if err != nil {
 			return nil, err
 		}
