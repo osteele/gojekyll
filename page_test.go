@@ -3,11 +3,11 @@ package main
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestIsMarkdown(t *testing.T) {
-	assert.True(t, site.IsMarkdown("name.md"))
-	assert.True(t, site.IsMarkdown("name.markdown"))
-	assert.False(t, site.IsMarkdown("name.html"))
+	require.True(t, site.IsMarkdown("name.md"))
+	require.True(t, site.IsMarkdown("name.markdown"))
+	require.False(t, site.IsMarkdown("name.html"))
 }
