@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"strings"
 
 	yaml "gopkg.in/yaml.v2"
 
@@ -25,6 +24,7 @@ var (
 // Page is a Jekyll page.
 type Page interface {
 	Path() string
+	Site() *Site
 	Source() string
 	Static() bool
 	Published() bool
@@ -37,6 +37,7 @@ type Page interface {
 }
 
 type pageFields struct {
+	site        *Site
 	path        string // this is the relative path
 	permalink   string
 	frontMatter VariableMap
@@ -49,19 +50,20 @@ func (p *pageFields) String() string {
 
 func (p *pageFields) Path() string      { return p.path }
 func (p *pageFields) Permalink() string { return p.permalink }
-
 func (p *pageFields) Published() bool {
 	return p.frontMatter.Bool("published", true)
 }
+func (p *pageFields) Site() *Site { return p.site }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
-func ReadPage(rel string, defaults VariableMap) (p Page, err error) {
+func ReadPage(site *Site, rel string, defaults VariableMap) (p Page, err error) {
 	magic, err := ReadFileMagic(filepath.Join(site.Source, rel))
 	if err != nil {
 		return
 	}
 
 	fields := pageFields{
+		site:        site,
 		path:        rel,
 		frontMatter: defaults,
 	}
@@ -275,7 +277,7 @@ func (p *DynamicPage) Write(w io.Writer) (err error) {
 		return
 	}
 
-	if isMarkdown(p.path) {
+	if p.Site().IsMarkdown(p.path) {
 		body = blackfriday.MarkdownCommon(body)
 		body, err = p.applyLayout(p.frontMatter, body)
 		if err != nil {
@@ -283,41 +285,10 @@ func (p *DynamicPage) Write(w io.Writer) (err error) {
 		}
 	}
 
-	if isSassPath(p.path) {
+	if p.Site().IsSassPath(p.path) {
 		return p.writeSass(w, body)
 	}
 
 	_, err = w.Write(body)
 	return
-}
-
-func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
-	for {
-		layoutName := frontMatter.String("layout", "")
-		if layoutName == "" {
-			break
-		}
-		template, err := site.FindLayout(layoutName, &frontMatter)
-		if err != nil {
-			return nil, err
-		}
-		vars := mergeVariableMaps(p.TemplateVariables(), VariableMap{
-			"content": body,
-			"layout":  frontMatter,
-		})
-		body, err = renderTemplate(template, vars)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return body, nil
-}
-
-func isSassPath(path string) bool {
-	return strings.HasSuffix(path, ".sass") || strings.HasSuffix(path, ".scss")
-}
-
-func isMarkdown(path string) bool {
-	ext := filepath.Ext(path)
-	return site.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
 }

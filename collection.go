@@ -68,7 +68,7 @@ func (c *Collection) ReadPages() error {
 		case info.IsDir():
 			return nil
 		}
-		p, err := ReadPage(rel, defaults)
+		p, err := ReadPage(site, rel, defaults)
 		switch {
 		case err != nil:
 			return err

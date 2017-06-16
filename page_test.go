@@ -7,7 +7,7 @@ import (
 )
 
 func TestIsMarkdown(t *testing.T) {
-	assert.True(t, isMarkdown("name.md"))
-	assert.True(t, isMarkdown("name.markdown"))
-	assert.False(t, isMarkdown("name.html"))
+	assert.True(t, site.IsMarkdown("name.md"))
+	assert.True(t, site.IsMarkdown("name.markdown"))
+	assert.False(t, site.IsMarkdown("name.html"))
 }

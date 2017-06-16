@@ -45,9 +45,9 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 		title          = p.frontMatter.String("title", name)
 	)
 	switch {
-	case isMarkdown(path):
+	case p.site.IsMarkdown(path):
 		outputExt = ".html"
-	case isSassPath(path):
+	case p.site.IsSassPath(path):
 		outputExt = ".css"
 	}
 	if val, found := p.frontMatter["collection"]; found {

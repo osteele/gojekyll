@@ -14,8 +14,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 
 	testPermalinkPattern := func(pattern, path string, data VariableMap) (string, error) {
 		vs := mergeVariableMaps(data, VariableMap{"permalink": pattern})
-		p := pageFields{path, "", vs}
-		// fmt.Println("apply", p)
+		p := pageFields{nil, path, "", vs}
 		return p.expandPermalink()
 	}
 

@@ -1,14 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/acstech/liquid"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -23,7 +20,7 @@ type Site struct {
 	Variables   VariableMap
 	Paths       map[string]Page // URL path -> Page
 
-	config SiteConfig
+	config      SiteConfig
 	sassTempDir string
 }
 
@@ -117,49 +114,10 @@ func (s *Site) readConfigBytes(bytes []byte) error {
 	return nil
 }
 
-// FindLayout returns a template for the named layout.
-func (s *Site) FindLayout(name string, fm *VariableMap) (t *liquid.Template, err error) {
-	exts := []string{"", ".html"}
-	for _, ext := range strings.SplitN(s.config.MarkdownExt, `,`, -1) {
-		exts = append(exts, "."+ext)
-	}
-	var (
-		path    string
-		content []byte
-		found   bool
-	)
-	for _, ext := range exts {
-		// TODO respect layout config
-		path = filepath.Join(s.Source, "_layouts", name+ext)
-		content, err = ioutil.ReadFile(path)
-		if err == nil {
-			found = true
-			break
-		}
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-	}
-	if !found {
-		panic(fmt.Errorf("no template for %s", name))
-	}
-	*fm, err = readFrontMatter(&content)
-	if err != nil {
-		return
-	}
-	return liquid.Parse(content, nil)
-}
-
 // KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
 func (s *Site) KeepFile(path string) bool {
 	// TODO
 	return false
-}
-
-// MarkdownExtensions returns a set of markdown extension, without the final dots.
-func (s *Site) MarkdownExtensions() map[string]bool {
-	extns := strings.SplitN(s.config.MarkdownExt, `,`, -1)
-	return stringArrayToMap(extns)
 }
 
 // GetFileURL returns the URL path given a file path, relative to the site source directory.
@@ -212,7 +170,7 @@ func (s *Site) ReadFiles() error {
 		case info.IsDir(), s.Exclude(rel):
 			return nil
 		}
-		p, err := ReadPage(rel, defaults)
+		p, err := ReadPage(site, rel, defaults)
 		if err != nil {
 			return err
 		}
