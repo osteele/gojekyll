@@ -28,7 +28,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	})
 	t.Run(":path", func(t *testing.T) {
 		p, _ := expandPermalinkPattern("/prefix:path/post", path, d)
-		assert.Equal(t, "/prefix/a/b/base.html/post", p)
+		assert.Equal(t, "/prefix/a/b/base/post", p)
 	})
 	t.Run(":title", func(t *testing.T) {
 		p, _ := expandPermalinkPattern("/title/:title.html", path, d)
@@ -40,9 +40,9 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	})
 
 	d["collection"] = "c"
-	path = "/_c/a/b/c.d"
+	path = "_c/a/b/c.d"
 	t.Run(":path", func(t *testing.T) {
 		p, _ := expandPermalinkPattern("/prefix:path/post", path, d)
-		assert.Equal(t, "/prefix/a/b/c.d/post", p)
+		assert.Equal(t, "/prefix/a/b/c/post", p)
 	})
 }

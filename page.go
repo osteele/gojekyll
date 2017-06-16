@@ -54,6 +54,8 @@ func (p *pageFields) Published() bool {
 	return p.frontMatter.Bool("published", true)
 }
 
+// The permalink is computed once instead of on demand, so that subsequent
+// access needn't check for an error.
 func (p *pageFields) setPermalink(permalink string) {
 	p.permalink = permalink
 }
@@ -77,13 +79,12 @@ func ReadPage(path string, defaults VariableMap) (p Page, err error) {
 	}
 	if p != nil {
 		// Compute this after creating the page, to pick up the the front matter.
-		// The permalink is computed once instead of on demand, so that subsequent
-		// access needn't check for an error.
-		pattern := data.frontMatter.String("permalink", ":path")
+		pattern := data.frontMatter.String("permalink", ":path:output_ext")
 		permalink, err := expandPermalinkPattern(pattern, data.path, data.frontMatter)
 		if err != nil {
 			return nil, err
 		}
+		println(path, pattern, permalink)
 		p.setPermalink(permalink)
 	}
 	return

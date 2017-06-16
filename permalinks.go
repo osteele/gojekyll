@@ -5,6 +5,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -43,18 +44,25 @@ func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string
 		name           = filepath.Base(root)
 		title          = frontMatter.String("title", name)
 	)
-	if isMarkdown(path) {
+	switch {
+	case isMarkdown(path):
+		outputExt = ".html"
+	case ext == ".scss":
 		outputExt = ".html"
 	}
 	if val, found := frontMatter["collection"]; found {
 		collectionName = val.(string)
 		prefix := "_" + collectionName + "/"
+		if !strings.HasPrefix(localPath, prefix) {
+			panic(fmt.Errorf("Expected %s to start with %s", localPath, prefix))
+		}
 		localPath = localPath[len(prefix):]
+		root = root[len(prefix):]
 	}
 	vs := map[string]string{
 		"collection": collectionName,
-		"name":       name,
-		"path":       "/" + localPath,
+		"name":       Slugify(name),
+		"path":       "/" + root,
 		"title":      title,
 		"slug":       Slugify(name),
 		// TODO categories
