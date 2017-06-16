@@ -33,7 +33,7 @@ type Page interface {
 	Write(io.Writer) error
 	DebugVariables() VariableMap
 
-	setPermalink(string)
+	initPermalink() error
 }
 
 type pageFields struct {
@@ -54,12 +54,6 @@ func (p *pageFields) Published() bool {
 	return p.frontMatter.Bool("published", true)
 }
 
-// The permalink is computed once instead of on demand, so that subsequent
-// access needn't check for an error.
-func (p *pageFields) setPermalink(permalink string) {
-	p.permalink = permalink
-}
-
 // ReadPage reads a Page from a file, using defaults as the default front matter.
 func ReadPage(rel string, defaults VariableMap) (p Page, err error) {
 	magic, err := ReadFileMagic(filepath.Join(site.Source, rel))
@@ -72,18 +66,16 @@ func ReadPage(rel string, defaults VariableMap) (p Page, err error) {
 		frontMatter: defaults,
 	}
 	if string(magic) == "---\n" {
-		p, err = readDynamicPage(&fields, rel)
+		p, err = readDynamicPage(fields, rel)
 	} else {
 		p = &StaticPage{fields}
 	}
 	if p != nil {
 		// Compute this after creating the page, in order to pick up the front matter.
-		pattern := fields.frontMatter.String("permalink", ":path:output_ext")
-		permalink, err := expandPermalinkPattern(pattern, rel, fields.frontMatter)
+		err := p.initPermalink()
 		if err != nil {
 			return nil, err
 		}
-		p.setPermalink(permalink)
 	}
 	return
 }
@@ -148,7 +140,7 @@ type DynamicPage struct {
 // Static returns a bool indicating that the page is a not static page.
 func (p *DynamicPage) Static() bool { return false }
 
-func readDynamicPage(fields *pageFields, rel string) (p *DynamicPage, err error) {
+func readDynamicPage(fields pageFields, rel string) (p *DynamicPage, err error) {
 	data, err := ioutil.ReadFile(filepath.Join(site.Source, rel))
 	if err != nil {
 		return
@@ -161,7 +153,7 @@ func readDynamicPage(fields *pageFields, rel string) (p *DynamicPage, err error)
 	}
 	fields.frontMatter = mergeVariableMaps(fields.frontMatter, frontMatter)
 	return &DynamicPage{
-		pageFields: *fields,
+		pageFields: fields,
 		Content:    data,
 	}, nil
 }

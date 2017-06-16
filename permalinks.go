@@ -34,14 +34,15 @@ var permalinkDateVariables = map[string]string{
 var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 
 // See https://jekyllrb.com/docs/permalinks/#template-variables
-func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string]string {
+func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	var (
 		collectionName string
+		path           = p.path
 		ext            = filepath.Ext(path)
 		outputExt      = ext
 		root           = path[:len(path)-len(ext)]
 		name           = filepath.Base(root)
-		title          = frontMatter.String("title", name)
+		title          = p.frontMatter.String("title", name)
 	)
 	switch {
 	case isMarkdown(path):
@@ -49,7 +50,7 @@ func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string
 	case isSassPath(path):
 		outputExt = ".css"
 	}
-	if val, found := frontMatter["collection"]; found {
+	if val, found := p.frontMatter["collection"]; found {
 		collectionName = val.(string)
 		prefix := "_" + collectionName + "/"
 		if !strings.HasPrefix(path, prefix) {
@@ -75,11 +76,12 @@ func permalinkTemplateVariables(path string, frontMatter VariableMap) map[string
 	return vs
 }
 
-func expandPermalinkPattern(pattern string, rel string, frontMatter VariableMap) (s string, err error) {
+func (p *pageFields) expandPermalink() (s string, err error) {
+	pattern := p.frontMatter.String("permalink", ":path:output_ext")
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}
-	templateVariables := permalinkTemplateVariables(rel, frontMatter)
+	templateVariables := p.permalinkTemplateVariables()
 	// The ReplaceAllStringFunc callback signals errors via panic.
 	// Turn them into return values.
 	defer func() {
@@ -100,4 +102,11 @@ func expandPermalinkPattern(pattern string, rel string, frontMatter VariableMap)
 		return value
 	})
 	return path.Clean(s), nil
+}
+
+// The permalink is computed once instead of on demand, so that subsequent
+// access needn't check for an error.
+func (p *pageFields) initPermalink() (err error) {
+	p.permalink, err = p.expandPermalink()
+	return
 }
