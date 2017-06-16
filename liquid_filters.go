@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"encoding/xml"
 	"reflect"
+	"time"
 
 	"github.com/acstech/liquid"
 	"github.com/acstech/liquid/core"
@@ -10,17 +12,44 @@ import (
 
 func init() {
 	liquid.Tags["link"] = LinkFactory
+	core.RegisterFilter("date_to_rfc822", DateToRFC822Factory)
 	core.RegisterFilter("jsonify", JsonifyFactory)
+	core.RegisterFilter("xml_escape", XMLEscapeFactory)
 	core.RegisterFilter("where_exp", WhereExpFactory)
+}
+
+// DateToRFC822Factory implements the Jekyll `json` filter
+func DateToRFC822Factory(parameters []core.Value) core.Filter {
+	if len(parameters) != 0 {
+		panic("The date_to_rfc822 filter doesn't accept parameters")
+	}
+	return func(input interface{}, data map[string]interface{}) interface{} {
+		date := input.(time.Time) // TODO if a string, try parsing it
+		return date.Format(time.RFC822)
+	}
 }
 
 // JsonifyFactory implements the Jekyll `json` filter
 func JsonifyFactory(parameters []core.Value) core.Filter {
 	if len(parameters) != 0 {
-		panic("The json filter doesn't accept parameters")
+		panic("The jsonify filter doesn't accept parameters")
 	}
 	return func(input interface{}, data map[string]interface{}) interface{} {
 		s, err := json.Marshal(input)
+		if err != nil {
+			panic(err)
+		}
+		return s
+	}
+}
+
+// XMLEscapeFactory implements the Jekyll `xml_escape` filter
+func XMLEscapeFactory(parameters []core.Value) core.Filter {
+	if len(parameters) != 0 {
+		panic("The xml_escape filter doesn't accept parameters")
+	}
+	return func(input interface{}, data map[string]interface{}) interface{} {
+		s, err := xml.Marshal(input) // FIXME can't handle maps
 		if err != nil {
 			panic(err)
 		}
@@ -33,17 +62,15 @@ func WhereExpFactory(parameters []core.Value) core.Filter {
 	if len(parameters) != 2 {
 		panic("The were_exp filter requires two parameters")
 	}
-	return (&WhereExpFilter{parameters[0], parameters[1]}).Run
+	return (&whereExpFilter{parameters[0], parameters[1]}).run
 }
 
-// WhereExpFilter implements the Jekyll `where_exp` filter
-type WhereExpFilter struct {
+type whereExpFilter struct {
 	varName core.Value
 	expr    core.Value
 }
 
-// Run implements the Jekyll `where_exp` filter
-func (f *WhereExpFilter) Run(input interface{}, data map[string]interface{}) interface{} {
+func (f *whereExpFilter) run(input interface{}, data map[string]interface{}) interface{} {
 	rt := reflect.ValueOf(input)
 	switch rt.Kind() {
 	case reflect.Slice:
