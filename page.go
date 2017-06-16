@@ -130,7 +130,7 @@ func (p *StaticPage) Static() bool { return true }
 
 // TemplateObject returns metadata for use in the representation of the page as a collection item
 func (p *StaticPage) TemplateObject() VariableMap {
-	return mergeVariableMaps(p.frontMatter, p.pageFields.TemplateObject())
+	return MergeVariableMaps(p.frontMatter, p.pageFields.TemplateObject())
 }
 
 // DynamicPage is a static page, that includes frontmatter.
@@ -153,7 +153,7 @@ func readDynamicPage(fields pageFields, rel string) (p *DynamicPage, err error) 
 	if err != nil {
 		return
 	}
-	fields.frontMatter = mergeVariableMaps(fields.frontMatter, frontMatter)
+	fields.frontMatter = MergeVariableMaps(fields.frontMatter, frontMatter)
 	return &DynamicPage{
 		pageFields: fields,
 		Content:    data,

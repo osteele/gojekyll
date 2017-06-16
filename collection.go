@@ -46,7 +46,7 @@ func (c *Collection) Source() string {
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
 func (c *Collection) ReadPages() error {
 	basePath := c.Site.Source
-	defaults := mergeVariableMaps(c.Data, VariableMap{
+	defaults := MergeVariableMaps(c.Data, VariableMap{
 		"collection": c.Name,
 	})
 

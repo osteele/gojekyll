@@ -43,7 +43,7 @@ func TestMergeVariableMaps(t *testing.T) {
 	m1 := VariableMap{"a": 1, "b": 2}
 	m2 := VariableMap{"b": 3, "c": 4}
 	expected := VariableMap{"a": 1, "b": 3, "c": 4}
-	actual := mergeVariableMaps(m1, m2)
+	actual := MergeVariableMaps(m1, m2)
 	assert.Equal(t, expected, actual)
 }
 

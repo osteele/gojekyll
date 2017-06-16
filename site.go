@@ -110,7 +110,7 @@ func (s *Site) readConfigBytes(bytes []byte) error {
 	if err := yaml.Unmarshal(bytes, &configVariables); err != nil {
 		return err
 	}
-	s.Variables = mergeVariableMaps(s.Variables, configVariables)
+	s.Variables = MergeVariableMaps(s.Variables, configVariables)
 	return nil
 }
 
@@ -207,7 +207,7 @@ func (s *Site) readCollections() error {
 
 func (s *Site) initTemplateAttributes() {
 	// TODO site: {pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG}
-	s.Variables = mergeVariableMaps(s.Variables, VariableMap{
+	s.Variables = MergeVariableMaps(s.Variables, VariableMap{
 		"time": time.Now(),
 	})
 	for _, c := range s.Collections {

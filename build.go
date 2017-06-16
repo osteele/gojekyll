@@ -67,6 +67,6 @@ func (s *Site) WritePage(page Page) error {
 	case page.Static():
 		return CopyFileContents(dst, src, 0644)
 	default:
-		return callOnCreatedFile(dst, page.Write)
+		return VisitCreatedFile(dst, page.Write)
 	}
 }
