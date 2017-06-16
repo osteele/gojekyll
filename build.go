@@ -26,10 +26,10 @@ func (s *Site) Clean() error {
 		}
 		return nil
 	}
-	if err := filepath.Walk(s.Dest, removeFiles); err != nil {
+	if err := filepath.Walk(s.Destination, removeFiles); err != nil {
 		return err
 	}
-	return RemoveEmptyDirectories(s.Dest)
+	return RemoveEmptyDirectories(s.Destination)
 }
 
 // Build cleans the destination and create files in it.
@@ -50,7 +50,7 @@ func (s *Site) Build() (count int, err error) {
 // WritePage writes a page to the destination directory.
 func (s *Site) WritePage(page Page) error {
 	src := filepath.Join(s.Source, page.Path())
-	dst := filepath.Join(s.Dest, page.Path())
+	dst := filepath.Join(s.Destination, page.Path())
 	if !page.Static() && filepath.Ext(dst) == "" {
 		dst = filepath.Join(dst, "/index.html")
 	}

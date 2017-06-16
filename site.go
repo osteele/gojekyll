@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/acstech/liquid"
 
@@ -14,9 +15,9 @@ import (
 
 // Site is a Jekyll site.
 type Site struct {
-	ConfigFile *string
-	Source     string
-	Dest       string
+	ConfigFile  *string
+	Source      string
+	Destination string
 
 	Collections []*Collection
 	Variables   VariableMap
@@ -45,6 +46,7 @@ type SiteConfig struct {
 	Permalink string
 }
 
+// From https://jekyllrb.com/docs/configuration/#default-configuration
 const siteConfigDefaults = `
 # Where things are
 source:       .
@@ -70,9 +72,7 @@ paginate_path: /page:num
 timezone:      null
 `
 
-//TODO permalink:      "/:categories/:year/:month/:day/:title.html",
-
-// NewSite creates a new site.
+// NewSite creates a new site record, initialized with the site defaults.
 func NewSite() *Site {
 	s := new(Site)
 	if err := s.readConfigBytes([]byte(siteConfigDefaults)); err != nil {
@@ -91,10 +91,10 @@ func (s *Site) ReadConfiguration(source, dest string) error {
 			return err
 		}
 		s.Source = filepath.Join(source, s.config.Source)
-		s.Dest = filepath.Join(s.Source, s.config.Destination)
+		s.Destination = filepath.Join(s.Source, s.config.Destination)
 		s.ConfigFile = &configPath
 		if dest != "" {
-			site.Dest = dest
+			site.Destination = dest
 		}
 		return nil
 	case os.IsNotExist(err):
@@ -247,7 +247,10 @@ func (s *Site) readCollections() error {
 }
 
 func (s *Site) initTemplateAttributes() {
-	// TODO site: {time, pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG}
+	// TODO site: {pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG}
+	s.Variables = mergeVariableMaps(s.Variables, VariableMap{
+		"time": time.Now(),
+	})
 	for _, c := range s.Collections {
 		s.Variables[c.Name] = c.PageTemplateObjects()
 	}

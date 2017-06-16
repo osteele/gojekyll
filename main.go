@@ -56,7 +56,7 @@ func main() {
 			Name:        "destination",
 			Value:       "",
 			Usage:       "Destination directory",
-			Destination: &source,
+			Destination: &destination,
 		},
 	}
 
@@ -133,7 +133,7 @@ func main() {
 }
 
 func buildCommand(c *cli.Context) error {
-	printPathSetting("Destination:", site.Dest)
+	printPathSetting("Destination:", site.Destination)
 	printSetting("Generating...", "")
 	count, err := site.Build()
 	if err != nil {
