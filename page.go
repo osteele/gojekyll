@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"regexp"
 
+	. "github.com/osteele/gojekyll/helpers"
+
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/acstech/liquid"
@@ -62,11 +64,7 @@ func ReadPage(site *Site, rel string, defaults VariableMap) (p Page, err error) 
 		return
 	}
 
-	fields := pageFields{
-		site:        site,
-		path:        rel,
-		frontMatter: defaults,
-	}
+	fields := pageFields{site: site, path: rel, frontMatter: defaults}
 	if string(magic) == "---\n" {
 		p, err = NewDynamicPage(fields)
 		if err != nil {

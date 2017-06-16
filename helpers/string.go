@@ -1,4 +1,4 @@
-package main
+package helpers
 
 import (
 	"regexp"
@@ -23,7 +23,8 @@ func LeftPad(s string, n int) string {
 	return string(ws) + s
 }
 
-func stringArrayToMap(strings []string) map[string]bool {
+// StringArrayToMap creates a map for use as a set.
+func StringArrayToMap(strings []string) map[string]bool {
 	stringMap := map[string]bool{}
 	for _, s := range strings {
 		stringMap[s] = true

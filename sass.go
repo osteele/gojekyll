@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	. "github.com/osteele/gojekyll/helpers"
+
 	libsass "github.com/wellington/go-libsass"
 )
 

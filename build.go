@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	. "github.com/osteele/gojekyll/helpers"
 )
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.

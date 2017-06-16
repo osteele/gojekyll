@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	. "github.com/osteele/gojekyll/helpers"
+
 	"github.com/urfave/cli"
 
 	_ "gopkg.in/urfave/cli.v1"

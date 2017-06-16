@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	. "github.com/osteele/gojekyll/helpers"
+
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -131,8 +133,8 @@ func (s *Site) GetFileURL(path string) (string, bool) {
 // Exclude returns a boolean indicating that the site excludes a file.
 func (s *Site) Exclude(path string) bool {
 	// TODO exclude based on glob, not exact match
-	inclusionMap := stringArrayToMap(s.config.Include)
-	exclusionMap := stringArrayToMap(s.config.Exclude)
+	inclusionMap := StringArrayToMap(s.config.Include)
+	exclusionMap := StringArrayToMap(s.config.Exclude)
 	base := filepath.Base(path)
 	switch {
 	case inclusionMap[path]:
