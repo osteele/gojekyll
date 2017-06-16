@@ -65,16 +65,8 @@ func (s *Site) WritePage(page Page) error {
 	case page.Static() && options.useHardLinks:
 		return os.Link(src, dst)
 	case page.Static():
-		return copyFile(dst, src, 0644)
+		return CopyFileContents(dst, src, 0644)
 	default:
-		f, err := os.Create(dst)
-		if err != nil {
-			return err
-		}
-		if err := page.Write(f); err != nil {
-			_ = f.Close()
-			return err
-		}
-		return f.Close()
+		return callOnCreatedFile(dst, page.Write)
 	}
 }

@@ -14,9 +14,28 @@ type VariableMap map[string]interface{}
 
 var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
 
-// copyFile copies from file src to dst. It's not atomic and doesn't copy permissions or metadata.
-// This is sufficient for its use within this package.
-func copyFile(dst, src string, perm os.FileMode) error {
+// callOnCreatedFile calls os.Create to create a file, and applies w to it.
+func callOnCreatedFile(name string, w func(io.Writer) error) error {
+	f, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	close := true
+	defer func() {
+		if close {
+			_ = f.Close()
+		}
+	}()
+	if err := w(f); err != nil {
+		return err
+	}
+	close = false
+	return f.Close()
+}
+
+// CopyFileContents copies the file contents from src to dst.
+// It's not atomic and doesn't copy permissions or metadata.
+func CopyFileContents(dst, src string, perm os.FileMode) error {
 	in, err := os.Open(src)
 	if err != nil {
 		return err
@@ -39,7 +58,7 @@ func ReadFileMagic(p string) (data []byte, err error) {
 	if err != nil {
 		return
 	}
-	defer f.Close()
+	defer f.Close() // nolint: errcheck
 	data = make([]byte, 4)
 	_, err = f.Read(data)
 	if data[3] == '\r' {

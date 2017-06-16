@@ -56,7 +56,6 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 		if !strings.HasPrefix(path, prefix) {
 			panic(fmt.Errorf("Expected %s to start with %s", path, prefix))
 		}
-		path = path[len(prefix):]
 		root = root[len(prefix):]
 	}
 	vs := map[string]string{

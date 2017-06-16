@@ -13,7 +13,7 @@ import (
 )
 
 // IsSassPath returns a boolean indicating whether the file is a Sass (".sass" or ".scss") file.
-func (s *Site)IsSassPath(path string) bool {
+func (s *Site) IsSassPath(path string) bool {
 	return strings.HasSuffix(path, ".sass") || strings.HasSuffix(path, ".scss")
 }
 
@@ -52,14 +52,8 @@ func (s *Site) CopySassFileIncludes() {
 		if err != nil {
 			panic(err)
 		}
-		if strings.HasPrefix(rel, "_") {
-			rel = rel[1:]
-		}
-		to := filepath.Join(dst, rel)
-		if err := copyFile(to, from, 0644); err != nil {
-			return err
-		}
-		return nil
+		to := filepath.Join(dst, strings.TrimPrefix(rel, "_"))
+		return CopyFileContents(to, from, 0644)
 	})
 	if err != nil {
 		panic(err)
