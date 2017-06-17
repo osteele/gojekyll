@@ -1,4 +1,4 @@
-package main
+package liquid
 
 import (
 	"encoding/json"

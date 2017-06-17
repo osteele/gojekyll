@@ -129,6 +129,7 @@ func (p *DynamicPage) DebugVariables() VariableMap {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *DynamicPage) Write(w io.Writer) (err error) {
+	p.site.ConfigureLiquid()
 	body, err := helpers.ParseAndApplyTemplate(p.Content, p.TemplateVariables())
 	if err != nil {
 		err = &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}

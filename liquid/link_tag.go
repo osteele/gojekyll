@@ -1,4 +1,4 @@
-package main
+package liquid
 
 import (
 	"fmt"
@@ -8,13 +8,21 @@ import (
 	"github.com/acstech/liquid/core"
 )
 
+type FilePathUrlGetter func(string) (string, bool)
+
+var filePathURLGetter FilePathUrlGetter
+
+func SetFilePathURLGetter(getter FilePathUrlGetter) {
+	filePathURLGetter = getter
+}
+
 // LinkFactory creates a link tag
 func LinkFactory(p *core.Parser, config *core.Configuration) (core.Tag, error) {
 	start := p.Position
 	p.SkipPastTag()
 	end := p.Position - 2
 	name := strings.TrimSpace(string(p.Data[start:end]))
-	url, ok := site.GetFileURL(name)
+	url, ok := filePathURLGetter(name)
 	if !ok {
 		return nil, fmt.Errorf("link tag: %s not found", name)
 	}

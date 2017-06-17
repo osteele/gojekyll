@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/liquid"
 )
 
 // Site is a Jekyll site.
@@ -146,4 +147,8 @@ func (s *Site) initTemplateAttributes() {
 	for _, c := range s.Collections {
 		s.Variables[c.Name] = c.PageTemplateObjects()
 	}
+}
+
+func (s *Site) ConfigureLiquid() {
+	liquid.SetFilePathURLGetter(s.GetFileURL)
 }
