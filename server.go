@@ -2,18 +2,28 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/fsnotify/fsnotify"
 )
 
-func server() error {
+type Server struct{ Site *Site }
+
+func server(site *Site) error {
+	server := Server{site}
 	address := "localhost:4000"
+	if err := server.watchFiles(); err != nil {
+		return err
+	}
 	printSetting("Server address:", "http://"+address+"/")
 	printSetting("Server running...", "press ctrl-c to stop.")
-	http.HandleFunc("/", handler)
+	http.HandleFunc("/", server.handler)
 	return http.ListenAndServe(address, nil)
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
+	site = s.Site
 	urlpath := r.URL.Path
 
 	// w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -32,4 +42,28 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}
+}
+
+func (s *Server) watchFiles() error {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				log.Println("event:", event)
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("modified file:", event.Name)
+					// TODO rebuild the site
+				}
+			case err := <-watcher.Errors:
+				log.Println("error:", err)
+			}
+		}
+	}()
+
+	return watcher.Add(s.Site.Source)
 }

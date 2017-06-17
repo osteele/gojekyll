@@ -29,7 +29,7 @@ func buildCommand(c *cli.Context, site *Site) error {
 }
 
 func serveCommand(c *cli.Context, site *Site) error {
-	return server()
+	return server(site)
 }
 
 func dataCommand(c *cli.Context, site *Site) error {
