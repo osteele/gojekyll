@@ -7,9 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/liquid"
 
-	"github.com/acstech/liquid"
 	"github.com/acstech/liquid/core"
 )
 
@@ -60,7 +59,7 @@ func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte, config *
 			"content": body,
 			"layout":  frontMatter,
 		})
-		body, err = helpers.RenderTemplate(template, vars)
+		body, err = liquid.Render(template, vars)
 		if err != nil {
 			return nil, err
 		}

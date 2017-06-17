@@ -9,6 +9,7 @@ import (
 	"regexp"
 
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/liquid"
 	"github.com/russross/blackfriday"
 
 	yaml "gopkg.in/yaml.v2"
@@ -130,7 +131,7 @@ func (p *DynamicPage) DebugVariables() VariableMap {
 // Write applies Liquid and Markdown, as appropriate.
 func (p *DynamicPage) Write(w io.Writer) (err error) {
 	config := p.site.LiquidConfiguration()
-	body, err := helpers.ParseAndApplyTemplate(p.Content, p.TemplateVariables(), config)
+	body, err := liquid.ParseAndApplyTemplate(p.Content, p.TemplateVariables(), config)
 	if err != nil {
 		err = &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
 		return
