@@ -29,7 +29,8 @@ func NewDynamicPage(fields pageFields) (p *DynamicPage, err error) {
 	if err != nil {
 		return
 	}
-	data = bytes.Replace(data, []byte("\r"), []byte("\n"), -1)
+	// Replace Windows linefeeds. This allows regular expressions to work.
+	data = bytes.Replace(data, []byte("\r\n"), []byte("\n"), -1)
 
 	frontMatter, err := readFrontMatter(&data)
 	if err != nil {
