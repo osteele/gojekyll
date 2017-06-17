@@ -134,7 +134,7 @@ func loadSiteAndRun(siteLoader func() (*Site, error), cmd func(*cli.Context, *Si
 		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
-		if cmd(c, site); err != nil {
+		if err := cmd(c, site); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 		return nil

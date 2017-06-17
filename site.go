@@ -99,24 +99,19 @@ func (s *Site) LayoutsDir() string {
 // ReadFiles scans the source directory and creates pages and collections.
 func (s *Site) ReadFiles() error {
 	s.Paths = make(map[string]Page)
-	defaults := VariableMap{}
 
-	walkFn := func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		rel, err := filepath.Rel(s.Source, path)
 		if err != nil {
-			return err
 		}
 		switch {
-		case info.IsDir() && s.Exclude(rel):
+		case info.IsDir() && s.Exclude(relname):
 			return filepath.SkipDir
-		case info.IsDir(), s.Exclude(rel):
+		case info.IsDir(), s.Exclude(relname):
 			return nil
 		}
-		p, err := ReadPage(s, nil, rel, defaults)
 		if err != nil {
 			return err
 		}
@@ -148,4 +143,15 @@ func (s *Site) initTemplateAttributes() {
 
 func (s *Site) ConfigureLiquid() {
 	liquid.SetFilePathURLGetter(s.GetFileURL)
+// GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
+func (s *Site) GetFrontMatterDefaults(relpath, typename string) (m VariableMap) {
+	for _, entry := range s.config.Defaults {
+		scope := &entry.Scope
+		hasPrefix := strings.HasPrefix(relpath, scope.Path)
+		hasType := scope.Type == "" || scope.Type == typename
+		if hasPrefix && hasType {
+			m = MergeVariableMaps(m, entry.Values)
+		}
+	}
+	return
 }

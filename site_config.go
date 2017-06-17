@@ -18,6 +18,14 @@ type SiteConfig struct {
 
 	// Outputting
 	Permalink string
+
+	Defaults []struct {
+		Scope struct {
+			Path string
+			Type string
+		}
+		Values VariableMap
+	}
 }
 
 func (s *Site) readConfigBytes(bytes []byte) error {
