@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -85,13 +86,13 @@ func (p *StaticPage) Write(w io.Writer) error {
 // See https://jekyllrb.com/docs/variables/#page-variables
 func (p *pageFields) TemplateObject() VariableMap {
 	var (
-		relpath = "/" + p.relpath
-		base    = filepath.Base(relpath)
-		ext     = filepath.Ext(relpath)
+		relpath = "/" + filepath.ToSlash(p.relpath)
+		base    = path.Base(relpath)
+		ext     = path.Ext(relpath)
 	)
 
 	return VariableMap{
-		"path":          "/" + p.relpath,
+		"path":          relpath,
 		"modified_time": 0, // TODO
 		"name":          base,
 		"basename":      helpers.PathWithoutExtension(base),

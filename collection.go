@@ -56,7 +56,7 @@ func (c *Collection) IsPosts() bool {
 
 // PathPrefix returns the collection's directory prefix, e.g. "_posts/"
 func (c *Collection) PathPrefix() string {
-	return "_" + c.Name + "/"
+	return filepath.FromSlash("_" + c.Name + "/")
 }
 
 // Source returns the source directory for pages in the collection.
