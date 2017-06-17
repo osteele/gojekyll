@@ -56,7 +56,7 @@ func main() {
 	}
 
 	withSite := func(cmd func(*cli.Context, *Site) error) func(*cli.Context) error {
-		siteLoader := func() error { return loadSite(source, destination) }
+		siteLoader := func() (*Site, error) { return loadSite(source, destination) }
 		return loadSiteAndRun(siteLoader, cmd)
 	}
 

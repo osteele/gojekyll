@@ -109,15 +109,14 @@ func (s *Site) FindPageByFilePath(path string) Page {
 }
 
 // Load the site specified at destination into the site global, and print the common banner settings.
-func loadSite(source, destination string) error {
-	s, err := NewSiteFromDirectory(source)
+func loadSite(source, destination string) (*Site, error) {
+	site, err := NewSiteFromDirectory(source)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if destination != "" {
-		s.Destination = destination
+		site.Destination = destination
 	}
-	site = s
 	if site.ConfigFile != nil {
 		printPathSetting(configurationFileLabel, *site.ConfigFile)
 	} else {
@@ -125,16 +124,17 @@ func loadSite(source, destination string) error {
 
 	}
 	printPathSetting("Source:", site.Source)
-	return site.ReadFiles()
+	return site, site.ReadFiles()
 }
 
 // Given a subcommand function, load the site and then call the subcommand.
-func loadSiteAndRun(siteLoader func() error, cmd func(*cli.Context, *Site) error) func(*cli.Context) error {
+func loadSiteAndRun(siteLoader func() (*Site, error), cmd func(*cli.Context, *Site) error) func(*cli.Context) error {
 	return func(c *cli.Context) error {
-		if err := siteLoader(); err != nil {
+		site, err := siteLoader()
+		if err != nil {
 			return cli.NewExitError(err, 1)
 		}
-		if err := cmd(c, site); err != nil {
+		if cmd(c, site); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 		return nil

@@ -23,7 +23,7 @@ func server(site *Site) error {
 }
 
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
-	site = s.Site
+	site := s.Site
 	urlpath := r.URL.Path
 
 	// w.Header().Set("Content-Type", "text/plain; charset=utf-8")

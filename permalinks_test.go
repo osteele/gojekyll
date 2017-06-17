@@ -8,6 +8,7 @@ import (
 
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
+		site = NewSite()
 		d    = VariableMap{}
 		path = "/a/b/base.html"
 	)

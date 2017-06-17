@@ -25,9 +25,6 @@ type Site struct {
 	sassTempDir string
 }
 
-// For now (and maybe always?), there's just one site.
-var site = NewSite()
-
 // NewSite creates a new site record, initialized with the site defaults.
 func NewSite() *Site {
 	s := new(Site)
