@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/helpers"
 
 	"github.com/urfave/cli"
 
@@ -22,7 +22,7 @@ var options struct {
 const configurationFileLabel = "Configuration file:"
 
 func printSetting(label string, value string) {
-	fmt.Printf("%s %s\n", LeftPad(label, len(configurationFileLabel)), value)
+	fmt.Printf("%s %s\n", helpers.LeftPad(label, len(configurationFileLabel)), value)
 }
 
 func printPathSetting(label string, name string) {

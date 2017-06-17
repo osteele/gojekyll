@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/helpers"
 )
 
 // PermalinkStyles defines built-in styles from https://jekyllrb.com/docs/permalinks/#builtinpermalinkstyles
@@ -42,7 +42,7 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 		path           = p.relpath
 		ext            = filepath.Ext(path)
 		outputExt      = ext
-		root           = PathWithoutExtension(path)
+		root           = helpers.PathWithoutExtension(path)
 		name           = filepath.Base(root)
 		title          = p.frontMatter.String("title", name)
 	)
@@ -62,10 +62,10 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	}
 	vs := map[string]string{
 		"collection": collectionName,
-		"name":       Slugify(name),
+		"name":       helpers.Slugify(name),
 		"path":       "/" + root,
 		"title":      title,
-		"slug":       Slugify(name),
+		"slug":       helpers.Slugify(name),
 		// TODO categories
 		// The following isn't documented, but is evident
 		"output_ext": outputExt,

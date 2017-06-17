@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	. "github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/helpers"
 	"github.com/russross/blackfriday"
 
 	yaml "gopkg.in/yaml.v2"
@@ -68,7 +68,7 @@ func (p *DynamicPage) TemplateObject() VariableMap {
 	var (
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
-		root    = PathWithoutExtension(p.relpath)
+		root    = helpers.PathWithoutExtension(p.relpath)
 		base    = filepath.Base(root)
 	)
 
@@ -128,7 +128,7 @@ func (p *DynamicPage) DebugVariables() VariableMap {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *DynamicPage) Write(w io.Writer) (err error) {
-	body, err := ParseAndApplyTemplate(p.Content, p.TemplateVariables())
+	body, err := helpers.ParseAndApplyTemplate(p.Content, p.TemplateVariables())
 	if err != nil {
 		err = &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
 		return

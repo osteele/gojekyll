@@ -17,7 +17,7 @@ func VisitCreatedFile(name string, w func(io.Writer) error) error {
 	close := true
 	defer func() {
 		if close {
-			_ = f.Close()
+			_ = f.Close() // nolint: gas
 		}
 	}()
 	if err := w(f); err != nil {

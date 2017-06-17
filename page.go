@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"regexp"
 
-	. "github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/helpers"
 )
 
 var (
@@ -49,7 +49,7 @@ func (p *pageFields) Site() *Site       { return p.site }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
 func ReadPage(site *Site, relpath string, defaults VariableMap) (p Page, err error) {
-	magic, err := ReadFileMagic(filepath.Join(site.Source, relpath))
+	magic, err := helpers.ReadFileMagic(filepath.Join(site.Source, relpath))
 	if err != nil {
 		return
 	}
@@ -93,7 +93,7 @@ func (p *pageFields) TemplateObject() VariableMap {
 		"path":          "/" + p.relpath,
 		"modified_time": 0, // TODO
 		"name":          base,
-		"basename":      PathWithoutExtension(base),
+		"basename":      helpers.PathWithoutExtension(base),
 		"extname":       ext,
 	}
 }

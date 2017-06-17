@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	. "github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/helpers"
 
 	libsass "github.com/wellington/go-libsass"
 )
@@ -55,7 +55,7 @@ func (s *Site) CopySassFileIncludes() {
 			panic(err)
 		}
 		to := filepath.Join(dst, strings.TrimPrefix(rel, "_"))
-		return CopyFileContents(to, from, 0644)
+		return helpers.CopyFileContents(to, from, 0644)
 	})
 	if err != nil {
 		panic(err)

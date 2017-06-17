@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	. "github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/helpers"
 )
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
@@ -31,7 +31,7 @@ func (s *Site) Clean() error {
 	if err := filepath.Walk(s.Destination, removeFiles); err != nil {
 		return err
 	}
-	return RemoveEmptyDirectories(s.Destination)
+	return helpers.RemoveEmptyDirectories(s.Destination)
 }
 
 // Build cleans the destination and create files in it.
@@ -67,8 +67,8 @@ func (s *Site) WritePage(page Page) error {
 	case page.Static() && options.useHardLinks:
 		return os.Link(from, to)
 	case page.Static():
-		return CopyFileContents(to, from, 0644)
+		return helpers.CopyFileContents(to, from, 0644)
 	default:
-		return VisitCreatedFile(to, page.Write)
+		return helpers.VisitCreatedFile(to, page.Write)
 	}
 }
