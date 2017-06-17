@@ -56,6 +56,11 @@ func ReadFileMagic(name string) (data []byte, err error) {
 	defer f.Close() // nolint: errcheck
 	data = make([]byte, 4)
 	_, err = f.Read(data)
+	if err == io.EOF {
+		err = nil
+	}
+	// Normalize windows linefeeds. This function is used to
+	// recognize frontmatter, so we only need to look at the fourth byte.
 	if data[3] == '\r' {
 		data[3] = '\n'
 	}
