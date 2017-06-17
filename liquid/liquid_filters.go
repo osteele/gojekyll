@@ -6,20 +6,17 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/acstech/liquid"
 	"github.com/acstech/liquid/core"
 )
 
 func init() {
-	liquid.Tags["link"] = LinkFactory
-	core.RegisterFilter("date_to_rfc822", DateToRFC822Factory)
-	core.RegisterFilter("jsonify", JsonifyFactory)
-	core.RegisterFilter("xml_escape", XMLEscapeFactory)
-	core.RegisterFilter("where_exp", WhereExpFactory)
+	core.RegisterFilter("date_to_rfc822", dateToRFC822Factory)
+	core.RegisterFilter("jsonify", jsonifyFactory)
+	core.RegisterFilter("xml_escape", xmlEscapeFactory)
+	core.RegisterFilter("where_exp", whereExpFactory)
 }
 
-// DateToRFC822Factory implements the Jekyll `json` filter
-func DateToRFC822Factory(parameters []core.Value) core.Filter {
+func dateToRFC822Factory(parameters []core.Value) core.Filter {
 	if len(parameters) != 0 {
 		panic("The date_to_rfc822 filter doesn't accept parameters")
 	}
@@ -29,8 +26,7 @@ func DateToRFC822Factory(parameters []core.Value) core.Filter {
 	}
 }
 
-// JsonifyFactory implements the Jekyll `json` filter
-func JsonifyFactory(parameters []core.Value) core.Filter {
+func jsonifyFactory(parameters []core.Value) core.Filter {
 	if len(parameters) != 0 {
 		panic("The jsonify filter doesn't accept parameters")
 	}
@@ -43,8 +39,7 @@ func JsonifyFactory(parameters []core.Value) core.Filter {
 	}
 }
 
-// XMLEscapeFactory implements the Jekyll `xml_escape` filter
-func XMLEscapeFactory(parameters []core.Value) core.Filter {
+func xmlEscapeFactory(parameters []core.Value) core.Filter {
 	if len(parameters) != 0 {
 		panic("The xml_escape filter doesn't accept parameters")
 	}
@@ -61,7 +56,7 @@ func XMLEscapeFactory(parameters []core.Value) core.Filter {
 }
 
 // WhereExpFactory implements the Jekyll `where_exp` filter
-func WhereExpFactory(parameters []core.Value) core.Filter {
+func whereExpFactory(parameters []core.Value) core.Filter {
 	if len(parameters) != 2 {
 		panic("The were_exp filter requires two parameters")
 	}

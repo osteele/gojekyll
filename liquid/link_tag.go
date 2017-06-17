@@ -5,8 +5,13 @@ import (
 	"io"
 	"strings"
 
+	"github.com/acstech/liquid"
 	"github.com/acstech/liquid/core"
 )
+
+func init() {
+	liquid.Tags["link"] = LinkFactory
+}
 
 // A FilePathURLGetter given an include tag file name returns a URL.
 type FilePathURLGetter func(string) (string, bool)
