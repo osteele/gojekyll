@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"time"
 
 	"github.com/osteele/gojekyll/helpers"
 )
@@ -33,8 +35,9 @@ type Page interface {
 }
 
 type pageFields struct {
-	relpath     string      // relative to site source, e.g. "_post/base.ext"
-	permalink   string      // cached permalink
+	relpath     string // relative to site source, e.g. "_post/base.ext"
+	permalink   string // cached permalink
+	modTime     time.Time
 	frontMatter VariableMap // page front matter, merged with defaults
 	collection  *Collection
 	site        *Site
@@ -51,12 +54,23 @@ func (p *pageFields) Site() *Site       { return p.site }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
 func ReadPage(site *Site, collection *Collection, relpath string, defaults VariableMap) (p Page, err error) {
-	magic, err := helpers.ReadFileMagic(filepath.Join(site.Source, relpath))
+	abspath := filepath.Join(site.Source, relpath)
+	magic, err := helpers.ReadFileMagic(abspath)
+	if err != nil {
+		return
+	}
+	info, err := os.Stat(abspath)
 	if err != nil {
 		return
 	}
 
-	fields := pageFields{site: site, collection: collection, relpath: relpath, frontMatter: defaults}
+	fields := pageFields{
+		site:        site,
+		collection:  collection,
+		modTime:     info.ModTime(),
+		relpath:     relpath,
+		frontMatter: defaults,
+	}
 	if string(magic) == "---\n" {
 		p, err = NewDynamicPage(fields)
 		if err != nil {
@@ -93,7 +107,7 @@ func (p *pageFields) TemplateObject() VariableMap {
 
 	return VariableMap{
 		"path":          relpath,
-		"modified_time": 0, // TODO
+		"modified_time": p.modTime,
 		"name":          base,
 		"basename":      helpers.PathWithoutExtension(base),
 		"extname":       ext,
