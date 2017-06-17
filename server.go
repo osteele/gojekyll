@@ -1,12 +1,15 @@
 package gojekyll
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"mime"
 	"net/http"
 	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -41,14 +44,15 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 
 	site := s.Site
 	urlpath := r.URL.Path
-	mimeType := mime.TypeByExtension(path.Ext(urlpath))
-	if mimeType != "" {
-		rw.Header().Set("Content-Type", mimeType)
+	ext := path.Ext(urlpath)
+	if ext == "" {
+		ext = ".html"
 	}
 
 	p, found := site.PageForURL(urlpath)
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
+		ext = ".html"
 		p, found = site.Paths["404.html"]
 	}
 	if !found {
@@ -56,15 +60,47 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := p.Write(rw)
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType != "" {
+		rw.Header().Set("Content-Type", mimeType)
+	}
+	var w io.Writer = rw
+	if strings.HasPrefix(mimeType, "text/html;") {
+		w = scriptTagInjector{w}
+	}
+	err := p.Write(w)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}
 }
 
+type scriptTagInjector struct {
+	w io.Writer
+}
+
+var liveReloadScriptTag = []byte(`<script src="http://localhost:35729/livereload.js"></script>`)
+var liveReloadSearchBytes = []byte(`</head>`)
+var liveReloadReplacementBytes = append(liveReloadScriptTag, liveReloadSearchBytes...)
+
+// Write injects a livereload script tag at the end of the HTML head, if present,
+// else at the beginning of the document.
+// It depends on the fact that dynamic page rendering makes a single Write call,
+// so that it's guaranteed to find the marker within a single invocation argument.
+// It doesn't parse HTML, so it could be spoofed but probably only intentionally.
+func (i scriptTagInjector) Write(p []byte) (n int, err error) {
+	if !bytes.Contains(p, liveReloadSearchBytes) {
+		p = bytes.Replace(p, []byte(liveReloadSearchBytes), []byte(liveReloadReplacementBytes), 1)
+	}
+	if !bytes.Contains(p, liveReloadSearchBytes) {
+		p = append(liveReloadScriptTag, p...)
+	}
+	return i.w.Write(p)
+}
+
 func (s *Server) syncReloadSite() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+
 	start := time.Now()
 	fmt.Printf("%s Reloading site...", start.Format(time.Stamp))
 	if err := s.Site.Reload(); err != nil {
