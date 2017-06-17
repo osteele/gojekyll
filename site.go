@@ -66,6 +66,16 @@ func (s *Site) KeepFile(path string) bool {
 	return false
 }
 
+// FindPageByFilePath returns a Page or nil, referenced by relative path.
+func (s *Site) FindPageByFilePath(relpath string) Page {
+	for _, p := range s.Paths {
+		if p.Path() == relpath {
+			return p
+		}
+	}
+	return nil
+}
+
 // GetFileURL returns the URL path given a file path, relative to the site source directory.
 func (s *Site) GetFileURL(path string) (string, bool) {
 	for _, p := range s.Paths {
@@ -74,6 +84,18 @@ func (s *Site) GetFileURL(path string) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+// PageForURL returns the page that will be served at URL
+func (s *Site) PageForURL(urlpath string) (p Page, found bool) {
+	p, found = s.Paths[urlpath]
+	if !found {
+		p, found = s.Paths[filepath.Join(urlpath, "index.html")]
+	}
+	if !found {
+		p, found = s.Paths[filepath.Join(urlpath, "index.htm")]
+	}
+	return
 }
 
 // Exclude returns a boolean indicating that the site excludes a file.

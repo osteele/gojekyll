@@ -8,11 +8,13 @@ import (
 	"github.com/acstech/liquid/core"
 )
 
-type FilePathUrlGetter func(string) (string, bool)
+// A FilePathURLGetter given an include tag file name returns a URL.
+type FilePathURLGetter func(string) (string, bool)
 
-var filePathURLGetter FilePathUrlGetter
+var filePathURLGetter FilePathURLGetter
 
-func SetFilePathURLGetter(getter FilePathUrlGetter) {
+// SetFilePathURLGetter sets the function that resolves an include tag file name to a URL.
+func SetFilePathURLGetter(getter FilePathURLGetter) {
 	filePathURLGetter = getter
 }
 

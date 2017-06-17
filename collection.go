@@ -54,6 +54,7 @@ func (c *Collection) IsPosts() bool {
 	return c.Name == "posts"
 }
 
+// PathPrefix returns the collection's directory prefix, e.g. "_posts/"
 func (c *Collection) PathPrefix() string {
 	return "_" + c.Name + "/"
 }

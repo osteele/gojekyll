@@ -29,7 +29,8 @@ func buildCommand(c *cli.Context, site *Site) error {
 }
 
 func serveCommand(c *cli.Context, site *Site) error {
-	return server(site)
+	server := Server{site}
+	return server.Run()
 }
 
 func dataCommand(c *cli.Context, site *Site) error {
@@ -80,32 +81,22 @@ func renderCommand(c *cli.Context, site *Site) error {
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
 func cliPage(c *cli.Context, site *Site) (page Page, err error) {
-	path := "/"
+	arg := "/"
 	if c.NArg() > 0 {
-		path = c.Args().Get(0)
+		arg = c.Args().Get(0)
 	}
-	if strings.HasPrefix(path, "/") {
-		page = site.Paths[path]
+	if strings.HasPrefix(arg, "/") {
+		page, _ = site.PageForURL(arg)
 		if page == nil {
-			err = &os.PathError{Op: "render", Path: path, Err: errors.New("the site does not include a file with this URL path")}
+			err = &os.PathError{Op: "render", Path: arg, Err: errors.New("the site does not include a file with this URL path")}
 		}
 	} else {
-		page = site.FindPageByFilePath(path)
+		page = site.FindPageByFilePath(arg)
 		if page == nil {
-			err = &os.PathError{Op: "render", Path: path, Err: errors.New("no such file")}
+			err = &os.PathError{Op: "render", Path: arg, Err: errors.New("no such file")}
 		}
 	}
 	return
-}
-
-// FindPageByFilePath returns a Page or nil, referenced by relative path.
-func (s *Site) FindPageByFilePath(path string) Page {
-	for _, p := range s.Paths {
-		if p.Path() == path {
-			return p
-		}
-	}
-	return nil
 }
 
 // Load the site specified at destination into the site global, and print the common banner settings.

@@ -8,27 +8,27 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+// Server serves the site on HTTP.
 type Server struct{ Site *Site }
 
-func server(site *Site) error {
-	server := Server{site}
+// Run runs the server.
+func (s *Server) Run() error {
 	address := "localhost:4000"
-	if err := server.watchFiles(); err != nil {
+	if err := s.watchFiles(); err != nil {
 		return err
 	}
 	printSetting("Server address:", "http://"+address+"/")
 	printSetting("Server running...", "press ctrl-c to stop.")
-	http.HandleFunc("/", server.handler)
+	http.HandleFunc("/", s.handler)
 	return http.ListenAndServe(address, nil)
 }
 
 func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
 	site := s.Site
 	urlpath := r.URL.Path
+	// TODO? w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
-	// w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-
-	p, found := site.Paths[urlpath]
+	p, found := site.PageForURL(urlpath)
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
 		p, found = site.Paths["404.html"]
