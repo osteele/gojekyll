@@ -39,10 +39,10 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	var (
 		collectionName string
-		path           = p.path
+		path           = p.relpath
 		ext            = filepath.Ext(path)
 		outputExt      = ext
-		root           = path[:len(path)-len(ext)]
+		root           = PathWithoutExtension(path)
 		name           = filepath.Base(root)
 		title          = p.frontMatter.String("title", name)
 	)

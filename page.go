@@ -32,32 +32,29 @@ type Page interface {
 }
 
 type pageFields struct {
+	relpath     string      // relative to site source, e.g. "_post/base.ext"
+	permalink   string      // cached permalink
+	frontMatter VariableMap // page front matter, merged with defaults
 	site        *Site
-	path        string // this is the relative path
-	permalink   string
-	frontMatter VariableMap
 }
 
 func (p *pageFields) String() string {
-	return fmt.Sprintf("%s{Path=%v, Permalink=%v}",
-		reflect.TypeOf(p).Name(), p.path, p.permalink)
+	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
 }
 
-func (p *pageFields) Path() string      { return p.path }
+func (p *pageFields) Path() string      { return p.relpath }
 func (p *pageFields) Permalink() string { return p.permalink }
-func (p *pageFields) Published() bool {
-	return p.frontMatter.Bool("published", true)
-}
-func (p *pageFields) Site() *Site { return p.site }
+func (p *pageFields) Published() bool   { return p.frontMatter.Bool("published", true) }
+func (p *pageFields) Site() *Site       { return p.site }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
-func ReadPage(site *Site, rel string, defaults VariableMap) (p Page, err error) {
-	magic, err := ReadFileMagic(filepath.Join(site.Source, rel))
+func ReadPage(site *Site, relpath string, defaults VariableMap) (p Page, err error) {
+	magic, err := ReadFileMagic(filepath.Join(site.Source, relpath))
 	if err != nil {
 		return
 	}
 
-	fields := pageFields{site: site, path: rel, frontMatter: defaults}
+	fields := pageFields{site: site, relpath: relpath, frontMatter: defaults}
 	if string(magic) == "---\n" {
 		p, err = NewDynamicPage(fields)
 		if err != nil {
@@ -87,16 +84,16 @@ func (p *StaticPage) Write(w io.Writer) error {
 // See https://jekyllrb.com/docs/variables/#page-variables
 func (p *pageFields) TemplateObject() VariableMap {
 	var (
-		path = "/" + p.path
-		base = filepath.Base(path)
-		ext  = filepath.Ext(path)
+		relpath = "/" + p.relpath
+		base    = filepath.Base(relpath)
+		ext     = filepath.Ext(relpath)
 	)
 
 	return VariableMap{
-		"path":          path,
+		"path":          "/" + p.relpath,
 		"modified_time": 0, // TODO
 		"name":          base,
-		"basename":      base[:len(base)-len(ext)],
+		"basename":      PathWithoutExtension(base),
 		"extname":       ext,
 	}
 }
@@ -109,7 +106,7 @@ func (p *pageFields) DebugVariables() VariableMap {
 
 // Source returns the file path of the page source.
 func (p *pageFields) Source() string {
-	return filepath.Join(p.site.Source, p.path)
+	return filepath.Join(p.site.Source, p.relpath)
 }
 
 // StaticPage is a static page.

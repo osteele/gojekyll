@@ -13,11 +13,10 @@ func LinkFactory(p *core.Parser, config *core.Configuration) (core.Tag, error) {
 	start := p.Position
 	p.SkipPastTag()
 	end := p.Position - 2
-	path := strings.TrimSpace(string(p.Data[start:end]))
-
-	url, ok := site.GetFileURL(path)
+	name := strings.TrimSpace(string(p.Data[start:end]))
+	url, ok := site.GetFileURL(name)
 	if !ok {
-		return nil, fmt.Errorf("link tag: %s not found", path)
+		return nil, fmt.Errorf("link tag: %s not found", name)
 	}
 
 	return &Link{url}, nil

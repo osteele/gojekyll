@@ -25,7 +25,7 @@ func (p *DynamicPage) Static() bool { return false }
 
 // NewDynamicPage reads the front matter from a file to create a new DynamicPage.
 func NewDynamicPage(fields pageFields) (p *DynamicPage, err error) {
-	data, err := ioutil.ReadFile(filepath.Join(fields.site.Source, fields.path))
+	data, err := ioutil.ReadFile(filepath.Join(fields.site.Source, fields.relpath))
 	if err != nil {
 		return
 	}
@@ -56,7 +56,7 @@ func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 		start = match[1]
 	}
 	// This fixes the line numbers for template errors
-	// TODO find a less hacky solution
+	// TODO find a less hack-ey solution
 	*sourcePtr = append(
 		regexp.MustCompile(`[^\n\r]+`).ReplaceAllLiteral(source[:start], []byte{}),
 		source[start:]...)
@@ -66,14 +66,14 @@ func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 // TemplateObject returns the attributes of the template page object.
 func (p *DynamicPage) TemplateObject() VariableMap {
 	var (
-		path = p.path
-		ext  = filepath.Ext(path)
-		root = p.path[:len(path)-len(ext)]
-		base = filepath.Base(root)
+		relpath = p.relpath
+		ext     = filepath.Ext(relpath)
+		root    = PathWithoutExtension(p.relpath)
+		base    = filepath.Base(root)
 	)
 
 	data := VariableMap{
-		"path": p.path,
+		"path": relpath,
 		"url":  p.Permalink(),
 		// TODO content output
 
@@ -134,7 +134,7 @@ func (p *DynamicPage) Write(w io.Writer) (err error) {
 		return
 	}
 
-	if p.Site().IsMarkdown(p.path) {
+	if p.Site().IsMarkdown(p.relpath) {
 		body = blackfriday.MarkdownCommon(body)
 		body, err = p.applyLayout(p.frontMatter, body)
 		if err != nil {
@@ -142,7 +142,7 @@ func (p *DynamicPage) Write(w io.Writer) (err error) {
 		}
 	}
 
-	if p.Site().IsSassPath(p.path) {
+	if p.Site().IsSassPath(p.relpath) {
 		return p.writeSass(w, body)
 	}
 

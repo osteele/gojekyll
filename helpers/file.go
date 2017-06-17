@@ -47,8 +47,8 @@ func CopyFileContents(dst, src string, perm os.FileMode) error {
 }
 
 // ReadFileMagic returns the first four bytes of the file, with final '\r' replaced by '\n'.
-func ReadFileMagic(p string) (data []byte, err error) {
-	f, err := os.Open(p)
+func ReadFileMagic(name string) (data []byte, err error) {
+	f, err := os.Open(name)
 	if err != nil {
 		return
 	}
@@ -63,19 +63,19 @@ func ReadFileMagic(p string) (data []byte, err error) {
 
 // PostfixWalk is like filepath.Walk, but visits each directory after visiting its children instead of before.
 // It does not implement SkipDir.
-func PostfixWalk(path string, walkFn filepath.WalkFunc) error {
-	if files, err := ioutil.ReadDir(path); err == nil {
+func PostfixWalk(root string, walkFn filepath.WalkFunc) error {
+	if files, err := ioutil.ReadDir(root); err == nil {
 		for _, stat := range files {
 			if stat.IsDir() {
-				if err = PostfixWalk(filepath.Join(path, stat.Name()), walkFn); err != nil {
+				if err = PostfixWalk(filepath.Join(root, stat.Name()), walkFn); err != nil {
 					return err
 				}
 			}
 		}
 	}
 
-	info, err := os.Stat(path)
-	return walkFn(path, info, err)
+	info, err := os.Stat(root)
+	return walkFn(root, info, err)
 }
 
 // IsNotEmpty returns a boolean indicating whether the error is known to report that a directory is not empty.
@@ -87,8 +87,8 @@ func IsNotEmpty(err error) bool {
 }
 
 // RemoveEmptyDirectories recursively removes empty directories.
-func RemoveEmptyDirectories(path string) error {
-	walkFn := func(path string, info os.FileInfo, err error) error {
+func RemoveEmptyDirectories(root string) error {
+	walkFn := func(name string, info os.FileInfo, err error) error {
 		switch {
 		case err != nil && os.IsNotExist(err):
 			// It's okay to call this on a directory that doesn't exist.
@@ -97,7 +97,7 @@ func RemoveEmptyDirectories(path string) error {
 		case err != nil:
 			return err
 		case info.IsDir():
-			err := os.Remove(path)
+			err := os.Remove(name)
 			switch {
 			case err == nil:
 				return nil
@@ -111,5 +111,5 @@ func RemoveEmptyDirectories(path string) error {
 		}
 		return nil
 	}
-	return PostfixWalk(path, walkFn)
+	return PostfixWalk(root, walkFn)
 }

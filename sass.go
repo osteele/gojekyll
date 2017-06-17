@@ -15,8 +15,8 @@ import (
 )
 
 // IsSassPath returns a boolean indicating whether the file is a Sass (".sass" or ".scss") file.
-func (s *Site) IsSassPath(path string) bool {
-	return strings.HasSuffix(path, ".sass") || strings.HasSuffix(path, ".scss")
+func (s *Site) IsSassPath(name string) bool {
+	return strings.HasSuffix(name, ".sass") || strings.HasSuffix(name, ".scss")
 }
 
 func (p *DynamicPage) writeSass(w io.Writer, data []byte) error {

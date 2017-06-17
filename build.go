@@ -11,7 +11,7 @@ import (
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
 // It attends to the global options.dry_run.
 func (s *Site) Clean() error {
-	removeFiles := func(path string, info os.FileInfo, err error) error {
+	removeFiles := func(name string, info os.FileInfo, err error) error {
 		switch {
 		case err != nil && os.IsNotExist(err):
 			return nil
@@ -19,12 +19,12 @@ func (s *Site) Clean() error {
 			return err
 		case info.IsDir():
 			return nil
-		case s.KeepFile(path):
+		case s.KeepFile(name):
 			return nil
 		case options.dryRun:
-			fmt.Println("rm", path)
+			fmt.Println("rm", name)
 		default:
-			return os.Remove(path)
+			return os.Remove(name)
 		}
 		return nil
 	}
@@ -51,24 +51,24 @@ func (s *Site) Build() (count int, err error) {
 
 // WritePage writes a page to the destination directory.
 func (s *Site) WritePage(page Page) error {
-	src := filepath.Join(s.Source, page.Path())
-	dst := filepath.Join(s.Destination, page.Permalink())
-	if !page.Static() && filepath.Ext(dst) == "" {
-		dst = filepath.Join(dst, "/index.html")
+	from := filepath.Join(s.Source, page.Path())
+	to := filepath.Join(s.Destination, page.Permalink())
+	if !page.Static() && filepath.Ext(to) == "" {
+		to = filepath.Join(to, "/index.html")
 	}
 	// nolint: gas
-	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(to), 0755); err != nil {
 		return err
 	}
 	switch {
 	case options.dryRun:
-		fmt.Println("create", dst, "from", page.Source())
+		fmt.Println("create", to, "from", page.Source())
 		return nil
 	case page.Static() && options.useHardLinks:
-		return os.Link(src, dst)
+		return os.Link(from, to)
 	case page.Static():
-		return CopyFileContents(dst, src, 0644)
+		return CopyFileContents(to, from, 0644)
 	default:
-		return VisitCreatedFile(dst, page.Write)
+		return VisitCreatedFile(to, page.Write)
 	}
 }

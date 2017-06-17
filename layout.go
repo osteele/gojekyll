@@ -13,20 +13,20 @@ import (
 )
 
 // FindLayout returns a template for the named layout.
-func (s *Site) FindLayout(name string, fm *VariableMap) (t *liquid.Template, err error) {
+func (s *Site) FindLayout(base string, fm *VariableMap) (t *liquid.Template, err error) {
 	exts := []string{"", ".html"}
 	for _, ext := range strings.SplitN(s.config.MarkdownExt, `,`, -1) {
 		exts = append(exts, "."+ext)
 	}
 	var (
-		path    string
+		name    string
 		content []byte
 		found   bool
 	)
 	for _, ext := range exts {
 		// TODO respect layout config
-		path = filepath.Join(s.Source, "_layouts", name+ext)
-		content, err = ioutil.ReadFile(path)
+		name = filepath.Join(s.Source, "_layouts", base+ext)
+		content, err = ioutil.ReadFile(name)
 		if err == nil {
 			found = true
 			break
@@ -36,7 +36,7 @@ func (s *Site) FindLayout(name string, fm *VariableMap) (t *liquid.Template, err
 		}
 	}
 	if !found {
-		panic(fmt.Errorf("no template for %s", name))
+		panic(fmt.Errorf("no template for %s", base))
 	}
 	*fm, err = readFrontMatter(&content)
 	if err != nil {

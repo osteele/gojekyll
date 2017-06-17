@@ -14,22 +14,22 @@ func server() error {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
+	urlpath := r.URL.Path
 
 	// w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
-	p, found := site.Paths[path]
+	p, found := site.Paths[urlpath]
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
 		p, found = site.Paths["404.html"]
 	}
 	if !found {
-		fmt.Fprintf(w, "404 page not found: %s", path)
+		fmt.Fprintf(w, "404 page not found: %s", urlpath)
 		return
 	}
 
 	err := p.Write(w)
 	if err != nil {
-		fmt.Printf("Error rendering %s: %s", path, err)
+		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}
 }

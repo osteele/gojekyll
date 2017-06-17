@@ -15,6 +15,7 @@ type Collection struct {
 	Pages  []Page
 }
 
+// NewCollection creates a new Collection with defaults d
 func NewCollection(s *Site, name string, d VariableMap) *Collection {
 	return &Collection{
 		Site:   s,
@@ -65,7 +66,7 @@ func (c *Collection) ReadPages() error {
 		"collection": c.Name,
 	})
 
-	walkFn := func(path string, info os.FileInfo, err error) error {
+	walkFn := func(name string, info os.FileInfo, err error) error {
 		if err != nil {
 			// if the issue is simply that the directory doesn't exist, warn instead of error
 			if os.IsNotExist(err) {
@@ -76,7 +77,7 @@ func (c *Collection) ReadPages() error {
 			}
 			return err
 		}
-		rel, err := filepath.Rel(basePath, path)
+		rel, err := filepath.Rel(basePath, name)
 		switch {
 		case err != nil:
 			return err
@@ -88,7 +89,7 @@ func (c *Collection) ReadPages() error {
 		case err != nil:
 			return err
 		case p.Static():
-			fmt.Printf("skipping static file inside collection: %s\n", path)
+			fmt.Printf("skipping static file inside collection: %s\n", name)
 		case p.Published():
 			c.Site.Paths[p.Permalink()] = p
 			c.Pages = append(c.Pages, p)

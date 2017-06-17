@@ -8,8 +8,8 @@ import (
 )
 
 // IsMarkdown returns a boolean indicating whether the file is a Markdown file, according to the current project.
-func (s *Site) IsMarkdown(path string) bool {
-	ext := filepath.Ext(path)
+func (s *Site) IsMarkdown(name string) bool {
+	ext := filepath.Ext(name)
 	return s.MarkdownExtensions()[strings.TrimLeft(ext, ".")]
 }
 

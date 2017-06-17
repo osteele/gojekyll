@@ -25,12 +25,12 @@ func printSetting(label string, value string) {
 	fmt.Printf("%s %s\n", LeftPad(label, len(configurationFileLabel)), value)
 }
 
-func printPathSetting(label string, path string) {
-	path, err := filepath.Abs(path)
+func printPathSetting(label string, name string) {
+	name, err := filepath.Abs(name)
 	if err != nil {
 		panic("Couldn't convert to absolute path")
 	}
-	printSetting(label, path)
+	printSetting(label, name)
 }
 
 func main() {
