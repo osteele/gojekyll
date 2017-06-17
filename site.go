@@ -1,14 +1,18 @@
 package main
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/acstech/liquid"
+	"github.com/acstech/liquid/core"
 	"github.com/osteele/gojekyll/helpers"
-	"github.com/osteele/gojekyll/liquid"
+	liquidHelper "github.com/osteele/gojekyll/liquid"
 )
 
 // Site is a Jekyll site.
@@ -21,8 +25,9 @@ type Site struct {
 	Variables   VariableMap
 	Paths       map[string]Page // URL path -> Page
 
-	config      SiteConfig
-	sassTempDir string
+	config              SiteConfig
+	liquidConfiguration *core.Configuration
+	sassTempDir         string
 }
 
 // NewSite creates a new site record, initialized with the site defaults.
@@ -100,11 +105,14 @@ func (s *Site) LayoutsDir() string {
 func (s *Site) ReadFiles() error {
 	s.Paths = make(map[string]Page)
 
+	walkFn := func(name string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
+		relname, err := filepath.Rel(s.Source, name)
 		if err != nil {
+			panic(err)
 		}
 		switch {
 		case info.IsDir() && s.Exclude(relname):
@@ -112,6 +120,8 @@ func (s *Site) ReadFiles() error {
 		case info.IsDir(), s.Exclude(relname):
 			return nil
 		}
+		defaults := s.GetFrontMatterDefaults(relname, "")
+		p, err := ReadPage(s, nil, relname, defaults)
 		if err != nil {
 			return err
 		}
@@ -141,8 +151,25 @@ func (s *Site) initTemplateAttributes() {
 	}
 }
 
-func (s *Site) ConfigureLiquid() {
-	liquid.SetFilePathURLGetter(s.GetFileURL)
+// LiquidConfiguration configures the liquid tags with site-specific behavior.
+func (s *Site) LiquidConfiguration() *core.Configuration {
+	if s.liquidConfiguration != nil {
+		return s.liquidConfiguration
+	}
+	liquidHelper.SetFilePathURLGetter(s.GetFileURL)
+	includeHandler := func(name string, writer io.Writer, data map[string]interface{}) {
+		name = strings.TrimLeft(strings.TrimRight(name, "}}"), "{{")
+		filename := path.Join(s.Source, s.config.IncludesDir, name)
+		template, err := liquid.ParseFile(filename, s.liquidConfiguration)
+		if err != nil {
+			panic(err)
+		}
+		template.Render(writer, data)
+	}
+	s.liquidConfiguration = liquid.Configure().IncludeHandler(includeHandler)
+	return s.liquidConfiguration
+}
+
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
 func (s *Site) GetFrontMatterDefaults(relpath, typename string) (m VariableMap) {
 	for _, entry := range s.config.Defaults {

@@ -10,6 +10,7 @@ import (
 	"github.com/osteele/gojekyll/helpers"
 
 	"github.com/acstech/liquid"
+	"github.com/acstech/liquid/core"
 )
 
 // FindLayout returns a template for the named layout.
@@ -42,10 +43,10 @@ func (s *Site) FindLayout(base string, fm *VariableMap) (t *liquid.Template, err
 	if err != nil {
 		return
 	}
-	return liquid.Parse(content, nil)
+	return liquid.Parse(content, s.LiquidConfiguration())
 }
 
-func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
+func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte, config *core.Configuration) ([]byte, error) {
 	for {
 		layoutName := frontMatter.String("layout", "")
 		if layoutName == "" {

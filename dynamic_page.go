@@ -129,8 +129,8 @@ func (p *DynamicPage) DebugVariables() VariableMap {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *DynamicPage) Write(w io.Writer) (err error) {
-	p.site.ConfigureLiquid()
-	body, err := helpers.ParseAndApplyTemplate(p.Content, p.TemplateVariables())
+	config := p.site.LiquidConfiguration()
+	body, err := helpers.ParseAndApplyTemplate(p.Content, p.TemplateVariables(), config)
 	if err != nil {
 		err = &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
 		return
@@ -138,7 +138,7 @@ func (p *DynamicPage) Write(w io.Writer) (err error) {
 
 	if p.Site().IsMarkdown(p.relpath) {
 		body = blackfriday.MarkdownCommon(body)
-		body, err = p.applyLayout(p.frontMatter, body)
+		body, err = p.applyLayout(p.frontMatter, body, config)
 		if err != nil {
 			return
 		}
