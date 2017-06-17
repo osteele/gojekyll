@@ -6,12 +6,21 @@ import (
 	"mime"
 	"net/http"
 	"path"
+	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
 
 // Server serves the site on HTTP.
-type Server struct{ Site *Site }
+type Server struct {
+	Site *Site
+	mu   sync.Mutex
+}
+
+type emptyType struct{}
+
+var void emptyType
 
 // Run runs the server.
 func (s *Server) Run(logger func(label, value string)) error {
@@ -26,6 +35,9 @@ func (s *Server) Run(logger func(label, value string)) error {
 }
 
 func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	site := s.Site
 	urlpath := r.URL.Path
 	mimeType := mime.TypeByExtension(path.Ext(urlpath))
@@ -49,26 +61,70 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) syncReloadSite() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	start := time.Now()
+	fmt.Printf("%s Reloading site...", start.Format(time.Stamp))
+	if err := s.Site.Reload(); err != nil {
+		fmt.Println()
+		fmt.Printf(err.Error())
+	}
+	fmt.Printf("reloaded in %.2fs\n", time.Since(start).Seconds())
+}
+
 func (s *Server) watchFiles() error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
 
+	var (
+		events    = make(chan emptyType)
+		debounced = debounce(time.Second, events)
+	)
+
 	go func() {
 		for {
 			select {
-			case event := <-watcher.Events:
-				log.Println("event:", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
-					// TODO rebuild the site
-				}
+			case <-watcher.Events:
+				events <- void
 			case err := <-watcher.Errors:
 				log.Println("error:", err)
 			}
 		}
 	}()
 
+	go func() {
+		for {
+			<-debounced
+			s.syncReloadSite()
+		}
+	}()
+
 	return watcher.Add(s.Site.Source)
+}
+
+// debounce relays values from input to output, merging successive values within interval
+// TODO consider https://github.com/ReactiveX/RxGo
+func debounce(interval time.Duration, input chan emptyType) (output chan emptyType) {
+	output = make(chan emptyType)
+	var (
+		pending = false
+		ticker  = time.Tick(interval)
+	)
+	go func() {
+		for {
+			select {
+			case <-input:
+				pending = true
+			case <-ticker:
+				if pending {
+					output <- void
+					pending = false
+				}
+			}
+		}
+	}()
+	return
 }

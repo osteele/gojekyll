@@ -60,6 +60,18 @@ func NewSiteFromDirectory(source string) (*Site, error) {
 	return s, nil
 }
 
+// Reload reloads the config file and pages.
+func (s *Site) Reload() (err error) {
+	copy, err := NewSiteFromDirectory(s.Source)
+	copy.Destination = s.Destination
+	*s = *copy
+	err = s.ReadFiles()
+	if err != nil {
+		return
+	}
+	return
+}
+
 // KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
 func (s *Site) KeepFile(path string) bool {
 	// TODO
