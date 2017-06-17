@@ -1,4 +1,4 @@
-package main
+package gojekyll
 
 import (
 	"fmt"
@@ -14,13 +14,13 @@ import (
 type Server struct{ Site *Site }
 
 // Run runs the server.
-func (s *Server) Run() error {
+func (s *Server) Run(logger func(label, value string)) error {
 	address := "localhost:4000"
 	if err := s.watchFiles(); err != nil {
 		return err
 	}
-	printSetting("Server address:", "http://"+address+"/")
-	printSetting("Server running...", "press ctrl-c to stop.")
+	logger("Server address:", "http://"+address+"/")
+	logger("Server running...", "press ctrl-c to stop.")
 	http.HandleFunc("/", s.handler)
 	return http.ListenAndServe(address, nil)
 }

@@ -1,6 +1,4 @@
 #!/bin/bash
 
-# go run `ls *.go | grep -v _test.go` $@
-go run `find . -maxdepth 1 -name \*.go ! -name \*_test.go` $@
-
-# go build && ./gojekyll $@
+# go run `find . -maxdepth 1 -name \*.go ! -name \*_test.go` $@
+go run `find cmd/gojekyll -maxdepth 1 -name \*.go ! -name \*_test.go` $@
