@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
+	"mime"
 	"net/http"
+	"path"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -23,22 +25,25 @@ func (s *Server) Run() error {
 	return http.ListenAndServe(address, nil)
 }
 
-func (s *Server) handler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	site := s.Site
 	urlpath := r.URL.Path
-	// TODO? w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	mimeType := mime.TypeByExtension(path.Ext(urlpath))
+	if mimeType != "" {
+		rw.Header().Set("Content-Type", mimeType)
+	}
 
 	p, found := site.PageForURL(urlpath)
 	if !found {
-		w.WriteHeader(http.StatusNotFound)
+		rw.WriteHeader(http.StatusNotFound)
 		p, found = site.Paths["404.html"]
 	}
 	if !found {
-		fmt.Fprintf(w, "404 page not found: %s", urlpath)
+		fmt.Fprintf(rw, "404 page not found: %s", urlpath)
 		return
 	}
 
-	err := p.Write(w)
+	err := p.Write(rw)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}
