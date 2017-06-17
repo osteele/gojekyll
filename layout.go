@@ -25,7 +25,7 @@ func (s *Site) FindLayout(base string, fm *VariableMap) (t *liquid.Template, err
 	)
 	for _, ext := range exts {
 		// TODO respect layout config
-		name = filepath.Join(s.Source, "_layouts", base+ext)
+		name = filepath.Join(s.LayoutsDir(), base+ext)
 		content, err = ioutil.ReadFile(name)
 		if err == nil {
 			found = true
