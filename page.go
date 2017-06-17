@@ -35,6 +35,7 @@ type pageFields struct {
 	relpath     string      // relative to site source, e.g. "_post/base.ext"
 	permalink   string      // cached permalink
 	frontMatter VariableMap // page front matter, merged with defaults
+	collection  *Collection
 	site        *Site
 }
 
@@ -48,13 +49,13 @@ func (p *pageFields) Published() bool   { return p.frontMatter.Bool("published",
 func (p *pageFields) Site() *Site       { return p.site }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
-func ReadPage(site *Site, relpath string, defaults VariableMap) (p Page, err error) {
+func ReadPage(site *Site, collection *Collection, relpath string, defaults VariableMap) (p Page, err error) {
 	magic, err := helpers.ReadFileMagic(filepath.Join(site.Source, relpath))
 	if err != nil {
 		return
 	}
 
-	fields := pageFields{site: site, relpath: relpath, frontMatter: defaults}
+	fields := pageFields{site: site, collection: collection, relpath: relpath, frontMatter: defaults}
 	if string(magic) == "---\n" {
 		p, err = NewDynamicPage(fields)
 		if err != nil {

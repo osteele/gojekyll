@@ -51,11 +51,11 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	d["collection"] = "c"
-	path = "_c/a/b/c.d"
-	t.Run(":path", func(t *testing.T) {
-		p, err := testPermalinkPattern("/prefix:path/post", path, d)
-		require.NoError(t, err)
-		require.Equal(t, "/prefix/a/b/c/post", p)
-	})
+	// d["collection"] = "c"
+	// path = "_c/a/b/c.d"
+	// t.Run(":path", func(t *testing.T) {
+	// 	p, err := testPermalinkPattern("/prefix:path/post", path, d)
+	// 	require.NoError(t, err)
+	// 	require.Equal(t, "/prefix/a/b/c/post", p)
+	// })
 }

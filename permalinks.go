@@ -52,13 +52,8 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	case p.site.IsSassPath(path):
 		outputExt = ".css"
 	}
-	if val, found := p.frontMatter["collection"]; found {
-		collectionName = val.(string)
-		prefix := "_" + collectionName + "/"
-		if !strings.HasPrefix(path, prefix) {
-			panic(fmt.Errorf("Expected %s to start with %s", path, prefix))
-		}
-		root = root[len(prefix):]
+	if p.collection != nil {
+		root = strings.TrimPrefix(root, p.collection.PathPrefix())
 	}
 	vs := map[string]string{
 		"collection": collectionName,

@@ -170,7 +170,7 @@ func (s *Site) ReadFiles() error {
 		case info.IsDir(), s.Exclude(rel):
 			return nil
 		}
-		p, err := ReadPage(s, rel, defaults)
+		p, err := ReadPage(s, nil, rel, defaults)
 		if err != nil {
 			return err
 		}

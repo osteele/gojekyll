@@ -54,6 +54,10 @@ func (c *Collection) IsPosts() bool {
 	return c.Name == "posts"
 }
 
+func (c *Collection) PathPrefix() string {
+	return "_" + c.Name + "/"
+}
+
 // Source returns the source directory for pages in the collection.
 func (c *Collection) Source() string {
 	return filepath.Join(c.Site.Source, "_"+c.Name)
@@ -84,7 +88,7 @@ func (c *Collection) ReadPages() error {
 		case info.IsDir():
 			return nil
 		}
-		p, err := ReadPage(c.Site, rel, defaults)
+		p, err := ReadPage(c.Site, c, rel, defaults)
 		switch {
 		case err != nil:
 			return err
