@@ -7,8 +7,10 @@ import (
 	"github.com/acstech/liquid/core"
 )
 
+// Template is an alias for liquid.Template.
 type Template liquid.Template
 
+// Parse is a wrapper for liquid.Parse.
 func Parse(data []byte, config *core.Configuration) (*Template, error) {
 	template, err := liquid.Parse(data, config)
 	return (*Template)(template), err

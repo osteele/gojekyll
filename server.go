@@ -68,7 +68,7 @@ func (s *Server) syncReloadSite() {
 	fmt.Printf("%s Reloading site...", start.Format(time.Stamp))
 	if err := s.Site.Reload(); err != nil {
 		fmt.Println()
-		fmt.Printf(err.Error())
+		fmt.Println(err.Error())
 	}
 	fmt.Printf("reloaded in %.2fs\n", time.Since(start).Seconds())
 }
@@ -111,7 +111,7 @@ func debounce(interval time.Duration, input chan emptyType) (output chan emptyTy
 	output = make(chan emptyType)
 	var (
 		pending = false
-		ticker  = time.Tick(interval)
+		ticker  = time.Tick(interval) // nolint: staticcheck
 	)
 	go func() {
 		for {

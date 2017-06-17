@@ -42,7 +42,7 @@ type Link struct {
 	url string
 }
 
-// AddCode is equired by the Liquid tag interface
+// AddCode is required by the Liquid tag interface
 func (l *Link) AddCode(code core.Code) {
 	panic("AddCode should not have been called on a Link")
 }
