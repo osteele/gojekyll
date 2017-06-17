@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -84,6 +85,26 @@ func IsNotEmpty(err error) bool {
 		return err.Err.(syscall.Errno) == syscall.ENOTEMPTY
 	}
 	return false
+}
+
+// NewPathError returns an os.PathError that formats as the given text.
+func NewPathError(op, name, text string) *os.PathError {
+	return &os.PathError{Op: op, Path: name, Err: errors.New(text)}
+}
+
+// PathError returns an instance of *os.PathError, by wrapping its argument
+// if it is not already an instance.
+// PathError returns nil for a nil argument.
+func PathError(err error, op, name string) *os.PathError {
+	if err == nil {
+		return nil
+	}
+	switch err := err.(type) {
+	case *os.PathError:
+		return err
+	default:
+		return &os.PathError{Op: "read", Path: name, Err: err}
+	}
 }
 
 // RemoveEmptyDirectories recursively removes empty directories.

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"regexp"
 
@@ -133,8 +132,7 @@ func (p *DynamicPage) Write(w io.Writer) (err error) {
 	config := p.site.LiquidConfiguration()
 	body, err := liquid.ParseAndApplyTemplate(p.Content, p.TemplateVariables(), config)
 	if err != nil {
-		err = &os.PathError{Op: "Liquid Error", Path: p.Source(), Err: err}
-		return
+		return helpers.PathError(err, "Liquid Error", p.Source())
 	}
 
 	if p.Site().IsMarkdown(p.relpath) {

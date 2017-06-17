@@ -157,7 +157,7 @@ func (s *Site) ReadFiles() error {
 		defaults := s.GetFrontMatterDefaults(relname, "")
 		p, err := ReadPage(s, nil, relname, defaults)
 		if err != nil {
-			return err
+			return helpers.PathError(err, "read", name)
 		}
 		if p.Published() {
 			s.Paths[p.Permalink()] = p
