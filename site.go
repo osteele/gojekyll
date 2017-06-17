@@ -89,9 +89,9 @@ func (s *Site) FindPageByFilePath(relpath string) Page {
 }
 
 // GetFileURL returns the URL path given a file path, relative to the site source directory.
-func (s *Site) GetFileURL(path string) (string, bool) {
+func (s *Site) GetFileURL(relpath string) (string, bool) {
 	for _, p := range s.Paths {
-		if p.Path() == path {
+		if p.Path() == relpath {
 			return p.Permalink(), true
 		}
 	}
