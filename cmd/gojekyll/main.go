@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 
 	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
@@ -76,6 +78,18 @@ func main() {
 			Action: withSite(buildCommand),
 		},
 		{
+			Name:    "benchmark",
+			Aliases: []string{"b"},
+			Usage:   "Benchmark",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:        "dry-run, n",
+					Usage:       "Dry run",
+					Destination: &buildOptions.DryRun,
+				},
+			},
+			Action: withSite(benchmarkCommand),
+		}, {
 			Name:    "data",
 			Aliases: []string{"b"},
 			Action:  withSite(dataCommand),
@@ -94,6 +108,15 @@ func main() {
 			Name:   "render",
 			Action: withSite(renderCommand),
 		},
+	}
+
+	if true {
+		f, err := os.Create("gojekyll.prof")
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
 	}
 
 	_ = app.Run(os.Args)

@@ -28,10 +28,23 @@ func buildCommand(c *cli.Context, site *gojekyll.Site) error {
 	if err != nil {
 		return err
 	}
-
 	elapsed := time.Since(commandStartTime)
 	printSetting("", fmt.Sprintf("created %d files in %.2fs.", count, elapsed.Seconds()))
 	return nil
+}
+
+func benchmarkCommand(c *cli.Context, site *gojekyll.Site) error {
+	printSetting("Generating...", "")
+	for i := 0; i < 10; i++ {
+		printSetting("", fmt.Sprintf("%d", i+1))
+		_, err := site.Build(buildOptions)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+	// elapsed := time.Since(commandStartTime)
+	// printSetting("", fmt.Sprintf("created %d files in %.2fs.", count, elapsed.Seconds()))
 }
 
 func serveCommand(c *cli.Context, site *gojekyll.Site) error {
