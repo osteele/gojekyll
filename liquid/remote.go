@@ -53,7 +53,9 @@ func (engine *RPCClientEngine) getSessionID() string {
 	var result struct {
 		SessionID string
 	}
-	res.GetObject(&result)
+	if err := res.GetObject(&result); err != nil {
+		panic(err)
+	}
 	engine.rpcSessionID = result.SessionID
 	return engine.rpcSessionID
 }
@@ -70,13 +72,15 @@ func (engine *RPCClientEngine) rpcCall(method string, params ...interface{}) (*j
 	return res, nil
 }
 
-func (engine *RPCClientEngine) FileUrlMap(m map[string]string) {
+// FileURLMap sets the filename -> permalink map that is used during link tag expansion.
+func (engine *RPCClientEngine) FileURLMap(m map[string]string) {
 	_, err := engine.rpcCall("fileUrls", m)
 	if err != nil {
 		panic(err)
 	}
 }
 
+// IncludeDirs specifies the directories that the include tag looks in.
 func (engine *RPCClientEngine) IncludeDirs(dirs []string) {
 	_, err := engine.rpcCall("includeDirs", dirs)
 	if err != nil {

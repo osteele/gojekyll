@@ -31,7 +31,7 @@ func (s *Server) Run(logger func(label, value string)) error {
 		return err
 	}
 	s.lr = lrserver.New(lrserver.DefaultName, lrserver.DefaultPort)
-	go s.lr.ListenAndServe()
+	go s.lr.ListenAndServe() // nolint: errcheck
 	logger("Server address:", "http://"+address+"/")
 	logger("Server running...", "press ctrl-c to stop.")
 	http.HandleFunc("/", s.handler)
@@ -89,7 +89,7 @@ var liveReloadReplacementBytes = append(liveReloadScriptTag, liveReloadSearchByt
 // It doesn't parse HTML, so it could be spoofed but probably only intentionally.
 func (i scriptTagInjector) Write(p []byte) (n int, err error) {
 	if !bytes.Contains(p, liveReloadSearchBytes) {
-		p = bytes.Replace(p, []byte(liveReloadSearchBytes), []byte(liveReloadReplacementBytes), 1)
+		p = bytes.Replace(p, liveReloadSearchBytes, liveReloadReplacementBytes, 1)
 	}
 	if !bytes.Contains(p, liveReloadSearchBytes) {
 		p = append(liveReloadScriptTag, p...)

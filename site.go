@@ -183,8 +183,8 @@ func (s *Site) initTemplateAttributes() {
 }
 
 func (s *Site) createLocalEngine() liquid.Engine {
-	e := liquid.NewLocalWrapperEngine()
-	e.LinkHandler(s.GetFileURL)
+	engine := liquid.NewLocalWrapperEngine()
+	engine.LinkHandler(s.GetFileURL)
 	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) {
 		name = strings.TrimLeft(strings.TrimRight(name, "}}"), "{{")
 		filename := filepath.Join(s.Source, s.config.IncludesDir, name)
@@ -192,31 +192,40 @@ func (s *Site) createLocalEngine() liquid.Engine {
 		if err != nil {
 			panic(err)
 		}
-		text, err := e.ParseAndRender(template, scope)
+		text, err := engine.ParseAndRender(template, scope)
+		if err != nil {
+			panic(err)
+		}
 		_, err = w.Write(text)
 		if err != nil {
 			panic(err)
 		}
 	}
-	e.IncludeHandler(includeHandler)
-	return e
+	engine.IncludeHandler(includeHandler)
+	return engine
 }
 
 func (s *Site) createRemoteEngine() liquid.Engine {
-	e := liquid.NewRPCClientEngine(liquid.DefaultServer)
-	m := map[string]string{}
+	engine := liquid.NewRPCClientEngine(liquid.DefaultServer)
+	urls := map[string]string{}
 	for _, p := range s.Paths {
-		m[p.Path()] = p.Permalink()
+		urls[p.Path()] = p.Permalink()
 	}
-	e.FileUrlMap(m)
-	e.IncludeDirs([]string{filepath.Join(s.Source, s.config.IncludesDir)})
-	return e
+	engine.FileURLMap(urls)
+	engine.IncludeDirs([]string{filepath.Join(s.Source, s.config.IncludesDir)})
+	return engine
 }
+
+const useRemoteLiquidEngine = true
 
 // LiquidEngine create a liquid engine with site-specific behavior.
 func (s *Site) LiquidEngine() liquid.Engine {
 	if s.liquidEngine == nil {
-		s.liquidEngine = s.createLocalEngine()
+		if useRemoteLiquidEngine {
+			s.liquidEngine = s.createRemoteEngine()
+		} else {
+			s.liquidEngine = s.createLocalEngine()
+		}
 	}
 	return s.liquidEngine
 }
