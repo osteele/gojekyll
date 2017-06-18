@@ -87,14 +87,14 @@ var liveReloadReplacementBytes = append(liveReloadScriptTag, liveReloadSearchByt
 // It depends on the fact that dynamic page rendering makes a single Write call,
 // so that it's guaranteed to find the marker within a single invocation argument.
 // It doesn't parse HTML, so it could be spoofed but probably only intentionally.
-func (i scriptTagInjector) Write(p []byte) (n int, err error) {
-	if !bytes.Contains(p, liveReloadSearchBytes) {
-		p = bytes.Replace(p, liveReloadSearchBytes, liveReloadReplacementBytes, 1)
+func (i scriptTagInjector) Write(content []byte) (n int, err error) {
+	if !bytes.Contains(content, liveReloadScriptTag) && bytes.Contains(content, liveReloadSearchBytes) {
+		content = bytes.Replace(content, liveReloadSearchBytes, liveReloadReplacementBytes, 1)
 	}
-	if !bytes.Contains(p, liveReloadSearchBytes) {
-		p = append(liveReloadScriptTag, p...)
+	if !bytes.Contains(content, liveReloadScriptTag) {
+		content = append(liveReloadScriptTag, content...)
 	}
-	return i.w.Write(p)
+	return i.w.Write(content)
 }
 
 func (s *Server) syncReloadSite() {
