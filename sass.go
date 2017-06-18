@@ -34,39 +34,38 @@ func (p *DynamicPage) writeSass(w io.Writer, data []byte) error {
 // CopySassFileIncludes copies sass partials into a temporary directory,
 // removing initial underscores.
 // TODO delete the temp directory when done
-func (s *Site) CopySassFileIncludes() {
+func (s *Site) CopySassFileIncludes() error {
 	// TODO use libsass.ImportsOption instead?
 	if s.sassTempDir == "" {
-		d, err := ioutil.TempDir(os.TempDir(), "_sass")
+		dir, err := ioutil.TempDir(os.TempDir(), "_sass")
 		if err != nil {
-			panic(err)
+			return err
 		}
-		s.sassTempDir = d
+		s.sassTempDir = dir
 	}
 
 	src := filepath.Join(s.Source, "_sass")
 	dst := s.sassTempDir
-	err := filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
+	return filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return err
 		}
 		rel, err := filepath.Rel(src, from)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		to := filepath.Join(dst, strings.TrimPrefix(rel, "_"))
 		return helpers.CopyFileContents(to, from, 0644)
 	})
-	if err != nil {
-		panic(err)
-	}
 }
 
 // SassIncludePaths returns an array of sass include directories.
 func (s *Site) SassIncludePaths() []string {
 	if s.sassTempDir == "" {
-		s.CopySassFileIncludes()
+		err := s.CopySassFileIncludes()
+		if err != nil {
+			panic(err)
+		}
 	}
-	s.CopySassFileIncludes()
 	return []string{s.sassTempDir}
 }

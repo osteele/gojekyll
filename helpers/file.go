@@ -31,6 +31,10 @@ func VisitCreatedFile(name string, w func(io.Writer) error) error {
 // CopyFileContents copies the file contents from src to dst.
 // It's not atomic and doesn't copy permissions or metadata.
 func CopyFileContents(dst, src string, perm os.FileMode) error {
+	// nolint: gas
+	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
+		return err
+	}
 	in, err := os.Open(src)
 	if err != nil {
 		return err
