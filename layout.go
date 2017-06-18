@@ -8,12 +8,10 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/liquid"
-
-	"github.com/acstech/liquid/core"
 )
 
 // FindLayout returns a template for the named layout.
-func (s *Site) FindLayout(base string, fm *VariableMap) (t *liquid.Template, err error) {
+func (s *Site) FindLayout(base string, fm *VariableMap) (t liquid.Template, err error) {
 	exts := []string{"", ".html"}
 	for _, ext := range strings.SplitN(s.config.MarkdownExt, `,`, -1) {
 		exts = append(exts, "."+ext)
@@ -42,10 +40,10 @@ func (s *Site) FindLayout(base string, fm *VariableMap) (t *liquid.Template, err
 	if err != nil {
 		return
 	}
-	return liquid.Parse(content, s.LiquidConfiguration())
+	return s.LiquidEngine().ParseTemplate(content)
 }
 
-func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte, config *core.Configuration) ([]byte, error) {
+func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
 	for {
 		layoutName := frontMatter.String("layout", "")
 		if layoutName == "" {
@@ -59,7 +57,7 @@ func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte, config *
 			"content": body,
 			"layout":  frontMatter,
 		})
-		body, err = liquid.Render(template, vars)
+		body, err = template.Render(vars)
 		if err != nil {
 			return nil, err
 		}

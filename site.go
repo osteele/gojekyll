@@ -9,10 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/acstech/liquid"
-	"github.com/acstech/liquid/core"
 	"github.com/osteele/gojekyll/helpers"
-	liquidHelper "github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/liquid"
 )
 
 // Site is a Jekyll site.
@@ -25,9 +23,9 @@ type Site struct {
 	Variables   VariableMap
 	Paths       map[string]Page // URL path -> Page
 
-	config              SiteConfig
-	liquidConfiguration *core.Configuration
-	sassTempDir         string
+	config       SiteConfig
+	liquidEngine liquid.Engine
+	sassTempDir  string
 }
 
 // NewSite creates a new site record, initialized with the site defaults.
@@ -185,23 +183,28 @@ func (s *Site) initTemplateAttributes() {
 	}
 }
 
-// LiquidConfiguration configures the liquid tags with site-specific behavior.
-func (s *Site) LiquidConfiguration() *core.Configuration {
-	if s.liquidConfiguration != nil {
-		return s.liquidConfiguration
+// LiquidEngine create a liquid engine with site-specific behavior.
+func (s *Site) LiquidEngine() liquid.Engine {
+	if s.liquidEngine != nil {
+		return s.liquidEngine
 	}
-	liquidHelper.SetFilePathURLGetter(s.GetFileURL)
-	includeHandler := func(name string, writer io.Writer, data map[string]interface{}) {
+	e := liquid.NewLocalEngine()
+	e.LinkHandler(s.GetFileURL)
+	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) {
 		name = strings.TrimLeft(strings.TrimRight(name, "}}"), "{{")
 		filename := path.Join(s.Source, s.config.IncludesDir, name)
-		template, err := liquid.ParseFile(filename, s.liquidConfiguration)
+		template, err := ioutil.ReadFile(filename)
 		if err != nil {
 			panic(err)
 		}
-		template.Render(writer, data)
+		text, err := e.ApplyTemplate(template, scope)
+		_, err = w.Write(text)
+		if err != nil {
+			panic(err)
+		}
 	}
-	s.liquidConfiguration = liquid.Configure().IncludeHandler(includeHandler)
-	return s.liquidConfiguration
+	e.IncludeHandler(includeHandler)
+	return e
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults

@@ -14,13 +14,13 @@ func init() {
 }
 
 // A FilePathURLGetter given an include tag file name returns a URL.
-type FilePathURLGetter func(string) (string, bool)
+type LinkHandler func(string) (string, bool)
 
-var filePathURLGetter FilePathURLGetter
+var linkHandler LinkHandler
 
-// SetFilePathURLGetter sets the function that resolves an include tag file name to a URL.
-func SetFilePathURLGetter(getter FilePathURLGetter) {
-	filePathURLGetter = getter
+// SetLinkHandler sets the function that resolves an include tag file name to a URL.
+func SetLinkHandler(h LinkHandler) {
+	linkHandler = h
 }
 
 // LinkFactory creates a link tag
@@ -29,7 +29,7 @@ func LinkFactory(p *core.Parser, config *core.Configuration) (core.Tag, error) {
 	p.SkipPastTag()
 	end := p.Position - 2
 	name := strings.TrimSpace(string(p.Data[start:end]))
-	url, ok := filePathURLGetter(name)
+	url, ok := linkHandler(name)
 	if !ok {
 		return nil, fmt.Errorf("link tag: %s not found", name)
 	}
