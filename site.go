@@ -4,7 +4,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -183,21 +182,17 @@ func (s *Site) initTemplateAttributes() {
 	}
 }
 
-// LiquidEngine create a liquid engine with site-specific behavior.
-func (s *Site) LiquidEngine() liquid.Engine {
-	if s.liquidEngine != nil {
-		return s.liquidEngine
-	}
-	e := liquid.NewLocalEngine()
+func (s *Site) createLocalEngine() liquid.Engine {
+	e := liquid.NewLocalWrapperEngine()
 	e.LinkHandler(s.GetFileURL)
 	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) {
 		name = strings.TrimLeft(strings.TrimRight(name, "}}"), "{{")
-		filename := path.Join(s.Source, s.config.IncludesDir, name)
+		filename := filepath.Join(s.Source, s.config.IncludesDir, name)
 		template, err := ioutil.ReadFile(filename)
 		if err != nil {
 			panic(err)
 		}
-		text, err := e.ApplyTemplate(template, scope)
+		text, err := e.ParseAndRender(template, scope)
 		_, err = w.Write(text)
 		if err != nil {
 			panic(err)
@@ -205,6 +200,25 @@ func (s *Site) LiquidEngine() liquid.Engine {
 	}
 	e.IncludeHandler(includeHandler)
 	return e
+}
+
+func (s *Site) createRemoteEngine() liquid.Engine {
+	e := liquid.NewRPCClientEngine(liquid.DefaultServer)
+	m := map[string]string{}
+	for _, p := range s.Paths {
+		m[p.Path()] = p.Permalink()
+	}
+	e.FileUrlMap(m)
+	e.IncludeDirs([]string{filepath.Join(s.Source, s.config.IncludesDir)})
+	return e
+}
+
+// LiquidEngine create a liquid engine with site-specific behavior.
+func (s *Site) LiquidEngine() liquid.Engine {
+	if s.liquidEngine == nil {
+		s.liquidEngine = s.createLocalEngine()
+	}
+	return s.liquidEngine
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults

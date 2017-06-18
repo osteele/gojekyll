@@ -40,7 +40,7 @@ func (s *Site) FindLayout(base string, fm *VariableMap) (t liquid.Template, err 
 	if err != nil {
 		return
 	}
-	return s.LiquidEngine().ParseTemplate(content)
+	return s.LiquidEngine().Parse(content)
 }
 
 func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
@@ -54,7 +54,7 @@ func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte,
 			return nil, err
 		}
 		vars := MergeVariableMaps(p.TemplateVariables(), VariableMap{
-			"content": body,
+			"content": string(body),
 			"layout":  frontMatter,
 		})
 		body, err = template.Render(vars)
