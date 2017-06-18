@@ -21,6 +21,9 @@ var commandStartTime = time.Now()
 func buildCommand(c *cli.Context, site *gojekyll.Site) error {
 	printPathSetting("Destination:", site.Destination)
 	printSetting("Generating...", "")
+	if buildOptions.DryRun {
+		buildOptions.Verbose = true
+	}
 	count, err := site.Build(buildOptions)
 	if err != nil {
 		return err

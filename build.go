@@ -12,11 +12,15 @@ import (
 type BuildOptions struct {
 	DryRun       bool
 	UseHardLinks bool
+	Verbose      bool
 }
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
 func (s *Site) Clean(options BuildOptions) error {
 	removeFiles := func(name string, info os.FileInfo, err error) error {
+		if options.Verbose {
+			fmt.Println("rm", name)
+		}
 		switch {
 		case err != nil && os.IsNotExist(err):
 			return nil
@@ -27,14 +31,16 @@ func (s *Site) Clean(options BuildOptions) error {
 		case s.KeepFile(name):
 			return nil
 		case options.DryRun:
-			fmt.Println("rm", name)
+			return nil
 		default:
 			return os.Remove(name)
 		}
-		return nil
 	}
 	if err := filepath.Walk(s.Destination, removeFiles); err != nil {
 		return err
+	}
+	if options.DryRun {
+		return nil
 	}
 	return helpers.RemoveEmptyDirectories(s.Destination)
 }
@@ -61,14 +67,17 @@ func (s *Site) WritePage(page Page, options BuildOptions) error {
 	if !page.Static() && filepath.Ext(to) == "" {
 		to = filepath.Join(to, "/index.html")
 	}
+	if options.Verbose {
+		fmt.Println("create", to, "from", page.Source())
+	}
+	if options.DryRun {
+		return nil
+	}
 	// nolint: gas
 	if err := os.MkdirAll(filepath.Dir(to), 0755); err != nil {
 		return err
 	}
 	switch {
-	case options.DryRun:
-		fmt.Println("create", to, "from", page.Source())
-		return nil
 	case page.Static() && options.UseHardLinks:
 		return os.Link(from, to)
 	case page.Static():
