@@ -6,9 +6,41 @@ When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyl
 [![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 
-This project is missing more functionality than it implements. It may accidentally work on tiny or simple sites, but I'd be surprised. Most egregious are an insufficiency of template variables, and limitations in the **liquid** library.
+This project is missing more functionality than it implements. It may accidentally work on tiny or simple sites.
 
-I'm writing this to learn my way around Go. It's not good for anything yet, and it may never come to anything.
+It's currently ~50x faster than Jekyll using an embedded Liquid engine (that isn't very completely); and about 5x faster using an un-optimized connection to the [harttle/shopify-liquid](https://github.com/harttle/shopify-liquid) JavaScript library (documentation TBD) to render Liquid templates.
+
+- [ ] Content
+  - [x] Front Matter
+  - [ ] Posts
+    - [ ] Categories
+    - [ ] Tags
+    - [ ] Drafts
+    - [ ] Future
+    - [ ] Related
+  - [ ] Creating pages
+  - [x] Static Files
+  - [x] Variables
+  - [ ] Collections -- rendered, but not available as variables
+  - [ ] Data Files
+  - [ ] Assets
+    - [ ] Coffeescript
+    - [x] Sass
+- [ ] Customization
+  - [x] Templates
+    - [ ] All Jekyll Liquid filters
+    - [ ] All Jekyll Liquid tags
+  - [x] Includes
+  - [x] Permalinks
+  - [ ] Pagination
+  - [ ] Themes
+  - [x] Layouts
+- [x] Server
+  - [x] Directory watch
+  - [x] Live reload
+- [ ] Other
+  - [x] LINUX, macOS
+  - [ ] Windows -- not tested
 
 ## Install
 
@@ -48,7 +80,7 @@ For develpment, `./scripts/gojekyll` uses `go run` each time it's invoked.
 
 ## Credits
 
-For rendering Liquid templates: the [acstech/liquid](https://github.com/acstech/liquid) fork of [karlseguin/liquid](https://github.com/karlseguin/liquid).
+For rendering Liquid templates: the [acstech/liquid](https://github.com/acstech/liquid) fork of [karlseguin/liquid](https://github.com/karlseguin/liquid); or, [harttle/shopify-liquid](https://github.com/harttle/shopify-liquid/) via JSON-RPC.
 
 The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
