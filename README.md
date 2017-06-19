@@ -63,9 +63,6 @@ git pull -f osteele
 ```bash
 gojekyll build                # builds into ./_site
 gojekyll serve                # serves from memory, w/ live reload
-gojekyll render index.md      # render a file to stdout
-gojekyll render /             # render a URL to stdout
-gojekyll data /               # print a file or URL's variables
 gojekyll   # use a local Liquid engine server
 gojekyll help
 ```
@@ -88,6 +85,12 @@ This is currently about 10x slower than using the embedded engine, but still 5x 
 Neither the embedded Liquid server nor the Liquid Template Server implements very many Jekyll Liquid filters or tags. I'm adding to these as necessary to support my own sites.
 
 ## Development
+
+```bash
+gojekyll render index.md      # render a file to stdout
+gojekyll render /             # render a URL to stdout
+gojekyll variables /          # print a file or URL's variables
+```
 
 `./scripts/gojekyll` is an alternative to the `gojekyll` executable, that uses `go run` each time it's invoked.
 

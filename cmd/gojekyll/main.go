@@ -86,9 +86,10 @@ func main() {
 			Usage:  "Build several times, and write a profile file",
 			Action: withSite(profileCommand),
 		}, {
-			Name:   "data",
-			Usage:  "Print a file or URL path's variables",
-			Action: withSite(dataCommand),
+			Name:    "variables",
+			Aliases: []string{"v", "var", "vars"},
+			Usage:   "Print a file or URL path's variables",
+			Action:  withSite(dataCommand),
 		},
 		{
 			Name:  "routes",
