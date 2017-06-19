@@ -39,9 +39,6 @@ func (s *Site) Clean(options BuildOptions) error {
 	if err := filepath.Walk(s.Destination, removeFiles); err != nil {
 		return err
 	}
-	if options.DryRun {
-		return nil
-	}
 	return helpers.RemoveEmptyDirectories(s.Destination)
 }
 

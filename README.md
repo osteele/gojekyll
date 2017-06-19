@@ -86,6 +86,8 @@ The gopher image in the test directory is from [Wikimedia Commons](https://commo
 
 [Jekyll](https://jekyllrb.com), of course.
 
+This project is a clean-room implementation of Jekyll, based solely on Jekyll's documentation and testing a few sites.
+
 ## License
 
 MIT

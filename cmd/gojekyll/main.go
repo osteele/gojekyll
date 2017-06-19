@@ -96,13 +96,13 @@ func main() {
 			},
 			Action: withSite(benchmarkCommand),
 		}, {
-			Name:    "data",
-			Usage:   "Print a file or URL path's variables",
-			Action:  withSite(dataCommand),
+			Name:   "data",
+			Usage:  "Print a file or URL path's variables",
+			Action: withSite(dataCommand),
 		},
 		{
-			Name: "routes",
-			Usage:   "Display site permalinks and associated files",
+			Name:  "routes",
+			Usage: "Display site permalinks and associated files",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "dynamic",
@@ -113,7 +113,7 @@ func main() {
 		},
 		{
 			Name:   "render",
-			Usage:   "Render a file or URL path",
+			Usage:  "Render a file or URL path",
 			Action: withSite(renderCommand),
 		},
 	}
@@ -123,7 +123,9 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		pprof.StartCPUProfile(f)
+		if err = pprof.StartCPUProfile(f); err != nil {
+			log.Fatal(err)
+		}
 		defer pprof.StopCPUProfile()
 	}
 
