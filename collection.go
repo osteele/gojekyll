@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // Collection is a Jekyll collection.
@@ -76,7 +77,7 @@ func (c *Collection) ReadPages() error {
 			// if the issue is simply that the directory doesn't exist, warn instead of error
 			if os.IsNotExist(err) {
 				if !c.IsPosts() {
-					fmt.Println("Missing directory for collection", c.Name)
+					fmt.Printf("Missing directory for collection: _%s\n", c.Name)
 				}
 				return nil
 			}
@@ -84,6 +85,8 @@ func (c *Collection) ReadPages() error {
 		}
 		relname, err := filepath.Rel(basePath, name)
 		switch {
+		case strings.HasPrefix(filepath.Base(relname), "."):
+			return nil
 		case err != nil:
 			return err
 		case info.IsDir():
