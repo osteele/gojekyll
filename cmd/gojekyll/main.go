@@ -14,6 +14,7 @@ import (
 
 // Command-line options
 var buildOptions gojekyll.BuildOptions
+var useRemoteLiquidEngine bool
 
 // This is the longest label. Pull it out here so we can both use it, and measure it for alignment.
 const configurationFileLabel = "Configuration file:"
@@ -50,6 +51,11 @@ func main() {
 			Usage:       "Destination directory",
 			Destination: &destination,
 		},
+		cli.BoolFlag{
+			Name:        "remote-liquid",
+			Usage:       "Use Liquid JSON-RPC server",
+			Destination: &useRemoteLiquidEngine,
+		},
 	}
 
 	withSite := func(cmd func(*cli.Context, *gojekyll.Site) error) func(*cli.Context) error {
@@ -80,7 +86,7 @@ func main() {
 		{
 			Name:    "benchmark",
 			Aliases: []string{"b"},
-			Usage:   "Benchmark",
+			Usage:   "Build several times, and write a profile file",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:        "dry-run, n",
@@ -91,11 +97,12 @@ func main() {
 			Action: withSite(benchmarkCommand),
 		}, {
 			Name:    "data",
-			Aliases: []string{"b"},
+			Usage:   "Print a file or URL path's variables",
 			Action:  withSite(dataCommand),
 		},
 		{
 			Name: "routes",
+			Usage:   "Display site permalinks and associated files",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "dynamic",
@@ -106,6 +113,7 @@ func main() {
 		},
 		{
 			Name:   "render",
+			Usage:   "Render a file or URL path",
 			Action: withSite(renderCommand),
 		},
 	}

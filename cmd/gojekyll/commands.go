@@ -43,8 +43,6 @@ func benchmarkCommand(c *cli.Context, site *gojekyll.Site) error {
 		}
 	}
 	return nil
-	// elapsed := time.Since(commandStartTime)
-	// printSetting("", fmt.Sprintf("created %d files in %.2fs.", count, elapsed.Seconds()))
 }
 
 func serveCommand(c *cli.Context, site *gojekyll.Site) error {
@@ -124,6 +122,7 @@ func loadSite(source, destination string) (*gojekyll.Site, error) {
 	if err != nil {
 		return nil, err
 	}
+	site.UseRemoteLiquidEngine = useRemoteLiquidEngine
 	if destination != "" {
 		site.Destination = destination
 	}
@@ -131,7 +130,6 @@ func loadSite(source, destination string) (*gojekyll.Site, error) {
 		printPathSetting(configurationFileLabel, *site.ConfigFile)
 	} else {
 		printSetting(configurationFileLabel, "none")
-
 	}
 	printPathSetting("Source:", site.Source)
 	return site, site.ReadFiles()

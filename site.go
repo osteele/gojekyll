@@ -14,9 +14,10 @@ import (
 
 // Site is a Jekyll site.
 type Site struct {
-	ConfigFile  *string
-	Source      string
-	Destination string
+	ConfigFile            *string
+	Source                string
+	Destination           string
+	UseRemoteLiquidEngine bool
 
 	Collections []*Collection
 	Variables   VariableMap
@@ -216,12 +217,10 @@ func (s *Site) createRemoteEngine() liquid.Engine {
 	return engine
 }
 
-const useRemoteLiquidEngine = true
-
 // LiquidEngine create a liquid engine with site-specific behavior.
 func (s *Site) LiquidEngine() liquid.Engine {
 	if s.liquidEngine == nil {
-		if useRemoteLiquidEngine {
+		if s.UseRemoteLiquidEngine {
 			s.liquidEngine = s.createRemoteEngine()
 		} else {
 			s.liquidEngine = s.createLocalEngine()

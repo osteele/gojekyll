@@ -25,11 +25,13 @@ It's currently ~50x faster than Jekyll using an embedded Liquid engine (that isn
   - [ ] Data Files
   - [ ] Assets
     - [ ] Coffeescript
-    - [x] Sass
+    - [x] Sass/SCSS
 - [ ] Customization
   - [x] Templates
-    - [ ] All Jekyll Liquid filters
-    - [ ] All Jekyll Liquid tags
+    - [x] link tag
+    - [x] include tag
+    - [ ] Remaining Jekyll Liquid tags
+    - [ ] Jekyll Liquid filters
   - [x] Includes
   - [x] Permalinks
   - [ ] Pagination
@@ -61,22 +63,16 @@ git pull -f osteele
 ## Run
 
 ```bash
-gojekyll --source test build
-gojekyll --source test serve
-gojekyll --source test render index.md # render a file to stdout
-gojekyll --source test render /        # render a URL to stdout
-gojekyll --source test data /          # print a path's template variables
+gojekyll build            # builds into ./_site
+gojekyll serve            # serves from memory, w/ live reload
+gojekyll render index.md  # render a file to stdout
+gojekyll render /         # render a URL to stdout
+gojekyll data /           # print a file or URL's variables
+gojekyll --remote-liquid  # use a local Liquid engine server
+gojekyll help
 ```
 
-`--source DIR` is optional.
-
-`build` needn't be run before `server`. The latter serves from memory.
-
-`server` only rebuilds individual changed pages, doesn't rebuild collections, and doesn't detect new pages.
-
-`render` renders a single file, identified by permalink if it starts with `/`, and by pathname (relative to the source directory) if it doesn't.
-
-For develpment, `./scripts/gojekyll` uses `go run` each time it's invoked.
+For development, `./scripts/gojekyll` uses `go run` each time it's invoked.
 
 ## Credits
 
