@@ -49,12 +49,6 @@ func (s *Site) CopySassFileIncludes() error {
 
 // SassIncludePaths returns an array of sass include directories.
 func (s *Site) SassIncludePaths() []string {
-	if s.sassTempDir == "" {
-		err := s.CopySassFileIncludes()
-		if err != nil {
-			panic(err)
-		}
-	}
 	return []string{s.sassTempDir}
 }
 

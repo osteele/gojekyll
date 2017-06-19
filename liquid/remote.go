@@ -47,7 +47,7 @@ func (engine *RPCClientEngine) Parse(text []byte) (Template, error) {
 	return &remoteTemplate{engine, text}, nil
 }
 
-func (engine *RPCClientEngine) createSession() error {
+func (engine *RPCClientEngine) createSession() (err error) {
 	res, err := engine.rpcClient.Call("session")
 	if err != nil {
 		return err
@@ -59,14 +59,15 @@ func (engine *RPCClientEngine) createSession() error {
 		SessionID  string
 		RPCVersion string
 	}
-	if err := res.GetObject(&result); err != nil {
-		return err
+	err = res.GetObject(&result)
+	if err != nil {
+		return
 	}
 	if result.RPCVersion != RPCVersion {
 		return fmt.Errorf("Liquid server RPC mismatch: expected %s; actual %s", RPCVersion, result.RPCVersion)
 	}
 	engine.rpcClient.SetCustomHeader("Session-ID", result.SessionID)
-	return err
+	return
 }
 
 func (engine *RPCClientEngine) rpcCall(method string, params ...interface{}) (*jsonrpc.RPCResponse, error) {

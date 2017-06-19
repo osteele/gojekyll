@@ -16,7 +16,8 @@ type BuildOptions struct {
 }
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
-func (s *Site) Clean(options BuildOptions) error {
+func (site *Site) Clean(options BuildOptions) error {
+	// TODO PERF when called as part of build, keep files that will be re-generated
 	removeFiles := func(name string, info os.FileInfo, err error) error {
 		if options.Verbose {
 			fmt.Println("rm", name)
@@ -28,7 +29,7 @@ func (s *Site) Clean(options BuildOptions) error {
 			return err
 		case info.IsDir():
 			return nil
-		case s.KeepFile(name):
+		case site.KeepFile(name):
 			return nil
 		case options.DryRun:
 			return nil
@@ -36,21 +37,28 @@ func (s *Site) Clean(options BuildOptions) error {
 			return os.Remove(name)
 		}
 	}
-	if err := filepath.Walk(s.Destination, removeFiles); err != nil {
+	if err := filepath.Walk(site.Destination, removeFiles); err != nil {
 		return err
 	}
-	return helpers.RemoveEmptyDirectories(s.Destination)
+	return helpers.RemoveEmptyDirectories(site.Destination)
 }
 
 // Build cleans the destination and create files in it.
 // It attends to the global options.dry_run.
-func (s *Site) Build(options BuildOptions) (count int, err error) {
-	if err = s.Clean(options); err != nil {
+func (site *Site) Build(options BuildOptions) (count int, err error) {
+	if err != nil {
 		return
 	}
-	for _, page := range s.Paths {
+	if err = site.Clean(options); err != nil {
+		return
+	}
+	err = site.CopySassFileIncludes()
+	if err != nil {
+		return
+	}
+	for _, page := range site.Paths {
 		count++
-		if err = s.WritePage(page, options); err != nil {
+		if err = site.WritePage(page, options); err != nil {
 			return
 		}
 	}
@@ -58,9 +66,9 @@ func (s *Site) Build(options BuildOptions) (count int, err error) {
 }
 
 // WritePage writes a page to the destination directory.
-func (s *Site) WritePage(page Page, options BuildOptions) error {
-	from := filepath.Join(s.Source, page.Path())
-	to := filepath.Join(s.Destination, page.Permalink())
+func (site *Site) WritePage(page Page, options BuildOptions) error {
+	from := filepath.Join(site.Source, page.Path())
+	to := filepath.Join(site.Destination, page.Permalink())
 	if !page.Static() && filepath.Ext(to) == "" {
 		to = filepath.Join(to, "/index.html")
 	}

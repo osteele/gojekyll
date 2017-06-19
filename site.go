@@ -60,25 +60,37 @@ func NewSiteFromDirectory(source string) (*Site, error) {
 
 // Reload reloads the config file and pages.
 // If there's an error loading the config file, it has no effect.
-func (s *Site) Reload() error {
-	copy, err := NewSiteFromDirectory(s.Source)
+func (site *Site) Reload() error {
+	copy, err := NewSiteFromDirectory(site.Source)
 	if err != nil {
 		return err
 	}
-	copy.Destination = s.Destination
-	*s = *copy
-	return s.ReadFiles()
+	copy.Destination = site.Destination
+	*site = *copy
+	site.sassTempDir = ""
+	return nil
+}
+
+// Load loads the site data and files. It doesn't load the configuration file; NewSiteFromDirectory did that.
+func (site *Site) Load() (err error) {
+	err = site.ReadFiles()
+	if err != nil {
+		return
+	}
+	site.initSiteVariables()
+	site.liquidEngine, err = site.makeLiquidEngine()
+	return
 }
 
 // KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
-func (s *Site) KeepFile(path string) bool {
+func (site *Site) KeepFile(path string) bool {
 	// TODO
 	return false
 }
 
 // FindPageByFilePath returns a Page or nil, referenced by relative path.
-func (s *Site) FindPageByFilePath(relpath string) Page {
-	for _, p := range s.Paths {
+func (site *Site) FindPageByFilePath(relpath string) Page {
+	for _, p := range site.Paths {
 		if p.Path() == relpath {
 			return p
 		}
@@ -87,8 +99,8 @@ func (s *Site) FindPageByFilePath(relpath string) Page {
 }
 
 // GetFileURL returns the URL path given a file path, relative to the site source directory.
-func (s *Site) GetFileURL(relpath string) (string, bool) {
-	for _, p := range s.Paths {
+func (site *Site) GetFileURL(relpath string) (string, bool) {
+	for _, p := range site.Paths {
 		if p.Path() == relpath {
 			return p.Permalink(), true
 		}
@@ -97,22 +109,22 @@ func (s *Site) GetFileURL(relpath string) (string, bool) {
 }
 
 // PageForURL returns the page that will be served at URL
-func (s *Site) PageForURL(urlpath string) (p Page, found bool) {
-	p, found = s.Paths[urlpath]
+func (site *Site) PageForURL(urlpath string) (p Page, found bool) {
+	p, found = site.Paths[urlpath]
 	if !found {
-		p, found = s.Paths[filepath.Join(urlpath, "index.html")]
+		p, found = site.Paths[filepath.Join(urlpath, "index.html")]
 	}
 	if !found {
-		p, found = s.Paths[filepath.Join(urlpath, "index.htm")]
+		p, found = site.Paths[filepath.Join(urlpath, "index.htm")]
 	}
 	return
 }
 
 // Exclude returns a boolean indicating that the site excludes a file.
-func (s *Site) Exclude(path string) bool {
+func (site *Site) Exclude(path string) bool {
 	// TODO exclude based on glob, not exact match
-	inclusionMap := helpers.StringArrayToMap(s.config.Include)
-	exclusionMap := helpers.StringArrayToMap(s.config.Exclude)
+	inclusionMap := helpers.StringArrayToMap(site.config.Include)
+	exclusionMap := helpers.StringArrayToMap(site.config.Exclude)
 	base := filepath.Base(path)
 	switch {
 	case inclusionMap[path]:
@@ -129,65 +141,62 @@ func (s *Site) Exclude(path string) bool {
 }
 
 // LayoutsDir returns the path to the layouts directory.
-func (s *Site) LayoutsDir() string {
-	return filepath.Join(s.Source, s.config.LayoutsDir)
+func (site *Site) LayoutsDir() string {
+	return filepath.Join(site.Source, site.config.LayoutsDir)
 }
 
 // ReadFiles scans the source directory and creates pages and collections.
-func (s *Site) ReadFiles() error {
-	s.Paths = make(map[string]Page)
+func (site *Site) ReadFiles() error {
+	site.Paths = make(map[string]Page)
 
 	walkFn := func(name string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		relname, err := filepath.Rel(s.Source, name)
+		relname, err := filepath.Rel(site.Source, name)
 		if err != nil {
 			panic(err)
 		}
 		switch {
-		case info.IsDir() && s.Exclude(relname):
+		case info.IsDir() && site.Exclude(relname):
 			return filepath.SkipDir
-		case info.IsDir(), s.Exclude(relname):
+		case info.IsDir(), site.Exclude(relname):
 			return nil
 		}
-		defaults := s.GetFrontMatterDefaults(relname, "")
-		p, err := ReadPage(s, nil, relname, defaults)
+		defaults := site.GetFrontMatterDefaults(relname, "")
+		p, err := ReadPage(site, nil, relname, defaults)
 		if err != nil {
 			return helpers.PathError(err, "read", name)
 		}
 		if p.Published() {
-			s.Paths[p.Permalink()] = p
+			site.Paths[p.Permalink()] = p
 		}
 		return nil
 	}
 
-	if err := filepath.Walk(s.Source, walkFn); err != nil {
+	if err := filepath.Walk(site.Source, walkFn); err != nil {
 		return err
 	}
-	if err := s.ReadCollections(); err != nil {
-		return err
-	}
-	s.initTemplateAttributes()
-	return nil
+	return site.ReadCollections()
 }
 
-func (s *Site) initTemplateAttributes() {
-	// TODO site: {pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG}
-	s.Variables = MergeVariableMaps(s.Variables, VariableMap{
+func (site *Site) initSiteVariables() {
+	site.Variables = MergeVariableMaps(site.Variables, VariableMap{
+		// TODO read time from _config, if it's available
 		"time": time.Now(),
+		// TODO pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG
 	})
-	for _, c := range s.Collections {
-		s.Variables[c.Name] = c.PageTemplateObjects()
+	for _, c := range site.Collections {
+		site.Variables[c.Name] = c.PageTemplateObjects()
 	}
 }
 
-func (s *Site) makeLocalLiquidEngine() liquid.Engine {
+func (site *Site) makeLocalLiquidEngine() liquid.Engine {
 	engine := liquid.NewLocalWrapperEngine()
-	engine.LinkTagHandler(s.GetFileURL)
+	engine.LinkTagHandler(site.GetFileURL)
 	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
-		filename := filepath.Join(s.Source, s.config.IncludesDir, name)
+		filename := filepath.Join(site.Source, site.config.IncludesDir, name)
 		template, err := ioutil.ReadFile(filename)
 		if err != nil {
 			return err
@@ -203,43 +212,39 @@ func (s *Site) makeLocalLiquidEngine() liquid.Engine {
 	return engine
 }
 
-func (s *Site) makeLiquidClient() (engine liquid.RemoteEngine, err error) {
+func (site *Site) makeLiquidClient() (engine liquid.RemoteEngine, err error) {
 	engine, err = liquid.NewRPCClientEngine(liquid.DefaultServer)
 	if err != nil {
 		return
 	}
 	urls := map[string]string{}
-	for _, p := range s.Paths {
+	for _, p := range site.Paths {
 		urls[p.Path()] = p.Permalink()
 	}
 	err = engine.FileURLMap(urls)
 	if err != nil {
 		return
 	}
-	err = engine.IncludeDirs([]string{filepath.Join(s.Source, s.config.IncludesDir)})
+	err = engine.IncludeDirs([]string{filepath.Join(site.Source, site.config.IncludesDir)})
 	return
+}
+
+func (site *Site) makeLiquidEngine() (liquid.Engine, error) {
+	if site.UseRemoteLiquidEngine {
+		return site.makeLiquidClient()
+	}
+	return site.makeLocalLiquidEngine(), nil
 }
 
 // LiquidEngine create a liquid engine configured to with include paths and link tag resolution
 // for this site.
-func (s *Site) LiquidEngine() liquid.Engine {
-	if s.liquidEngine == nil {
-		if s.UseRemoteLiquidEngine {
-			var err error
-			s.liquidEngine, err = s.makeLiquidClient()
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			s.liquidEngine = s.makeLocalLiquidEngine()
-		}
-	}
-	return s.liquidEngine
+func (site *Site) LiquidEngine() liquid.Engine {
+	return site.liquidEngine
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
-func (s *Site) GetFrontMatterDefaults(relpath, typename string) (m VariableMap) {
-	for _, entry := range s.config.Defaults {
+func (site *Site) GetFrontMatterDefaults(relpath, typename string) (m VariableMap) {
+	for _, entry := range site.config.Defaults {
 		scope := &entry.Scope
 		hasPrefix := strings.HasPrefix(relpath, scope.Path)
 		hasType := scope.Type == "" || scope.Type == typename

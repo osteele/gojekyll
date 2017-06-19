@@ -30,7 +30,7 @@ func buildCommand(c *cli.Context, site *gojekyll.Site) error {
 		return err
 	}
 	elapsed := time.Since(commandStartTime)
-	printSetting("", fmt.Sprintf("created %d files in %.2fs.", count, elapsed.Seconds()))
+	printSetting("", fmt.Sprintf("wrote %d files in %.2fs.", count, elapsed.Seconds()))
 	return nil
 }
 
@@ -151,7 +151,7 @@ func loadSite(source, destination string) (*gojekyll.Site, error) {
 		printSetting(configurationFileLabel, "none")
 	}
 	printPathSetting("Source:", site.Source)
-	return site, site.ReadFiles()
+	return site, site.Load()
 }
 
 // Given a subcommand function, load the site and then call the subcommand.
