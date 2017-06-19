@@ -9,6 +9,7 @@ type SiteConfig struct {
 	Source      string
 	Destination string
 	LayoutsDir  string `yaml:"layouts_dir"`
+	DataDir  string `yaml:"data_dir"`
 	IncludesDir string `yaml:"includes_dir"`
 	Collections map[string]VariableMap
 

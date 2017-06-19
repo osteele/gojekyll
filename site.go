@@ -1,12 +1,15 @@
 package gojekyll
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	yaml "gopkg.in/yaml.v2"
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
@@ -77,7 +80,10 @@ func (site *Site) Load() (err error) {
 	if err != nil {
 		return
 	}
-	site.initSiteVariables()
+	err = site.initSiteVariables()
+	if err != nil {
+		return
+	}
 	site.liquidEngine, err = site.makeLiquidEngine()
 	return
 }
@@ -181,8 +187,37 @@ func (site *Site) ReadFiles() error {
 	return site.ReadCollections()
 }
 
-func (site *Site) initSiteVariables() {
+func (site *Site) initSiteVariables() error {
+	data := VariableMap{}
+	dataDir := filepath.Join(site.Source, site.config.DataDir)
+	files, err := ioutil.ReadDir(dataDir)
+	if err != nil {
+		return err
+	}
+	for _, f := range files {
+		if f.IsDir() {
+			break
+		}
+		filename := filepath.Join(dataDir, f.Name())
+		switch filepath.Ext(f.Name()) {
+		case ".yaml", ".yml":
+			bytes, err := ioutil.ReadFile(filename)
+			if err != nil {
+				return err
+			}
+			fileData, err := unmarshallJSONMapOrArray(bytes)
+			if err != nil {
+				return helpers.PathError(err, "read YAML", filename)
+			}
+			if fileData == nil {
+				fmt.Println("go-yaml is unable to un-marshall lists; skipping", filename)
+				fmt.Println("See https://github.com/go-yaml/yaml/issues/20")
+			}
+			data[filepath.Base(f.Name())] = fileData
+		}
+	}
 	site.Variables = MergeVariableMaps(site.Variables, VariableMap{
+		"data": data,
 		// TODO read time from _config, if it's available
 		"time": time.Now(),
 		// TODO pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG
@@ -190,6 +225,23 @@ func (site *Site) initSiteVariables() {
 	for _, c := range site.Collections {
 		site.Variables[c.Name] = c.PageTemplateObjects()
 	}
+	return nil
+}
+
+func unmarshallJSONMapOrArray(bytes []byte) (interface{}, error) {
+	data := map[interface{}]interface{}{}
+	if err := yaml.Unmarshal(bytes, data); err != nil {
+		switch err.(type) {
+		case *yaml.TypeError:
+			return nil, nil
+			// ar := []interface{}{}
+			// err = yaml.Unmarshal(bytes, ar)
+			// return ar, nil
+		default:
+			return nil, err
+		}
+	}
+	return data, nil
 }
 
 func (site *Site) makeLocalLiquidEngine() liquid.Engine {

@@ -22,6 +22,9 @@ When using an embedded Liquid engine (that isn't very compliant with the [Liquid
   - [x] Variables
   - [ ] Collections -- rendered, but not available as variables
   - [ ] Data Files
+    - [ ] CSV
+    - [ ] JSON
+    - [x] YAML
   - [ ] Assets
     - [ ] Coffeescript
     - [x] Sass/SCSS
