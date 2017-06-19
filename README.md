@@ -8,7 +8,7 @@ When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyl
 
 This project is missing more functionality than it implements. It may accidentally work on tiny or simple sites.
 
-It's currently ~50x faster than Jekyll using an embedded Liquid engine (that isn't very completely); and about 5x faster using an un-optimized connection to the [harttle/shopify-liquid](https://github.com/harttle/shopify-liquid) JavaScript library (documentation TBD) to render Liquid templates.
+When using an embedded Liquid engine (that isn't very compliant with the [Liquid spec](http://liquidmarkup.org)), it's about 50x faster than Jekyll. When using an un-optimized JSON-RPC connection to a JavaScript library (see below), it's about 5x faster.
 
 - [ ] Content
   - [x] Front Matter
@@ -100,7 +100,7 @@ go tool pprof gojekyll gojekyll.prof
 
 ## Credits
 
-For rendering Liquid templates: the [acstech/liquid](https://github.com/acstech/liquid) fork of [karlseguin/liquid](https://github.com/karlseguin/liquid); or, [harttle/shopify-liquid](https://github.com/harttle/shopify-liquid/) via JSON-RPC.
+For rendering Liquid templates: ACS Technologies's fork [acstech/liquid](https://github.com/acstech/liquid) of Karl Seguin's [karlseguin/liquid](https://github.com/karlseguin/liquid) Go implementation; or, Jun Yang's JavaScript implementation [harttle/shopify-liquid](https://github.com/harttle/shopify-liquid/) via JSON-RPC.
 
 The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
