@@ -21,19 +21,28 @@ var (
 
 // Page is a Jekyll page.
 type Page interface {
-	Path() string
 	Site() *Site
-	Source() string
-	Static() bool
-	Published() bool
-	Permalink() string
-	TemplateObject() VariableMap
-	Write(io.Writer) error
-	DebugVariables() VariableMap
 
+	// Paths
+	Path() string
+	Permalink() string
+	OutputExt() string
+	Source() string
+
+	// Output
+	Published() bool
+	Static() bool
+	Write(io.Writer) error
+
+	// Variables
+	DebugVariables() VariableMap
+	TemplateObject() VariableMap
+
+	// internal
 	initPermalink() error
 }
 
+// pageFields is embedded in StaticPage and DynamicPage
 type pageFields struct {
 	relpath     string // relative to site source, e.g. "_post/base.ext"
 	permalink   string // cached permalink
@@ -51,6 +60,17 @@ func (p *pageFields) Path() string      { return p.relpath }
 func (p *pageFields) Permalink() string { return p.permalink }
 func (p *pageFields) Published() bool   { return p.frontMatter.Bool("published", true) }
 func (p *pageFields) Site() *Site       { return p.site }
+
+func (p *pageFields) OutputExt() string {
+	switch {
+	case p.IsMarkdown():
+		return ".html"
+	case p.site.IsSassPath(p.relpath):
+		return ".css"
+	default:
+		return filepath.Ext(p.relpath)
+	}
+}
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
 func ReadPage(site *Site, collection *Collection, relpath string, defaults VariableMap) (p Page, err error) {
@@ -131,7 +151,8 @@ func (page *StaticPage) Static() bool { return true }
 
 // TemplateObject returns metadata for use in the representation of the page as a collection item
 func (page *StaticPage) TemplateObject() VariableMap {
-	return MergeVariableMaps(page.frontMatter, page.TemplateObject())
+	// this isn't recursive because it calls pageFields.TemplateObject() instead of page.TemplateObject()
+	return MergeVariableMaps(page.frontMatter, page.pageFields.TemplateObject())
 }
 
 func (page *StaticPage) Write(w io.Writer) error {

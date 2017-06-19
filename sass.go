@@ -19,18 +19,6 @@ func (s *Site) IsSassPath(name string) bool {
 	return strings.HasSuffix(name, ".sass") || strings.HasSuffix(name, ".scss")
 }
 
-func (p *DynamicPage) writeSass(w io.Writer, data []byte) error {
-	comp, err := libsass.New(w, bytes.NewBuffer(data))
-	if err != nil {
-		return err
-	}
-	err = comp.Option(libsass.IncludePaths(p.site.SassIncludePaths()))
-	if err != nil {
-		log.Fatal(err)
-	}
-	return comp.Run()
-}
-
 // CopySassFileIncludes copies sass partials into a temporary directory,
 // removing initial underscores.
 // TODO delete the temp directory when done
@@ -68,4 +56,16 @@ func (s *Site) SassIncludePaths() []string {
 		}
 	}
 	return []string{s.sassTempDir}
+}
+
+func (page *DynamicPage) writeSass(w io.Writer, data []byte) error {
+	comp, err := libsass.New(w, bytes.NewBuffer(data))
+	if err != nil {
+		return err
+	}
+	err = comp.Option(libsass.IncludePaths(page.site.SassIncludePaths()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return comp.Run()
 }

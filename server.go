@@ -7,7 +7,6 @@ import (
 	"log"
 	"mime"
 	"net/http"
-	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -44,23 +43,18 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 
 	site := s.Site
 	urlpath := r.URL.Path
-	ext := path.Ext(urlpath)
-	if ext == "" {
-		ext = ".html"
-	}
 
-	p, found := site.PageForURL(urlpath)
+	page, found := site.PageForURL(urlpath)
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
-		ext = ".html"
-		p, found = site.Paths["404.html"]
+		page, found = site.Paths["404.html"]
 	}
 	if !found {
 		fmt.Fprintf(rw, "404 page not found: %s", urlpath)
 		return
 	}
 
-	mimeType := mime.TypeByExtension(ext)
+	mimeType := mime.TypeByExtension(page.OutputExt())
 	if mimeType != "" {
 		rw.Header().Set("Content-Type", mimeType)
 	}
@@ -68,7 +62,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(mimeType, "text/html;") {
 		w = scriptTagInjector{w}
 	}
-	err := p.Write(w)
+	err := page.Write(w)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}

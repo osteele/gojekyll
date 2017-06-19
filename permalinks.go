@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/osteele/gojekyll/helpers"
 )
@@ -38,36 +37,26 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 // See https://jekyllrb.com/docs/permalinks/#template-variables
 func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	var (
-		collectionName string
-		path           = p.relpath
-		ext            = filepath.Ext(path)
-		outputExt      = ext
-		root           = helpers.PathWithoutExtension(path)
-		name           = filepath.Base(root)
-		title          = p.frontMatter.String("title", name)
+		collection string
+		path       = p.relpath
+		root       = helpers.PathWithoutExtension(path)
+		name       = filepath.Base(root)
 	)
-	switch {
-	case p.IsMarkdown():
-		outputExt = ".html"
-	case p.site.IsSassPath(path):
-		outputExt = ".css"
-	}
 	if p.collection != nil {
 		root = strings.TrimPrefix(root, p.collection.PathPrefix())
 	}
 	vs := map[string]string{
-		"collection": collectionName,
+		"collection": collection,
 		"name":       helpers.Slugify(name),
 		"path":       "/" + root,
-		"title":      title,
 		"slug":       helpers.Slugify(name),
-		// TODO categories
+		"title":      p.frontMatter.String("title", name),
 		// The following isn't documented, but is evident
-		"output_ext": outputExt,
+		"output_ext": p.OutputExt(),
+		// TODO categories
 	}
-	d := time.Now() // TODO read from frontMatter or use file modtime
 	for name, f := range permalinkDateVariables {
-		vs[name] = d.Format(f)
+		vs[name] = p.modTime.Format(f)
 	}
 	return vs
 }
