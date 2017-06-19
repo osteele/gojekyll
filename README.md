@@ -18,7 +18,6 @@ It's currently ~50x faster than Jekyll using an embedded Liquid engine (that isn
     - [ ] Drafts
     - [ ] Future
     - [ ] Related
-  - [ ] Creating pages
   - [x] Static Files
   - [x] Variables
   - [ ] Collections -- rendered, but not available as variables
@@ -26,6 +25,7 @@ It's currently ~50x faster than Jekyll using an embedded Liquid engine (that isn
   - [ ] Assets
     - [ ] Coffeescript
     - [x] Sass/SCSS
+      - [ ] Sass caching
 - [ ] Customization
   - [x] Templates
     - [x] link tag
@@ -40,9 +40,7 @@ It's currently ~50x faster than Jekyll using an embedded Liquid engine (that isn
 - [x] Server
   - [x] Directory watch
   - [x] Live reload
-- [ ] Other
-  - [x] LINUX, macOS
-  - [ ] Windows -- not tested
+- [ ] Windows -- not tested
 
 ## Install
 
@@ -72,7 +70,16 @@ gojekyll --remote-liquid  # use a local Liquid engine server
 gojekyll help
 ```
 
-For development, `./scripts/gojekyll` uses `go run` each time it's invoked.
+## Development
+
+`./scripts/gojekyll` is an alternative to the `gojekyll` executable, that uses `go run` each time it's invoked.
+
+Profiling:
+
+```bash
+gojekyll --remote-liquid profile
+go tool pprof gojekyll gojekyll.prof
+```
 
 ## Credits
 

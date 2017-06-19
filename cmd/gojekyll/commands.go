@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 	"sort"
 	"strings"
 	"time"
@@ -33,15 +34,33 @@ func buildCommand(c *cli.Context, site *gojekyll.Site) error {
 	return nil
 }
 
-func benchmarkCommand(c *cli.Context, site *gojekyll.Site) error {
-	printSetting("Generating...", "")
-	for i := 0; i < 10; i++ {
-		printSetting("", fmt.Sprintf("%d", i+1))
-		_, err := site.Build(buildOptions)
+func profileCommand(c *cli.Context, _ *gojekyll.Site) error {
+	printSetting("Profiling...", "")
+	var profilePath = "gojekyll.prof"
+	f, err := os.Create(profilePath)
+	if err != nil {
+		return err
+	}
+	if err = pprof.StartCPUProfile(f); err != nil {
+		return err
+	}
+	t0 := time.Now()
+	for i := 0; time.Since(t0) < 10*time.Second; i++ {
+		site, err := loadSite(c.GlobalString("source"), c.GlobalString("destination"))
 		if err != nil {
 			return err
 		}
+		_, err = site.Build(buildOptions)
+		if err != nil {
+			return err
+		}
+		printSetting("", fmt.Sprintf("Run #%d; %.1fs elapsed", i+1, time.Since(t0).Seconds()))
 	}
+	pprof.StopCPUProfile()
+	if err := f.Close(); err != nil {
+		return err
+	}
+	fmt.Println("Wrote", profilePath)
 	return nil
 }
 

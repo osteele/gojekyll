@@ -46,7 +46,6 @@ func (s *Site) FindLayout(base string, fm *VariableMap) (t liquid.Template, err 
 func (page *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
 	for {
 		name := frontMatter.String("layout", "")
-		println("name", name)
 		if name == "" {
 			return body, nil
 		}
@@ -62,6 +61,5 @@ func (page *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]by
 		if err != nil {
 			return nil, err
 		}
-		println("layout", name, "->", string(body))
 	}
 }

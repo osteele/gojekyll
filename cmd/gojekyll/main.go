@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
-	"runtime/pprof"
 
 	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
@@ -65,8 +63,8 @@ func main() {
 
 	app.Commands = []cli.Command{
 		{
-			Name:    "server",
-			Aliases: []string{"s", "serve"},
+			Name:    "serve",
+			Aliases: []string{"server", "s"},
 			Usage:   "Serve your site locally",
 			Action:  withSite(serveCommand),
 		},
@@ -84,17 +82,9 @@ func main() {
 			Action: withSite(buildCommand),
 		},
 		{
-			Name:    "benchmark",
-			Aliases: []string{"b"},
-			Usage:   "Build several times, and write a profile file",
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:        "dry-run, n",
-					Usage:       "Dry run",
-					Destination: &buildOptions.DryRun,
-				},
-			},
-			Action: withSite(benchmarkCommand),
+			Name:   "profile",
+			Usage:  "Build several times, and write a profile file",
+			Action: withSite(profileCommand),
 		}, {
 			Name:   "data",
 			Usage:  "Print a file or URL path's variables",
@@ -116,17 +106,6 @@ func main() {
 			Usage:  "Render a file or URL path",
 			Action: withSite(renderCommand),
 		},
-	}
-
-	if true {
-		f, err := os.Create("gojekyll.prof")
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err = pprof.StartCPUProfile(f); err != nil {
-			log.Fatal(err)
-		}
-		defer pprof.StopCPUProfile()
 	}
 
 	_ = app.Run(os.Args)
