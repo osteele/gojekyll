@@ -16,13 +16,17 @@ type Template interface {
 // LocalEngine runs in the same process, and can resolve tag arguments via local handlers.
 type LocalEngine interface {
 	Engine
-	IncludeHandler(func(string, io.Writer, map[string]interface{}))
-	LinkHandler(LinkHandler)
+	IncludeHandler(IncludeTagHandler)
+	LinkTagHandler(LinkTagHandler)
 }
 
 // RemoteEngine runs out-of-process. It needs static tables for tag argument resolution.
 type RemoteEngine interface {
 	Engine
-	FileURLMap(map[string]string)
-	IncludeDirs([]string)
+	FileURLMap(map[string]string) error
+	IncludeDirs([]string) error
 }
+
+// IncludeTagHandler resolves the filename in a Liquid include tag into the expanded content
+// of the included file.
+type IncludeTagHandler func(string, io.Writer, map[string]interface{}) error

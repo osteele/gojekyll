@@ -50,7 +50,7 @@ func main() {
 			Destination: &destination,
 		},
 		cli.BoolFlag{
-			Name:        "remote-liquid",
+			Name:        "use-liquid-server",
 			Usage:       "Use Liquid JSON-RPC server",
 			Destination: &useRemoteLiquidEngine,
 		},

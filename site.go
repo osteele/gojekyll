@@ -183,47 +183,55 @@ func (s *Site) initTemplateAttributes() {
 	}
 }
 
-func (s *Site) createLocalEngine() liquid.Engine {
+func (s *Site) makeLocalLiquidEngine() liquid.Engine {
 	engine := liquid.NewLocalWrapperEngine()
-	engine.LinkHandler(s.GetFileURL)
-	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) {
-		name = strings.TrimLeft(strings.TrimRight(name, "}}"), "{{")
+	engine.LinkTagHandler(s.GetFileURL)
+	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
 		filename := filepath.Join(s.Source, s.config.IncludesDir, name)
 		template, err := ioutil.ReadFile(filename)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		text, err := engine.ParseAndRender(template, scope)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		_, err = w.Write(text)
-		if err != nil {
-			panic(err)
-		}
+		return err
 	}
 	engine.IncludeHandler(includeHandler)
 	return engine
 }
 
-func (s *Site) createRemoteEngine() liquid.Engine {
-	engine := liquid.NewRPCClientEngine(liquid.DefaultServer)
+func (s *Site) makeLiquidClient() (engine liquid.RemoteEngine, err error) {
+	engine, err = liquid.NewRPCClientEngine(liquid.DefaultServer)
+	if err != nil {
+		return
+	}
 	urls := map[string]string{}
 	for _, p := range s.Paths {
 		urls[p.Path()] = p.Permalink()
 	}
-	engine.FileURLMap(urls)
-	engine.IncludeDirs([]string{filepath.Join(s.Source, s.config.IncludesDir)})
-	return engine
+	err = engine.FileURLMap(urls)
+	if err != nil {
+		return
+	}
+	err = engine.IncludeDirs([]string{filepath.Join(s.Source, s.config.IncludesDir)})
+	return
 }
 
-// LiquidEngine create a liquid engine with site-specific behavior.
+// LiquidEngine create a liquid engine configured to with include paths and link tag resolution
+// for this site.
 func (s *Site) LiquidEngine() liquid.Engine {
 	if s.liquidEngine == nil {
 		if s.UseRemoteLiquidEngine {
-			s.liquidEngine = s.createRemoteEngine()
+			var err error
+			s.liquidEngine, err = s.makeLiquidClient()
+			if err != nil {
+				panic(err)
+			}
 		} else {
-			s.liquidEngine = s.createLocalEngine()
+			s.liquidEngine = s.makeLocalLiquidEngine()
 		}
 	}
 	return s.liquidEngine

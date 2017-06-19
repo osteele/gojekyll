@@ -3,6 +3,7 @@ package liquid
 import (
 	"bytes"
 	"io"
+	"strings"
 
 	"github.com/acstech/liquid"
 	"github.com/acstech/liquid/core"
@@ -11,7 +12,7 @@ import (
 // LocalWrapperEngine is a wrapper around acstech/liquid.
 type LocalWrapperEngine struct {
 	config      *core.Configuration
-	linkHandler LinkHandler
+	linkHandler LinkTagHandler
 }
 
 type localTemplate struct {
@@ -24,14 +25,20 @@ func NewLocalWrapperEngine() LocalEngine {
 	return &LocalWrapperEngine{}
 }
 
-// LinkHandler sets the link tag handler.
-func (engine *LocalWrapperEngine) LinkHandler(h LinkHandler) {
+// LinkTagHandler sets the link tag handler.
+func (engine *LocalWrapperEngine) LinkTagHandler(h LinkTagHandler) {
 	engine.linkHandler = h
 }
 
 // IncludeHandler sets the include tag handler.
-func (engine *LocalWrapperEngine) IncludeHandler(h func(string, io.Writer, map[string]interface{})) {
-	engine.config = liquid.Configure().IncludeHandler(h)
+func (engine *LocalWrapperEngine) IncludeHandler(h IncludeTagHandler) {
+	engine.config = liquid.Configure().IncludeHandler(func(name string, w io.Writer, context map[string]interface{}) {
+		name = strings.TrimLeft(strings.TrimRight(name, "}}"), "{{")
+		err := h(name, w, context)
+		if err != nil {
+			panic(err)
+		}
+	})
 }
 
 // Parse is a wrapper for liquid.Parse.

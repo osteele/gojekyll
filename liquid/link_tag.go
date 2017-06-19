@@ -13,13 +13,13 @@ func init() {
 	liquid.Tags["link"] = LinkFactory
 }
 
-// A LinkHandler given an include tag file name returns a URL.
-type LinkHandler func(string) (string, bool)
+// A LinkTagHandler given an include tag file name returns a URL.
+type LinkTagHandler func(string) (string, bool)
 
-var currentLinkHandler LinkHandler
+var currentLinkHandler LinkTagHandler
 
 // SetLinkHandler sets the function that resolves an include tag file name to a URL.
-func SetLinkHandler(h LinkHandler) {
+func SetLinkHandler(h LinkTagHandler) {
 	currentLinkHandler = h
 }
 

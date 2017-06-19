@@ -1,6 +1,8 @@
 package liquid
 
 import (
+	"fmt"
+	"path/filepath"
 	"reflect"
 
 	"github.com/ybbus/jsonrpc"
@@ -8,23 +10,36 @@ import (
 
 // RPCClientEngine connects via JSON-RPC to a Liquid template server.
 type RPCClientEngine struct {
-	rpcClient    *jsonrpc.RPCClient
-	rpcSessionID string
+	rpcClient *jsonrpc.RPCClient
 }
 
 // DefaultServer is the default HTTP address for a Liquid template server.
 // This is an unclaimed port number from https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Registered_ports
 const DefaultServer = "localhost:4545"
 
+// RPCVersion is the Liquid Template Server RPC version.
+const RPCVersion = "0.0.1"
+
 type remoteTemplate struct {
 	engine RemoteEngine
 	text   []byte
 }
 
+// RPCError wraps jsonrpc.RPCError into an Error.
+type RPCError struct{ jsonrpc.RPCError }
+
+func (engine *RPCError) Error() string {
+	return engine.Message
+}
+
 // NewRPCClientEngine creates a RemoteEngine.
-func NewRPCClientEngine(address string) RemoteEngine {
+func NewRPCClientEngine(address string) (RemoteEngine, error) {
 	rpcClient := jsonrpc.NewRPCClient("http://" + address)
-	return &RPCClientEngine{rpcClient: rpcClient}
+	engine := RPCClientEngine{rpcClient: rpcClient}
+	if err := engine.createSession(); err != nil {
+		return nil, err
+	}
+	return &engine, nil
 }
 
 // Parse parses the template.
@@ -32,37 +47,30 @@ func (engine *RPCClientEngine) Parse(text []byte) (Template, error) {
 	return &remoteTemplate{engine, text}, nil
 }
 
-// RPCError wraps jsonrpc.RPCError into an Error
-type RPCError struct{ jsonrpc.RPCError }
-
-func (engine *RPCError) Error() string {
-	return engine.Message
-}
-
-func (engine *RPCClientEngine) getSessionID() string {
-	if engine.rpcSessionID != "" {
-		return engine.rpcSessionID
-	}
+func (engine *RPCClientEngine) createSession() error {
 	res, err := engine.rpcClient.Call("session")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	if res.Error != nil {
-		panic(&RPCError{*res.Error})
+		return &RPCError{*res.Error}
 	}
 	var result struct {
-		SessionID string
+		SessionID  string
+		RPCVersion string
 	}
 	if err := res.GetObject(&result); err != nil {
-		panic(err)
+		return err
 	}
-	engine.rpcSessionID = result.SessionID
-	return engine.rpcSessionID
+	if result.RPCVersion != RPCVersion {
+		return fmt.Errorf("Liquid server RPC mismatch: expected %s; actual %s", RPCVersion, result.RPCVersion)
+	}
+	engine.rpcClient.SetCustomHeader("Session-ID", result.SessionID)
+	return err
 }
 
 func (engine *RPCClientEngine) rpcCall(method string, params ...interface{}) (*jsonrpc.RPCResponse, error) {
-	args := append([]interface{}{engine.getSessionID()}, params...)
-	res, err := engine.rpcClient.Call(method, args...)
+	res, err := engine.rpcClient.Call(method, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,19 +81,22 @@ func (engine *RPCClientEngine) rpcCall(method string, params ...interface{}) (*j
 }
 
 // FileURLMap sets the filename -> permalink map that is used during link tag expansion.
-func (engine *RPCClientEngine) FileURLMap(m map[string]string) {
-	_, err := engine.rpcCall("fileUrls", m)
-	if err != nil {
-		panic(err)
-	}
+func (engine *RPCClientEngine) FileURLMap(m map[string]string) (err error) {
+	_, err = engine.rpcCall("fileUrls", m)
+	return
 }
 
-// IncludeDirs specifies the directories that the include tag looks in.
-func (engine *RPCClientEngine) IncludeDirs(dirs []string) {
-	_, err := engine.rpcCall("includeDirs", dirs)
-	if err != nil {
-		panic(err)
+// IncludeDirs specifies the search directories for the include tag.
+func (engine *RPCClientEngine) IncludeDirs(dirs []string) (err error) {
+	abs := make([]string, len(dirs))
+	for i, dir := range dirs {
+		abs[i], err = filepath.Abs(dir)
+		if err != nil {
+			return
+		}
 	}
+	_, err = engine.rpcCall("includeDirs", abs)
+	return
 }
 
 // ParseAndRender parses and then renders the template.

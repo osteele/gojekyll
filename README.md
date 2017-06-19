@@ -58,17 +58,34 @@ git pull -f osteele
 
 (See articles by [Shlomi Noach](http://code.openark.org/blog/development/forking-golang-repositories-on-github-and-managing-the-import-path) and [Francesc Campoy](http://blog.campoy.cat/2014/03/github-and-go-forking-pull-requests-and.html) for how this works and why it is necessary.)
 
-## Run
+## Usage
 
 ```bash
-gojekyll build            # builds into ./_site
-gojekyll serve            # serves from memory, w/ live reload
-gojekyll render index.md  # render a file to stdout
-gojekyll render /         # render a URL to stdout
-gojekyll data /           # print a file or URL's variables
-gojekyll --remote-liquid  # use a local Liquid engine server
+gojekyll build                # builds into ./_site
+gojekyll serve                # serves from memory, w/ live reload
+gojekyll render index.md      # render a file to stdout
+gojekyll render /             # render a URL to stdout
+gojekyll data /               # print a file or URL's variables
+gojekyll   # use a local Liquid engine server
 gojekyll help
 ```
+
+### Liquid Template Server
+
+The embedded Liquid server isn't very compliant with Shopfiy Liquid syntax.
+
+You can run a "Liquid Template Server" on the same machine, and tell `gojekyll` to use this instead.
+This is currently about 10x slower than using the embedded engine, but still 5x faster than Ruby `jekyll`.
+
+1. Download and run (liquid-template-server)[https://github.com/osteele/liquid-template-server].
+2. Invoke `gojekyll` with the `--use-liquid-server` option; e.g.:
+
+  ```bash
+  gojekyll --use-liquid-server build
+  gojekyll --use-liquid-server serve
+  ```
+
+Neither the embedded Liquid server nor the Liquid Template Server implements very many Jekyll Liquid filters or tags. I'm adding to these as necessary to support my own sites.
 
 ## Development
 
