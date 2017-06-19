@@ -20,7 +20,7 @@ type DynamicPage struct {
 }
 
 // Static returns a bool indicating that the page is a not static page.
-func (p *DynamicPage) Static() bool { return false }
+func (page *DynamicPage) Static() bool { return false }
 
 // NewDynamicPage reads the front matter from a file to create a new DynamicPage.
 func NewDynamicPage(fields pageFields) (p *DynamicPage, err error) {
@@ -64,21 +64,21 @@ func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 }
 
 // TemplateObject returns the attributes of the template page object.
-func (p *DynamicPage) TemplateObject() VariableMap {
+func (page *DynamicPage) TemplateObject() VariableMap {
 	var (
-		relpath = p.relpath
+		relpath = page.relpath
 		ext     = filepath.Ext(relpath)
-		root    = helpers.PathWithoutExtension(p.relpath)
+		root    = helpers.PathWithoutExtension(page.relpath)
 		base    = filepath.Base(root)
 	)
 
 	data := VariableMap{
 		"path": relpath,
-		"url":  p.Permalink(),
+		"url":  page.Permalink(),
 		// TODO content output
 
 		// not documented, but present in both collection and non-collection pages
-		"permalink": p.Permalink(),
+		"permalink": page.Permalink(),
 
 		// TODO only in non-collection pages:
 		// TODO dir
@@ -93,13 +93,13 @@ func (p *DynamicPage) TemplateObject() VariableMap {
 		// TODO slug
 
 		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
-		"relative_path": p.Path(),
+		"relative_path": page.Path(),
 		// TODO collection(name)
 
 		// TODO undocumented; only present in collection pages:
 		"ext": ext,
 	}
-	for k, v := range p.frontMatter {
+	for k, v := range page.frontMatter {
 		switch k {
 		// doc implies these aren't present, but they appear to be present in a collection page:
 		// case "layout", "published":
@@ -113,36 +113,36 @@ func (p *DynamicPage) TemplateObject() VariableMap {
 }
 
 // TemplateVariables returns the local variables for template evaluation
-func (p *DynamicPage) TemplateVariables() VariableMap {
+func (page *DynamicPage) TemplateVariables() VariableMap {
 	return VariableMap{
-		"page": p.TemplateObject(),
-		"site": p.site.Variables,
+		"page": page.TemplateObject(),
+		"site": page.site.Variables,
 	}
 }
 
 // DebugVariables returns a map that's useful to present during diagnostics.
 // For a dynamic page, this is the local variable map that is used for template evaluation.
-func (p *DynamicPage) DebugVariables() VariableMap {
-	return p.TemplateVariables()
+func (page *DynamicPage) DebugVariables() VariableMap {
+	return page.TemplateVariables()
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (p *DynamicPage) Write(w io.Writer) (err error) {
-	body, err := p.site.LiquidEngine().ParseAndRender(p.Content, p.TemplateVariables())
+func (page *DynamicPage) Write(w io.Writer) (err error) {
+	body, err := page.site.LiquidEngine().ParseAndRender(page.Content, page.TemplateVariables())
 	if err != nil {
-		return helpers.PathError(err, "Liquid Error", p.Source())
+		return helpers.PathError(err, "Liquid Error", page.Source())
 	}
 
-	if p.Site().IsMarkdown(p.relpath) {
+	if page.IsMarkdown() {
 		body = blackfriday.MarkdownCommon(body)
-		body, err = p.applyLayout(p.frontMatter, body)
+		body, err = page.applyLayout(page.frontMatter, body)
 		if err != nil {
 			return
 		}
 	}
 
-	if p.Site().IsSassPath(p.relpath) {
-		return p.writeSass(w, body)
+	if page.Site().IsSassPath(page.relpath) {
+		return page.writeSass(w, body)
 	}
 
 	_, err = w.Write(body)

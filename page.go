@@ -87,15 +87,6 @@ func ReadPage(site *Site, collection *Collection, relpath string, defaults Varia
 	return
 }
 
-func (p *StaticPage) Write(w io.Writer) error {
-	source, err := ioutil.ReadFile(p.Source())
-	if err != nil {
-		return err
-	}
-	_, err = w.Write(source)
-	return err
-}
-
 // TemplateObject returns the attributes of the template page object.
 // See https://jekyllrb.com/docs/variables/#page-variables
 func (p *pageFields) TemplateObject() VariableMap {
@@ -125,15 +116,29 @@ func (p *pageFields) Source() string {
 	return filepath.Join(p.site.Source, p.relpath)
 }
 
+// IsMarkdown returns a bool indicating whether the page is markdown.
+func (p *pageFields) IsMarkdown() bool {
+	return p.site.IsMarkdown(p.relpath)
+}
+
 // StaticPage is a static page.
 type StaticPage struct {
 	pageFields
 }
 
 // Static returns a bool indicating that the page is a static page.
-func (p *StaticPage) Static() bool { return true }
+func (page *StaticPage) Static() bool { return true }
 
 // TemplateObject returns metadata for use in the representation of the page as a collection item
-func (p *StaticPage) TemplateObject() VariableMap {
-	return MergeVariableMaps(p.frontMatter, p.pageFields.TemplateObject())
+func (page *StaticPage) TemplateObject() VariableMap {
+	return MergeVariableMaps(page.frontMatter, page.TemplateObject())
+}
+
+func (page *StaticPage) Write(w io.Writer) error {
+	source, err := ioutil.ReadFile(page.Source())
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(source)
+	return err
 }
