@@ -32,6 +32,7 @@ type Page interface {
 	// Output
 	Published() bool
 	Static() bool
+	Output() bool
 	Write(io.Writer) error
 
 	// Variables
@@ -57,6 +58,7 @@ func (p *pageFields) String() string {
 }
 
 func (p *pageFields) Path() string      { return p.relpath }
+func (p *pageFields) Output() bool      { return p.Published() }
 func (p *pageFields) Permalink() string { return p.permalink }
 func (p *pageFields) Published() bool   { return p.frontMatter.Bool("published", true) }
 func (p *pageFields) Site() *Site       { return p.site }
@@ -151,7 +153,6 @@ func (page *StaticPage) Static() bool { return true }
 
 // TemplateObject returns metadata for use in the representation of the page as a collection item
 func (page *StaticPage) TemplateObject() VariableMap {
-	// this isn't recursive because it calls pageFields.TemplateObject() instead of page.TemplateObject()
 	return MergeVariableMaps(page.frontMatter, page.pageFields.TemplateObject())
 }
 

@@ -8,11 +8,32 @@ import (
 	"github.com/osteele/gojekyll/helpers"
 )
 
+// PageContainer has a slice of pages
+type PageContainer interface {
+	Pages() []Page
+}
+
 // BuildOptions holds options for Build and Clean
 type BuildOptions struct {
 	DryRun       bool
 	UseHardLinks bool
 	Verbose      bool
+}
+
+// Pages is a list of pages.
+func (site *Site) Pages() []Page {
+	pages := make([]Page, len(site.Paths))
+	i := 0
+	for _, p := range site.Paths {
+		pages[i] = p
+		i++
+	}
+	return pages
+}
+
+// Pages is a list of pages.
+func (coll *Collection) Pages() []Page {
+	return coll.pages
 }
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
@@ -45,21 +66,34 @@ func (site *Site) Clean(options BuildOptions) error {
 
 // Build cleans the destination and create files in it.
 // It attends to the global options.dry_run.
-func (site *Site) Build(options BuildOptions) (count int, err error) {
-	if err != nil {
-		return
+func (site *Site) Build(options BuildOptions) (int, error) {
+	count := 0
+	if err := site.Clean(options); err != nil {
+		return count, err
 	}
-	if err = site.Clean(options); err != nil {
-		return
+	if err := site.CopySassFileIncludes(); err != nil {
+		return count, err
 	}
-	err = site.CopySassFileIncludes()
-	if err != nil {
-		return
+	for _, coll := range site.Collections {
+		n, err := site.WritePages(coll, options)
+		if err != nil {
+			return count, err
+		}
+		count += n
 	}
-	for _, page := range site.Paths {
-		count++
-		if err = site.WritePage(page, options); err != nil {
-			return
+	n, err := site.WritePages(site, options)
+	return count + n, err
+}
+
+// WritePages cleans the destination and create files in it.
+// It attends to the global options.dry_run.
+func (site *Site) WritePages(container PageContainer, options BuildOptions) (count int, err error) {
+	for _, page := range container.Pages() {
+		if page.Output() {
+			count++
+			if err = site.WritePage(page, options); err != nil {
+				return
+			}
 		}
 	}
 	return

@@ -126,6 +126,11 @@ func (page *DynamicPage) DebugVariables() VariableMap {
 	return page.TemplateVariables()
 }
 
+// Output returns a bool indicating whether the page should be written.
+func (page *DynamicPage) Output() bool {
+	return page.pageFields.Output() && (page.collection == nil || page.collection.Output)
+}
+
 // Write applies Liquid and Markdown, as appropriate.
 func (page *DynamicPage) Write(w io.Writer) (err error) {
 	body, err := page.site.LiquidEngine().ParseAndRender(page.Content, page.TemplateVariables())
