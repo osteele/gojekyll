@@ -87,9 +87,19 @@ This is currently about 10x slower than using the embedded engine, but still 5x 
 
 Neither the embedded Liquid server nor the Liquid Template Server implements very many Jekyll Liquid filters or tags. I'm adding to these as necessary to support my own sites.
 
-## Development
+## Develop
+
+Install package dependencies and development tools:
 
 ```bash
+make setup
+```
+
+Test:
+
+```bash
+make test
+make lint
 gojekyll render index.md      # render a file to stdout
 gojekyll render /             # render a URL to stdout
 gojekyll variables /          # print a file or URL's variables
@@ -107,6 +117,8 @@ go tool pprof gojekyll gojekyll.prof
 ## Credits
 
 For rendering Liquid templates: ACS Technologies's fork [acstech/liquid](https://github.com/acstech/liquid) of Karl Seguin's [karlseguin/liquid](https://github.com/karlseguin/liquid) Go implementation; or, Jun Yang's JavaScript implementation [harttle/shopify-liquid](https://github.com/harttle/shopify-liquid/) via JSON-RPC.
+
+Jascha Ephraim's [jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) Live Reload server.
 
 The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
