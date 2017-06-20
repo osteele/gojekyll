@@ -16,7 +16,8 @@ import (
 // DynamicPage is a static page, that includes frontmatter.
 type DynamicPage struct {
 	pageFields
-	Content []byte
+	raw       []byte
+	processed *[]byte
 }
 
 // Static returns a bool indicating that the page is a not static page.
@@ -38,7 +39,7 @@ func NewDynamicPage(fields pageFields) (p *DynamicPage, err error) {
 	fields.frontMatter = MergeVariableMaps(fields.frontMatter, frontMatter)
 	return &DynamicPage{
 		pageFields: fields,
-		Content:    data,
+		raw:        data,
 	}, nil
 }
 
@@ -63,19 +64,25 @@ func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 	return
 }
 
-// TemplateObject returns the attributes of the template page object.
-func (page *DynamicPage) TemplateObject() VariableMap {
+// Variables returns the attributes of the template page object.
+func (page *DynamicPage) Variables() VariableMap {
 	var (
 		relpath = page.relpath
 		ext     = filepath.Ext(relpath)
 		root    = helpers.PathWithoutExtension(page.relpath)
 		base    = filepath.Base(root)
+		content = page.processed
 	)
 
+	if content == nil {
+		content = &[]byte{}
+	}
+
 	data := VariableMap{
-		"path": relpath,
-		"url":  page.Permalink(),
-		// TODO content output
+		"path":    relpath,
+		"url":     page.Permalink(),
+		"content": content,
+		// TODO output
 
 		// not documented, but present in both collection and non-collection pages
 		"permalink": page.Permalink(),
@@ -112,18 +119,12 @@ func (page *DynamicPage) TemplateObject() VariableMap {
 	return data
 }
 
-// TemplateVariables returns the local variables for template evaluation
-func (page *DynamicPage) TemplateVariables() VariableMap {
+// Context returns the local variables for template evaluation
+func (page *DynamicPage) Context() VariableMap {
 	return VariableMap{
-		"page": page.TemplateObject(),
+		"page": page.Variables(),
 		"site": page.site.Variables,
 	}
-}
-
-// DebugVariables returns a map that's useful to present during diagnostics.
-// For a dynamic page, this is the local variable map that is used for template evaluation.
-func (page *DynamicPage) DebugVariables() VariableMap {
-	return page.TemplateVariables()
 }
 
 // Output returns a bool indicating whether the page should be written.
@@ -133,7 +134,7 @@ func (page *DynamicPage) Output() bool {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (page *DynamicPage) Write(w io.Writer) (err error) {
-	body, err := page.site.LiquidEngine().ParseAndRender(page.Content, page.TemplateVariables())
+	body, err := page.site.LiquidEngine().ParseAndRender(page.raw, page.Context())
 	if err != nil {
 		return helpers.PathError(err, "Liquid Error", page.Source())
 	}
@@ -150,6 +151,7 @@ func (page *DynamicPage) Write(w io.Writer) (err error) {
 		return page.writeSass(w, body)
 	}
 
+	page.processed = &body
 	_, err = w.Write(body)
 	return
 }

@@ -53,7 +53,7 @@ func (page *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]by
 		if err != nil {
 			return nil, err
 		}
-		vars := MergeVariableMaps(page.TemplateVariables(), VariableMap{
+		vars := MergeVariableMaps(page.Variables(), VariableMap{
 			"content": string(body),
 			"layout":  frontMatter,
 		})

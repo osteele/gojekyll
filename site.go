@@ -1,15 +1,11 @@
 package gojekyll
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
-
-	yaml "gopkg.in/yaml.v2"
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
@@ -200,56 +196,16 @@ func (site *Site) ReadCollections() error {
 	return nil
 }
 
-func (site *Site) initSiteVariables() error {
-	data, err := site.readDataFiles()
-	if err != nil {
-		return err
+func (site *Site) CreateCollectionContent() error {
+	for _, coll := range site.Collections {
+		for _, p := range coll.Pages() {
+			if err := p.Write(ioutil.Discard); err != nil {
+				return err
+			}
+		}
 	}
-	site.Variables = MergeVariableMaps(site.Variables, VariableMap{
-		"data": data,
-		// TODO read time from _config, if it's available
-		"time": time.Now(),
-		// TODO pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG
-	})
-	for _, c := range site.Collections {
-		site.Variables[c.Name] = c.CollectionValue()
-	}
+	site.updateCollectionVariables()
 	return nil
-}
-
-func (site *Site) readDataFiles() (VariableMap, error) {
-	data := VariableMap{}
-	dataDir := filepath.Join(site.Source, site.config.DataDir)
-	files, err := ioutil.ReadDir(dataDir)
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range files {
-		if f.IsDir() {
-			break
-		}
-		filename := filepath.Join(dataDir, f.Name())
-		switch filepath.Ext(f.Name()) {
-		case ".yaml", ".yml":
-			bytes, err := ioutil.ReadFile(filename)
-			if err != nil {
-				return nil, err
-			}
-			fileData := map[interface{}]interface{}{}
-			err = yaml.Unmarshal(bytes, &fileData)
-			switch err.(type) {
-			case *yaml.TypeError:
-				fmt.Printf("Warning: skipping %s because it is a list\n", filename)
-				fmt.Println("See https://github.com/go-yaml/yaml/issues/20")
-			default:
-				if err != nil {
-					return nil, helpers.PathError(err, "read YAML", filename)
-				}
-				data[filepath.Base(f.Name())] = fileData
-			}
-		}
-	}
-	return data, nil
 }
 
 func (site *Site) makeLocalLiquidEngine() liquid.Engine {

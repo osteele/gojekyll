@@ -83,7 +83,7 @@ func dataCommand(c *cli.Context, site *gojekyll.Site) error {
 	for _, c := range site.Collections {
 		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]gojekyll.VariableMap)))
 	}
-	b, _ := yaml.Marshal(p.DebugVariables())
+	b, _ := yaml.Marshal(p.Variables())
 	fmt.Println(string(b))
 	return nil
 }
@@ -111,6 +111,9 @@ func renderCommand(c *cli.Context, site *gojekyll.Site) error {
 	printPathSetting("Render:", filepath.Join(site.Source, page.Path()))
 	printSetting("URL:", page.Permalink())
 	printSetting("Content:", "")
+	if err := site.CreateCollectionContent(); err != nil {
+		return err
+	}
 	return page.Write(os.Stdout)
 }
 

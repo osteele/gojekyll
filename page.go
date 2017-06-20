@@ -36,8 +36,7 @@ type Page interface {
 	Write(io.Writer) error
 
 	// Variables
-	DebugVariables() VariableMap
-	TemplateObject() VariableMap
+	Variables() VariableMap
 
 	// internal
 	initPermalink() error
@@ -109,9 +108,9 @@ func ReadPage(site *Site, collection *Collection, relpath string, defaults Varia
 	return
 }
 
-// TemplateObject returns the attributes of the template page object.
+// Variables returns the attributes of the template page object.
 // See https://jekyllrb.com/docs/variables/#page-variables
-func (p *pageFields) TemplateObject() VariableMap {
+func (p *pageFields) Variables() VariableMap {
 	var (
 		relpath = "/" + filepath.ToSlash(p.relpath)
 		base    = path.Base(relpath)
@@ -125,12 +124,6 @@ func (p *pageFields) TemplateObject() VariableMap {
 		"basename":      helpers.PathWithoutExtension(base),
 		"extname":       ext,
 	}
-}
-
-// DebugVariables returns a map that's useful to present during diagnostics.
-// For a static page, this is just the page's template object attributes.
-func (p *pageFields) DebugVariables() VariableMap {
-	return p.TemplateObject()
 }
 
 // Source returns the file path of the page source.
@@ -152,8 +145,8 @@ type StaticPage struct {
 func (page *StaticPage) Static() bool { return true }
 
 // TemplateObject returns metadata for use in the representation of the page as a collection item
-func (page *StaticPage) TemplateObject() VariableMap {
-	return MergeVariableMaps(page.frontMatter, page.pageFields.TemplateObject())
+func (page *StaticPage) Variables() VariableMap {
+	return MergeVariableMaps(page.frontMatter, page.pageFields.Variables())
 }
 
 func (page *StaticPage) Write(w io.Writer) error {

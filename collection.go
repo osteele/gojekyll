@@ -30,7 +30,7 @@ func NewCollection(s *Site, name string, d VariableMap) *Collection {
 // value of the collection.
 func (coll *Collection) CollectionValue() (d []VariableMap) {
 	for _, page := range coll.Pages() {
-		d = append(d, page.TemplateObject())
+		d = append(d, page.Variables())
 	}
 	return
 }

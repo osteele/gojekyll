@@ -81,6 +81,7 @@ func (site *Site) Build(options BuildOptions) (int, error) {
 		}
 		count += n
 	}
+	site.updateCollectionVariables()
 	n, err := site.WritePages(site, options)
 	return count + n, err
 }
@@ -110,6 +111,7 @@ func (site *Site) WritePage(page Page, options BuildOptions) error {
 		fmt.Println("create", to, "from", page.Source())
 	}
 	if options.DryRun {
+		// FIXME render the page in dry run mode, just don't write it
 		return nil
 	}
 	// nolint: gas
