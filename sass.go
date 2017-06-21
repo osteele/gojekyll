@@ -34,7 +34,7 @@ func (s *Site) CopySassFileIncludes() error {
 
 	src := filepath.Join(s.Source, "_sass")
 	dst := s.sassTempDir
-	return filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
+	err := filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return err
 		}
@@ -45,6 +45,10 @@ func (s *Site) CopySassFileIncludes() error {
 		to := filepath.Join(dst, strings.TrimPrefix(rel, "_"))
 		return helpers.CopyFileContents(to, from, 0644)
 	})
+	if os.IsNotExist(err) {
+		return nil
+	}
+	return err
 }
 
 // SassIncludePaths returns an array of sass include directories.

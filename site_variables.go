@@ -2,6 +2,7 @@ package gojekyll
 
 import (
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -34,6 +35,9 @@ func (site *Site) readDataFiles() (VariableMap, error) {
 	dataDir := filepath.Join(site.Source, site.config.DataDir)
 	files, err := ioutil.ReadDir(dataDir)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return VariableMap{}, nil
+		}
 		return nil, err
 	}
 	for _, f := range files {
