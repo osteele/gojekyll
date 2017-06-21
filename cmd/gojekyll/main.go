@@ -72,6 +72,7 @@ func main() {
 			Name:    "build",
 			Aliases: []string{"b"},
 			Usage:   "Build your site",
+			Action:  withSite(buildCommand),
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:        "dry-run, n",
@@ -79,7 +80,6 @@ func main() {
 					Destination: &buildOptions.DryRun,
 				},
 			},
-			Action: withSite(buildCommand),
 		},
 		{
 			Name:   "profile",
@@ -89,18 +89,27 @@ func main() {
 			Name:    "variables",
 			Aliases: []string{"v", "var", "vars"},
 			Usage:   "Print a file or URL path's variables",
-			Action:  withSite(dataCommand),
+			Action:  withSite(varsCommand),
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name: "data",
+				},
+				cli.BoolFlag{
+					Name:  "site",
+					Usage: "Display site variables instead of page variables",
+				},
+			},
 		},
 		{
-			Name:  "routes",
-			Usage: "Display site permalinks and associated files",
+			Name:   "routes",
+			Usage:  "Display site permalinks and associated files",
+			Action: withSite(routesCommand),
 			Flags: []cli.Flag{
 				cli.BoolFlag{
 					Name:  "dynamic",
 					Usage: "Only show routes to non-static files",
 				},
 			},
-			Action: withSite(routesCommand),
 		},
 		{
 			Name:   "render",

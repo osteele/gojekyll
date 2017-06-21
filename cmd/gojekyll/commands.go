@@ -69,21 +69,35 @@ func serveCommand(c *cli.Context, site *gojekyll.Site) error {
 	return server.Run(printSetting)
 }
 
-func dataCommand(c *cli.Context, site *gojekyll.Site) error {
-	p, err := cliPage(c, site)
-	if err != nil {
-		return err
-	}
-
+func varsCommand(c *cli.Context, site *gojekyll.Site) error {
 	printSetting("Variables:", "")
+	siteData := site.Variables
 	// The YAML representation including collections is impractically large for debugging.
 	// (Actually it's circular, which the yaml package can't handle.)
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
-	siteData := site.Variables
 	for _, c := range site.Collections {
 		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]gojekyll.VariableMap)))
 	}
-	b, _ := yaml.Marshal(p.Variables())
+	var data interface{} //gojekyll.VariableMap
+	switch {
+	case c.Bool("site"):
+		data = siteData
+	case c.Bool("data"):
+		data = siteData["data"].(gojekyll.VariableMap)
+		if c.NArg() >= 1 {
+			data = data.(gojekyll.VariableMap)[c.Args().Get(0)]
+		}
+	default:
+		page, err := cliPage(c, site)
+		if err != nil {
+			return err
+		}
+		data = page.Variables()
+	}
+	b, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
 	fmt.Println(string(b))
 	return nil
 }
@@ -111,7 +125,7 @@ func renderCommand(c *cli.Context, site *gojekyll.Site) error {
 	printPathSetting("Render:", filepath.Join(site.Source, page.Path()))
 	printSetting("URL:", page.Permalink())
 	printSetting("Content:", "")
-	if err := site.CreateCollectionContent(); err != nil {
+	if err := site.CollectionVariable(); err != nil {
 		return err
 	}
 	return page.Write(os.Stdout)
