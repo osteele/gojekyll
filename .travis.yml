@@ -4,6 +4,7 @@ go:
   - 1.8.3
 install:
   - make setup
+  - go get ./...
 script:
   - make test
   - make lint
