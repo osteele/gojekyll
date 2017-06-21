@@ -1,13 +1,11 @@
 package gojekyll
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func (site *Site) initSiteVariables() error {
@@ -45,23 +43,17 @@ func (site *Site) readDataFiles() (VariableMap, error) {
 		filename := filepath.Join(dataDir, f.Name())
 		switch filepath.Ext(f.Name()) {
 		case ".yaml", ".yml":
-			bytes, err := ioutil.ReadFile(filename)
+			b, err := ioutil.ReadFile(filename)
 			if err != nil {
 				return nil, err
 			}
-			fileData := map[interface{}]interface{}{}
-			err = yaml.Unmarshal(bytes, &fileData)
-			switch err.(type) {
-			case *yaml.TypeError:
-				fmt.Printf("Warning: skipping %s because it is a list\n", filename)
-				fmt.Println("See https://github.com/go-yaml/yaml/issues/20")
-			default:
-				if err != nil {
-					return nil, helpers.PathError(err, "read YAML", filename)
-				}
-				basename := helpers.TrimExt(filepath.Base(f.Name()))
-				data[basename] = fileData
+			var d interface{} // map or slice
+			err = helpers.UnmarshalYAMLInterface(b, &d)
+			if err != nil {
+				return nil, helpers.PathError(err, "read YAML", filename)
 			}
+			basename := helpers.TrimExt(filepath.Base(f.Name()))
+			data[basename] = d
 		}
 	}
 	return data, nil
