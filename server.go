@@ -31,6 +31,7 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 		return err
 	}
 	s.lr = lrserver.New(lrserver.DefaultName, lrserver.DefaultPort)
+	s.lr.SetStatusLog(nil)
 	logger("Server address:", "http://"+address+"/")
 	http.HandleFunc("/", s.handler)
 	c := make(chan error)
