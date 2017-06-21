@@ -1,6 +1,7 @@
 package liquid
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"reflect"
@@ -20,6 +21,14 @@ const DefaultServer = "localhost:4545"
 // RPCVersion is the Liquid Template Server RPC version.
 const RPCVersion = "0.0.1"
 
+// RenderError represents a Liquid Render error.
+type RenderError struct {
+	Message    string
+	Filename   string
+	LineNumber int
+	Stack      string
+}
+
 type remoteTemplate struct {
 	engine RemoteEngine
 	text   []byte
@@ -28,8 +37,12 @@ type remoteTemplate struct {
 // RPCError wraps jsonrpc.RPCError into an Error.
 type RPCError struct{ jsonrpc.RPCError }
 
-func (engine *RPCError) Error() string {
-	return engine.Message
+func (e *RenderError) Error() string {
+	return fmt.Sprintf("%s:%d: %s\n%s", e.Filename, e.LineNumber, e.Message, e.Stack)
+}
+
+func (e *RPCError) Error() string {
+	return e.Message
 }
 
 // NewRPCClientEngine creates a RemoteEngine.
@@ -76,6 +89,18 @@ func (engine *RPCClientEngine) rpcCall(method string, params ...interface{}) (*j
 		return nil, err
 	}
 	if res.Error != nil {
+		if res.Error.Message == "RenderError" {
+			var re RenderError
+			b, e := json.Marshal(res.Error.Data)
+			if e != nil {
+				return nil, &RPCError{*res.Error}
+			}
+			e = json.Unmarshal(b, &re)
+			if e != nil {
+				return nil, &RPCError{*res.Error}
+			}
+			return nil, &re
+		}
 		return nil, &RPCError{*res.Error}
 	}
 	return res, nil

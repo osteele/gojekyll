@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/liquid"
 	"github.com/russross/blackfriday"
 
 	yaml "gopkg.in/yaml.v2"
@@ -98,6 +99,8 @@ func (page *DynamicPage) Variables() VariableMap {
 		// TODO date (of the collection?) 2017-06-15 07:44:21 -0400
 		// TODO excerpt category? categories tags
 		// TODO slug
+		"categories": []string{},
+		"tags":       []string{},
 
 		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
 		"relative_path": page.Path(),
@@ -136,7 +139,18 @@ func (page *DynamicPage) Output() bool {
 func (page *DynamicPage) Write(w io.Writer) (err error) {
 	body, err := page.site.LiquidEngine().ParseAndRender(page.raw, page.Context())
 	if err != nil {
-		return helpers.PathError(err, "Liquid Error", page.Source())
+		switch err := err.(type) {
+		case *liquid.RenderError:
+			if err.Filename == "" {
+				err.Filename = page.Source()
+			}
+			if rel, e := filepath.Rel(page.site.Source, err.Filename); e == nil {
+				err.Filename = rel
+			}
+			return err
+		default:
+			return helpers.PathError(err, "Liquid Error", page.Source())
+		}
 	}
 
 	if page.IsMarkdown() {
