@@ -159,10 +159,10 @@ func (page *DynamicPage) Write(w io.Writer) (err error) {
 
 	if page.IsMarkdown() {
 		body = blackfriday.MarkdownCommon(body)
-		body, err = page.applyLayout(page.frontMatter, body)
-		if err != nil {
-			return
-		}
+	}
+	body, err = page.applyLayout(page.frontMatter, body)
+	if err != nil {
+		return
 	}
 
 	if page.Site().IsSassPath(page.relpath) {
