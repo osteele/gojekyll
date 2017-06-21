@@ -1,0 +1,3 @@
+{
+    "Exclude": [".*_test.go"]
+}
