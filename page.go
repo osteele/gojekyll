@@ -121,7 +121,7 @@ func (p *pageFields) Variables() VariableMap {
 		"path":          relpath,
 		"modified_time": p.modTime,
 		"name":          base,
-		"basename":      helpers.PathWithoutExtension(base),
+		"basename":      helpers.TrimExt(base),
 		"extname":       ext,
 	}
 }

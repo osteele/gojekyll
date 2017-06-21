@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"syscall"
 )
 
@@ -124,11 +123,6 @@ func RemoveEmptyDirectories(root string) error {
 		return nil
 	}
 	return PostfixWalk(root, walkFn)
-}
-
-// TrimExt returns a path without its extension, e.g. "/a/b.c" -> "/a/b"
-func TrimExt(filename string) string {
-	return strings.TrimSuffix(filename, filepath.Ext(filename))
 }
 
 // VisitCreatedFile calls os.Create to create a file, and applies w to it.

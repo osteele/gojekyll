@@ -39,7 +39,7 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	var (
 		collection string
 		path       = p.relpath
-		root       = helpers.PathWithoutExtension(path)
+		root       = helpers.TrimExt(path)
 		name       = filepath.Base(root)
 	)
 	if p.collection != nil {

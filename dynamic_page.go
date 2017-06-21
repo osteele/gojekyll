@@ -70,7 +70,7 @@ func (page *DynamicPage) Variables() VariableMap {
 	var (
 		relpath = page.relpath
 		ext     = filepath.Ext(relpath)
-		root    = helpers.PathWithoutExtension(page.relpath)
+		root    = helpers.TrimExt(page.relpath)
 		base    = filepath.Base(root)
 		content = page.processed
 	)
