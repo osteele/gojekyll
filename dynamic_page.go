@@ -137,6 +137,10 @@ func (page *DynamicPage) Output() bool {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (page *DynamicPage) Write(w io.Writer) (err error) {
+	if page.processed != nil {
+		_, err = w.Write(*page.processed)
+		return
+	}
 	body, err := page.site.LiquidEngine().ParseAndRender(page.raw, page.Context())
 	if err != nil {
 		switch err := err.(type) {
