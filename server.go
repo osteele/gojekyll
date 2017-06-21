@@ -14,6 +14,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/jaschaephraim/lrserver"
+	"github.com/pkg/browser"
 )
 
 // Server serves the site on HTTP.
@@ -24,17 +25,24 @@ type Server struct {
 }
 
 // Run runs the server.
-func (s *Server) Run(logger func(label, value string)) error {
+func (s *Server) Run(open bool, logger func(label, value string)) error {
 	address := "localhost:4000"
 	if err := s.watchFiles(); err != nil {
 		return err
 	}
 	s.lr = lrserver.New(lrserver.DefaultName, lrserver.DefaultPort)
-	go s.lr.ListenAndServe() // nolint: errcheck
 	logger("Server address:", "http://"+address+"/")
-	logger("Server running...", "press ctrl-c to stop.")
 	http.HandleFunc("/", s.handler)
-	return http.ListenAndServe(address, nil)
+	c := make(chan error)
+	go s.lr.ListenAndServe() // nolint: errcheck
+	go func() {
+		c <- http.ListenAndServe(address, nil)
+	}()
+	logger("Server running...", "press ctrl-c to stop.")
+	if open {
+		browser.OpenURL("http://localhost:4000")
+	}
+	return <-c
 }
 
 func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {

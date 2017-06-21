@@ -120,6 +120,8 @@ For rendering Liquid templates: ACS Technologies's fork [acstech/liquid](https:/
 
 Jascha Ephraim's [jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) Live Reload server.
 
+<https://github.com/pkg/browser> to open the URL in a browser.
+
 The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
 ## Related

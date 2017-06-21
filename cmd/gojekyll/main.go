@@ -23,6 +23,7 @@ var (
 	destination = app.Flag("destination", "Destination directory").Default("").String()
 
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
+	open  = app.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
 
 	build = app.Command("build", "Build your site").Alias("b")
 

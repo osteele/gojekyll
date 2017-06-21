@@ -65,7 +65,7 @@ func profileCommand(_ *gojekyll.Site) error {
 
 func serveCommand(site *gojekyll.Site) error {
 	server := gojekyll.Server{Site: site}
-	return server.Run(printSetting)
+	return server.Run(*open, printSetting)
 }
 
 func varsCommand(site *gojekyll.Site) error {
