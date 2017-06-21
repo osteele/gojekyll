@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/urfave/cli.v1"
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/osteele/gojekyll"
@@ -19,7 +18,7 @@ import (
 // main sets this
 var commandStartTime = time.Now()
 
-func buildCommand(c *cli.Context, site *gojekyll.Site) error {
+func buildCommand(site *gojekyll.Site) error {
 	printPathSetting("Destination:", site.Destination)
 	printSetting("Generating...", "")
 	if buildOptions.DryRun {
@@ -34,7 +33,7 @@ func buildCommand(c *cli.Context, site *gojekyll.Site) error {
 	return nil
 }
 
-func profileCommand(c *cli.Context, _ *gojekyll.Site) error {
+func profileCommand(_ *gojekyll.Site) error {
 	printSetting("Profiling...", "")
 	var profilePath = "gojekyll.prof"
 	f, err := os.Create(profilePath)
@@ -46,7 +45,7 @@ func profileCommand(c *cli.Context, _ *gojekyll.Site) error {
 	}
 	t0 := time.Now()
 	for i := 0; time.Since(t0) < 10*time.Second; i++ {
-		site, err := loadSite(c.GlobalString("source"), c.GlobalString("destination"))
+		site, err := loadSite(*source, *destination)
 		if err != nil {
 			return err
 		}
@@ -64,12 +63,12 @@ func profileCommand(c *cli.Context, _ *gojekyll.Site) error {
 	return nil
 }
 
-func serveCommand(c *cli.Context, site *gojekyll.Site) error {
+func serveCommand(site *gojekyll.Site) error {
 	server := gojekyll.Server{Site: site}
 	return server.Run(printSetting)
 }
 
-func varsCommand(c *cli.Context, site *gojekyll.Site) error {
+func varsCommand(site *gojekyll.Site) error {
 	printSetting("Variables:", "")
 	siteData := site.Variables
 	// The YAML representation including collections is impractically large for debugging.
@@ -80,15 +79,15 @@ func varsCommand(c *cli.Context, site *gojekyll.Site) error {
 	}
 	var data interface{} //gojekyll.VariableMap
 	switch {
-	case c.Bool("site"):
+	case *siteVariable:
 		data = siteData
-	case c.Bool("data"):
+	case *dataVariable:
 		data = siteData["data"].(gojekyll.VariableMap)
-		if c.NArg() >= 1 {
-			data = data.(gojekyll.VariableMap)[c.Args().Get(0)]
+		if *variablePath != "" {
+			data = data.(gojekyll.VariableMap)[*variablePath]
 		}
 	default:
-		page, err := cliPage(c, site)
+		page, err := cliPage(site, *variablePath)
 		if err != nil {
 			return err
 		}
@@ -102,11 +101,11 @@ func varsCommand(c *cli.Context, site *gojekyll.Site) error {
 	return nil
 }
 
-func routesCommand(c *cli.Context, site *gojekyll.Site) error {
+func routesCommand(site *gojekyll.Site) error {
 	printSetting("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Paths {
-		if !(c.Bool("dynamic") && p.Static()) {
+		if !(*dynamicRoutes && p.Static()) {
 			urls = append(urls, u)
 		}
 	}
@@ -117,8 +116,8 @@ func routesCommand(c *cli.Context, site *gojekyll.Site) error {
 	return nil
 }
 
-func renderCommand(c *cli.Context, site *gojekyll.Site) error {
-	page, err := cliPage(c, site)
+func renderCommand(site *gojekyll.Site) error {
+	page, err := cliPage(site, *renderPath)
 	if err != nil {
 		return err
 	}
@@ -133,10 +132,10 @@ func renderCommand(c *cli.Context, site *gojekyll.Site) error {
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(c *cli.Context, site *gojekyll.Site) (page gojekyll.Page, err error) {
+func cliPage(site *gojekyll.Site, path string) (page gojekyll.Page, err error) {
 	arg := "/"
-	if c.NArg() > 0 {
-		arg = c.Args().Get(0)
+	if path != "" {
+		arg = path
 	}
 	if strings.HasPrefix(arg, "/") {
 		page, _ = site.PageForURL(arg)
@@ -150,37 +149,4 @@ func cliPage(c *cli.Context, site *gojekyll.Site) (page gojekyll.Page, err error
 		}
 	}
 	return
-}
-
-// Load the site specified at destination into the site global, and print the common banner settings.
-func loadSite(source, destination string) (*gojekyll.Site, error) {
-	site, err := gojekyll.NewSiteFromDirectory(source)
-	if err != nil {
-		return nil, err
-	}
-	site.UseRemoteLiquidEngine = useRemoteLiquidEngine
-	if destination != "" {
-		site.Destination = destination
-	}
-	if site.ConfigFile != nil {
-		printPathSetting(configurationFileLabel, *site.ConfigFile)
-	} else {
-		printSetting(configurationFileLabel, "none")
-	}
-	printPathSetting("Source:", site.Source)
-	return site, site.Load()
-}
-
-// Given a subcommand function, load the site and then call the subcommand.
-func loadSiteAndRun(siteLoader func() (*gojekyll.Site, error), cmd func(*cli.Context, *gojekyll.Site) error) func(*cli.Context) error {
-	return func(c *cli.Context) error {
-		site, err := siteLoader()
-		if err != nil {
-			return cli.NewExitError(err, 1)
-		}
-		if err := cmd(c, site); err != nil {
-			return cli.NewExitError(err, 1)
-		}
-		return nil
-	}
 }

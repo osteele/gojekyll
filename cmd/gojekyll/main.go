@@ -7,12 +7,43 @@ import (
 
 	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
-	"gopkg.in/urfave/cli.v1"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Command-line options
-var buildOptions gojekyll.BuildOptions
-var useRemoteLiquidEngine bool
+var (
+	buildOptions          gojekyll.BuildOptions
+	useRemoteLiquidEngine bool
+	site                  *gojekyll.Site
+)
+
+var (
+	app         = kingpin.New("gojekyll", "a (maybe someday) Jekyll-compatible blog generator in Go")
+	source      = app.Flag("source", "Source directory").Default(".").String()
+	destination = app.Flag("destination", "Destination directory").Default("").String()
+
+	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
+
+	build = app.Command("build", "Build your site").Alias("b")
+
+	profile = app.Command("profile", "Build several times, and write a profile file")
+
+	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
+	dataVariable = variables.Flag("data", "Display site.data").Bool()
+	siteVariable = variables.Flag("site", "Display site variables instead of page variables").Bool()
+	variablePath = variables.Arg("PATH", "Path or URL").String()
+
+	routes        = app.Command("routes", "Display site permalinks and associated files")
+	dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files").Bool()
+
+	render     = app.Command("render", "Render a file or URL path")
+	renderPath = variables.Arg("PATH2", "Path or URL").String()
+)
+
+func init() {
+	app.Flag("use-liquid-server", "Use Liquid JSON-RPC server").BoolVar(&useRemoteLiquidEngine)
+	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
+}
 
 // This is the longest label. Pull it out here so we can both use it, and measure it for alignment.
 const configurationFileLabel = "Configuration file:"
@@ -30,93 +61,50 @@ func printPathSetting(label string, name string) {
 }
 
 func main() {
-	var source, destination string
-
-	app := cli.NewApp()
-	app.Name = "gojekyll"
-	app.Usage = "a (maybe someday) Jekyll-compatible blog generator in Go"
-
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:        "source",
-			Value:       ".",
-			Usage:       "Source directory",
-			Destination: &source,
-		},
-		cli.StringFlag{
-			Name:        "destination",
-			Value:       "",
-			Usage:       "Destination directory",
-			Destination: &destination,
-		},
-		cli.BoolFlag{
-			Name:        "use-liquid-server",
-			Usage:       "Use Liquid JSON-RPC server",
-			Destination: &useRemoteLiquidEngine,
-		},
+	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
+	if err := run(cmd); err != nil {
+		app.FatalIfError(err, "")
+	}
+}
+func run(cmd string) error {
+	site, err := loadSite(*source, *destination)
+	if err != nil {
+		return err
 	}
 
-	withSite := func(cmd func(*cli.Context, *gojekyll.Site) error) func(*cli.Context) error {
-		siteLoader := func() (*gojekyll.Site, error) { return loadSite(source, destination) }
-		return loadSiteAndRun(siteLoader, cmd)
+	switch cmd {
+	case build.FullCommand():
+		return buildCommand(site)
+	case profile.FullCommand():
+		return profileCommand(site)
+	case render.FullCommand():
+		return renderCommand(site)
+	case routes.FullCommand():
+		return routesCommand(site)
+	case serve.FullCommand():
+		return serveCommand(site)
+	case variables.FullCommand():
+		return varsCommand(site)
 	}
+	return nil
+}
 
-	app.Commands = []cli.Command{
-		{
-			Name:    "serve",
-			Aliases: []string{"server", "s"},
-			Usage:   "Serve your site locally",
-			Action:  withSite(serveCommand),
-		},
-		{
-			Name:    "build",
-			Aliases: []string{"b"},
-			Usage:   "Build your site",
-			Action:  withSite(buildCommand),
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:        "dry-run, n",
-					Usage:       "Dry run",
-					Destination: &buildOptions.DryRun,
-				},
-			},
-		},
-		{
-			Name:   "profile",
-			Usage:  "Build several times, and write a profile file",
-			Action: withSite(profileCommand),
-		}, {
-			Name:    "variables",
-			Aliases: []string{"v", "var", "vars"},
-			Usage:   "Print a file or URL path's variables",
-			Action:  withSite(varsCommand),
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name: "data",
-				},
-				cli.BoolFlag{
-					Name:  "site",
-					Usage: "Display site variables instead of page variables",
-				},
-			},
-		},
-		{
-			Name:   "routes",
-			Usage:  "Display site permalinks and associated files",
-			Action: withSite(routesCommand),
-			Flags: []cli.Flag{
-				cli.BoolFlag{
-					Name:  "dynamic",
-					Usage: "Only show routes to non-static files",
-				},
-			},
-		},
-		{
-			Name:   "render",
-			Usage:  "Render a file or URL path",
-			Action: withSite(renderCommand),
-		},
+// Load the site specified at destination into the site global, and print the common banner settings.
+func loadSite(source, destination string) (*gojekyll.Site, error) {
+	site, err := gojekyll.NewSiteFromDirectory(source)
+	if err != nil {
+		return nil, err
 	}
-
-	_ = app.Run(os.Args)
+	site.UseRemoteLiquidEngine = useRemoteLiquidEngine
+	if destination != "" {
+		site.Destination = destination
+	}
+	if site.ConfigFile != nil {
+		printPathSetting(configurationFileLabel, *site.ConfigFile)
+	} else {
+		printSetting(configurationFileLabel, "none")
+	}
+	printPathSetting("Source:", site.Source)
+	err = site.Load()
+	return site, err
 }
