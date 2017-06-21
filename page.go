@@ -144,7 +144,7 @@ type StaticPage struct {
 // Static returns a bool indicating that the page is a static page.
 func (page *StaticPage) Static() bool { return true }
 
-// TemplateObject returns metadata for use in the representation of the page as a collection item
+// Variables returns metadata for use in the representation of the page as a collection item
 func (page *StaticPage) Variables() VariableMap {
 	return MergeVariableMaps(page.frontMatter, page.pageFields.Variables())
 }

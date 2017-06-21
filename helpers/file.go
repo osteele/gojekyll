@@ -6,27 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"syscall"
 )
-
-// VisitCreatedFile calls os.Create to create a file, and applies w to it.
-func VisitCreatedFile(name string, w func(io.Writer) error) error {
-	f, err := os.Create(name)
-	if err != nil {
-		return err
-	}
-	close := true
-	defer func() {
-		if close {
-			_ = f.Close() // nolint: gas
-		}
-	}()
-	if err := w(f); err != nil {
-		return err
-	}
-	close = false
-	return f.Close()
-}
 
 // CopyFileContents copies the file contents from src to dst.
 // It's not atomic and doesn't copy permissions or metadata.
@@ -142,4 +124,28 @@ func RemoveEmptyDirectories(root string) error {
 		return nil
 	}
 	return PostfixWalk(root, walkFn)
+}
+
+// TrimExt returns a path without its extension, e.g. "/a/b.c" -> "/a/b"
+func TrimExt(filename string) string {
+	return strings.TrimSuffix(filename, filepath.Ext(filename))
+}
+
+// VisitCreatedFile calls os.Create to create a file, and applies w to it.
+func VisitCreatedFile(name string, w func(io.Writer) error) error {
+	f, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	close := true
+	defer func() {
+		if close {
+			_ = f.Close() // nolint: gas
+		}
+	}()
+	if err := w(f); err != nil {
+		return err
+	}
+	close = false
+	return f.Close()
 }

@@ -196,7 +196,8 @@ func (site *Site) ReadCollections() error {
 	return nil
 }
 
-func (site *Site) CreateCollectionContent() error {
+// CollectionVariable creates the value of the site.[collectionName] variable
+func (site *Site) CollectionVariable() error {
 	for _, coll := range site.Collections {
 		for _, p := range coll.Pages() {
 			if err := p.Write(ioutil.Discard); err != nil {

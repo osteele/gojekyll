@@ -59,7 +59,8 @@ func (site *Site) readDataFiles() (VariableMap, error) {
 				if err != nil {
 					return nil, helpers.PathError(err, "read YAML", filename)
 				}
-				data[filepath.Base(f.Name())] = fileData
+				basename := helpers.TrimExt(filepath.Base(f.Name()))
+				data[basename] = fileData
 			}
 		}
 	}
