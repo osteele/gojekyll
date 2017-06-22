@@ -8,8 +8,6 @@ When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyl
 
 This project is missing more functionality than it implements. It may accidentally work on tiny or simple sites.
 
-When using an embedded Liquid engine (that isn't very compliant with the [Liquid spec](http://liquidmarkup.org)), it's about 50x faster than Jekyll. When using an un-optimized JSON-RPC connection to a JavaScript library (see below), it's about 5x faster.
-
 - [ ] Content
   - [x] Front Matter
   - [ ] Posts
@@ -20,7 +18,7 @@ When using an embedded Liquid engine (that isn't very compliant with the [Liquid
     - [ ] Related
   - [x] Static Files
   - [x] Variables
-  - [ ] Collections -- rendered, but not available as variables
+  - [x] Collections
   - [ ] Data Files
     - [ ] CSV
     - [ ] JSON
@@ -48,7 +46,7 @@ When using an embedded Liquid engine (that isn't very compliant with the [Liquid
 ## Install
 
 ```bash
-go install osteele/gojekyll/cmd/gojekyll
+go get -u osteele/gojekyll/cmd/gojekyll
 ```
 
 Sometimes this package benefits from my unmerged improvements to the **acstech/liquid** library. If you want to use [my fork](https://github.com/osteele/liquid) instead:
@@ -66,7 +64,6 @@ git pull -f osteele
 ```bash
 gojekyll build                # builds into ./_site
 gojekyll serve                # serves from memory, w/ live reload
-gojekyll   # use a local Liquid engine server
 gojekyll help
 ```
 
