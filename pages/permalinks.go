@@ -5,6 +5,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/osteele/gojekyll/helpers"
@@ -41,13 +42,17 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 		relpath    = strings.TrimPrefix(p.relpath, p.container.PathPrefix())
 		root       = helpers.TrimExt(relpath)
 		name       = filepath.Base(root)
+		categories = p.categories()
 	)
+	sort.Strings(categories)
+	// TODO recognize category; list
 	vs := map[string]string{
+		"categories": strings.Join(categories, "/"),
 		"collection": collection,
 		"name":       helpers.Slugify(name),
 		"path":       "/" + root,
-		"slug":       helpers.Slugify(name),
-		"title":      p.frontMatter.String("title", name),
+		"slug":       p.frontMatter.String("slug", helpers.Slugify(name)),
+		"title":      p.frontMatter.String("slug", helpers.Slugify(name)),
 		// The following isn't documented, but is evident
 		"output_ext": p.OutputExt(),
 		// TODO categories
@@ -59,7 +64,7 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 }
 
 func (p *pageFields) expandPermalink() (s string, err error) {
-	pattern := p.frontMatter.String("permalink", ":path:output_ext")
+	pattern := p.frontMatter.String("permalink", p.container.DefaultPermalink())
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}
@@ -79,7 +84,7 @@ func (p *pageFields) expandPermalink() (s string, err error) {
 		varname := m[1:]
 		value, found := templateVariables[varname]
 		if !found {
-			panic(fmt.Errorf("unknown variable %s in permalink template %s", varname, pattern))
+			panic(fmt.Errorf("unknown variable %q in permalink template %q", varname, pattern))
 		}
 		return value
 	})

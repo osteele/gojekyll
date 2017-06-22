@@ -27,6 +27,10 @@ func NewCollection(s *Site, name string, d templates.VariableMap) *Collection {
 	}
 }
 
+// DefaultPermalink returns the default Permalink for pages in a collection
+// that doesn't specify a permalink in the site config.
+func (c *Collection) DefaultPermalink() string { return "/:categories/:year/:month/:day/:title.html" }
+
 // IsPosts returns true if the collection is the special "posts" collection.
 func (c *Collection) IsPosts() bool { return c.Name == "posts" }
 
@@ -46,7 +50,7 @@ func (c *Collection) Pages() []pages.Page {
 
 // TemplateVariable returns an array of page objects, for use as the template variable
 // value of the collection.
-func (c *Collection) TemplateVariable() ([]templates.VariableMap) {
+func (c *Collection) TemplateVariable() []templates.VariableMap {
 	d := []templates.VariableMap{}
 	for _, p := range c.Pages() {
 		d = append(d, p.PageVariables())

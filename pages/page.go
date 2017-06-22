@@ -54,6 +54,7 @@ type Context interface {
 
 // Container is the Page container
 type Container interface {
+	DefaultPermalink() string
 	PathPrefix() string
 	Output() bool
 }
@@ -141,4 +142,28 @@ func (p *pageFields) PageVariables() templates.VariableMap {
 		"basename":      helpers.TrimExt(base),
 		"extname":       ext,
 	})
+}
+
+func (p *pageFields) categories() []string {
+	if v, found := p.frontMatter["categories"]; found {
+		switch v := v.(type) {
+		case string:
+			return regexp.MustCompile(`\s+`).Split(v, -1)
+		case []interface{}:
+			sl := make([]string, len(v))
+			for i, s := range v {
+				switch s := s.(type) {
+				case fmt.Stringer:
+					sl[i] = s.String()
+				default:
+					sl[i] = fmt.Sprint(s)
+				}
+			}
+			return sl
+		default:
+			fmt.Printf("%T", v)
+			panic("unimplemented")
+		}
+	}
+	return []string{p.frontMatter.String("category", "")}
 }
