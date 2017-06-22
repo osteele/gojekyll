@@ -1,4 +1,4 @@
-package gojekyll
+package collections
 
 import (
 	"fmt"
@@ -12,16 +12,16 @@ import (
 
 // Collection is a Jekyll collection.
 type Collection struct {
-	Site  *Site
-	Name  string
-	Data  templates.VariableMap
+	Name string
+	Data templates.VariableMap
+	// context pages.Context
 	pages []pages.Page
 }
 
 // NewCollection creates a new Collection with defaults d
-func NewCollection(s *Site, name string, d templates.VariableMap) *Collection {
+func NewCollection(ctx pages.Context, name string, d templates.VariableMap) *Collection {
 	return &Collection{
-		Site: s,
+		// Site: s,
 		Name: name,
 		Data: d,
 	}
@@ -40,9 +40,6 @@ func (c *Collection) Output() bool { return c.Data.Bool("output", false) }
 // PathPrefix returns the collection's directory prefix, e.g. "_posts/"
 func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Name + "/") }
 
-// Source returns the source directory for pages in the collection.
-func (c *Collection) Source() string { return filepath.Join(c.Site.Source, "_"+c.Name) }
-
 // Pages is a list of pages.
 func (c *Collection) Pages() []pages.Page {
 	return c.pages
@@ -59,7 +56,7 @@ func (c *Collection) TemplateVariable() []templates.VariableMap {
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages() error {
+func (c *Collection) ReadPages(ctx pages.Context, sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
 	collectionDefaults := templates.MergeVariableMaps(c.Data, templates.VariableMap{
 		"collection": c.Name,
 	})
@@ -75,7 +72,7 @@ func (c *Collection) ReadPages() error {
 			}
 			return err
 		}
-		relname, err := filepath.Rel(c.Site.Source, filename)
+		relname, err := filepath.Rel(sitePath, filename)
 		switch {
 		case strings.HasPrefix(filepath.Base(relname), "."):
 			return nil
@@ -84,8 +81,8 @@ func (c *Collection) ReadPages() error {
 		case info.IsDir():
 			return nil
 		}
-		defaults := templates.MergeVariableMaps(c.Site.GetFrontMatterDefaults(relname, ""), collectionDefaults)
-		p, err := pages.NewPageFromFile(c.Site, c, filename, relname, defaults)
+		defaults := templates.MergeVariableMaps(frontMatterDefaults(relname, ""), collectionDefaults)
+		p, err := pages.NewPageFromFile(ctx, c, filename, relname, defaults)
 		switch {
 		case err != nil:
 			return err
@@ -96,5 +93,5 @@ func (c *Collection) ReadPages() error {
 		}
 		return nil
 	}
-	return filepath.Walk(c.Source(), walkFn)
+	return filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn)
 }

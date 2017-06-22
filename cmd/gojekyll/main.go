@@ -5,16 +5,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/sites"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Command-line options
 var (
-	buildOptions          gojekyll.BuildOptions
+	buildOptions          sites.BuildOptions
+	site                  *sites.Site
 	useRemoteLiquidEngine bool
-	site                  *gojekyll.Site
 )
 
 var (
@@ -91,8 +91,8 @@ func run(cmd string) error {
 }
 
 // Load the site specified at destination into the site global, and print the common banner settings.
-func loadSite(source, destination string) (*gojekyll.Site, error) {
-	site, err := gojekyll.NewSiteFromDirectory(source)
+func loadSite(source, destination string) (*sites.Site, error) {
+	site, err := sites.NewSiteFromDirectory(source)
 	if err != nil {
 		return nil, err
 	}

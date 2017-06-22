@@ -14,13 +14,14 @@ import (
 	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/sites"
 	"github.com/osteele/gojekyll/templates"
 )
 
 // main sets this
 var commandStartTime = time.Now()
 
-func buildCommand(site *gojekyll.Site) error {
+func buildCommand(site *sites.Site) error {
 	printPathSetting("Destination:", site.Destination)
 	printSetting("Generating...", "")
 	if buildOptions.DryRun {
@@ -35,7 +36,7 @@ func buildCommand(site *gojekyll.Site) error {
 	return nil
 }
 
-func profileCommand(_ *gojekyll.Site) error {
+func profileCommand(_ *sites.Site) error {
 	printSetting("Profiling...", "")
 	var profilePath = "gojekyll.prof"
 	f, err := os.Create(profilePath)
@@ -65,12 +66,12 @@ func profileCommand(_ *gojekyll.Site) error {
 	return nil
 }
 
-func serveCommand(site *gojekyll.Site) error {
+func serveCommand(site *sites.Site) error {
 	server := gojekyll.Server{Site: site}
 	return server.Run(*open, printSetting)
 }
 
-func varsCommand(site *gojekyll.Site) error {
+func varsCommand(site *sites.Site) error {
 	printSetting("Variables:", "")
 	siteData := site.Variables
 	// The YAML representation including collections is impractically large for debugging.
@@ -104,7 +105,7 @@ func varsCommand(site *gojekyll.Site) error {
 	return nil
 }
 
-func routesCommand(site *gojekyll.Site) error {
+func routesCommand(site *sites.Site) error {
 	printSetting("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Paths {
@@ -120,7 +121,7 @@ func routesCommand(site *gojekyll.Site) error {
 	return nil
 }
 
-func renderCommand(site *gojekyll.Site) error {
+func renderCommand(site *sites.Site) error {
 	p, err := cliPage(site, *renderPath)
 	if err != nil {
 		return err
@@ -133,7 +134,7 @@ func renderCommand(site *gojekyll.Site) error {
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(s *gojekyll.Site, path string) (pages.Page, error) {
+func cliPage(s *sites.Site, path string) (pages.Page, error) {
 	if path == "" {
 		path = "/"
 	}

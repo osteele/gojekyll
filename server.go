@@ -14,12 +14,13 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/jaschaephraim/lrserver"
+	"github.com/osteele/gojekyll/sites"
 	"github.com/pkg/browser"
 )
 
 // Server serves the site on HTTP.
 type Server struct {
-	Site *Site
+	Site *sites.Site
 	mu   sync.Mutex
 	lr   *lrserver.Server
 }
@@ -61,7 +62,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 		page, found = site.Paths["404.html"]
 	}
 	if !found {
-		fmt.Fprintf(rw, "404 page not found: %s", urlpath)
+		fmt.Fprintf(rw, "404 page not found: %s", urlpath) // nolint: gas
 		return
 	}
 

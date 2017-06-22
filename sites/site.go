@@ -1,4 +1,4 @@
-package gojekyll
+package sites
 
 import (
 	"io"
@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/osteele/gojekyll/collections"
+	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
 	"github.com/osteele/gojekyll/pages"
@@ -20,11 +22,11 @@ type Site struct {
 	Destination           string
 	UseRemoteLiquidEngine bool
 
-	Collections []*Collection
+	Collections []*collections.Collection
 	Variables   templates.VariableMap
 	Paths       map[string]pages.Page // URL path -> Page
 
-	config       SiteConfig
+	config       config.Config
 	liquidEngine liquid.Engine
 	sassTempDir  string
 }
@@ -43,11 +45,7 @@ func (s *Site) PathPrefix() string { return "" }
 
 // NewSite creates a new site record, initialized with the site defaults.
 func NewSite() *Site {
-	s := new(Site)
-	if err := s.readConfigBytes([]byte(defaultSiteConfig)); err != nil {
-		panic(err)
-	}
-	return s
+	return &Site{config: config.Default()}
 }
 
 // NewSiteFromDirectory reads the configuration file, if it exists.
@@ -61,7 +59,8 @@ func NewSiteFromDirectory(source string) (*Site, error) {
 	case err != nil:
 		return nil, err
 	default:
-		if err = s.readConfigBytes(bytes); err != nil {
+		err = config.Unmarshal(bytes, &s.config)
+		if err != nil {
 			return nil, err
 		}
 		s.Source = filepath.Join(source, s.config.Source)
@@ -180,7 +179,7 @@ func (s *Site) readFiles() error {
 		case info.IsDir(), s.Exclude(relname):
 			return nil
 		}
-		defaults := s.GetFrontMatterDefaults(relname, "")
+		defaults := s.config.GetFrontMatterDefaults(relname, "")
 		p, err := pages.NewPageFromFile(s, s, filename, relname, defaults)
 		if err != nil {
 			return helpers.PathError(err, "read", filename)
@@ -201,9 +200,9 @@ func (s *Site) readFiles() error {
 // It adds each collection's pages to the site map, and creates a template site variable for each collection.
 func (s *Site) ReadCollections() error {
 	for name, data := range s.config.Collections {
-		c := NewCollection(s, name, data)
+		c := collections.NewCollection(s, name, data)
 		s.Collections = append(s.Collections, c)
-		if err := c.ReadPages(); err != nil {
+		if err := c.ReadPages(s, s.Source, s.config.GetFrontMatterDefaults); err != nil {
 			return err
 		}
 		for _, p := range c.Pages() {
@@ -263,17 +262,4 @@ func (s *Site) makeLiquidEngine() (liquid.Engine, error) {
 // for this site.
 func (s *Site) TemplateEngine() liquid.Engine {
 	return s.liquidEngine
-}
-
-// GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
-func (s *Site) GetFrontMatterDefaults(relpath, typename string) (m templates.VariableMap) {
-	for _, entry := range s.config.Defaults {
-		scope := &entry.Scope
-		hasPrefix := strings.HasPrefix(relpath, scope.Path)
-		hasType := scope.Type == "" || scope.Type == typename
-		if hasPrefix && hasType {
-			m = templates.MergeVariableMaps(m, entry.Values)
-		}
-	}
-	return
 }

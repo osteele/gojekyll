@@ -1,13 +1,15 @@
-package gojekyll
+package config
 
 import (
+	"strings"
+
 	"github.com/osteele/gojekyll/templates"
 	yaml "gopkg.in/yaml.v2"
 )
 
-// SiteConfig is the Jekyll site configuration, typically read from _config.yml.
+// Config is the Jekyll site configuration, typically read from _config.yml.
 // See https://jekyllrb.com/docs/configuration/#default-configuration
-type SiteConfig struct {
+type Config struct {
 	// Where things are:
 	Source      string
 	Destination string
@@ -31,18 +33,44 @@ type SiteConfig struct {
 		}
 		Values templates.VariableMap
 	}
+
+	Variables templates.VariableMap `yaml:"-"`
 }
 
-func (s *Site) readConfigBytes(bytes []byte) error {
-	configVariables := templates.VariableMap{}
-	if err := yaml.Unmarshal(bytes, &s.config); err != nil {
+// Default returns a default site configuration.
+// This is a function instead of a global variable, and returns a new value each time,
+// since the caller may overwrite it.
+func Default() Config {
+	var c Config
+	err := Unmarshal([]byte(defaultSiteConfig), &c)
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
+
+// Unmarshal reads a YAML configuration.
+func Unmarshal(bytes []byte, c *Config) error {
+	if err := yaml.Unmarshal(bytes, &c); err != nil {
 		return err
 	}
-	if err := yaml.Unmarshal(bytes, &configVariables); err != nil {
+	if err := yaml.Unmarshal(bytes, &c.Variables); err != nil {
 		return err
 	}
-	s.Variables = templates.MergeVariableMaps(s.Variables, configVariables)
 	return nil
+}
+
+// GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
+func (c *Config) GetFrontMatterDefaults(relpath, typename string) (m templates.VariableMap) {
+	for _, entry := range c.Defaults {
+		scope := &entry.Scope
+		hasPrefix := strings.HasPrefix(relpath, scope.Path)
+		hasType := scope.Type == "" || scope.Type == typename
+		if hasPrefix && hasType {
+			m = templates.MergeVariableMaps(m, entry.Values)
+		}
+	}
+	return
 }
 
 // From https://jekyllrb.com/docs/configuration/#default-configuration

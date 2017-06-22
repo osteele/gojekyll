@@ -1,4 +1,4 @@
-package gojekyll
+package sites
 
 import (
 	"io/ioutil"
@@ -31,12 +31,14 @@ func (s *Site) initSiteVariables() error {
 	return nil
 }
 
+// SetPageContentTemplateValues sets the site[collection][i].content
+// template variables
 func (s *Site) SetPageContentTemplateValues() error {
 	for _, c := range s.Collections {
 		for _, p := range c.Pages() {
 			switch p := p.(type) {
 			case *pages.DynamicPage:
-				if err := p.ComputeContent(c.Site); err != nil {
+				if err := p.ComputeContent(s); err != nil {
 					return err
 				}
 			}
