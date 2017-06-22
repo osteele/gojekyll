@@ -11,9 +11,9 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/server"
 	"github.com/osteele/gojekyll/sites"
 	"github.com/osteele/gojekyll/templates"
 )
@@ -67,7 +67,7 @@ func profileCommand(_ *sites.Site) error {
 }
 
 func serveCommand(site *sites.Site) error {
-	server := gojekyll.Server{Site: site}
+	server := server.Server{Site: site}
 	return server.Run(*open, printSetting)
 }
 
