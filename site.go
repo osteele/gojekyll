@@ -212,19 +212,6 @@ func (s *Site) ReadCollections() error {
 	return nil
 }
 
-// CollectionVariable creates the value of the site.[collectionName] variable
-func (s *Site) CollectionVariable() error {
-	for _, c := range s.Collections {
-		for _, p := range c.Pages() {
-			if err := p.Write(s, ioutil.Discard); err != nil {
-				return err
-			}
-		}
-	}
-	s.updateCollectionVariables()
-	return nil
-}
-
 func (s *Site) makeLocalLiquidEngine() liquid.Engine {
 	engine := liquid.NewLocalWrapperEngine()
 	engine.LinkTagHandler(s.RelPathURL)

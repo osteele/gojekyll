@@ -110,11 +110,22 @@ func (p *DynamicPage) Output() bool {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
-	if p.processed != nil {
-		_, err := w.Write(*p.processed)
+	if ctx.IsSassPath(p.relpath) {
+		return ctx.WriteSass(w, p.raw)
+	}
+	if err := p.ComputeContent(ctx); err != nil {
 		return err
 	}
-	body, err := ctx.TemplateEngine().ParseAndRender(p.raw, p.TemplateContext(ctx))
+	_, err := w.Write(*p.processed)
+	return err
+}
+
+// ComputeContent computes the page content.
+func (p *DynamicPage) ComputeContent(ctx Context) error {
+	if p.processed != nil {
+		return nil
+	}
+	b, err := ctx.TemplateEngine().ParseAndRender(p.raw, p.TemplateContext(ctx))
 	if err != nil {
 		switch err := err.(type) {
 		case *liquid.RenderError:
@@ -129,21 +140,15 @@ func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
 			return helpers.PathError(err, "Liquid Error", p.filename)
 		}
 	}
-
 	if p.isMarkdown {
-		body = blackfriday.MarkdownCommon(body)
+		b = blackfriday.MarkdownCommon(b)
 	}
-	body, err = p.applyLayout(ctx, p.frontMatter, body)
+	b, err = p.applyLayout(ctx, p.frontMatter, b)
 	if err != nil {
 		return err
 	}
 
-	if ctx.IsSassPath(p.relpath) {
-		return ctx.WriteSass(w, body)
-	}
-
-	p.processed = &body
-	_, err = w.Write(body)
+	p.processed = &b
 	return err
 }
 

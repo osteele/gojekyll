@@ -128,9 +128,6 @@ func renderCommand(site *gojekyll.Site) error {
 	printPathSetting("Render:", filepath.Join(site.Source, p.SiteRelPath()))
 	printSetting("URL:", p.Permalink())
 	printSetting("Content:", "")
-	if err := site.CollectionVariable(); err != nil {
-		return err
-	}
 	return p.Write(site, os.Stdout)
 }
 

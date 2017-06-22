@@ -39,13 +39,19 @@ func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Nam
 // Source returns the source directory for pages in the collection.
 func (c *Collection) Source() string { return filepath.Join(c.Site.Source, "_"+c.Name) }
 
+// Pages is a list of pages.
+func (c *Collection) Pages() []pages.Page {
+	return c.pages
+}
+
 // TemplateVariable returns an array of page objects, for use as the template variable
 // value of the collection.
-func (c *Collection) TemplateVariable() (d []templates.VariableMap) {
-	for _, page := range c.Pages() {
-		d = append(d, page.PageVariables())
+func (c *Collection) TemplateVariable() ([]templates.VariableMap) {
+	d := []templates.VariableMap{}
+	for _, p := range c.Pages() {
+		d = append(d, p.PageVariables())
 	}
-	return
+	return d
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.

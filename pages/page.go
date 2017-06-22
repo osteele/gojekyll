@@ -60,14 +60,14 @@ type Container interface {
 
 // pageFields is embedded in StaticPage and DynamicPage
 type pageFields struct {
-	container          Container
-	filename           string
-	relpath            string // relative to site source directory
-	outputExt          string
-	permalink          string // cached permalink
-	modTime            time.Time
+	container   Container
+	filename    string
+	relpath     string // relative to site source directory
+	outputExt   string
+	permalink   string // cached permalink
+	modTime     time.Time
 	frontMatter templates.VariableMap
-	isMarkdown         bool
+	isMarkdown  bool
 }
 
 func (p *pageFields) String() string {
@@ -93,11 +93,11 @@ func NewPageFromFile(ctx Context, c Container, filename string, relpath string, 
 	}
 
 	fields := pageFields{
-		container:          c,
-		filename:           filename,
+		container:   c,
+		filename:    filename,
 		frontMatter: defaults,
-		modTime:            info.ModTime(),
-		relpath:            relpath,
+		modTime:     info.ModTime(),
+		relpath:     relpath,
 	}
 	switch {
 	case ctx.IsMarkdown(relpath):

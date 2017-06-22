@@ -33,11 +33,6 @@ func (s *Site) Pages() []pages.Page {
 	return pages
 }
 
-// Pages is a list of pages.
-func (c *Collection) Pages() []pages.Page {
-	return c.pages
-}
-
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
 func (s *Site) Clean(options BuildOptions) error {
 	// TODO PERF when called as part of build, keep files that will be re-generated
@@ -76,14 +71,16 @@ func (s *Site) Build(options BuildOptions) (int, error) {
 	if err := s.CopySassFileIncludes(); err != nil {
 		return count, err
 	}
-	for _, coll := range s.Collections {
-		n, err := s.WritePages(coll, options)
+	for _, c := range s.Collections {
+		n, err := s.WritePages(c, options)
 		if err != nil {
 			return count, err
 		}
 		count += n
 	}
-	s.updateCollectionVariables()
+	if err := s.SetPageContentTemplateValues(); err != nil {
+		return count, err
+	}
 	n, err := s.WritePages(s, options)
 	return count + n, err
 }

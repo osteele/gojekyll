@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -26,6 +27,21 @@ func (s *Site) initSiteVariables() error {
 		"time": time.Now(),
 		// TODO pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG
 	})
+	s.updateCollectionVariables()
+	return nil
+}
+
+func (s *Site) SetPageContentTemplateValues() error {
+	for _, c := range s.Collections {
+		for _, p := range c.Pages() {
+			switch p := p.(type) {
+			case *pages.DynamicPage:
+				if err := p.ComputeContent(c.Site); err != nil {
+					return err
+				}
+			}
+		}
+	}
 	s.updateCollectionVariables()
 	return nil
 }
