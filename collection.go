@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -14,7 +15,7 @@ type Collection struct {
 	Site  *Site
 	Name  string
 	Data  templates.VariableMap
-	pages []Page
+	pages []pages.Page
 }
 
 // NewCollection creates a new Collection with defaults d
@@ -74,7 +75,7 @@ func (c *Collection) ReadPages() error {
 			return nil
 		}
 		defaults := templates.MergeVariableMaps(c.Site.GetFrontMatterDefaults(relname, ""), collectionDefaults)
-		p, err := NewPageFromFile(c.Site, c, filename, relname, defaults)
+		p, err := pages.NewPageFromFile(c.Site, c, filename, relname, defaults)
 		switch {
 		case err != nil:
 			return err

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -37,7 +38,7 @@ func (s *Site) FindLayout(base string, fm *templates.VariableMap) (t liquid.Temp
 	if !found {
 		panic(fmt.Errorf("no template for %s", base))
 	}
-	*fm, err = readFrontMatter(&content)
+	*fm, err = pages.ReadFrontMatter(&content)
 	if err != nil {
 		return
 	}

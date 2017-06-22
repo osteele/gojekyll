@@ -7,11 +7,12 @@ import (
 	"path/filepath"
 
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/pages"
 )
 
 // PageContainer has a slice of pages
 type PageContainer interface {
-	Pages() []Page
+	Pages() []pages.Page
 }
 
 // BuildOptions holds options for Build and Clean
@@ -22,8 +23,8 @@ type BuildOptions struct {
 }
 
 // Pages is a list of pages.
-func (s *Site) Pages() []Page {
-	pages := make([]Page, len(s.Paths))
+func (s *Site) Pages() []pages.Page {
+	pages := make([]pages.Page, len(s.Paths))
 	i := 0
 	for _, p := range s.Paths {
 		pages[i] = p
@@ -33,7 +34,7 @@ func (s *Site) Pages() []Page {
 }
 
 // Pages is a list of pages.
-func (c *Collection) Pages() []Page {
+func (c *Collection) Pages() []pages.Page {
 	return c.pages
 }
 
@@ -102,7 +103,7 @@ func (s *Site) WritePages(container PageContainer, options BuildOptions) (count 
 }
 
 // WritePage writes a page to the destination directory.
-func (s *Site) WritePage(page Page, options BuildOptions) error {
+func (s *Site) WritePage(page pages.Page, options BuildOptions) error {
 	from := filepath.Join(s.Source, page.SiteRelPath())
 	to := filepath.Join(s.Destination, page.Permalink())
 	if !page.Static() && filepath.Ext(to) == "" {

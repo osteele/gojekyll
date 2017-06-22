@@ -1,4 +1,4 @@
-package gojekyll
+package pages
 
 import (
 	"fmt"

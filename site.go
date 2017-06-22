@@ -9,6 +9,7 @@ import (
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -21,7 +22,7 @@ type Site struct {
 
 	Collections []*Collection
 	Variables   templates.VariableMap
-	Paths       map[string]Page // URL path -> Page
+	Paths       map[string]pages.Page // URL path -> Page
 
 	config       SiteConfig
 	liquidEngine liquid.Engine
@@ -101,7 +102,7 @@ func (s *Site) KeepFile(path string) bool {
 }
 
 // RelPathPage returns a Page, give a file path relative to site source directory.
-func (s *Site) RelPathPage(relpath string) (Page, bool) {
+func (s *Site) RelPathPage(relpath string) (pages.Page, bool) {
 	for _, p := range s.Paths {
 		if p.SiteRelPath() == relpath {
 			return p, true
@@ -121,7 +122,7 @@ func (s *Site) RelPathURL(relpath string) (string, bool) {
 }
 
 // URLPage returns the page that will be served at URL
-func (s *Site) URLPage(urlpath string) (p Page, found bool) {
+func (s *Site) URLPage(urlpath string) (p pages.Page, found bool) {
 	p, found = s.Paths[urlpath]
 	if !found {
 		p, found = s.Paths[filepath.Join(urlpath, "index.html")]
@@ -159,7 +160,7 @@ func (s *Site) LayoutsDir() string {
 
 // readFiles scans the source directory and creates pages and collections.
 func (s *Site) readFiles() error {
-	s.Paths = make(map[string]Page)
+	s.Paths = make(map[string]pages.Page)
 
 	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -177,7 +178,7 @@ func (s *Site) readFiles() error {
 			return nil
 		}
 		defaults := s.GetFrontMatterDefaults(relname, "")
-		p, err := NewPageFromFile(s, s, filename, relname, defaults)
+		p, err := pages.NewPageFromFile(s, s, filename, relname, defaults)
 		if err != nil {
 			return helpers.PathError(err, "read", filename)
 		}

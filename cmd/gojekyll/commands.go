@@ -13,6 +13,7 @@ import (
 
 	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -134,7 +135,7 @@ func renderCommand(site *gojekyll.Site) error {
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(s *gojekyll.Site, path string) (gojekyll.Page, error) {
+func cliPage(s *gojekyll.Site, path string) (pages.Page, error) {
 	if path == "" {
 		path = "/"
 	}
