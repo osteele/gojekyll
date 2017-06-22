@@ -30,6 +30,12 @@ type Site struct {
 // SourceDir returns the sites source directory.
 func (s *Site) SourceDir() string { return s.Source }
 
+// Output returns true, indicating that the files in the site should be written.
+func (s *Site) Output() bool { return true }
+
+// PathPrefix returns the relative directory prefix.
+func (s *Site) PathPrefix() string { return "" }
+
 // NewSite creates a new site record, initialized with the site defaults.
 func NewSite() *Site {
 	s := new(Site)
@@ -93,28 +99,28 @@ func (s *Site) KeepFile(path string) bool {
 	return false
 }
 
-// FindPageByFilePath returns a Page or nil, referenced by relative path.
-func (s *Site) FindPageByFilePath(relpath string) Page {
+// RelPathPage returns a Page, give a file path relative to site source directory.
+func (s *Site) RelPathPage(relpath string) (Page, bool) {
 	for _, p := range s.Paths {
-		if p.Path() == relpath {
-			return p
+		if p.SiteRelPath() == relpath {
+			return p, true
 		}
 	}
-	return nil
+	return nil, false
 }
 
-// GetFileURL returns the URL path given a file path, relative to the site source directory.
-func (s *Site) GetFileURL(relpath string) (string, bool) {
-	for _, p := range s.Paths {
-		if p.Path() == relpath {
-			return p.Permalink(), true
-		}
+// RelPathURL returns a page's relative URL, give a file path relative to the site source directory.
+func (s *Site) RelPathURL(relpath string) (string, bool) {
+	var url string
+	p, found := s.RelPathPage(relpath)
+	if found {
+		url = p.Permalink()
 	}
-	return "", false
+	return url, found
 }
 
-// PageForURL returns the page that will be served at URL
-func (s *Site) PageForURL(urlpath string) (p Page, found bool) {
+// URLPage returns the page that will be served at URL
+func (s *Site) URLPage(urlpath string) (p Page, found bool) {
 	p, found = s.Paths[urlpath]
 	if !found {
 		p, found = s.Paths[filepath.Join(urlpath, "index.html")]
@@ -154,12 +160,12 @@ func (s *Site) LayoutsDir() string {
 func (s *Site) readFiles() error {
 	s.Paths = make(map[string]Page)
 
-	walkFn := func(name string, info os.FileInfo, err error) error {
+	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		relname, err := filepath.Rel(s.Source, name)
+		relname, err := filepath.Rel(s.Source, filename)
 		if err != nil {
 			panic(err)
 		}
@@ -170,9 +176,9 @@ func (s *Site) readFiles() error {
 			return nil
 		}
 		defaults := s.GetFrontMatterDefaults(relname, "")
-		p, err := NewPageFromFile(s, nil, relname, defaults)
+		p, err := NewPageFromFile(s, s, filename, relname, defaults)
 		if err != nil {
-			return helpers.PathError(err, "read", name)
+			return helpers.PathError(err, "read", filename)
 		}
 		if p.Published() {
 			s.Paths[p.Permalink()] = p
@@ -190,10 +196,15 @@ func (s *Site) readFiles() error {
 // It adds each collection's pages to the site map, and creates a template site variable for each collection.
 func (s *Site) ReadCollections() error {
 	for name, data := range s.config.Collections {
-		coll := NewCollection(s, name, data)
-		s.Collections = append(s.Collections, coll)
-		if err := coll.ReadPages(); err != nil {
+		c := NewCollection(s, name, data)
+		s.Collections = append(s.Collections, c)
+		if err := c.ReadPages(); err != nil {
 			return err
+		}
+		for _, p := range c.Pages() {
+			if p.Published() {
+				s.Paths[p.Permalink()] = p
+			}
 		}
 	}
 	return nil
@@ -214,7 +225,7 @@ func (s *Site) CollectionVariable() error {
 
 func (s *Site) makeLocalLiquidEngine() liquid.Engine {
 	engine := liquid.NewLocalWrapperEngine()
-	engine.LinkTagHandler(s.GetFileURL)
+	engine.LinkTagHandler(s.RelPathURL)
 	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
 		filename := filepath.Join(s.Source, s.config.IncludesDir, name)
 		template, err := ioutil.ReadFile(filename)
@@ -239,7 +250,7 @@ func (s *Site) makeLiquidClient() (engine liquid.RemoteEngine, err error) {
 	}
 	urls := map[string]string{}
 	for _, p := range s.Paths {
-		urls[p.Path()] = p.Permalink()
+		urls[p.SiteRelPath()] = p.Permalink()
 	}
 	err = engine.FileURLMap(urls)
 	if err != nil {

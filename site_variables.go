@@ -31,7 +31,7 @@ func (s *Site) initSiteVariables() error {
 
 func (s *Site) updateCollectionVariables() {
 	for _, c := range s.Collections {
-		s.Variables[c.Name] = c.CollectionValue()
+		s.Variables[c.Name] = c.TemplateVariable()
 	}
 }
 

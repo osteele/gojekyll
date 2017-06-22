@@ -38,13 +38,10 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	var (
 		collection string
-		path       = p.relpath
-		root       = helpers.TrimExt(path)
+		relpath    = strings.TrimPrefix(p.relpath, p.container.PathPrefix())
+		root       = helpers.TrimExt(relpath)
 		name       = filepath.Base(root)
 	)
-	if p.collection != nil {
-		root = strings.TrimPrefix(root, p.collection.PathPrefix())
-	}
 	vs := map[string]string{
 		"collection": collection,
 		"name":       helpers.Slugify(name),

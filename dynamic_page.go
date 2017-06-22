@@ -131,7 +131,7 @@ func (p *DynamicPage) TemplateContext(ctx Context) VariableMap {
 
 // Output returns a bool indicating whether the page should be written.
 func (p *DynamicPage) Output() bool {
-	return p.pageFields.Output() && (p.collection == nil || p.collection.Output)
+	return p.pageFields.Output() && p.container.Output()
 }
 
 // Write applies Liquid and Markdown, as appropriate.
@@ -145,14 +145,14 @@ func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
 		switch err := err.(type) {
 		case *liquid.RenderError:
 			if err.Filename == "" {
-				err.Filename = p.Source()
+				err.Filename = p.filename
 			}
 			if rel, e := filepath.Rel(ctx.SourceDir(), err.Filename); e == nil {
 				err.Filename = rel
 			}
 			return err
 		default:
-			return helpers.PathError(err, "Liquid Error", p.Source())
+			return helpers.PathError(err, "Liquid Error", p.filename)
 		}
 	}
 

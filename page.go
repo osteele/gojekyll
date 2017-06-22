@@ -23,10 +23,9 @@ var (
 // Page is a Jekyll page.
 type Page interface {
 	// Paths
-	Path() string
-	Permalink() string
+	SiteRelPath() string // relative to the site source directory
+	Permalink() string   // relative URL path
 	OutputExt() string
-	Source() string // Source returns the file path of the page source.
 
 	// Output
 	Published() bool
@@ -53,15 +52,21 @@ type Context interface {
 	WriteSass(io.Writer, []byte) error
 }
 
+// Container is the Page container
+type Container interface {
+	PathPrefix() string
+	Output() bool
+}
+
 // pageFields is embedded in StaticPage and DynamicPage
 type pageFields struct {
-	relpath     string // relative to site source, e.g. "_post/base.ext"
+	container   Container
 	filename    string
+	relpath     string // relative to site source directory
 	outputExt   string
 	permalink   string // cached permalink
 	modTime     time.Time
 	frontMatter VariableMap // page front matter, merged with defaults
-	collection  *Collection
 	isMarkdown  bool
 }
 
@@ -69,33 +74,30 @@ func (p *pageFields) String() string {
 	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
 }
 
-func (p *pageFields) Path() string      { return p.relpath }
-func (p *pageFields) Output() bool      { return p.Published() }
-func (p *pageFields) Permalink() string { return p.permalink }
-func (p *pageFields) Published() bool   { return p.frontMatter.Bool("published", true) }
-func (p *pageFields) OutputExt() string { return p.outputExt }
-func (p *pageFields) Source() string    { return p.filename }
-
-// func (p *pageFields) IsMarkdown() bool { return p.isMarkdown }
+func (p *pageFields) Path() string        { return p.relpath }
+func (p *pageFields) Output() bool        { return p.Published() }
+func (p *pageFields) Permalink() string   { return p.permalink }
+func (p *pageFields) Published() bool     { return p.frontMatter.Bool("published", true) }
+func (p *pageFields) OutputExt() string   { return p.outputExt }
+func (p *pageFields) SiteRelPath() string { return p.relpath }
 
 // NewPageFromFile reads a Page from a file, using defaults as the default front matter.
-func NewPageFromFile(ctx Context, collection *Collection, relpath string, defaults VariableMap) (p Page, err error) {
-	filename := filepath.Join(ctx.SourceDir(), relpath)
+func NewPageFromFile(ctx Context, c Container, filename string, relpath string, defaults VariableMap) (Page, error) {
 	magic, err := helpers.ReadFileMagic(filename)
 	if err != nil {
-		return
+		return nil, err
 	}
 	info, err := os.Stat(filename)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	fields := pageFields{
-		collection:  collection,
-		modTime:     info.ModTime(),
-		relpath:     relpath,
+		container:   c,
 		filename:    filename,
 		frontMatter: defaults,
+		modTime:     info.ModTime(),
+		relpath:     relpath,
 	}
 	switch {
 	case ctx.IsMarkdown(relpath):
@@ -106,10 +108,11 @@ func NewPageFromFile(ctx Context, collection *Collection, relpath string, defaul
 	default:
 		fields.outputExt = filepath.Ext(relpath)
 	}
+	var p Page
 	if string(magic) == "---\n" {
 		p, err = newDynamicPageFromFile(filename, fields)
 		if err != nil {
-			return
+			return nil, err
 		}
 	} else {
 		p = &StaticPage{fields}
@@ -117,9 +120,9 @@ func NewPageFromFile(ctx Context, collection *Collection, relpath string, defaul
 	// Compute this after creating the page, in order to pick up the front matter.
 	err = p.initPermalink()
 	if err != nil {
-		return
+		return nil, err
 	}
-	return
+	return p, nil
 }
 
 // Variables returns the attributes of the template page object.
@@ -154,7 +157,7 @@ func (p *StaticPage) Variables() VariableMap {
 }
 
 func (p *StaticPage) Write(_ Context, w io.Writer) error {
-	b, err := ioutil.ReadFile(p.Source())
+	b, err := ioutil.ReadFile(p.filename)
 	if err != nil {
 		return err
 	}

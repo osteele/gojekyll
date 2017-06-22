@@ -6,16 +6,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+type containerMock struct{ pathPrefix string }
+
+func (c containerMock) Output() bool       { return true }
+func (c containerMock) PathPrefix() string { return c.pathPrefix }
+
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
-		// site = NewSite()
+		c    = containerMock{}
 		d    = VariableMap{}
 		path = "/a/b/base.html"
 	)
 
 	testPermalinkPattern := func(pattern, path string, data VariableMap) (string, error) {
 		vs := MergeVariableMaps(data, VariableMap{"permalink": pattern})
-		p := pageFields{relpath: path, frontMatter: vs}
+		p := pageFields{container: c, relpath: path, frontMatter: vs}
 		return p.expandPermalink()
 	}
 
@@ -52,11 +57,11 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	// d["collection"] = "c"
-	// path = "_c/a/b/c.d"
-	// t.Run(":path", func(t *testing.T) {
-	// 	p, err := testPermalinkPattern("/prefix:path/post", path, d)
-	// 	require.NoError(t, err)
-	// 	require.Equal(t, "/prefix/a/b/c/post", p)
-	// })
+	c = containerMock{"_c/"}
+	path = "_c/a/b/c.d"
+	t.Run(":path", func(t *testing.T) {
+		p, err := testPermalinkPattern("/prefix:path/post", path, d)
+		require.NoError(t, err)
+		require.Equal(t, "/prefix/a/b/c/post", p)
+	})
 }

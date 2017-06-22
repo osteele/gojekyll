@@ -111,42 +111,44 @@ func routesCommand(site *gojekyll.Site) error {
 	}
 	sort.Strings(urls)
 	for _, u := range urls {
-		fmt.Printf("  %s -> %s\n", u, site.Paths[u].Path())
+		filename := site.Paths[u].SiteRelPath()
+		fmt.Printf("  %s -> %s\n", u, filename)
 	}
 	return nil
 }
 
 func renderCommand(site *gojekyll.Site) error {
-	page, err := cliPage(site, *renderPath)
+	p, err := cliPage(site, *renderPath)
 	if err != nil {
 		return err
 	}
-	printPathSetting("Render:", filepath.Join(site.Source, page.Path()))
-	printSetting("URL:", page.Permalink())
+	printPathSetting("Render:", filepath.Join(site.Source, p.SiteRelPath()))
+	printSetting("URL:", p.Permalink())
 	printSetting("Content:", "")
 	if err := site.CollectionVariable(); err != nil {
 		return err
 	}
-	return page.Write(site, os.Stdout)
+	return p.Write(site, os.Stdout)
 }
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(site *gojekyll.Site, path string) (page gojekyll.Page, err error) {
-	arg := "/"
-	if path != "" {
-		arg = path
+func cliPage(s *gojekyll.Site, path string) (gojekyll.Page, error) {
+	if path == "" {
+		path = "/"
 	}
-	if strings.HasPrefix(arg, "/") {
-		page, _ = site.PageForURL(arg)
-		if page == nil {
-			err = helpers.NewPathError("render", arg, "the site does not include a file with this URL path")
+	switch {
+		case strings.HasPrefix(path, "/"):
+			page, found := s.URLPage(path)
+			if !found {
+				return nil, helpers.NewPathError("render", path, "the site does not include a file with this URL path")
+			}
+			return page, nil
+	default:
+		page, found := s.RelPathPage(path)
+		if !found {
+			return nil, helpers.NewPathError("render", path, "no such file")
 		}
-	} else {
-		page = site.FindPageByFilePath(arg)
-		if page == nil {
-			err = helpers.NewPathError("render", arg, "no such file")
-		}
+		return page, nil
 	}
-	return
 }

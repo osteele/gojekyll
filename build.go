@@ -22,10 +22,10 @@ type BuildOptions struct {
 }
 
 // Pages is a list of pages.
-func (site *Site) Pages() []Page {
-	pages := make([]Page, len(site.Paths))
+func (s *Site) Pages() []Page {
+	pages := make([]Page, len(s.Paths))
 	i := 0
-	for _, p := range site.Paths {
+	for _, p := range s.Paths {
 		pages[i] = p
 		i++
 	}
@@ -33,12 +33,12 @@ func (site *Site) Pages() []Page {
 }
 
 // Pages is a list of pages.
-func (coll *Collection) Pages() []Page {
-	return coll.pages
+func (c *Collection) Pages() []Page {
+	return c.pages
 }
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
-func (site *Site) Clean(options BuildOptions) error {
+func (s *Site) Clean(options BuildOptions) error {
 	// TODO PERF when called as part of build, keep files that will be re-generated
 	removeFiles := func(name string, info os.FileInfo, err error) error {
 		if options.Verbose {
@@ -51,7 +51,7 @@ func (site *Site) Clean(options BuildOptions) error {
 			return err
 		case info.IsDir():
 			return nil
-		case site.KeepFile(name):
+		case s.KeepFile(name):
 			return nil
 		case options.DryRun:
 			return nil
@@ -59,41 +59,41 @@ func (site *Site) Clean(options BuildOptions) error {
 			return os.Remove(name)
 		}
 	}
-	if err := filepath.Walk(site.Destination, removeFiles); err != nil {
+	if err := filepath.Walk(s.Destination, removeFiles); err != nil {
 		return err
 	}
-	return helpers.RemoveEmptyDirectories(site.Destination)
+	return helpers.RemoveEmptyDirectories(s.Destination)
 }
 
 // Build cleans the destination and create files in it.
 // It attends to the global options.dry_run.
-func (site *Site) Build(options BuildOptions) (int, error) {
+func (s *Site) Build(options BuildOptions) (int, error) {
 	count := 0
-	if err := site.Clean(options); err != nil {
+	if err := s.Clean(options); err != nil {
 		return count, err
 	}
-	if err := site.CopySassFileIncludes(); err != nil {
+	if err := s.CopySassFileIncludes(); err != nil {
 		return count, err
 	}
-	for _, coll := range site.Collections {
-		n, err := site.WritePages(coll, options)
+	for _, coll := range s.Collections {
+		n, err := s.WritePages(coll, options)
 		if err != nil {
 			return count, err
 		}
 		count += n
 	}
-	site.updateCollectionVariables()
-	n, err := site.WritePages(site, options)
+	s.updateCollectionVariables()
+	n, err := s.WritePages(s, options)
 	return count + n, err
 }
 
 // WritePages cleans the destination and create files in it.
 // It attends to the global options.dry_run.
-func (site *Site) WritePages(container PageContainer, options BuildOptions) (count int, err error) {
+func (s *Site) WritePages(container PageContainer, options BuildOptions) (count int, err error) {
 	for _, page := range container.Pages() {
 		if page.Output() {
 			count++
-			if err = site.WritePage(page, options); err != nil {
+			if err = s.WritePage(page, options); err != nil {
 				return
 			}
 		}
@@ -102,14 +102,14 @@ func (site *Site) WritePages(container PageContainer, options BuildOptions) (cou
 }
 
 // WritePage writes a page to the destination directory.
-func (site *Site) WritePage(page Page, options BuildOptions) error {
-	from := filepath.Join(site.Source, page.Path())
-	to := filepath.Join(site.Destination, page.Permalink())
+func (s *Site) WritePage(page Page, options BuildOptions) error {
+	from := filepath.Join(s.Source, page.SiteRelPath())
+	to := filepath.Join(s.Destination, page.Permalink())
 	if !page.Static() && filepath.Ext(to) == "" {
 		to = filepath.Join(to, "/index.html")
 	}
 	if options.Verbose {
-		fmt.Println("create", to, "from", page.Source())
+		fmt.Println("create", to, "from", page.SiteRelPath())
 	}
 	if options.DryRun {
 		// FIXME render the page in dry run mode, just don't write it
@@ -125,6 +125,6 @@ func (site *Site) WritePage(page Page, options BuildOptions) error {
 	case page.Static():
 		return helpers.CopyFileContents(to, from, 0644)
 	default:
-		return helpers.VisitCreatedFile(to, func(w io.Writer) error { return page.Write(site, w) })
+		return helpers.VisitCreatedFile(to, func(w io.Writer) error { return page.Write(s, w) })
 	}
 }

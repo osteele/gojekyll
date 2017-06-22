@@ -55,7 +55,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	site := s.Site
 	urlpath := r.URL.Path
 
-	page, found := site.PageForURL(urlpath)
+	page, found := site.URLPage(urlpath)
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
 		page, found = site.Paths["404.html"]
@@ -150,7 +150,7 @@ func (s *Server) watchFiles() error {
 					log.Println("error:", err)
 					continue
 				}
-				url, found := site.GetFileURL(relpath)
+				url, found := site.RelPathURL(relpath)
 				if !found {
 					log.Println("error:", name, "does not match a site URL")
 				}
