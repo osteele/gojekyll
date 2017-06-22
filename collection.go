@@ -43,7 +43,7 @@ func (c *Collection) Source() string { return filepath.Join(c.Site.Source, "_"+c
 // value of the collection.
 func (c *Collection) TemplateVariable() (d []templates.VariableMap) {
 	for _, page := range c.Pages() {
-		d = append(d, page.Variables())
+		d = append(d, page.PageVariables())
 	}
 	return
 }

@@ -34,7 +34,7 @@ type Page interface {
 	Write(Context, io.Writer) error
 
 	// Variables
-	Variables() templates.VariableMap
+	PageVariables() templates.VariableMap
 
 	// internal
 	initPermalink() error
@@ -60,25 +60,25 @@ type Container interface {
 
 // pageFields is embedded in StaticPage and DynamicPage
 type pageFields struct {
-	container   Container
-	filename    string
-	relpath     string // relative to site source directory
-	outputExt   string
-	permalink   string // cached permalink
-	modTime     time.Time
-	frontMatter templates.VariableMap // page front matter, merged with defaults
-	isMarkdown  bool
+	container          Container
+	filename           string
+	relpath            string // relative to site source directory
+	outputExt          string
+	permalink          string // cached permalink
+	modTime            time.Time
+	frontMatter templates.VariableMap
+	isMarkdown         bool
 }
 
 func (p *pageFields) String() string {
 	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
 }
 
-func (p *pageFields) Path() string        { return p.relpath }
 func (p *pageFields) Output() bool        { return p.Published() }
+func (p *pageFields) OutputExt() string   { return p.outputExt }
+func (p *pageFields) Path() string        { return p.relpath }
 func (p *pageFields) Permalink() string   { return p.permalink }
 func (p *pageFields) Published() bool     { return p.frontMatter.Bool("published", true) }
-func (p *pageFields) OutputExt() string   { return p.outputExt }
 func (p *pageFields) SiteRelPath() string { return p.relpath }
 
 // NewPageFromFile reads a Page from a file, using defaults as the default front matter.
@@ -93,11 +93,11 @@ func NewPageFromFile(ctx Context, c Container, filename string, relpath string, 
 	}
 
 	fields := pageFields{
-		container:   c,
-		filename:    filename,
+		container:          c,
+		filename:           filename,
 		frontMatter: defaults,
-		modTime:     info.ModTime(),
-		relpath:     relpath,
+		modTime:            info.ModTime(),
+		relpath:            relpath,
 	}
 	switch {
 	case ctx.IsMarkdown(relpath):
@@ -127,18 +127,18 @@ func NewPageFromFile(ctx Context, c Container, filename string, relpath string, 
 
 // Variables returns the attributes of the template page object.
 // See https://jekyllrb.com/docs/variables/#page-variables
-func (p *pageFields) Variables() templates.VariableMap {
+func (p *pageFields) PageVariables() templates.VariableMap {
 	var (
 		relpath = "/" + filepath.ToSlash(p.relpath)
 		base    = path.Base(relpath)
 		ext     = path.Ext(relpath)
 	)
 
-	return templates.VariableMap{
+	return templates.MergeVariableMaps(p.frontMatter, templates.VariableMap{
 		"path":          relpath,
 		"modified_time": p.modTime,
 		"name":          base,
 		"basename":      helpers.TrimExt(base),
 		"extname":       ext,
-	}
+	})
 }

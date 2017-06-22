@@ -38,8 +38,8 @@ func newDynamicPageFromFile(filename string, f pageFields) (*DynamicPage, error)
 	}, nil
 }
 
-// Variables returns the attributes of the template page object.
-func (p *DynamicPage) Variables() templates.VariableMap {
+// PageVariables returns the attributes of the template page object.
+func (p *DynamicPage) PageVariables() templates.VariableMap {
 	var (
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
@@ -98,7 +98,7 @@ func (p *DynamicPage) Variables() templates.VariableMap {
 // TemplateContext returns the local variables for template evaluation
 func (p *DynamicPage) TemplateContext(ctx Context) templates.VariableMap {
 	return templates.VariableMap{
-		"page": p.Variables(),
+		"page": p.PageVariables(),
 		"site": ctx.SiteVariables(),
 	}
 }

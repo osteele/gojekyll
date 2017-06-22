@@ -79,21 +79,22 @@ func varsCommand(site *gojekyll.Site) error {
 	for _, c := range site.Collections {
 		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]templates.VariableMap)))
 	}
-	var data interface{} //templates.VariableMap
+	var data templates.VariableMap
+	// var data interface{} //templates.VariableMap
 	switch {
 	case *siteVariable:
 		data = siteData
 	case *dataVariable:
 		data = siteData["data"].(templates.VariableMap)
 		if *variablePath != "" {
-			data = data.(templates.VariableMap)[*variablePath]
+			data = data[*variablePath].(templates.VariableMap)
 		}
 	default:
 		page, err := cliPage(site, *variablePath)
 		if err != nil {
 			return err
 		}
-		data = page.Variables()
+		data = page.PageVariables()
 	}
 	b, err := yaml.Marshal(data)
 	if err != nil {
