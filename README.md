@@ -100,6 +100,7 @@ make lint
 gojekyll render index.md      # render a file to stdout
 gojekyll render /             # render a URL to stdout
 gojekyll variables /          # print a file or URL's variables
+./scripts/coverage && go tool cover -html=coverage.out
 ```
 
 `./scripts/gojekyll` is an alternative to the `gojekyll` executable, that uses `go run` each time it's invoked.

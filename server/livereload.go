@@ -30,7 +30,7 @@ func (i TagInjector) Write(b []byte) (n int, err error) {
 	return i.w.Write(b)
 }
 
-// LiveReloadInjector returns a writer that injects the Live Reload JavaScript
+// NewLiveReloadInjector returns a writer that injects the Live Reload JavaScript
 // into its wrapped content.
 func NewLiveReloadInjector(w io.Writer) io.Writer {
 	return TagInjector{w, liveReloadScriptTag}

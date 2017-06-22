@@ -14,15 +14,14 @@ import (
 type Collection struct {
 	Name     string
 	Metadata templates.VariableMap
-	// context pages.Context
-	pages []pages.Page
+	pages    []pages.Page
 }
 
-// NewCollection creates a new Collection with metadata m
-func NewCollection(ctx pages.Context, name string, m templates.VariableMap) *Collection {
+// NewCollection creates a new Collection
+func NewCollection(ctx pages.Context, name string, metadata templates.VariableMap) *Collection {
 	return &Collection{
 		Name:     name,
-		Metadata: m,
+		Metadata: metadata,
 	}
 }
 
