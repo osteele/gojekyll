@@ -43,17 +43,22 @@ func (s *Site) FindLayout(base string, fm *VariableMap) (t liquid.Template, err 
 	return s.LiquidEngine().Parse(content)
 }
 
-func (page *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
+// FindLayout returns a template for the named layout.
+func (c *Collection) FindLayout(base string, fm *VariableMap) (liquid.Template, error) {
+	return c.Site.FindLayout(base, fm)
+}
+
+func (p *DynamicPage) applyLayout(frontMatter VariableMap, body []byte) ([]byte, error) {
 	for {
 		name := frontMatter.String("layout", "")
 		if name == "" {
 			return body, nil
 		}
-		template, err := page.site.FindLayout(name, &frontMatter)
+		template, err := p.container.FindLayout(name, &frontMatter)
 		if err != nil {
 			return nil, err
 		}
-		vars := MergeVariableMaps(page.Variables(), VariableMap{
+		vars := MergeVariableMaps(p.Variables(), VariableMap{
 			"content": string(body),
 			"layout":  frontMatter,
 		})

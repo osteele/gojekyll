@@ -22,11 +22,11 @@ type DynamicPage struct {
 }
 
 // Static returns a bool indicating that the page is a not static page.
-func (page *DynamicPage) Static() bool { return false }
+func (p *DynamicPage) Static() bool { return false }
 
 // NewDynamicPage reads the front matter from a file to create a new DynamicPage.
-func NewDynamicPage(fields pageFields) (p *DynamicPage, err error) {
-	data, err := ioutil.ReadFile(filepath.Join(fields.site.Source, fields.relpath))
+func NewDynamicPage(f pageFields) (p *DynamicPage, err error) {
+	data, err := ioutil.ReadFile(filepath.Join(f.container.SourceDir(), f.relpath))
 	if err != nil {
 		return
 	}
@@ -37,9 +37,9 @@ func NewDynamicPage(fields pageFields) (p *DynamicPage, err error) {
 	if err != nil {
 		return
 	}
-	fields.frontMatter = MergeVariableMaps(fields.frontMatter, frontMatter)
+	f.frontMatter = MergeVariableMaps(f.frontMatter, frontMatter)
 	return &DynamicPage{
-		pageFields: fields,
+		pageFields: f,
 		raw:        data,
 	}, nil
 }
@@ -66,13 +66,13 @@ func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 }
 
 // Variables returns the attributes of the template page object.
-func (page *DynamicPage) Variables() VariableMap {
+func (p *DynamicPage) Variables() VariableMap {
 	var (
-		relpath = page.relpath
+		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
-		root    = helpers.TrimExt(page.relpath)
+		root    = helpers.TrimExt(p.relpath)
 		base    = filepath.Base(root)
-		content = page.processed
+		content = p.processed
 	)
 
 	if content == nil {
@@ -81,12 +81,12 @@ func (page *DynamicPage) Variables() VariableMap {
 
 	data := VariableMap{
 		"path":    relpath,
-		"url":     page.Permalink(),
+		"url":     p.Permalink(),
 		"content": content,
 		// TODO output
 
 		// not documented, but present in both collection and non-collection pages
-		"permalink": page.Permalink(),
+		"permalink": p.Permalink(),
 
 		// TODO only in non-collection pages:
 		// TODO dir
@@ -103,13 +103,13 @@ func (page *DynamicPage) Variables() VariableMap {
 		"tags":       []string{},
 
 		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
-		"relative_path": page.Path(),
+		"relative_path": p.Path(),
 		// TODO collection(name)
 
 		// TODO undocumented; only present in collection pages:
 		"ext": ext,
 	}
-	for k, v := range page.frontMatter {
+	for k, v := range p.frontMatter {
 		switch k {
 		// doc implies these aren't present, but they appear to be present in a collection page:
 		// case "layout", "published":
@@ -123,53 +123,53 @@ func (page *DynamicPage) Variables() VariableMap {
 }
 
 // Context returns the local variables for template evaluation
-func (page *DynamicPage) Context() VariableMap {
+func (p *DynamicPage) Context() VariableMap {
 	return VariableMap{
-		"page": page.Variables(),
-		"site": page.site.Variables,
+		"page": p.Variables(),
+		"site": p.container.SiteVariables(),
 	}
 }
 
 // Output returns a bool indicating whether the page should be written.
-func (page *DynamicPage) Output() bool {
-	return page.pageFields.Output() && (page.collection == nil || page.collection.Output)
+func (p *DynamicPage) Output() bool {
+	return p.pageFields.Output() && (p.collection == nil || p.collection.Output)
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (page *DynamicPage) Write(w io.Writer) (err error) {
-	if page.processed != nil {
-		_, err = w.Write(*page.processed)
+func (p *DynamicPage) Write(w io.Writer) (err error) {
+	if p.processed != nil {
+		_, err = w.Write(*p.processed)
 		return
 	}
-	body, err := page.site.LiquidEngine().ParseAndRender(page.raw, page.Context())
+	body, err := p.container.LiquidEngine().ParseAndRender(p.raw, p.Context())
 	if err != nil {
 		switch err := err.(type) {
 		case *liquid.RenderError:
 			if err.Filename == "" {
-				err.Filename = page.Source()
+				err.Filename = p.Source()
 			}
-			if rel, e := filepath.Rel(page.site.Source, err.Filename); e == nil {
+			if rel, e := filepath.Rel(p.container.SourceDir(), err.Filename); e == nil {
 				err.Filename = rel
 			}
 			return err
 		default:
-			return helpers.PathError(err, "Liquid Error", page.Source())
+			return helpers.PathError(err, "Liquid Error", p.Source())
 		}
 	}
 
-	if page.IsMarkdown() {
+	if p.IsMarkdown() {
 		body = blackfriday.MarkdownCommon(body)
 	}
-	body, err = page.applyLayout(page.frontMatter, body)
+	body, err = p.applyLayout(p.frontMatter, body)
 	if err != nil {
 		return
 	}
 
-	if page.Site().IsSassPath(page.relpath) {
-		return page.writeSass(w, body)
+	if p.container.IsSassPath(p.relpath) {
+		return p.writeSass(w, body)
 	}
 
-	page.processed = &body
+	p.processed = &body
 	_, err = w.Write(body)
 	return
 }

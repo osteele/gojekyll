@@ -3,7 +3,6 @@ package gojekyll
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/liquid"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 
 // Page is a Jekyll page.
 type Page interface {
-	Site() *Site
+	Container() Container
 
 	// Paths
 	Path() string
@@ -42,6 +42,17 @@ type Page interface {
 	initPermalink() error
 }
 
+// Container provides context information to a Page.
+type Container interface {
+	FindLayout(relname string, frontMatter *VariableMap) (liquid.Template, error)
+	LiquidEngine() liquid.Engine
+	SassIncludePaths() []string
+	SiteVariables() VariableMap
+	SourceDir() string
+	IsMarkdown(filename string) bool
+	IsSassPath(filename string) bool
+}
+
 // pageFields is embedded in StaticPage and DynamicPage
 type pageFields struct {
 	relpath     string // relative to site source, e.g. "_post/base.ext"
@@ -49,24 +60,24 @@ type pageFields struct {
 	modTime     time.Time
 	frontMatter VariableMap // page front matter, merged with defaults
 	collection  *Collection
-	site        *Site
+	container   Container
 }
 
 func (p *pageFields) String() string {
 	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
 }
 
-func (p *pageFields) Path() string      { return p.relpath }
-func (p *pageFields) Output() bool      { return p.Published() }
-func (p *pageFields) Permalink() string { return p.permalink }
-func (p *pageFields) Published() bool   { return p.frontMatter.Bool("published", true) }
-func (p *pageFields) Site() *Site       { return p.site }
+func (p *pageFields) Path() string         { return p.relpath }
+func (p *pageFields) Output() bool         { return p.Published() }
+func (p *pageFields) Permalink() string    { return p.permalink }
+func (p *pageFields) Published() bool      { return p.frontMatter.Bool("published", true) }
+func (p *pageFields) Container() Container { return p.container }
 
 func (p *pageFields) OutputExt() string {
 	switch {
 	case p.IsMarkdown():
 		return ".html"
-	case p.site.IsSassPath(p.relpath):
+	case p.container.IsSassPath(p.relpath):
 		return ".css"
 	default:
 		return filepath.Ext(p.relpath)
@@ -74,8 +85,8 @@ func (p *pageFields) OutputExt() string {
 }
 
 // ReadPage reads a Page from a file, using defaults as the default front matter.
-func ReadPage(site *Site, collection *Collection, relpath string, defaults VariableMap) (p Page, err error) {
-	abspath := filepath.Join(site.Source, relpath)
+func ReadPage(container Container, collection *Collection, relpath string, defaults VariableMap) (p Page, err error) {
+	abspath := filepath.Join(container.SourceDir(), relpath)
 	magic, err := helpers.ReadFileMagic(abspath)
 	if err != nil {
 		return
@@ -86,7 +97,7 @@ func ReadPage(site *Site, collection *Collection, relpath string, defaults Varia
 	}
 
 	fields := pageFields{
-		site:        site,
+		container:   container,
 		collection:  collection,
 		modTime:     info.ModTime(),
 		relpath:     relpath,
@@ -128,12 +139,12 @@ func (p *pageFields) Variables() VariableMap {
 
 // Source returns the file path of the page source.
 func (p *pageFields) Source() string {
-	return filepath.Join(p.site.Source, p.relpath)
+	return filepath.Join(p.container.SourceDir(), p.relpath)
 }
 
 // IsMarkdown returns a bool indicating whether the page is markdown.
 func (p *pageFields) IsMarkdown() bool {
-	return p.site.IsMarkdown(p.relpath)
+	return p.container.IsMarkdown(p.relpath)
 }
 
 // StaticPage is a static page.
@@ -142,18 +153,25 @@ type StaticPage struct {
 }
 
 // Static returns a bool indicating that the page is a static page.
-func (page *StaticPage) Static() bool { return true }
+func (p *StaticPage) Static() bool { return true }
 
 // Variables returns metadata for use in the representation of the page as a collection item
-func (page *StaticPage) Variables() VariableMap {
-	return MergeVariableMaps(page.frontMatter, page.pageFields.Variables())
+func (p *StaticPage) Variables() VariableMap {
+	return MergeVariableMaps(p.frontMatter, p.pageFields.Variables())
 }
 
-func (page *StaticPage) Write(w io.Writer) error {
-	source, err := ioutil.ReadFile(page.Source())
+func (p *StaticPage) Write(w io.Writer) error {
+	in, err := os.Open(p.Source())
 	if err != nil {
 		return err
 	}
-	_, err = w.Write(source)
+	defer in.Close() // nolint: errcheck, gas
+	_, err = io.Copy(w, in)
+
+	// b, err := ioutil.ReadFile(p.Source())
+	// if err != nil {
+	// 	return err
+	// }
+	// _, err = w.Write(b)
 	return err
 }

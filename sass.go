@@ -56,12 +56,12 @@ func (s *Site) SassIncludePaths() []string {
 	return []string{s.sassTempDir}
 }
 
-func (page *DynamicPage) writeSass(w io.Writer, data []byte) error {
+func (p *DynamicPage) writeSass(w io.Writer, data []byte) error {
 	comp, err := libsass.New(w, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}
-	err = comp.Option(libsass.IncludePaths(page.site.SassIncludePaths()))
+	err = comp.Option(libsass.IncludePaths(p.container.SassIncludePaths()))
 	if err != nil {
 		log.Fatal(err)
 	}
