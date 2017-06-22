@@ -8,10 +8,11 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/templates"
 )
 
 // FindLayout returns a template for the named layout.
-func (s *Site) FindLayout(base string, fm *VariableMap) (t liquid.Template, err error) {
+func (s *Site) FindLayout(base string, fm *templates.VariableMap) (t liquid.Template, err error) {
 	exts := []string{"", ".html"}
 	for _, ext := range strings.SplitN(s.config.MarkdownExt, `,`, -1) {
 		exts = append(exts, "."+ext)

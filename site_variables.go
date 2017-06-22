@@ -7,10 +7,11 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/templates"
 )
 
 // SiteVariables returns the site variable for template evaluation.
-func (s *Site) SiteVariables() VariableMap {
+func (s *Site) SiteVariables() templates.VariableMap {
 	return s.Variables
 }
 
@@ -19,7 +20,7 @@ func (s *Site) initSiteVariables() error {
 	if err != nil {
 		return err
 	}
-	s.Variables = MergeVariableMaps(s.Variables, VariableMap{
+	s.Variables = templates.MergeVariableMaps(s.Variables, templates.VariableMap{
 		"data": data,
 		// TODO read time from _config, if it's available
 		"time": time.Now(),
@@ -35,13 +36,13 @@ func (s *Site) updateCollectionVariables() {
 	}
 }
 
-func (s *Site) readDataFiles() (VariableMap, error) {
-	data := VariableMap{}
+func (s *Site) readDataFiles() (templates.VariableMap, error) {
+	data := templates.VariableMap{}
 	dataDir := filepath.Join(s.Source, s.config.DataDir)
 	files, err := ioutil.ReadDir(dataDir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return VariableMap{}, nil
+			return templates.VariableMap{}, nil
 		}
 		return nil, err
 	}

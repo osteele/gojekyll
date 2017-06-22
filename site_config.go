@@ -1,6 +1,9 @@
 package gojekyll
 
-import yaml "gopkg.in/yaml.v2"
+import (
+	"github.com/osteele/gojekyll/templates"
+	yaml "gopkg.in/yaml.v2"
+)
 
 // SiteConfig is the Jekyll site configuration, typically read from _config.yml.
 // See https://jekyllrb.com/docs/configuration/#default-configuration
@@ -9,9 +12,9 @@ type SiteConfig struct {
 	Source      string
 	Destination string
 	LayoutsDir  string `yaml:"layouts_dir"`
-	DataDir  string `yaml:"data_dir"`
+	DataDir     string `yaml:"data_dir"`
 	IncludesDir string `yaml:"includes_dir"`
-	Collections map[string]VariableMap
+	Collections map[string]templates.VariableMap
 
 	// Handling Reading
 	Include     []string
@@ -26,19 +29,19 @@ type SiteConfig struct {
 			Path string
 			Type string
 		}
-		Values VariableMap
+		Values templates.VariableMap
 	}
 }
 
 func (s *Site) readConfigBytes(bytes []byte) error {
-	configVariables := VariableMap{}
+	configVariables := templates.VariableMap{}
 	if err := yaml.Unmarshal(bytes, &s.config); err != nil {
 		return err
 	}
 	if err := yaml.Unmarshal(bytes, &configVariables); err != nil {
 		return err
 	}
-	s.Variables = MergeVariableMaps(s.Variables, configVariables)
+	s.Variables = templates.MergeVariableMaps(s.Variables, configVariables)
 	return nil
 }
 

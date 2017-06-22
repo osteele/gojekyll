@@ -9,6 +9,7 @@ import (
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/templates"
 	"github.com/russross/blackfriday"
 
 	yaml "gopkg.in/yaml.v2"
@@ -34,14 +35,14 @@ func newDynamicPageFromFile(filename string, f pageFields) (*DynamicPage, error)
 	if err != nil {
 		return nil, err
 	}
-	f.frontMatter = MergeVariableMaps(f.frontMatter, frontMatter)
+	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
 	return &DynamicPage{
 		pageFields: f,
 		raw:        b,
 	}, nil
 }
 
-func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
+func readFrontMatter(sourcePtr *[]byte) (frontMatter templates.VariableMap, err error) {
 	var (
 		source = *sourcePtr
 		start  = 0
@@ -65,7 +66,7 @@ func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 }
 
 // Variables returns the attributes of the template page object.
-func (p *DynamicPage) Variables() VariableMap {
+func (p *DynamicPage) Variables() templates.VariableMap {
 	var (
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
@@ -78,7 +79,7 @@ func (p *DynamicPage) Variables() VariableMap {
 		content = &[]byte{}
 	}
 
-	data := VariableMap{
+	data := templates.VariableMap{
 		"path":    relpath,
 		"url":     p.Permalink(),
 		"content": content,
@@ -122,8 +123,8 @@ func (p *DynamicPage) Variables() VariableMap {
 }
 
 // TemplateContext returns the local variables for template evaluation
-func (p *DynamicPage) TemplateContext(ctx Context) VariableMap {
-	return VariableMap{
+func (p *DynamicPage) TemplateContext(ctx Context) templates.VariableMap {
+	return templates.VariableMap{
 		"page": p.Variables(),
 		"site": ctx.SiteVariables(),
 	}
@@ -173,7 +174,7 @@ func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
 	return err
 }
 
-func (p *DynamicPage) applyLayout(ctx Context, frontMatter VariableMap, body []byte) ([]byte, error) {
+func (p *DynamicPage) applyLayout(ctx Context, frontMatter templates.VariableMap, body []byte) ([]byte, error) {
 	for {
 		name := frontMatter.String("layout", "")
 		if name == "" {
@@ -183,7 +184,7 @@ func (p *DynamicPage) applyLayout(ctx Context, frontMatter VariableMap, body []b
 		if err != nil {
 			return nil, err
 		}
-		vars := MergeVariableMaps(p.TemplateContext(ctx), VariableMap{
+		vars := templates.MergeVariableMaps(p.TemplateContext(ctx), templates.VariableMap{
 			"content": string(body),
 			"layout":  frontMatter,
 		})

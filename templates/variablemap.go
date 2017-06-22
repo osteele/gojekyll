@@ -1,4 +1,4 @@
-package gojekyll
+package templates
 
 // VariableMap is a map of strings to interface values, for use in template processing.
 type VariableMap map[string]interface{}

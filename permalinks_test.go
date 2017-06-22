@@ -3,6 +3,7 @@ package gojekyll
 import (
 	"testing"
 
+	"github.com/osteele/gojekyll/templates"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,12 +15,12 @@ func (c containerMock) PathPrefix() string { return c.pathPrefix }
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
 		c    = containerMock{}
-		d    = VariableMap{}
+		d    = templates.VariableMap{}
 		path = "/a/b/base.html"
 	)
 
-	testPermalinkPattern := func(pattern, path string, data VariableMap) (string, error) {
-		vs := MergeVariableMaps(data, VariableMap{"permalink": pattern})
+	testPermalinkPattern := func(pattern, path string, data templates.VariableMap) (string, error) {
+		vs := templates.MergeVariableMaps(data, templates.VariableMap{"permalink": pattern})
 		p := pageFields{container: c, relpath: path, frontMatter: vs}
 		return p.expandPermalink()
 	}

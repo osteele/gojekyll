@@ -9,6 +9,7 @@ import (
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/templates"
 )
 
 // Site is a Jekyll site.
@@ -19,7 +20,7 @@ type Site struct {
 	UseRemoteLiquidEngine bool
 
 	Collections []*Collection
-	Variables   VariableMap
+	Variables   templates.VariableMap
 	Paths       map[string]Page // URL path -> Page
 
 	config       SiteConfig
@@ -274,13 +275,13 @@ func (s *Site) TemplateEngine() liquid.Engine {
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
-func (s *Site) GetFrontMatterDefaults(relpath, typename string) (m VariableMap) {
+func (s *Site) GetFrontMatterDefaults(relpath, typename string) (m templates.VariableMap) {
 	for _, entry := range s.config.Defaults {
 		scope := &entry.Scope
 		hasPrefix := strings.HasPrefix(relpath, scope.Path)
 		hasType := scope.Type == "" || scope.Type == typename
 		if hasPrefix && hasType {
-			m = MergeVariableMaps(m, entry.Values)
+			m = templates.MergeVariableMaps(m, entry.Values)
 		}
 	}
 	return

@@ -1,4 +1,4 @@
-package gojekyll
+package templates
 
 import (
 	"testing"

@@ -13,6 +13,7 @@ import (
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/templates"
 )
 
 var (
@@ -34,7 +35,7 @@ type Page interface {
 	Write(Context, io.Writer) error
 
 	// Variables
-	Variables() VariableMap
+	Variables() templates.VariableMap
 
 	// internal
 	initPermalink() error
@@ -42,11 +43,11 @@ type Page interface {
 
 // Context provides context information to a Page.
 type Context interface {
-	FindLayout(relname string, frontMatter *VariableMap) (liquid.Template, error)
+	FindLayout(relname string, frontMatter *templates.VariableMap) (liquid.Template, error)
 	IsMarkdown(filename string) bool
 	IsSassPath(filename string) bool
 	SassIncludePaths() []string
-	SiteVariables() VariableMap
+	SiteVariables() templates.VariableMap
 	SourceDir() string
 	TemplateEngine() liquid.Engine
 	WriteSass(io.Writer, []byte) error
@@ -66,7 +67,7 @@ type pageFields struct {
 	outputExt   string
 	permalink   string // cached permalink
 	modTime     time.Time
-	frontMatter VariableMap // page front matter, merged with defaults
+	frontMatter templates.VariableMap // page front matter, merged with defaults
 	isMarkdown  bool
 }
 
@@ -82,7 +83,7 @@ func (p *pageFields) OutputExt() string   { return p.outputExt }
 func (p *pageFields) SiteRelPath() string { return p.relpath }
 
 // NewPageFromFile reads a Page from a file, using defaults as the default front matter.
-func NewPageFromFile(ctx Context, c Container, filename string, relpath string, defaults VariableMap) (Page, error) {
+func NewPageFromFile(ctx Context, c Container, filename string, relpath string, defaults templates.VariableMap) (Page, error) {
 	magic, err := helpers.ReadFileMagic(filename)
 	if err != nil {
 		return nil, err
@@ -127,14 +128,14 @@ func NewPageFromFile(ctx Context, c Container, filename string, relpath string, 
 
 // Variables returns the attributes of the template page object.
 // See https://jekyllrb.com/docs/variables/#page-variables
-func (p *pageFields) Variables() VariableMap {
+func (p *pageFields) Variables() templates.VariableMap {
 	var (
 		relpath = "/" + filepath.ToSlash(p.relpath)
 		base    = path.Base(relpath)
 		ext     = path.Ext(relpath)
 	)
 
-	return VariableMap{
+	return templates.VariableMap{
 		"path":          relpath,
 		"modified_time": p.modTime,
 		"name":          base,
@@ -152,8 +153,8 @@ type StaticPage struct {
 func (p *StaticPage) Static() bool { return true }
 
 // Variables returns metadata for use in the representation of the page as a collection item
-func (p *StaticPage) Variables() VariableMap {
-	return MergeVariableMaps(p.frontMatter, p.pageFields.Variables())
+func (p *StaticPage) Variables() templates.VariableMap {
+	return templates.MergeVariableMaps(p.frontMatter, p.pageFields.Variables())
 }
 
 func (p *StaticPage) Write(_ Context, w io.Writer) error {

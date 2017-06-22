@@ -13,6 +13,7 @@ import (
 
 	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/templates"
 )
 
 // main sets this
@@ -75,16 +76,16 @@ func varsCommand(site *gojekyll.Site) error {
 	// (Actually it's circular, which the yaml package can't handle.)
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
 	for _, c := range site.Collections {
-		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]gojekyll.VariableMap)))
+		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]templates.VariableMap)))
 	}
-	var data interface{} //gojekyll.VariableMap
+	var data interface{} //templates.VariableMap
 	switch {
 	case *siteVariable:
 		data = siteData
 	case *dataVariable:
-		data = siteData["data"].(gojekyll.VariableMap)
+		data = siteData["data"].(templates.VariableMap)
 		if *variablePath != "" {
-			data = data.(gojekyll.VariableMap)[*variablePath]
+			data = data.(templates.VariableMap)[*variablePath]
 		}
 	default:
 		page, err := cliPage(site, *variablePath)
@@ -138,12 +139,12 @@ func cliPage(s *gojekyll.Site, path string) (gojekyll.Page, error) {
 		path = "/"
 	}
 	switch {
-		case strings.HasPrefix(path, "/"):
-			page, found := s.URLPage(path)
-			if !found {
-				return nil, helpers.NewPathError("render", path, "the site does not include a file with this URL path")
-			}
-			return page, nil
+	case strings.HasPrefix(path, "/"):
+		page, found := s.URLPage(path)
+		if !found {
+			return nil, helpers.NewPathError("render", path, "the site does not include a file with this URL path")
+		}
+		return page, nil
 	default:
 		page, found := s.RelPathPage(path)
 		if !found {
