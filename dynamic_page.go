@@ -24,23 +24,20 @@ type DynamicPage struct {
 // Static returns a bool indicating that the page is a not static page.
 func (p *DynamicPage) Static() bool { return false }
 
-// NewDynamicPage reads the front matter from a file to create a new DynamicPage.
-func NewDynamicPage(f pageFields) (p *DynamicPage, err error) {
-	data, err := ioutil.ReadFile(filepath.Join(f.container.SourceDir(), f.relpath))
+func newDynamicPageFromFile(filename string, f pageFields) (*DynamicPage, error) {
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return
+		return nil, err
 	}
-	// Replace Windows linefeeds. This allows regular expressions to work.
-	data = bytes.Replace(data, []byte("\r\n"), []byte("\n"), -1)
 
-	frontMatter, err := readFrontMatter(&data)
+	frontMatter, err := readFrontMatter(&b)
 	if err != nil {
-		return
+		return nil, err
 	}
 	f.frontMatter = MergeVariableMaps(f.frontMatter, frontMatter)
 	return &DynamicPage{
 		pageFields: f,
-		raw:        data,
+		raw:        b,
 	}, nil
 }
 
@@ -49,6 +46,8 @@ func readFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 		source = *sourcePtr
 		start  = 0
 	)
+	// Replace Windows linefeeds. This allows the following regular expressions to work.
+	source = bytes.Replace(source, []byte("\r\n"), []byte("\n"), -1)
 	if match := frontMatterMatcher.FindSubmatchIndex(source); match != nil {
 		start = match[1]
 		if err = yaml.Unmarshal(source[match[2]:match[3]], &frontMatter); err != nil {
@@ -122,11 +121,11 @@ func (p *DynamicPage) Variables() VariableMap {
 	return data
 }
 
-// Context returns the local variables for template evaluation
-func (p *DynamicPage) Context() VariableMap {
+// TemplateContext returns the local variables for template evaluation
+func (p *DynamicPage) TemplateContext(ctx Context) VariableMap {
 	return VariableMap{
 		"page": p.Variables(),
-		"site": p.container.SiteVariables(),
+		"site": ctx.SiteVariables(),
 	}
 }
 
@@ -136,19 +135,19 @@ func (p *DynamicPage) Output() bool {
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (p *DynamicPage) Write(w io.Writer) (err error) {
+func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
 	if p.processed != nil {
-		_, err = w.Write(*p.processed)
-		return
+		_, err := w.Write(*p.processed)
+		return err
 	}
-	body, err := p.container.LiquidEngine().ParseAndRender(p.raw, p.Context())
+	body, err := ctx.TemplateEngine().ParseAndRender(p.raw, p.TemplateContext(ctx))
 	if err != nil {
 		switch err := err.(type) {
 		case *liquid.RenderError:
 			if err.Filename == "" {
 				err.Filename = p.Source()
 			}
-			if rel, e := filepath.Rel(p.container.SourceDir(), err.Filename); e == nil {
+			if rel, e := filepath.Rel(ctx.SourceDir(), err.Filename); e == nil {
 				err.Filename = rel
 			}
 			return err
@@ -157,19 +156,40 @@ func (p *DynamicPage) Write(w io.Writer) (err error) {
 		}
 	}
 
-	if p.IsMarkdown() {
+	if p.isMarkdown {
 		body = blackfriday.MarkdownCommon(body)
 	}
-	body, err = p.applyLayout(p.frontMatter, body)
+	body, err = p.applyLayout(ctx, p.frontMatter, body)
 	if err != nil {
-		return
+		return err
 	}
 
-	if p.container.IsSassPath(p.relpath) {
-		return p.writeSass(w, body)
+	if ctx.IsSassPath(p.relpath) {
+		return ctx.WriteSass(w, body)
 	}
 
 	p.processed = &body
 	_, err = w.Write(body)
-	return
+	return err
+}
+
+func (p *DynamicPage) applyLayout(ctx Context, frontMatter VariableMap, body []byte) ([]byte, error) {
+	for {
+		name := frontMatter.String("layout", "")
+		if name == "" {
+			return body, nil
+		}
+		template, err := ctx.FindLayout(name, &frontMatter)
+		if err != nil {
+			return nil, err
+		}
+		vars := MergeVariableMaps(p.TemplateContext(ctx), VariableMap{
+			"content": string(body),
+			"layout":  frontMatter,
+		})
+		body, err = template.Render(vars)
+		if err != nil {
+			return nil, err
+		}
+	}
 }

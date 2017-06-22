@@ -73,7 +73,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(mimeType, "text/html;") {
 		w = scriptTagInjector{w}
 	}
-	err := page.Write(w)
+	err := page.Write(site, w)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}

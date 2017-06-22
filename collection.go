@@ -78,7 +78,7 @@ func (c *Collection) ReadPages() error {
 			return nil
 		}
 		defaults := MergeVariableMaps(c.Site.GetFrontMatterDefaults(relname, ""), collectionDefaults)
-		p, err := ReadPage(c.Site, c, relname, defaults)
+		p, err := NewPageFromFile(c.Site, c, relname, defaults)
 		switch {
 		case err != nil:
 			return err

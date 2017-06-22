@@ -38,7 +38,7 @@ var (
 	dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files").Bool()
 
 	render     = app.Command("render", "Render a file or URL path")
-	renderPath = variables.Arg("PATH2", "Path or URL").String()
+	renderPath = render.Arg("PATH", "Path or URL").String()
 )
 
 func init() {

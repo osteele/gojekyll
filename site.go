@@ -170,7 +170,7 @@ func (s *Site) readFiles() error {
 			return nil
 		}
 		defaults := s.GetFrontMatterDefaults(relname, "")
-		p, err := ReadPage(s, nil, relname, defaults)
+		p, err := NewPageFromFile(s, nil, relname, defaults)
 		if err != nil {
 			return helpers.PathError(err, "read", name)
 		}
@@ -201,9 +201,9 @@ func (s *Site) ReadCollections() error {
 
 // CollectionVariable creates the value of the site.[collectionName] variable
 func (s *Site) CollectionVariable() error {
-	for _, coll := range s.Collections {
-		for _, p := range coll.Pages() {
-			if err := p.Write(ioutil.Discard); err != nil {
+	for _, c := range s.Collections {
+		for _, p := range c.Pages() {
+			if err := p.Write(s, ioutil.Discard); err != nil {
 				return err
 			}
 		}
@@ -256,9 +256,9 @@ func (s *Site) makeLiquidEngine() (liquid.Engine, error) {
 	return s.makeLocalLiquidEngine(), nil
 }
 
-// LiquidEngine create a liquid engine configured to with include paths and link tag resolution
+// TemplateEngine create a liquid engine configured to with include paths and link tag resolution
 // for this site.
-func (s *Site) LiquidEngine() liquid.Engine {
+func (s *Site) TemplateEngine() liquid.Engine {
 	return s.liquidEngine
 }
 

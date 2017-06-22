@@ -2,6 +2,7 @@ package gojekyll
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -124,6 +125,6 @@ func (site *Site) WritePage(page Page, options BuildOptions) error {
 	case page.Static():
 		return helpers.CopyFileContents(to, from, 0644)
 	default:
-		return helpers.VisitCreatedFile(to, page.Write)
+		return helpers.VisitCreatedFile(to, func(w io.Writer) error { return page.Write(site, w) })
 	}
 }

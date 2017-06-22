@@ -127,7 +127,7 @@ func renderCommand(site *gojekyll.Site) error {
 	if err := site.CollectionVariable(); err != nil {
 		return err
 	}
-	return page.Write(os.Stdout)
+	return page.Write(site, os.Stdout)
 }
 
 // If path starts with /, it's a URL path. Else it's a file path relative
