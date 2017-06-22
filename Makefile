@@ -27,7 +27,7 @@ dependencies: ## list dependencies
 		| grep '\.'
 
 setup: ## install dependencies and development tools
-	go get ./...
+	go get -t ./...
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
 
