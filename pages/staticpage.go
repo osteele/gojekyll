@@ -2,7 +2,7 @@ package pages
 
 import (
 	"io"
-	"io/ioutil"
+	"os"
 )
 
 // StaticPage is a static page.
@@ -14,10 +14,11 @@ type StaticPage struct {
 func (p *StaticPage) Static() bool { return true }
 
 func (p *StaticPage) Write(_ Context, w io.Writer) error {
-	b, err := ioutil.ReadFile(p.filename)
+	in, err := os.Open(p.filename)
 	if err != nil {
 		return err
 	}
-	_, err = w.Write(b)
+	defer in.Close() // nolint: errcheck, gas
+	_, err = io.Copy(w, in)
 	return err
 }
