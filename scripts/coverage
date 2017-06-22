@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -e
+
+echo 'mode: set' > coverage.out
+
+for p in $(go list -f '{{.ImportPath}}' ./...); do
+    rm -f package-coverage.out
+    go test -coverprofile=package-coverage.out $p
+    [[ -f package-coverage.out ]] && grep -v 'mode: set' package-coverage.out >> coverage.out
+    rm -f package-coverage.out
+done

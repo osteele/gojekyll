@@ -21,10 +21,8 @@ build: $(BINARY) ## compile the package
 clean: ## remove binary files
 	rm -fI ${BINARY}
 
-dependencies: ## list dependencies
-	go list -f '{{ join .Imports "\n" }}' \
-		| grep -v ${PACKAGE} \
-		| grep '\.'
+deps: ## list dependencies
+	go list -f '{{join .Imports "\n"}}' ./... | grep -v ${PACKAGE} | grep '\.' | sort | uniq
 
 setup: ## install dependencies and development tools
 	go get -t ./...
