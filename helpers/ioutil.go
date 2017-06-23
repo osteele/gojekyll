@@ -33,23 +33,23 @@ func CopyFileContents(dst, src string, perm os.FileMode) error {
 }
 
 // ReadFileMagic returns the first four bytes of the file, with final '\r' replaced by '\n'.
-func ReadFileMagic(name string) (data []byte, err error) {
-	f, err := os.Open(name)
+func ReadFileMagic(filename string) ([]byte,  error) {
+	f, err := os.Open(filename)
 	if err != nil {
-		return
+		return nil, err
 	}
 	defer f.Close() // nolint: errcheck
-	data = make([]byte, 4)
-	_, err = f.Read(data)
-	if err == io.EOF {
-		err = nil
+	b := make([]byte, 4)
+	_, err = f.Read(b)
+	if err != nil && err != io.EOF {
+		return nil, err
 	}
 	// Normalize windows linefeeds. This function is used to
 	// recognize frontmatter, so we only need to look at the fourth byte.
-	if data[3] == '\r' {
-		data[3] = '\n'
+	if b[3] == '\r' {
+		b[3] = '\n'
 	}
-	return
+	return b, nil
 }
 
 // PostfixWalk is like filepath.Walk, but visits each directory after visiting its children instead of before.
@@ -64,7 +64,6 @@ func PostfixWalk(root string, walkFn filepath.WalkFunc) error {
 			}
 		}
 	}
-
 	info, err := os.Stat(root)
 	return walkFn(root, info, err)
 }
@@ -126,8 +125,8 @@ func RemoveEmptyDirectories(root string) error {
 }
 
 // VisitCreatedFile calls os.Create to create a file, and applies w to it.
-func VisitCreatedFile(name string, w func(io.Writer) error) error {
-	f, err := os.Create(name)
+func VisitCreatedFile(filename string, w func(io.Writer) error) error {
+	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
