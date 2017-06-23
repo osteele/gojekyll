@@ -43,13 +43,19 @@ This project is missing more functionality than it implements. It may accidental
   - [x] Live reload
 - [ ] Windows -- not tested
 
+Intentional differences from Jekyll:
+
+- `serve` doesn't write to the file system
+- No `.sass-cache`. (When caching is added, it will go to a temporary directory.)
+- Server live reload is always on.
+
 ## Install
 
 ```bash
 go get -u osteele/gojekyll/cmd/gojekyll
 ```
 
-Sometimes this package benefits from my unmerged improvements to the **acstech/liquid** library. If you want to use [my fork](https://github.com/osteele/liquid) instead:
+You get slightly better Liquid template parsing from some unmerged pull requests to the **acstech/liquid** library. If you want to use [my fork](https://github.com/osteele/liquid) instead:
 
 ```bash
 cd $(go env GOPATH)/src/github.com/acstech/liquid
@@ -62,9 +68,10 @@ git pull -f osteele
 ## Usage
 
 ```bash
-gojekyll build                # builds into ./_site
-gojekyll serve                # serves from memory, w/ live reload
+gojekyll -s path/to/site build                # builds into ./_site
+gojekyll -s path/to/site serve                # serves from memory, w/ live reload
 gojekyll help
+gojekyll help build
 ```
 
 ### Liquid Template Server
