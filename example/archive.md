@@ -1,5 +1,4 @@
 ---
-permalink: /:name
 layout: archive
 ---
 

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
@@ -25,12 +26,8 @@ func NewCollection(ctx pages.Context, name string, metadata templates.VariableMa
 	}
 }
 
-// DefaultPermalink returns the default Permalink for pages in a collection
-// that doesn't specify a permalink in the site config.
-func (c *Collection) DefaultPermalink() string { return "/:categories/:year/:month/:day/:title.html" }
-
 // IsPosts returns true if the collection is the special "posts" collection.
-func (c *Collection) IsPosts() bool { return c.Name == "posts" }
+func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
 
 // Output returns a bool indicating whether files in this collection should be written.
 func (c *Collection) Output() bool { return c.Metadata.Bool("output", false) }
@@ -57,13 +54,17 @@ func (c *Collection) TemplateVariable() []templates.VariableMap {
 func (c *Collection) ReadPages(ctx pages.Context, sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
 	pageDefaults := templates.VariableMap{
 		"collection": c.Name,
+		"permalink":  constants.DefaultCollectionPermalinkPattern,
+	}
+	if c.IsPostsCollection() {
+		pageDefaults["permalink"] = constants.DefaultPostsCollectionPermalinkPattern
 	}
 
 	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
 			// if the issue is simply that the directory doesn't exist, warn instead of error
 			if os.IsNotExist(err) {
-				if !c.IsPosts() {
+				if !c.IsPostsCollection() {
 					fmt.Printf("Missing collection directory: _%s\n", c.Name)
 				}
 				return nil

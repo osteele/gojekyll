@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/helpers"
 )
 
@@ -64,7 +65,8 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 }
 
 func (p *pageFields) expandPermalink() (s string, err error) {
-	pattern := p.frontMatter.String("permalink", p.container.DefaultPermalink())
+	pattern := p.frontMatter.String("permalink", constants.DefaultPermalinkPattern)
+
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}

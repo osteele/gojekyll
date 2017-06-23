@@ -55,7 +55,6 @@ type Context interface {
 
 // Container is the Page container
 type Container interface {
-	DefaultPermalink() string
 	PathPrefix() string
 	Output() bool
 }

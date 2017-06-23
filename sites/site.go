@@ -34,9 +34,6 @@ type Site struct {
 // SourceDir returns the sites source directory.
 func (s *Site) SourceDir() string { return s.Source }
 
-// DefaultPermalink returns the default Permalink for pages not in a collection.
-func (s *Site) DefaultPermalink() string { return "/:path:output_ext" }
-
 // Output returns true, indicating that the files in the site should be written.
 func (s *Site) Output() bool { return true }
 
