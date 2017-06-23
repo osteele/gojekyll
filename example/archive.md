@@ -10,4 +10,4 @@ layout: archive
 * [{{p.title}}]({{p.url}})
 {% endfor %}
 
-[An article]({% link _c1/c1.md %})
+[An article]({% link _c1/c1p1.md %})
