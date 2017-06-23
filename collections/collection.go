@@ -26,7 +26,7 @@ func NewCollection(ctx pages.Context, name string, metadata templates.VariableMa
 	}
 }
 
-// IsPosts returns true if the collection is the special "posts" collection.
+// IsPostsCollection returns true if the collection is the special "posts" collection.
 func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
 
 // Output returns a bool indicating whether files in this collection should be written.
