@@ -11,9 +11,7 @@ import (
 
 type containerMock struct{ pathPrefix string }
 
-func (c containerMock) Output() bool             { return true }
-func (c containerMock) PathPrefix() string       { return c.pathPrefix }
-func (c containerMock) DefaultPermalink() string { return "/:path:output_ext" }
+func (c containerMock) PathPrefix() string { return c.pathPrefix }
 
 type pathTest struct{ path, pattern, out string }
 

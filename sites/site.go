@@ -24,15 +24,16 @@ type Site struct {
 
 	Collections []*collections.Collection
 	Variables   templates.VariableMap
-	Paths       map[string]pages.Page // URL path -> Page
+	Paths       map[string]pages.Page // URL path -> Page, only for output pages
 
 	config       config.Config
 	liquidEngine liquid.Engine
+	pages        []pages.Page // all pages, output or not
 	sassTempDir  string
 }
 
-// Output returns true, indicating that the files in the site should be written.
-func (s *Site) Output() bool { return true }
+// Pages returns a slice of pages.
+func (s *Site) Pages() []pages.Page { return s.pages }
 
 // PathPrefix returns the relative directory prefix.
 func (s *Site) PathPrefix() string { return "" }

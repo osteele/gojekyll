@@ -60,9 +60,7 @@ func (s *Site) readFiles() error {
 		if err != nil {
 			return helpers.PathError(err, "read", filename)
 		}
-		if p.Published() {
-			s.Paths[p.Permalink()] = p
-		}
+		s.AddPage(p, true)
 		return nil
 	}
 
@@ -70,6 +68,16 @@ func (s *Site) readFiles() error {
 		return err
 	}
 	return s.ReadCollections()
+}
+
+// AddPage adds a page to the site structures.
+func (s *Site) AddPage(p pages.Page, output bool) {
+	if p.Published() {
+		s.pages = append(s.pages, p)
+		if output {
+			s.Paths[p.Permalink()] = p
+		}
+	}
 }
 
 // ReadCollections reads the pages of the collections named in the site configuration.
@@ -82,9 +90,7 @@ func (s *Site) ReadCollections() error {
 			return err
 		}
 		for _, p := range c.Pages() {
-			if p.Published() {
-				s.Paths[p.Permalink()] = p
-			}
+			s.AddPage(p, c.Output())
 		}
 	}
 	return nil

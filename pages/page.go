@@ -31,7 +31,6 @@ type Page interface {
 	// Output
 	Published() bool
 	Static() bool
-	Output() bool
 	Write(Context, io.Writer) error
 
 	// Variables
@@ -55,7 +54,6 @@ type Context interface {
 // Container is the Page container
 type Container interface {
 	PathPrefix() string
-	Output() bool
 }
 
 // pageFields is embedded in StaticPage and DynamicPage
@@ -73,7 +71,6 @@ func (p *pageFields) String() string {
 	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
 }
 
-func (p *pageFields) Output() bool        { return p.Published() }
 func (p *pageFields) OutputExt() string   { return p.outputExt }
 func (p *pageFields) Path() string        { return p.relpath }
 func (p *pageFields) Permalink() string   { return p.permalink }

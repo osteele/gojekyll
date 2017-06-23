@@ -103,11 +103,6 @@ func (p *DynamicPage) TemplateContext(ctx Context) templates.VariableMap {
 	}
 }
 
-// Output returns a bool indicating whether the page should be written.
-func (p *DynamicPage) Output() bool {
-	return p.pageFields.Output() && p.container.Output()
-}
-
 // Write applies Liquid and Markdown, as appropriate.
 func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
 	if ctx.IsSassPath(p.relpath) {

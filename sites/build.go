@@ -10,27 +10,11 @@ import (
 	"github.com/osteele/gojekyll/pages"
 )
 
-// PageContainer has a slice of pages
-type PageContainer interface {
-	Pages() []pages.Page
-}
-
 // BuildOptions holds options for Build and Clean
 type BuildOptions struct {
 	DryRun       bool
 	UseHardLinks bool
 	Verbose      bool
-}
-
-// Pages is a list of pages.
-func (s *Site) Pages() []pages.Page {
-	pages := make([]pages.Page, len(s.Paths))
-	i := 0
-	for _, p := range s.Paths {
-		pages[i] = p
-		i++
-	}
-	return pages
 }
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
@@ -71,43 +55,34 @@ func (s *Site) Build(options BuildOptions) (int, error) {
 	if err := s.CopySassFileIncludes(); err != nil {
 		return count, err
 	}
-	for _, c := range s.Collections {
-		n, err := s.WritePages(c, options)
-		if err != nil {
-			return count, err
-		}
-		count += n
-	}
 	if err := s.SetPageContentTemplateValues(); err != nil {
 		return count, err
 	}
-	n, err := s.WritePages(s, options)
+	n, err := s.WritePages(options)
 	return count + n, err
 }
 
-// WritePages cleans the destination and create files in it.
+// WritePages writes its files. It attends to page.Output, but not its own c.Output.
 // It attends to the global options.dry_run.
-func (s *Site) WritePages(container PageContainer, options BuildOptions) (count int, err error) {
-	for _, page := range container.Pages() {
-		if page.Output() {
-			count++
-			if err = s.WritePage(page, options); err != nil {
-				return
-			}
+func (s *Site) WritePages(options BuildOptions) (count int, err error) {
+	for _, p := range s.Paths {
+		count++
+		if err = s.WritePage(p, options); err != nil {
+			return
 		}
 	}
 	return
 }
 
 // WritePage writes a page to the destination directory.
-func (s *Site) WritePage(page pages.Page, options BuildOptions) error {
-	from := filepath.Join(s.Source, page.SiteRelPath())
-	to := filepath.Join(s.Destination, page.Permalink())
-	if !page.Static() && filepath.Ext(to) == "" {
-		to = filepath.Join(to, "/index.html")
+func (s *Site) WritePage(p pages.Page, options BuildOptions) error {
+	from := filepath.Join(s.Source, filepath.ToSlash(p.SiteRelPath()))
+	to := filepath.Join(s.Destination, p.Permalink())
+	if !p.Static() && filepath.Ext(to) == "" {
+		to = filepath.Join(to, "index.html")
 	}
 	if options.Verbose {
-		fmt.Println("create", to, "from", page.SiteRelPath())
+		fmt.Println("create", to, "from", p.SiteRelPath())
 	}
 	if options.DryRun {
 		// FIXME render the page in dry run mode, just don't write it
@@ -118,11 +93,11 @@ func (s *Site) WritePage(page pages.Page, options BuildOptions) error {
 		return err
 	}
 	switch {
-	case page.Static() && options.UseHardLinks:
+	case p.Static() && options.UseHardLinks:
 		return os.Link(from, to)
-	case page.Static():
+	case p.Static():
 		return helpers.CopyFileContents(to, from, 0644)
 	default:
-		return helpers.VisitCreatedFile(to, func(w io.Writer) error { return page.Write(s, w) })
+		return helpers.VisitCreatedFile(to, func(w io.Writer) error { return p.Write(s, w) })
 	}
 }
