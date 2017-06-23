@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"io"
+	"log"
 	"mime"
 	"net/http"
 	"strings"
@@ -24,15 +25,15 @@ type Server struct {
 // Run runs the server.
 func (s *Server) Run(open bool, logger func(label, value string)) error {
 	address := "localhost:4000"
+	logger("Server address:", "http://"+address+"/")
+	if err := s.StartLiveReloader(); err != nil {
+		return err
+	}
 	if err := s.watchFiles(); err != nil {
 		return err
 	}
-	s.lr = lrserver.New(lrserver.DefaultName, lrserver.DefaultPort)
-	s.lr.SetStatusLog(nil)
-	logger("Server address:", "http://"+address+"/")
 	http.HandleFunc("/", s.handler)
 	c := make(chan error)
-	go s.lr.ListenAndServe() // nolint: errcheck
 	go func() {
 		c <- http.ListenAndServe(address, nil)
 	}()
@@ -52,17 +53,18 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	site := s.Site
 	urlpath := r.URL.Path
 
-	page, found := site.URLPage(urlpath)
+	p, found := site.URLPage(urlpath)
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
-		page, found = site.Paths["404.html"]
+		log.Println("Not found:", urlpath)
+		p, found = site.Paths["404.html"]
 	}
 	if !found {
 		fmt.Fprintf(rw, "404 page not found: %s", urlpath) // nolint: gas
 		return
 	}
 
-	mimeType := mime.TypeByExtension(page.OutputExt())
+	mimeType := mime.TypeByExtension(p.OutputExt())
 	if mimeType != "" {
 		rw.Header().Set("Content-Type", mimeType)
 	}
@@ -70,13 +72,13 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(mimeType, "text/html;") {
 		w = NewLiveReloadInjector(w)
 	}
-	err := page.Write(site, w)
+	err := p.Write(site, w)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}
 }
 
-func (s *Server) syncReloadSite() {
+func (s *Server) reloadSite() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 

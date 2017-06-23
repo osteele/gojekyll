@@ -2,7 +2,6 @@ package pages
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -89,11 +88,7 @@ func (p *pageFields) expandPermalink() (s string, err error) {
 		}
 		return value
 	})
-	finalSlash := ""
-	if strings.HasSuffix(filepath.ToSlash(s), "/") {
-		finalSlash = "/"
-	}
-	return path.Clean(filepath.ToSlash(s)) + finalSlash, nil
+	return helpers.URLPathClean(s), nil
 }
 
 // The permalink is computed once instead of on demand, so that subsequent

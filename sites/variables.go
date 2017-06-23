@@ -21,7 +21,7 @@ func (s *Site) initSiteVariables() error {
 	if err != nil {
 		return err
 	}
-	s.Variables = templates.MergeVariableMaps(s.Variables, templates.VariableMap{
+	s.Variables = templates.MergeVariableMaps(s.config.Variables, templates.VariableMap{
 		"data": data,
 		// TODO read time from _config, if it's available
 		"time": time.Now(),

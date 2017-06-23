@@ -33,23 +33,24 @@ func (s *Server) watchFiles() error {
 
 	go func() {
 		for {
-			names := <-debounced
+			filenames := <-debounced
 			// Resolve to URLS *before* reloading the site, in case the latter
 			// remaps permalinks.
 			urls := map[string]bool{}
-			for _, name := range names {
-				relpath, err := filepath.Rel(site.Source, name)
+			for _, filename := range filenames {
+				relpath, err := filepath.Rel(site.Source, filename)
 				if err != nil {
 					log.Println("error:", err)
 					continue
 				}
 				url, found := site.RelPathURL(relpath)
 				if !found {
-					log.Println("error:", name, "does not match a site URL")
+					// TODO don't warn re config and excluded files
+					log.Println("error:", filename, "does not match a site URL")
 				}
 				urls[url] = true
 			}
-			s.syncReloadSite()
+			s.reloadSite()
 			for url := range urls {
 				s.lr.Reload(url)
 			}
