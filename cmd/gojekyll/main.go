@@ -17,13 +17,15 @@ var (
 	useRemoteLiquidEngine bool
 )
 
+const defaultDestination = "DEFAULT: ./_"
+
 var (
 	app         = kingpin.New("gojekyll", "a (maybe someday) Jekyll-compatible blog generator in Go")
-	source      = app.Flag("source", "Source directory").Default(".").String()
-	destination = app.Flag("destination", "Destination directory").Default("").String()
+	source      = app.Flag("source", "Source directory").Short('s').Default(".").String()
+	destination = app.Flag("destination", "Destination directory").Short('d').Default(defaultDestination).String()
 
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
-	open  = app.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
+	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
 
 	build = app.Command("build", "Build your site").Alias("b")
 
@@ -62,10 +64,12 @@ func printPathSetting(label string, name string) {
 }
 
 func main() {
+	app.HelpFlag.Short('h')
 	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
 	if err := run(cmd); err != nil {
 		app.FatalIfError(err, "")
 	}
+
 }
 func run(cmd string) error {
 	site, err := loadSite(*source, *destination)
@@ -97,7 +101,7 @@ func loadSite(source, destination string) (*sites.Site, error) {
 		return nil, err
 	}
 	site.UseRemoteLiquidEngine = useRemoteLiquidEngine
-	if destination != "" {
+	if destination != "" && destination != defaultDestination {
 		site.Destination = destination
 	}
 	if site.ConfigFile != nil {

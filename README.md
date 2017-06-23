@@ -84,7 +84,7 @@ This is currently about 10x slower than using the embedded engine, but still 5x 
 
 Neither the embedded Liquid server nor the Liquid Template Server implements very many Jekyll Liquid filters or tags. I'm adding to these as necessary to support my own sites.
 
-## Develop
+## Contributing
 
 Install package dependencies and development tools:
 
@@ -92,23 +92,23 @@ Install package dependencies and development tools:
 make setup
 ```
 
-Test:
+### Testing
 
 ```bash
 make test
 make lint
-gojekyll render index.md      # render a file to stdout
-gojekyll render /             # render a URL to stdout
-gojekyll variables /          # print a file or URL's variables
+gojekyll  -s path/to/site render index.md      # render a file to stdout
+gojekyll  -s path/to/site render /             # render a URL to stdout
+gojekyll  -s path/to/site variables /          # print a file or URL's variables
 ./scripts/coverage && go tool cover -html=coverage.out
 ```
 
 `./scripts/gojekyll` is an alternative to the `gojekyll` executable, that uses `go run` each time it's invoked.
 
-Profiling:
+### Profiling
 
 ```bash
-gojekyll --remote-liquid profile
+gojekyll -s path/to/site profile
 go tool pprof gojekyll gojekyll.prof
 ```
 
@@ -128,7 +128,7 @@ The gopher image in the test directory is from [Wikimedia Commons](https://commo
 
 [Jekyll](https://jekyllrb.com), of course.
 
-This project is a clean-room implementation of Jekyll, based solely on Jekyll's documentation and testing a few sites.
+This project is a clean-room implementation of Jekyll, based solely on Jekyll's documentation and testing it against a few sites. Hopefully this can pay off in contributing towards Jekyll's documentation.
 
 ## License
 
