@@ -25,13 +25,29 @@ func (c MockContext) IsMarkdown(_ string) bool             { return true }
 func (c MockContext) IsSassPath(_ string) bool             { return true }
 func (c MockContext) SassIncludePaths() []string           { return []string{} }
 func (c MockContext) SiteVariables() templates.VariableMap { return templates.VariableMap{} }
-func (c MockContext) SourceDir() string                    { return "." }
 func (c MockContext) TemplateEngine() liquid.Engine        { return nil }
 func (c MockContext) WriteSass(io.Writer, []byte) error    { return nil }
 
-func TestCollections(t *testing.T) {
+func TestNewCollection(t *testing.T) {
 	ctx := MockContext{}
-	c := NewCollection(ctx, "c", templates.VariableMap{"output": true})
-	require.Equal(t, true, c.Output())
-	require.Equal(t, "_c/", c.PathPrefix())
+
+	c1 := NewCollection(ctx, "c", templates.VariableMap{"output": true})
+	require.Equal(t, true, c1.Output())
+	require.Equal(t, "_c/", c1.PathPrefix())
+
+	c2 := NewCollection(ctx, "c", templates.VariableMap{})
+	require.Equal(t, false, c2.Output())
+}
+
+func TestPermalinkPattern(t *testing.T) {
+	ctx := MockContext{}
+
+	c1 := NewCollection(ctx, "c", templates.VariableMap{})
+	require.Contains(t, c1.PermalinkPattern(), ":collection")
+
+	c2 := NewCollection(ctx, "c", templates.VariableMap{"permalink": "out"})
+	require.Equal(t, "out", c2.PermalinkPattern())
+
+	c3 := NewCollection(ctx, "posts", templates.VariableMap{})
+	require.Contains(t, c3.PermalinkPattern(), "/:year/:month/:day/:title")
 }

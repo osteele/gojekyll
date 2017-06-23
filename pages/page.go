@@ -48,7 +48,6 @@ type Context interface {
 	IsSassPath(filename string) bool
 	SassIncludePaths() []string
 	SiteVariables() templates.VariableMap
-	SourceDir() string
 	TemplateEngine() liquid.Engine
 	WriteSass(io.Writer, []byte) error
 }
@@ -62,13 +61,12 @@ type Container interface {
 // pageFields is embedded in StaticPage and DynamicPage
 type pageFields struct {
 	container   Container
-	filename    string
-	relpath     string // relative to site source directory
+	filename    string // target os filepath
+	relpath     string // slash-separated path relative to site or container source
 	outputExt   string
 	permalink   string // cached permalink
-	modTime     time.Time
+	fileModTime time.Time
 	frontMatter templates.VariableMap
-	isMarkdown  bool
 }
 
 func (p *pageFields) String() string {
@@ -97,12 +95,12 @@ func NewPageFromFile(ctx Context, c Container, filename string, relpath string, 
 		container:   c,
 		filename:    filename,
 		frontMatter: defaults,
-		modTime:     info.ModTime(),
+		fileModTime: info.ModTime(),
 		relpath:     relpath,
 	}
 	switch {
 	case ctx.IsMarkdown(relpath):
-		fields.isMarkdown = true
+		// fields.isMarkdown = true
 		fields.outputExt = ".html"
 	case ctx.IsSassPath(relpath):
 		fields.outputExt = ".css"
@@ -137,7 +135,7 @@ func (p *pageFields) PageVariables() templates.VariableMap {
 
 	return templates.MergeVariableMaps(p.frontMatter, templates.VariableMap{
 		"path":          relpath,
-		"modified_time": p.modTime,
+		"modified_time": p.fileModTime,
 		"name":          base,
 		"basename":      helpers.TrimExt(base),
 		"extname":       ext,

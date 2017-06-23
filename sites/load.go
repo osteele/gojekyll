@@ -55,8 +55,8 @@ func (s *Site) readFiles() error {
 		case info.IsDir(), s.Exclude(relname):
 			return nil
 		}
-		defaults := s.config.GetFrontMatterDefaults(relname, "")
-		p, err := pages.NewPageFromFile(s, s, filename, relname, defaults)
+		defaultFrontmatter := s.config.GetFrontMatterDefaults(relname, "")
+		p, err := pages.NewPageFromFile(s, s, filename, filepath.ToSlash(relname), defaultFrontmatter)
 		if err != nil {
 			return helpers.PathError(err, "read", filename)
 		}

@@ -55,11 +55,10 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 		"title":      p.frontMatter.String("slug", helpers.Slugify(name)),
 		// The following aren't documented, but is evident
 		"output_ext": p.OutputExt(),
-		"y_day":      strconv.Itoa(p.modTime.YearDay()),
-		// TODO categories
+		"y_day":      strconv.Itoa(p.fileModTime.YearDay()),
 	}
 	for name, f := range permalinkDateVariables {
-		vs[name] = p.modTime.Format(f)
+		vs[name] = p.fileModTime.Format(f)
 	}
 	return vs
 }

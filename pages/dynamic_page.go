@@ -132,15 +132,12 @@ func (p *DynamicPage) ComputeContent(ctx Context) error {
 			if err.Filename == "" {
 				err.Filename = p.filename
 			}
-			if rel, e := filepath.Rel(ctx.SourceDir(), err.Filename); e == nil {
-				err.Filename = rel
-			}
 			return err
 		default:
 			return helpers.PathError(err, "Liquid Error", p.filename)
 		}
 	}
-	if p.isMarkdown {
+	if ctx.IsMarkdown(p.filename) {
 		b = blackfriday.MarkdownCommon(b)
 	}
 	b, err = p.applyLayout(ctx, p.frontMatter, b)

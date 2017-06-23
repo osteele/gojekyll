@@ -50,14 +50,20 @@ func (c *Collection) TemplateVariable() []templates.VariableMap {
 	return d
 }
 
+// PermalinkPattern returns the permalink pattern for this collection.
+func (c *Collection) PermalinkPattern() string {
+	defaultPattern := constants.DefaultCollectionPermalinkPattern
+	if c.IsPostsCollection() {
+		defaultPattern = constants.DefaultPostsCollectionPermalinkPattern
+	}
+	return c.Metadata.String("permalink", defaultPattern)
+}
+
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
 func (c *Collection) ReadPages(ctx pages.Context, sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
 	pageDefaults := templates.VariableMap{
 		"collection": c.Name,
-		"permalink":  constants.DefaultCollectionPermalinkPattern,
-	}
-	if c.IsPostsCollection() {
-		pageDefaults["permalink"] = constants.DefaultPostsCollectionPermalinkPattern
+		"permalink":  c.PermalinkPattern(),
 	}
 
 	walkFn := func(filename string, info os.FileInfo, err error) error {
@@ -80,8 +86,8 @@ func (c *Collection) ReadPages(ctx pages.Context, sitePath string, frontMatterDe
 		case info.IsDir():
 			return nil
 		}
-		defaults := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, ""))
-		p, err := pages.NewPageFromFile(ctx, c, filename, relname, defaults)
+		defaultFrontmatter := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
+		p, err := pages.NewPageFromFile(ctx, c, filename, filepath.ToSlash(relname), defaultFrontmatter)
 		switch {
 		case err != nil:
 			return err

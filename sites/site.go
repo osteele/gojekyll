@@ -31,9 +31,6 @@ type Site struct {
 	sassTempDir  string
 }
 
-// SourceDir returns the sites source directory.
-func (s *Site) SourceDir() string { return s.Source }
-
 // Output returns true, indicating that the files in the site should be written.
 func (s *Site) Output() bool { return true }
 

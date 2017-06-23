@@ -57,7 +57,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		p := pageFields{container: c, relpath: path, frontMatter: vs, outputExt: ext}
 		t0, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
 		require.NoError(t, err)
-		p.modTime = t0
+		p.fileModTime = t0
 		return p.expandPermalink()
 	}
 
