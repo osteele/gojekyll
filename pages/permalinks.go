@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/osteele/gojekyll/helpers"
@@ -38,7 +39,6 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 // See https://jekyllrb.com/docs/permalinks/#template-variables
 func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	var (
-		collection string
 		relpath    = strings.TrimPrefix(p.relpath, p.container.PathPrefix())
 		root       = helpers.TrimExt(relpath)
 		name       = filepath.Base(root)
@@ -48,13 +48,14 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	// TODO recognize category; list
 	vs := map[string]string{
 		"categories": strings.Join(categories, "/"),
-		"collection": collection,
+		"collection": p.frontMatter.String("collection", ""),
 		"name":       helpers.Slugify(name),
 		"path":       "/" + root,
 		"slug":       p.frontMatter.String("slug", helpers.Slugify(name)),
 		"title":      p.frontMatter.String("slug", helpers.Slugify(name)),
-		// The following isn't documented, but is evident
+		// The following aren't documented, but is evident
 		"output_ext": p.OutputExt(),
+		"y_day":      strconv.Itoa(p.modTime.YearDay()),
 		// TODO categories
 	}
 	for name, f := range permalinkDateVariables {
@@ -88,7 +89,11 @@ func (p *pageFields) expandPermalink() (s string, err error) {
 		}
 		return value
 	})
-	return path.Clean(filepath.ToSlash(s)), nil
+	finalSlash := ""
+	if strings.HasSuffix(filepath.ToSlash(s), "/") {
+		finalSlash = "/"
+	}
+	return path.Clean(filepath.ToSlash(s)) + finalSlash, nil
 }
 
 // The permalink is computed once instead of on demand, so that subsequent

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
@@ -148,7 +149,7 @@ func (p *pageFields) categories() []string {
 	if v, found := p.frontMatter["categories"]; found {
 		switch v := v.(type) {
 		case string:
-			return regexp.MustCompile(`\s+`).Split(v, -1)
+			return strings.Fields(v)
 		case []interface{}:
 			sl := make([]string, len(v))
 			for i, s := range v {
