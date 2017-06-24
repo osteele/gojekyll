@@ -2,7 +2,6 @@ package pages
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -19,38 +18,6 @@ var (
 	frontMatterMatcher     = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
 	emptyFontMatterMatcher = regexp.MustCompile(`(?s)^---\n+---\n`)
 )
-
-// Page is a Jekyll page.
-type Page interface {
-	// Paths
-	SiteRelPath() string // relative to the site source directory
-	Permalink() string   // relative URL path
-	OutputExt() string
-
-	// Output
-	Published() bool
-	Static() bool
-	Write(Context, io.Writer) error
-
-	// Variables
-	PageVariables() templates.VariableMap
-
-	// internal
-	initPermalink() error
-}
-
-// Context provides context information to a Page.
-type Context interface {
-	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
-	OutputExt(pathname string) string
-	Render(io.Writer, []byte, string, templates.VariableMap) ([]byte, error)
-	SiteVariables() templates.VariableMap
-}
-
-// Container is the Page container
-type Container interface {
-	PathPrefix() string
-}
 
 // pageFields is embedded in StaticPage and DynamicPage
 type pageFields struct {
@@ -74,7 +41,7 @@ func (p *pageFields) Published() bool     { return p.frontMatter.Bool("published
 func (p *pageFields) SiteRelPath() string { return p.relpath }
 
 // NewPageFromFile reads a Page from a file, using defaults as the default front matter.
-func NewPageFromFile(ctx Context, c Container, filename string, relpath string, defaults templates.VariableMap) (Page, error) {
+func NewPageFromFile(ctx RenderingContext, c Container, filename string, relpath string, defaults templates.VariableMap) (Page, error) {
 	magic, err := helpers.ReadFileMagic(filename)
 	if err != nil {
 		return nil, err

@@ -89,7 +89,7 @@ func (p *DynamicPage) PageVariables() templates.VariableMap {
 }
 
 // TemplateContext returns the local variables for template evaluation
-func (p *DynamicPage) TemplateContext(ctx Context) templates.VariableMap {
+func (p *DynamicPage) TemplateContext(ctx RenderingContext) templates.VariableMap {
 	return templates.VariableMap{
 		"page": p.PageVariables(),
 		"site": ctx.SiteVariables(),
@@ -97,7 +97,7 @@ func (p *DynamicPage) TemplateContext(ctx Context) templates.VariableMap {
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
+func (p *DynamicPage) Write(ctx RenderingContext, w io.Writer) error {
 	if p.processed != nil {
 		_, err := w.Write(*p.processed)
 		return err
@@ -118,7 +118,7 @@ func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
 }
 
 // ComputeContent computes the page content.
-func (p *DynamicPage) ComputeContent(ctx Context) ([]byte, error) {
+func (p *DynamicPage) ComputeContent(ctx RenderingContext) ([]byte, error) {
 	if p.processed == nil {
 		w := new(bytes.Buffer)
 		if err := p.Write(ctx, w); err != nil {

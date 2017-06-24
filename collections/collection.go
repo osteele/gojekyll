@@ -19,7 +19,7 @@ type Collection struct {
 }
 
 // NewCollection creates a new Collection
-func NewCollection(ctx pages.Context, name string, metadata templates.VariableMap) *Collection {
+func NewCollection(ctx pages.RenderingContext, name string, metadata templates.VariableMap) *Collection {
 	return &Collection{
 		Name:     name,
 		Metadata: metadata,
@@ -42,7 +42,7 @@ func (c *Collection) Pages() []pages.Page {
 
 // TemplateVariable returns an array of page objects, for use as the template variable
 // value of the collection.
-func (c *Collection) TemplateVariable(ctx pages.Context, includeContent bool) ([]templates.VariableMap, error) {
+func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent bool) ([]templates.VariableMap, error) {
 	d := []templates.VariableMap{}
 	for _, p := range c.Pages() {
 		v := p.PageVariables()
@@ -71,7 +71,7 @@ func (c *Collection) PermalinkPattern() string {
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages(ctx pages.Context, sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
+func (c *Collection) ReadPages(ctx pages.RenderingContext, sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
 	pageDefaults := templates.VariableMap{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
