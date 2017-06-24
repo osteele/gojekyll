@@ -129,6 +129,10 @@ func renderCommand(site *sites.Site) error {
 	printPathSetting("Render:", filepath.Join(site.Source, p.SiteRelPath()))
 	printSetting("URL:", p.Permalink())
 	printSetting("Content:", "")
+	err = site.InitializeRenderingPipeline()
+	if err != nil {
+		return err
+	}
 	return p.Write(site, os.Stdout)
 }
 

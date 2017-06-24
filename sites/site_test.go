@@ -7,8 +7,7 @@ import (
 )
 
 func TestIsMarkdown(t *testing.T) {
-	site := NewSite()
-	require.True(t, site.IsMarkdown("name.md"))
-	require.True(t, site.IsMarkdown("name.markdown"))
-	require.False(t, site.IsMarkdown("name.html"))
+	s := NewSite()
+	require.Equal(t, "", s.PathPrefix())
+	require.False(t, s.KeepFile("random"))
 }

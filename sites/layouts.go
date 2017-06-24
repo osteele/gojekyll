@@ -13,9 +13,9 @@ import (
 )
 
 // FindLayout returns a template for the named layout.
-func (s *Site) FindLayout(base string, fm *templates.VariableMap) (t liquid.Template, err error) {
+func (p *Pipeline) FindLayout(base string, fm *templates.VariableMap) (t liquid.Template, err error) {
 	exts := []string{"", ".html"}
-	for _, ext := range strings.SplitN(s.config.MarkdownExt, `,`, -1) {
+	for _, ext := range strings.SplitN(p.config.MarkdownExt, `,`, -1) {
 		exts = append(exts, "."+ext)
 	}
 	var (
@@ -25,7 +25,7 @@ func (s *Site) FindLayout(base string, fm *templates.VariableMap) (t liquid.Temp
 	)
 	for _, ext := range exts {
 		// TODO respect layout config
-		name = filepath.Join(s.LayoutsDir(), base+ext)
+		name = filepath.Join(p.LayoutsDir(), base+ext)
 		content, err = ioutil.ReadFile(name)
 		if err == nil {
 			found = true
@@ -42,5 +42,10 @@ func (s *Site) FindLayout(base string, fm *templates.VariableMap) (t liquid.Temp
 	if err != nil {
 		return
 	}
-	return s.TemplateEngine().Parse(content)
+	return p.liquidEngine.Parse(content)
+}
+
+// LayoutsDir returns the path to the layouts directory.
+func (p *Pipeline) LayoutsDir() string {
+	return filepath.Join(p.sourceDir, p.config.LayoutsDir)
 }

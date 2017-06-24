@@ -1,6 +1,7 @@
 package sites
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,7 +10,6 @@ import (
 	"github.com/osteele/gojekyll/collections"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
-	"github.com/osteele/gojekyll/liquid"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
@@ -25,10 +25,11 @@ type Site struct {
 	Variables   templates.VariableMap
 	Paths       map[string]pages.Page // URL path -> Page, only for output pages
 
-	config       config.Config
-	liquidEngine liquid.Engine
-	pages        []pages.Page // all pages, output or not
-	sassTempDir  string
+	config   config.Config
+	pipeline *Pipeline
+	// liquidEngine liquid.Engine
+	// sassTempDir  string
+	pages []pages.Page // all pages, output or not
 }
 
 // Pages returns a slice of pages.
@@ -80,14 +81,28 @@ func (s *Site) RelPathPage(relpath string) (pages.Page, bool) {
 	return nil, false
 }
 
-// RelPathURL returns a page's relative URL, give a file path relative to the site source directory.
-func (s *Site) RelPathURL(relpath string) (string, bool) {
+// RelativePathToURL returns a page's relative URL, give a file path relative to the site source directory.
+func (s *Site) RelativeFilenameToURL(relpath string) (string, bool) {
 	var url string
 	p, found := s.RelPathPage(relpath)
 	if found {
 		url = p.Permalink()
 	}
 	return url, found
+}
+
+// RenderingPipeline returns the rendering pipeline.
+func (s *Site) RenderingPipeline() pages.RenderingPipeline {
+	if s.pipeline == nil {
+		panic(fmt.Errorf("uninitialized rendering pipeline"))
+	}
+	return s.pipeline
+}
+
+func (s *Site) InitializeRenderingPipeline() (err error) {
+	o := PipelineOptions{UseRemoteLiquidEngine: s.UseRemoteLiquidEngine}
+	s.pipeline, err = NewPipeline(s.Source, s.config, s, o)
+	return
 }
 
 // URLPage returns the page that will be served at URL
@@ -120,9 +135,4 @@ func (s *Site) Exclude(path string) bool {
 	default:
 		return false
 	}
-}
-
-// LayoutsDir returns the path to the layouts directory.
-func (s *Site) LayoutsDir() string {
-	return filepath.Join(s.Source, s.config.LayoutsDir)
 }

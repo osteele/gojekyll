@@ -14,26 +14,21 @@ import (
 	libsass "github.com/wellington/go-libsass"
 )
 
-// IsSassPath returns a boolean indicating whether the file is a Sass (".sass" or ".scss") file.
-func (s *Site) IsSassPath(name string) bool {
-	return strings.HasSuffix(name, ".sass") || strings.HasSuffix(name, ".scss")
-}
-
 // CopySassFileIncludes copies sass partials into a temporary directory,
 // removing initial underscores.
 // TODO delete the temp directory when done
-func (s *Site) CopySassFileIncludes() error {
+func (p *Pipeline) CopySassFileIncludes() error {
 	// TODO use libsass.ImportsOption instead?
-	if s.sassTempDir == "" {
+	if p.sassTempDir == "" {
 		dir, err := ioutil.TempDir(os.TempDir(), "_sass")
 		if err != nil {
 			return err
 		}
-		s.sassTempDir = dir
+		p.sassTempDir = dir
 	}
 
-	src := filepath.Join(s.Source, "_sass")
-	dst := s.sassTempDir
+	src := filepath.Join(p.sourceDir, "_sass")
+	dst := p.sassTempDir
 	err := filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return err
@@ -52,17 +47,17 @@ func (s *Site) CopySassFileIncludes() error {
 }
 
 // SassIncludePaths returns an array of sass include directories.
-func (s *Site) SassIncludePaths() []string {
-	return []string{s.sassTempDir}
+func (p *Pipeline) SassIncludePaths() []string {
+	return []string{p.sassTempDir}
 }
 
 // WriteSass converts a SASS file and writes it to w.
-func (s *Site) WriteSass(w io.Writer, b []byte) error {
+func (p *Pipeline) WriteSass(w io.Writer, b []byte) error {
 	comp, err := libsass.New(w, bytes.NewBuffer(b))
 	if err != nil {
 		return err
 	}
-	err = comp.Option(libsass.IncludePaths(s.SassIncludePaths()))
+	err = comp.Option(libsass.IncludePaths(p.SassIncludePaths()))
 	if err != nil {
 		log.Fatal(err)
 	}

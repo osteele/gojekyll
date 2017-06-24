@@ -19,7 +19,6 @@ func (s *Site) Load() (err error) {
 	if err != nil {
 		return
 	}
-	s.liquidEngine, err = s.makeLiquidEngine()
 	return
 }
 
@@ -32,7 +31,7 @@ func (s *Site) Reload() error {
 	}
 	copy.Destination = s.Destination
 	*s = *copy
-	s.sassTempDir = ""
+	s.pipeline = nil
 	return s.Load()
 }
 

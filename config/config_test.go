@@ -19,3 +19,10 @@ func TestUnmarshal(t *testing.T) {
 	require.Equal(t, "x", c.Source)
 	require.Equal(t, "./_site", c.Destination)
 }
+
+func TestIsMarkdown(t *testing.T) {
+	c := Default()
+	require.True(t, c.IsMarkdown("name.md"))
+	require.True(t, c.IsMarkdown("name.markdown"))
+	require.False(t, c.IsMarkdown("name.html"))
+}
