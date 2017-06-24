@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
-	"github.com/osteele/gojekyll/liquid"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -42,13 +41,10 @@ type Page interface {
 
 // Context provides context information to a Page.
 type Context interface {
-	FindLayout(relname string, frontMatter *templates.VariableMap) (liquid.Template, error)
-	IsMarkdown(filename string) bool
-	IsSassPath(filename string) bool
-	SassIncludePaths() []string
+	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
+	OutputExt(pathname string) string
+	Render(io.Writer, []byte, string, templates.VariableMap) ([]byte, error)
 	SiteVariables() templates.VariableMap
-	TemplateEngine() liquid.Engine
-	WriteSass(io.Writer, []byte) error
 }
 
 // Container is the Page container
@@ -94,15 +90,7 @@ func NewPageFromFile(ctx Context, c Container, filename string, relpath string, 
 		frontMatter: defaults,
 		fileModTime: info.ModTime(),
 		relpath:     relpath,
-	}
-	switch {
-	case ctx.IsMarkdown(relpath):
-		// fields.isMarkdown = true
-		fields.outputExt = ".html"
-	case ctx.IsSassPath(relpath):
-		fields.outputExt = ".css"
-	default:
-		fields.outputExt = filepath.Ext(relpath)
+		outputExt:   ctx.OutputExt(relpath),
 	}
 	var p Page
 	if string(magic) == "---\n" {

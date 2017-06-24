@@ -1,7 +1,6 @@
 package sites
 
 import (
-	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -126,54 +125,4 @@ func (s *Site) Exclude(path string) bool {
 // LayoutsDir returns the path to the layouts directory.
 func (s *Site) LayoutsDir() string {
 	return filepath.Join(s.Source, s.config.LayoutsDir)
-}
-
-func (s *Site) makeLocalLiquidEngine() liquid.Engine {
-	engine := liquid.NewLocalWrapperEngine()
-	engine.LinkTagHandler(s.RelPathURL)
-	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
-		filename := filepath.Join(s.Source, s.config.IncludesDir, name)
-		template, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return err
-		}
-		text, err := engine.ParseAndRender(template, scope)
-		if err != nil {
-			return err
-		}
-		_, err = w.Write(text)
-		return err
-	}
-	engine.IncludeHandler(includeHandler)
-	return engine
-}
-
-func (s *Site) makeLiquidClient() (engine liquid.RemoteEngine, err error) {
-	engine, err = liquid.NewRPCClientEngine(liquid.DefaultServer)
-	if err != nil {
-		return
-	}
-	urls := map[string]string{}
-	for _, p := range s.Paths {
-		urls[p.SiteRelPath()] = p.Permalink()
-	}
-	err = engine.FileURLMap(urls)
-	if err != nil {
-		return
-	}
-	err = engine.IncludeDirs([]string{filepath.Join(s.Source, s.config.IncludesDir)})
-	return
-}
-
-func (s *Site) makeLiquidEngine() (liquid.Engine, error) {
-	if s.UseRemoteLiquidEngine {
-		return s.makeLiquidClient()
-	}
-	return s.makeLocalLiquidEngine(), nil
-}
-
-// TemplateEngine create a liquid engine configured to with include paths and link tag resolution
-// for this site.
-func (s *Site) TemplateEngine() liquid.Engine {
-	return s.liquidEngine
 }

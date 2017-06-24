@@ -1,14 +1,13 @@
 package pages
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"path/filepath"
 
 	"github.com/osteele/gojekyll/helpers"
-	"github.com/osteele/gojekyll/liquid"
 	"github.com/osteele/gojekyll/templates"
-	"github.com/russross/blackfriday"
 )
 
 // DynamicPage is a static page, that includes frontmatter.
@@ -45,17 +44,11 @@ func (p *DynamicPage) PageVariables() templates.VariableMap {
 		ext     = filepath.Ext(relpath)
 		root    = helpers.TrimExt(p.relpath)
 		base    = filepath.Base(root)
-		content = p.processed
 	)
 
-	if content == nil {
-		content = &[]byte{}
-	}
-
 	data := templates.VariableMap{
-		"path":    relpath,
-		"url":     p.Permalink(),
-		"content": content,
+		"path": relpath,
+		"url":  p.Permalink(),
 		// TODO output
 
 		// not documented, but present in both collection and non-collection pages
@@ -105,62 +98,33 @@ func (p *DynamicPage) TemplateContext(ctx Context) templates.VariableMap {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *DynamicPage) Write(ctx Context, w io.Writer) error {
-	if ctx.IsSassPath(p.relpath) {
-		return ctx.WriteSass(w, p.raw)
-	}
-	if err := p.ComputeContent(ctx); err != nil {
+	if p.processed != nil {
+		_, err := w.Write(*p.processed)
 		return err
 	}
-	_, err := w.Write(*p.processed)
+	b, err := ctx.Render(w, p.raw, p.filename, p.TemplateContext(ctx))
+	if err != nil {
+		return err
+	}
+	layout := p.frontMatter.String("layout", "")
+	if layout != "" {
+		b, err = ctx.ApplyLayout(layout, b, p.TemplateContext(ctx))
+		if err != nil {
+			return err
+		}
+	}
+	_, err = w.Write(b)
 	return err
 }
 
 // ComputeContent computes the page content.
-func (p *DynamicPage) ComputeContent(ctx Context) error {
-	if p.processed != nil {
-		return nil
-	}
-	b, err := ctx.TemplateEngine().ParseAndRender(p.raw, p.TemplateContext(ctx))
-	if err != nil {
-		switch err := err.(type) {
-		case *liquid.RenderError:
-			if err.Filename == "" {
-				err.Filename = p.filename
-			}
-			return err
-		default:
-			return helpers.PathError(err, "Liquid Error", p.filename)
-		}
-	}
-	if ctx.IsMarkdown(p.filename) {
-		b = blackfriday.MarkdownCommon(b)
-	}
-	b, err = p.applyLayout(ctx, p.frontMatter, b)
-	if err != nil {
-		return err
-	}
-
-	p.processed = &b
-	return err
-}
-
-func (p *DynamicPage) applyLayout(ctx Context, frontMatter templates.VariableMap, body []byte) ([]byte, error) {
-	for {
-		name := frontMatter.String("layout", "")
-		if name == "" {
-			return body, nil
-		}
-		template, err := ctx.FindLayout(name, &frontMatter)
-		if err != nil {
+func (p *DynamicPage) ComputeContent(ctx Context) ([]byte, error) {
+	if p.processed == nil {
+		w := new(bytes.Buffer)
+		if err := p.Write(ctx, w); err != nil {
 			return nil, err
 		}
-		vars := templates.MergeVariableMaps(p.TemplateContext(ctx), templates.VariableMap{
-			"content": string(body),
-			"layout":  frontMatter,
-		})
-		body, err = template.Render(vars)
-		if err != nil {
-			return nil, err
-		}
+		*p.processed = w.Bytes()
 	}
+	return *p.processed, nil
 }

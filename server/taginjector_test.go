@@ -16,11 +16,9 @@ var tests = []struct{ in, out string }{
 func TestTagInjector(t *testing.T) {
 	for _, test := range tests {
 		out := new(bytes.Buffer)
-		// bytes.NewBufferString(c.in)
 		w := TagInjector{out, []byte(":insertion:")}
 		_, err := w.Write([]byte(test.in))
 		require.NoError(t, err)
-		// buf.String() // returns a string of what was written to it
 		require.Equal(t, test.out, out.String())
 	}
 }

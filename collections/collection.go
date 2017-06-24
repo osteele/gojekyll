@@ -42,12 +42,23 @@ func (c *Collection) Pages() []pages.Page {
 
 // TemplateVariable returns an array of page objects, for use as the template variable
 // value of the collection.
-func (c *Collection) TemplateVariable() []templates.VariableMap {
+func (c *Collection) TemplateVariable(ctx pages.Context, includeContent bool) ([]templates.VariableMap, error) {
 	d := []templates.VariableMap{}
 	for _, p := range c.Pages() {
-		d = append(d, p.PageVariables())
+		v := p.PageVariables()
+		dp, ok := p.(*pages.DynamicPage)
+		if includeContent && ok {
+			c, err := dp.ComputeContent(ctx)
+			if err != nil {
+				return nil, err
+			}
+			v = templates.MergeVariableMaps(v, templates.VariableMap{
+				"content": string(c),
+			})
+		}
+		d = append(d, v)
 	}
-	return d
+	return d, nil
 }
 
 // PermalinkPattern returns the permalink pattern for this collection.
