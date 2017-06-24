@@ -31,6 +31,7 @@ type RenderingContext interface {
 	SiteVariables() templates.VariableMap // value of the "site" template variable
 }
 
+// RenderingPipeline applies transformations to a document.
 type RenderingPipeline interface {
 	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
 	OutputExt(pathname string) string

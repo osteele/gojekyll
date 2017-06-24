@@ -13,29 +13,24 @@ import (
 
 // Collection is a Jekyll collection https://jekyllrb.com/docs/collections/.
 type Collection struct {
-	Name     string
-	Metadata templates.VariableMap
-	pages    []pages.Page
-	rp       pages.RenderingPipeline
+	Name      string
+	Metadata  templates.VariableMap
+	container pages.Container
+	pages     []pages.Page
 }
 
 // NewCollection creates a new Collection
-func NewCollection(name string, metadata templates.VariableMap, rp pages.RenderingPipeline) *Collection {
+func NewCollection(name string, metadata templates.VariableMap, c pages.Container) *Collection {
 	return &Collection{
-		Name:     name,
-		Metadata: metadata,
-		rp:       rp,
+		Name:      name,
+		Metadata:  metadata,
+		container: c,
 	}
 }
 
 // OutputExt returns the output extension.
 func (c *Collection) OutputExt(pathname string) string {
-	return c.rp.OutputExt(pathname)
-}
-
-// RenderingPipeline returns the rendering pipeline.
-func (c *Collection) RenderingPipeline() pages.RenderingPipeline {
-	return c.rp
+	return c.container.OutputExt(pathname)
 }
 
 // IsPostsCollection returns true if the collection is the special "posts" collection.

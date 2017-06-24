@@ -1,9 +1,6 @@
-
 package collections
 
 import (
-	"fmt"
-	"io"
 	"path"
 	"testing"
 
@@ -17,24 +14,23 @@ var tests = []struct{ in, out string }{
 	{"post", ":insertion:post"},
 }
 
-type MockContext struct{}
+type MockContainer struct{}
 
-func (c MockContext) OutputExt(filename string) string {
-	return path.Ext(filename)
-}
+func (c MockContainer) PathPrefix() string               { return "" }
+func (c MockContainer) OutputExt(filename string) string { return path.Ext(filename) }
 
-func (c MockContext) Render(_ io.Writer, _ []byte, _ string, _ templates.VariableMap) ([]byte, error) {
-	return nil, fmt.Errorf("unimplemented")
-}
+// func (c MockPipeline) Render(_ io.Writer, _ []byte, _ string, _ templates.VariableMap) ([]byte, error) {
+// 	return nil, fmt.Errorf("unimplemented")
+// }
 
-func (c MockContext) ApplyLayout(_ string, _ []byte, _ templates.VariableMap) ([]byte, error) {
-	return nil, fmt.Errorf("unimplemented")
-}
+// func (c MockPipeline) ApplyLayout(_ string, _ []byte, _ templates.VariableMap) ([]byte, error) {
+// 	return nil, fmt.Errorf("unimplemented")
+// }
 
-func (c MockContext) SiteVariables() templates.VariableMap { return templates.VariableMap{} }
+// func (c MockPipeline) SiteVariables() templates.VariableMap { return templates.VariableMap{} }
 
 func TestNewCollection(t *testing.T) {
-	ctx := MockContext{}
+	ctx := MockContainer{}
 
 	c1 := NewCollection("c", templates.VariableMap{"output": true}, ctx)
 	require.Equal(t, true, c1.Output())
@@ -45,7 +41,7 @@ func TestNewCollection(t *testing.T) {
 }
 
 func TestPermalinkPattern(t *testing.T) {
-	ctx := MockContext{}
+	ctx := MockContainer{}
 
 	c1 := NewCollection("c", templates.VariableMap{}, ctx)
 	require.Contains(t, c1.PermalinkPattern(), ":collection")
