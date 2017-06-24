@@ -1,4 +1,4 @@
-package sites
+package pipelines
 
 import (
 	"io"
@@ -8,10 +8,16 @@ import (
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
-	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/russross/blackfriday"
 )
+
+// PipelineInterface applies transformations to a document.
+type PipelineInterface interface {
+	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
+	OutputExt(pathname string) string
+	Render(io.Writer, []byte, string, templates.VariableMap) ([]byte, error)
+}
 
 // Pipeline applies a rendering transformation to a file.
 type Pipeline struct {
@@ -29,7 +35,7 @@ type PipelineOptions struct {
 
 // PageSupplier tells a pipeline how to resolve link tags.
 type PageSupplier interface {
-	Pages() []pages.Page
+	FilenameURLs() map[string]string
 	RelativeFilenameToURL(string) (string, bool)
 }
 
@@ -50,11 +56,6 @@ func NewPipeline(sourceDir string, c config.Config, pageSupplier PageSupplier, o
 // OutputExt returns the output extension.
 func (p *Pipeline) OutputExt(pathname string) string {
 	return p.config.OutputExt(pathname)
-}
-
-// OutputExt returns the output extension.
-func (s *Site) OutputExt(pathname string) string {
-	return s.config.OutputExt(pathname)
 }
 
 // Render returns nil iff it wrote to the writer
@@ -134,11 +135,7 @@ func (p *Pipeline) makeLiquidClient() (engine liquid.RemoteEngine, err error) {
 	if err != nil {
 		return
 	}
-	urls := map[string]string{}
-	for _, page := range p.pageSupplier.Pages() {
-		urls[page.SiteRelPath()] = page.Permalink()
-	}
-	err = engine.FileURLMap(urls)
+	err = engine.FileURLMap(p.pageSupplier.FilenameURLs())
 	if err != nil {
 		return
 	}

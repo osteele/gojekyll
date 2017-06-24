@@ -11,6 +11,7 @@ import (
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -26,10 +27,8 @@ type Site struct {
 	Paths       map[string]pages.Page // URL path -> Page, only for output pages
 
 	config   config.Config
-	pipeline *Pipeline
-	// liquidEngine liquid.Engine
-	// sassTempDir  string
-	pages []pages.Page // all pages, output or not
+	pipeline pipelines.PipelineInterface
+	pages    []pages.Page // all pages, output or not
 }
 
 // Pages returns a slice of pages.
@@ -65,6 +64,15 @@ func NewSiteFromDirectory(source string) (*Site, error) {
 	return s, nil
 }
 
+// FilenameURLs returns a map of relative filenames to URL paths
+func (s *Site) FilenameURLs() map[string]string {
+	urls := map[string]string{}
+	for _, page := range s.Pages() {
+		urls[page.SiteRelPath()] = page.Permalink()
+	}
+	return urls
+}
+
 // KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
 func (s *Site) KeepFile(path string) bool {
 	// TODO
@@ -81,7 +89,7 @@ func (s *Site) RelPathPage(relpath string) (pages.Page, bool) {
 	return nil, false
 }
 
-// RelativePathToURL returns a page's relative URL, give a file path relative to the site source directory.
+// RelativeFilenameToURL returns a page's relative URL, give a file path relative to the site source directory.
 func (s *Site) RelativeFilenameToURL(relpath string) (string, bool) {
 	var url string
 	p, found := s.RelPathPage(relpath)
@@ -92,17 +100,23 @@ func (s *Site) RelativeFilenameToURL(relpath string) (string, bool) {
 }
 
 // RenderingPipeline returns the rendering pipeline.
-func (s *Site) RenderingPipeline() pages.RenderingPipeline {
+func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
 	if s.pipeline == nil {
 		panic(fmt.Errorf("uninitialized rendering pipeline"))
 	}
 	return s.pipeline
 }
 
+// InitializeRenderingPipeline initializes the rendering pipeline
 func (s *Site) InitializeRenderingPipeline() (err error) {
-	o := PipelineOptions{UseRemoteLiquidEngine: s.UseRemoteLiquidEngine}
-	s.pipeline, err = NewPipeline(s.Source, s.config, s, o)
+	o := pipelines.PipelineOptions{UseRemoteLiquidEngine: s.UseRemoteLiquidEngine}
+	s.pipeline, err = pipelines.NewPipeline(s.Source, s.config, s, o)
 	return
+}
+
+// OutputExt returns the output extension.
+func (s *Site) OutputExt(pathname string) string {
+	return s.config.OutputExt(pathname)
 }
 
 // URLPage returns the page that will be served at URL

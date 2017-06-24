@@ -26,7 +26,7 @@ func newDynamicPageFromFile(filename string, f pageFields) (*DynamicPage, error)
 		return nil, err
 	}
 
-	frontMatter, err := ReadFrontMatter(&b)
+	frontMatter, err := templates.ReadFrontMatter(&b)
 	if err != nil {
 		return nil, err
 	}

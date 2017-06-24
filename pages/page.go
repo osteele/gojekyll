@@ -6,17 +6,11 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
-)
-
-var (
-	frontMatterMatcher     = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
-	emptyFontMatterMatcher = regexp.MustCompile(`(?s)^---\n+---\n`)
 )
 
 // pageFields is embedded in StaticPage and DynamicPage

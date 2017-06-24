@@ -3,6 +3,7 @@ package pages
 import (
 	"io"
 
+	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -27,15 +28,8 @@ type Page interface {
 
 // RenderingContext provides context information to a Page.
 type RenderingContext interface {
-	RenderingPipeline() RenderingPipeline
+	RenderingPipeline() pipelines.PipelineInterface
 	SiteVariables() templates.VariableMap // value of the "site" template variable
-}
-
-// RenderingPipeline applies transformations to a document.
-type RenderingPipeline interface {
-	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
-	OutputExt(pathname string) string
-	Render(io.Writer, []byte, string, templates.VariableMap) ([]byte, error)
 }
 
 // Container is the Page container; either the Site or Collection.

@@ -1,4 +1,4 @@
-package sites
+package pipelines
 
 import (
 	"bytes"

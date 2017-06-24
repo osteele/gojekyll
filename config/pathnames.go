@@ -24,6 +24,8 @@ func (c *Config) markdownExtensions() map[string]bool {
 	return helpers.StringArrayToMap(extns)
 }
 
+// OutputExt returns the pathname's output extension. This is generally the pathname extension;
+// exception are *.md -> *.html, and *.{sass,scss} -> *.css.
 func (c *Config) OutputExt(pathname string) string {
 	switch {
 	case c.IsMarkdown(pathname):

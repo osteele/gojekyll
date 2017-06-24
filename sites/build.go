@@ -49,12 +49,14 @@ func (s *Site) Clean(options BuildOptions) error {
 // It attends to the global options.dry_run.
 func (s *Site) Build(options BuildOptions) (int, error) {
 	count := 0
-	s.InitializeRenderingPipeline()
+	if err := s.InitializeRenderingPipeline(); err != nil {
+		return 0, err
+	}
 	if err := s.Clean(options); err != nil {
-		return count, err
+		return 0, err
 	}
 	if err := s.SetPageContentTemplateValues(); err != nil {
-		return count, err
+		return 0, err
 	}
 	n, err := s.WritePages(options)
 	return count + n, err

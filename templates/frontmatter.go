@@ -1,15 +1,19 @@
-package pages
+package templates
 
 import (
 	"bytes"
 	"regexp"
 
-	"github.com/osteele/gojekyll/templates"
 	yaml "gopkg.in/yaml.v2"
 )
 
+var (
+	frontMatterMatcher     = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
+	emptyFontMatterMatcher = regexp.MustCompile(`(?s)^---\n+---\n`)
+)
+
 // ReadFrontMatter reads the front matter from a document.
-func ReadFrontMatter(sourcePtr *[]byte) (frontMatter templates.VariableMap, err error) {
+func ReadFrontMatter(sourcePtr *[]byte) (frontMatter VariableMap, err error) {
 	var (
 		source = *sourcePtr
 		start  = 0

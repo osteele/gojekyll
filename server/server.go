@@ -24,6 +24,10 @@ type Server struct {
 
 // Run runs the server.
 func (s *Server) Run(open bool, logger func(label, value string)) error {
+	err := s.Site.InitializeRenderingPipeline()
+	if err != nil {
+		return err
+	}
 	address := "localhost:4000"
 	logger("Server address:", "http://"+address+"/")
 	if err := s.StartLiveReloader(); err != nil {

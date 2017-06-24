@@ -1,4 +1,4 @@
-package sites
+package pipelines
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/liquid"
-	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -38,7 +37,7 @@ func (p *Pipeline) FindLayout(base string, fm *templates.VariableMap) (t liquid.
 	if !found {
 		panic(fmt.Errorf("no template for %s", base))
 	}
-	*fm, err = pages.ReadFrontMatter(&content)
+	*fm, err = templates.ReadFrontMatter(&content)
 	if err != nil {
 		return
 	}
