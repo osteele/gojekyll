@@ -16,14 +16,26 @@ type Collection struct {
 	Name     string
 	Metadata templates.VariableMap
 	pages    []pages.Page
+	rp       pages.RenderingPipeline
 }
 
 // NewCollection creates a new Collection
-func NewCollection(ctx pages.RenderingContext, name string, metadata templates.VariableMap) *Collection {
+func NewCollection(name string, metadata templates.VariableMap, rp pages.RenderingPipeline) *Collection {
 	return &Collection{
 		Name:     name,
 		Metadata: metadata,
+		rp:       rp,
 	}
+}
+
+// OutputExt returns the output extension.
+func (c *Collection) OutputExt(pathname string) string {
+	return c.rp.OutputExt(pathname)
+}
+
+// RenderingPipeline returns the rendering pipeline.
+func (c *Collection) RenderingPipeline() pages.RenderingPipeline {
+	return c.rp
 }
 
 // IsPostsCollection returns true if the collection is the special "posts" collection.
@@ -71,7 +83,7 @@ func (c *Collection) PermalinkPattern() string {
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages(ctx pages.RenderingContext, sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
+func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
 	pageDefaults := templates.VariableMap{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
@@ -98,7 +110,7 @@ func (c *Collection) ReadPages(ctx pages.RenderingContext, sitePath string, fron
 			return nil
 		}
 		defaultFrontmatter := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
-		p, err := pages.NewPageFromFile(ctx, c, filename, filepath.ToSlash(relname), defaultFrontmatter)
+		p, err := pages.NewPageFromFile(filename, c, filepath.ToSlash(relname), defaultFrontmatter)
 		switch {
 		case err != nil:
 			return err

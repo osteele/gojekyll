@@ -41,7 +41,7 @@ func (p *pageFields) Published() bool     { return p.frontMatter.Bool("published
 func (p *pageFields) SiteRelPath() string { return p.relpath }
 
 // NewPageFromFile reads a Page from a file, using defaults as the default front matter.
-func NewPageFromFile(ctx RenderingContext, c Container, filename string, relpath string, defaults templates.VariableMap) (Page, error) {
+func NewPageFromFile(filename string, c Container, relpath string, defaults templates.VariableMap) (Page, error) {
 	magic, err := helpers.ReadFileMagic(filename)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func NewPageFromFile(ctx RenderingContext, c Container, filename string, relpath
 		frontMatter: defaults,
 		fileModTime: info.ModTime(),
 		relpath:     relpath,
-		outputExt:   ctx.OutputExt(relpath),
+		outputExt:   c.OutputExt(relpath),
 	}
 	var p Page
 	if string(magic) == "---\n" {

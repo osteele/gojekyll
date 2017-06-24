@@ -56,7 +56,7 @@ func (s *Site) readFiles() error {
 			return nil
 		}
 		defaultFrontmatter := s.config.GetFrontMatterDefaults(relname, "")
-		p, err := pages.NewPageFromFile(s, s, filename, filepath.ToSlash(relname), defaultFrontmatter)
+		p, err := pages.NewPageFromFile(filename, s, filepath.ToSlash(relname), defaultFrontmatter)
 		if err != nil {
 			return helpers.PathError(err, "read", filename)
 		}
@@ -84,9 +84,9 @@ func (s *Site) AddPage(p pages.Page, output bool) {
 // It adds each collection's pages to the site map, and creates a template site variable for each collection.
 func (s *Site) ReadCollections() error {
 	for name, data := range s.config.Collections {
-		c := collections.NewCollection(s, name, data)
+		c := collections.NewCollection(name, data, s)
 		s.Collections = append(s.Collections, c)
-		if err := c.ReadPages(s, s.Source, s.config.GetFrontMatterDefaults); err != nil {
+		if err := c.ReadPages(s.Source, s.config.GetFrontMatterDefaults); err != nil {
 			return err
 		}
 		for _, p := range c.Pages() {

@@ -1,3 +1,4 @@
+
 package collections
 
 import (
@@ -35,23 +36,23 @@ func (c MockContext) SiteVariables() templates.VariableMap { return templates.Va
 func TestNewCollection(t *testing.T) {
 	ctx := MockContext{}
 
-	c1 := NewCollection(ctx, "c", templates.VariableMap{"output": true})
+	c1 := NewCollection("c", templates.VariableMap{"output": true}, ctx)
 	require.Equal(t, true, c1.Output())
 	require.Equal(t, "_c/", c1.PathPrefix())
 
-	c2 := NewCollection(ctx, "c", templates.VariableMap{})
+	c2 := NewCollection("c", templates.VariableMap{}, ctx)
 	require.Equal(t, false, c2.Output())
 }
 
 func TestPermalinkPattern(t *testing.T) {
 	ctx := MockContext{}
 
-	c1 := NewCollection(ctx, "c", templates.VariableMap{})
+	c1 := NewCollection("c", templates.VariableMap{}, ctx)
 	require.Contains(t, c1.PermalinkPattern(), ":collection")
 
-	c2 := NewCollection(ctx, "c", templates.VariableMap{"permalink": "out"})
+	c2 := NewCollection("c", templates.VariableMap{"permalink": "out"}, ctx)
 	require.Equal(t, "out", c2.PermalinkPattern())
 
-	c3 := NewCollection(ctx, "posts", templates.VariableMap{})
+	c3 := NewCollection("posts", templates.VariableMap{}, ctx)
 	require.Contains(t, c3.PermalinkPattern(), "/:year/:month/:day/:title")
 }

@@ -11,7 +11,8 @@ import (
 
 type containerMock struct{ pathPrefix string }
 
-func (c containerMock) PathPrefix() string { return c.pathPrefix }
+func (c containerMock) OutputExt(p string) string { return filepath.Ext(p) }
+func (c containerMock) PathPrefix() string        { return c.pathPrefix }
 
 type pathTest struct{ path, pattern, out string }
 

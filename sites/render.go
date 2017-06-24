@@ -7,9 +7,20 @@ import (
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/russross/blackfriday"
 )
+
+// RenderingContext returns the page rendering context for a container.
+func (s *Site) RenderingContext() pages.RenderingContext {
+	return s
+}
+
+// RenderingPipeline returns the page's rendering context.
+func (s *Site) RenderingPipeline() pages.RenderingPipeline {
+	return s
+}
 
 // OutputExt returns the output extension.
 func (s *Site) OutputExt(pathname string) string {

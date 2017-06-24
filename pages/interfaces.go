@@ -27,13 +27,18 @@ type Page interface {
 
 // RenderingContext provides context information to a Page.
 type RenderingContext interface {
-	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
-	OutputExt(pathname string) string
-	Render(io.Writer, []byte, string, templates.VariableMap) ([]byte, error)
+	RenderingPipeline() RenderingPipeline
 	SiteVariables() templates.VariableMap // value of the "site" template variable
 }
 
-// Container is the Page container
+type RenderingPipeline interface {
+	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
+	OutputExt(pathname string) string
+	Render(io.Writer, []byte, string, templates.VariableMap) ([]byte, error)
+}
+
+// Container is the Page container; either the Site or Collection.
 type Container interface {
+	OutputExt(pathname string) string
 	PathPrefix() string // PathPrefix is the relative prefix, "" for the site and "_coll/" for a collection
 }
