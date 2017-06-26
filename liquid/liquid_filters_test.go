@@ -10,28 +10,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var filterTests = []struct{ in, expected string }{
+	{"{{time | date_to_rfc822 }}", "02 Jan 06 15:04 UTC"},
+	{"{{obj | jsonify }}", `{"a":[1,2,3,4]}`},
+}
+
+var filterTestScope = map[string]interface{}{
+	"ar": []string{"first", "second", "third"},
+	"obj": map[string]interface{}{
+		"a": []int{1, 2, 3, 4},
+	},
+	"time": timeMustParse("2006-01-02T15:04:05Z"),
+}
+
+func timeMustParse(s string) time.Time {
+	t, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
+func TestFilters(t *testing.T) {
+	for _, test := range filterTests {
+		requireTemplateRender(t, test.in, filterTestScope, test.expected)
+	}
+}
+
 func requireTemplateRender(t *testing.T, tmpl string, data map[string]interface{}, expected string) {
 	template, err := liquid.ParseString(tmpl, nil)
 	require.NoError(t, err)
 	writer := new(bytes.Buffer)
 	template.Render(writer, data)
 	require.Equal(t, expected, strings.TrimSpace(writer.String()))
-}
-
-func TestDateToRFC822Filter(t *testing.T) {
-	t0, err := time.Parse(time.RFC3339, "2006-01-02T15:04:05Z")
-	require.NoError(t, err)
-	data := map[string]interface{}{"time": t0}
-	requireTemplateRender(t, `{{time | date_to_rfc822 }}`, data, "02 Jan 06 15:04 UTC")
-}
-
-func TestJsonifyFilter(t *testing.T) {
-	data := map[string]interface{}{
-		"obj": map[string]interface{}{
-			"a": []int{1, 2, 3, 4},
-		},
-	}
-	requireTemplateRender(t, `{{obj | jsonify }}`, data, `{"a":[1,2,3,4]}`)
 }
 
 // func TestXMLEscapeFilter(t *testing.T) {
