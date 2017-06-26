@@ -3,17 +3,42 @@ package liquid
 import (
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/acstech/liquid/core"
 )
 
 func init() {
+	core.RegisterFilter("array_to_sentence_string", arrayToSentenceStringFactory)
 	core.RegisterFilter("date_to_rfc822", dateToRFC822Factory)
 	core.RegisterFilter("jsonify", jsonifyFactory)
 	core.RegisterFilter("xml_escape", xmlEscapeFactory)
 	core.RegisterFilter("where_exp", whereExpFactory)
+}
+
+func arrayToSentenceStringFactory(parameters []core.Value) core.Filter {
+	conj := "and "
+	if len(parameters) > 0 {
+		conj = fmt.Sprint(parameters[0]) + " "
+	}
+	return func(input interface{}, data map[string]interface{}) interface{} {
+		rt := reflect.ValueOf(input)
+		switch rt.Kind() {
+		case reflect.Array, reflect.Slice:
+			ar := make([]string, rt.Len())
+			for i := 0; i < rt.Len(); i++ {
+				ar[i] = fmt.Sprint(rt.Index(i))
+				if i == rt.Len()-1 {
+					ar[i] = conj + ar[i]
+				}
+			}
+			return strings.Join(ar, ", ")
+		}
+		return nil
+	}
 }
 
 func dateToRFC822Factory(parameters []core.Value) core.Filter {

@@ -13,6 +13,7 @@ import (
 var filterTests = []struct{ in, expected string }{
 	{"{{time | date_to_rfc822 }}", "02 Jan 06 15:04 UTC"},
 	{"{{obj | jsonify }}", `{"a":[1,2,3,4]}`},
+	{"{{ar | array_to_sentence_string }}", "first, second, and third"},
 }
 
 var filterTestScope = map[string]interface{}{
