@@ -6,7 +6,7 @@ When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyl
 [![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 
-This project is missing more functionality than it implements. It may accidentally work on tiny or simple sites.
+See the significant missing functionality. This currently works on some simple sites that don't use drafts, templates, future posts, or various other features listed below.
 
 - [ ] Content
   - [x] Front Matter
@@ -29,9 +29,9 @@ This project is missing more functionality than it implements. It may accidental
       - [ ] Sass caching
 - [ ] Customization
   - [x] Templates
-    - [x] `link` tag
-    - [ ] Remaining Jekyll Liquid tags
-    - [ ] Jekyll Liquid filters
+    - [ ] Jekyll Liquid tags (partial)
+    - [ ] Jekyll Liquid filters (partial)
+    - [ ] `markdown=1`
   - [x] Includes
     - [ ] `include_relative`
     - [x] parameters

@@ -20,6 +20,16 @@ func (e *LocalWrapperEngine) addJekyllFilters() {
 		return date.Format("02 Jan 2005")
 		// Out: 07 Nov 2008
 	})
+	// TODO neither Liquid nor Jekyll docs this, but it appears to be present
+	e.engine.DefineFilter("filter", func(values []map[string]interface{}, key string) interface{} {
+		out := []interface{}{}
+		for _, value := range values {
+			if _, ok := value[key]; ok {
+				out = append(out, value)
+			}
+		}
+		return out
+	})
 	e.engine.DefineFilter("jsonify", func(value interface{}) interface{} {
 		s, err := json.Marshal(value)
 		if err != nil {
