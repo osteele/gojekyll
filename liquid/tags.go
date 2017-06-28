@@ -21,7 +21,7 @@ func (e *LocalWrapperEngine) addJekyllTags() {
 		}, nil
 	})
 	e.engine.DefineTag("include", func(line string) (func(io.Writer, chunks.Context) error, error) {
-		// TODO escapes
+		// TODO string escapes
 		includeLinePattern := regexp.MustCompile(`^\S+(?:\s+\S+=("[^"]+"|'[^']'|[^'"\s]+))*$`)
 		includeParamPattern := regexp.MustCompile(`\b(\S+)=("[^"]+"|'[^']'|[^'"\s]+)(?:\s|$)`)
 		if !includeLinePattern.MatchString(line) {
@@ -44,14 +44,19 @@ func (e *LocalWrapperEngine) addJekyllTags() {
 			include := map[string]interface{}{}
 			for k, v := range params {
 				if v.eval {
-					// TODO include parameter variables
-					panic(fmt.Errorf("include parameter variables aren't implemented"))
+					value, err := ctx.EvaluateExpr(v.value)
+					if err != nil {
+						return err
+					}
+					include[k] = value
 				} else {
 					include[k] = v.value
 				}
 			}
-			bindings := ctx.GetVariableMap()
-			// TODO use a copy of this
+			bindings := map[string]interface{}{}
+			for k, v := range ctx.GetVariableMap() {
+				bindings[k] = v
+			}
 			bindings["include"] = include
 			return e.includeTagHandler(filename, w, bindings)
 		}, nil

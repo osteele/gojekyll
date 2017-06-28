@@ -6,7 +6,9 @@ When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyl
 [![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 
-See the significant missing functionality. This currently works on some simple sites that don't use drafts, templates, future posts, or various other features listed below.
+See the significant missing functionality below. This tool currently works on some simple sites that don't use drafts, templates, future posts, or various other features listed below.
+
+We are currently ~5x faster than Jekyll. Some obvious improvements would include caching SASS, caching templates, and using goroutines to render pages.
 
 - [ ] Content
   - [x] Front Matter
@@ -35,7 +37,6 @@ See the significant missing functionality. This currently works on some simple s
   - [x] Includes
     - [ ] `include_relative`
     - [x] parameters
-      - [ ] variable parameters
     - [ ] variables `{% include {{ expr }} %}`
   - [x] Permalinks
   - [ ] Pagination
