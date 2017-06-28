@@ -23,6 +23,10 @@ type Config struct {
 	Exclude     []string
 	MarkdownExt string `yaml:"markdown_ext"`
 
+	// Serving
+	AbsoluteURL string `yaml:"url"`
+	BaseURL     string
+
 	// Outputting
 	Permalink string
 

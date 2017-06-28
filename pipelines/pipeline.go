@@ -112,7 +112,6 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e templates.VariableMap
 
 func (p *Pipeline) makeLocalLiquidEngine() liquid.Engine {
 	engine := liquid.NewLocalWrapperEngine()
-	engine.LinkTagHandler(p.pageSupplier.RelativeFilenameToURL)
 	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
 		filename := filepath.Join(p.sourceDir, p.config.IncludesDir, name)
 		template, err := ioutil.ReadFile(filename)
@@ -127,6 +126,9 @@ func (p *Pipeline) makeLocalLiquidEngine() liquid.Engine {
 		return err
 	}
 	engine.IncludeHandler(includeHandler)
+	engine.LinkTagHandler(p.pageSupplier.RelativeFilenameToURL)
+	engine.AbsoluteURL = p.config.AbsoluteURL
+	engine.BaseURL = p.config.BaseURL
 	return engine
 }
 

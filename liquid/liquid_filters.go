@@ -8,20 +8,14 @@ import (
 	"time"
 
 	"github.com/osteele/liquid/expressions"
+	"github.com/russross/blackfriday"
 )
 
 func (e *LocalWrapperEngine) addJekyllFilters() {
+	// arrays
 	e.engine.DefineFilter("array_to_sentence_string", arrayToSentenceStringFilter)
-	e.engine.DefineFilter("date_to_rfc822", func(date time.Time) interface{} {
-		return date.Format(time.RFC822)
-		// Out: Mon, 07 Nov 2008 13:07:54 -0800
-	})
-	e.engine.DefineFilter("date_to_string", func(date time.Time) interface{} {
-		return date.Format("02 Jan 2005")
-		// Out: 07 Nov 2008
-	})
 	// TODO neither Liquid nor Jekyll docs this, but it appears to be present
-	e.engine.DefineFilter("filter", func(values []map[string]interface{}, key string) interface{} {
+	e.engine.DefineFilter("filter", func(values []map[string]interface{}, key string) []interface{} {
 		out := []interface{}{}
 		for _, value := range values {
 			if _, ok := value[key]; ok {
@@ -30,18 +24,45 @@ func (e *LocalWrapperEngine) addJekyllFilters() {
 		}
 		return out
 	})
-	e.engine.DefineFilter("jsonify", func(value interface{}) interface{} {
+	e.engine.DefineFilter("where_exp", whereExpFilter)
+	e.engine.DefineFilter("xml_escape", xml.Marshal)
+
+	// dates
+	e.engine.DefineFilter("date_to_rfc822", func(date time.Time) string {
+		return date.Format(time.RFC822)
+		// Out: Mon, 07 Nov 2008 13:07:54 -0800
+	})
+	e.engine.DefineFilter("date_to_string", func(date time.Time) string {
+		return date.Format("02 Jan 2006")
+		// Out: 07 Nov 2008
+	})
+	e.engine.DefineFilter("date_to_long_string", func(date time.Time) string {
+		return date.Format("02 January 2006")
+		// Out: 07 November 2008
+	})
+	e.engine.DefineFilter("date_to_xmlschema", func(date time.Time) string {
+		return date.Format("2006-01-02T15:04:05-07:00")
+		// Out: 2008-11-07T13:07:54-08:00
+	})
+
+	// strings
+	e.engine.DefineFilter("absolute_url", func(s string) string {
+		return e.AbsoluteURL + e.BaseURL + s
+	})
+	e.engine.DefineFilter("relative_url", func(s string) string {
+		return e.BaseURL + s
+	})
+	e.engine.DefineFilter("jsonify", func(value interface{}) []byte {
 		s, err := json.Marshal(value)
 		if err != nil {
 			panic(err)
 		}
 		return s
 	})
-	e.engine.DefineFilter("where_exp", whereExpFilter)
-	e.engine.DefineFilter("xml_escape", xml.Marshal)
+	e.engine.DefineFilter("markdownify", blackfriday.MarkdownCommon)
 }
 
-func arrayToSentenceStringFilter(value []string, conjunction interface{}) interface{} {
+func arrayToSentenceStringFilter(value []string, conjunction interface{}) string {
 	conj, ok := conjunction.(string)
 	if !ok {
 		conj = "and "
@@ -68,7 +89,7 @@ func arrayToSentenceStringFilter(value []string, conjunction interface{}) interf
 // 	return data
 // }
 
-func whereExpFilter(in []interface{}, name string, expr expressions.Closure) (interface{}, error) {
+func whereExpFilter(in []interface{}, name string, expr expressions.Closure) ([]interface{}, error) {
 	rt := reflect.ValueOf(in)
 	switch rt.Kind() {
 	case reflect.Array, reflect.Slice:
@@ -89,7 +110,7 @@ func whereExpFilter(in []interface{}, name string, expr expressions.Closure) (in
 	return out, nil
 }
 
-func whereFilter(in []interface{}, key string, value interface{}) interface{} {
+func whereFilter(in []interface{}, key string, value interface{}) []interface{} {
 	rt := reflect.ValueOf(in)
 	switch rt.Kind() {
 	case reflect.Array, reflect.Slice:

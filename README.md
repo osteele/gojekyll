@@ -29,8 +29,8 @@ See the significant missing functionality. This currently works on some simple s
       - [ ] Sass caching
 - [ ] Customization
   - [x] Templates
-    - [ ] Jekyll Liquid tags (partial)
-    - [ ] Jekyll Liquid filters (partial)
+    - [ ] Jekyll filters (partial)
+    - [ ] Jekyll tags (partial)
     - [ ] `markdown=1`
   - [x] Includes
     - [ ] `include_relative`

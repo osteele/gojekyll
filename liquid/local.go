@@ -6,13 +6,14 @@ import (
 
 // LocalWrapperEngine is a wrapper around osteele/liquid.
 type LocalWrapperEngine struct {
-	engine            liquid.Engine
-	linkHandler       LinkTagHandler
-	includeTagHandler IncludeTagHandler
+	engine               liquid.Engine
+	linkHandler          LinkTagHandler
+	includeTagHandler    IncludeTagHandler
+	BaseURL, AbsoluteURL string
 }
 
 // NewLocalWrapperEngine creates a LocalEngine.
-func NewLocalWrapperEngine() LocalEngine {
+func NewLocalWrapperEngine() *LocalWrapperEngine {
 	e := &LocalWrapperEngine{engine: liquid.NewEngine()}
 	e.addJekyllFilters()
 	e.addJekyllTags()
