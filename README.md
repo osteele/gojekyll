@@ -33,8 +33,10 @@ This project is missing more functionality than it implements. It may accidental
     - [ ] Remaining Jekyll Liquid tags
     - [ ] Jekyll Liquid filters
   - [x] Includes
-    - [ ] parameters
     - [ ] `include_relative`
+    - [x] parameters
+      - [ ] variable parameters
+    - [ ] variables `{% include {{ expr }} %}`
   - [x] Permalinks
   - [ ] Pagination
   - [ ] Themes
