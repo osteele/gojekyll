@@ -19,6 +19,17 @@ func init() {
 	core.RegisterFilter("where_exp", whereExpFactory)
 }
 
+func AddStandardFilters(e *LocalWrapperEngine) {
+	e.engine.DefineFilter("date_to_rfc822", func(date time.Time) interface{} {
+		return date.Format(time.RFC822)
+		// Out: Mon, 07 Nov 2008 13:07:54 -0800
+	})
+	e.engine.DefineFilter("date_to_string", func(date time.Time) interface{} {
+		return date.Format("02 Jan 2005")
+		// Out: 07 Nov 2008
+	})
+}
+
 func arrayToSentenceStringFactory(parameters []core.Value) core.Filter {
 	conj := "and "
 	if len(parameters) > 0 {

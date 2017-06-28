@@ -1,74 +1,66 @@
 package liquid
 
 import (
-	"bytes"
+	"fmt"
 	"io"
-	"strings"
 
-	"github.com/acstech/liquid"
-	"github.com/acstech/liquid/core"
+	"github.com/osteele/liquid"
+	"github.com/osteele/liquid/chunks"
 )
 
-// LocalWrapperEngine is a wrapper around acstech/liquid.
+// LocalWrapperEngine is a wrapper around osteele/liquid.
 type LocalWrapperEngine struct {
-	config      *core.Configuration
-	linkHandler LinkTagHandler
-}
-
-type localTemplate struct {
-	engine *LocalWrapperEngine
-	lt     *liquid.Template
+	engine            liquid.Engine
+	linkHandler       LinkTagHandler
+	includeTagHandler IncludeTagHandler
 }
 
 // NewLocalWrapperEngine creates a LocalEngine.
 func NewLocalWrapperEngine() LocalEngine {
-	return &LocalWrapperEngine{}
+	e := &LocalWrapperEngine{engine: liquid.NewEngine()}
+	AddStandardFilters(e)
+	e.engine.DefineTag("link", func(filename string) (func(io.Writer, chunks.Context) error, error) {
+		return func(w io.Writer, _ chunks.Context) error {
+			url, found := e.linkHandler(filename)
+			if !found {
+				return fmt.Errorf("missing link filename: %s", filename)
+			}
+			_, err := w.Write([]byte(url))
+			return err
+		}, nil
+	})
+	e.engine.DefineTag("include", func(filename string) (func(io.Writer, chunks.Context) error, error) {
+		return func(w io.Writer, ctx chunks.Context) error {
+			return e.includeTagHandler(filename, w, ctx.GetVariableMap())
+		}, nil
+	})
+	return e
 }
 
 // LinkTagHandler sets the link tag handler.
-func (engine *LocalWrapperEngine) LinkTagHandler(h LinkTagHandler) {
-	engine.linkHandler = h
+func (e *LocalWrapperEngine) LinkTagHandler(h LinkTagHandler) {
+	e.linkHandler = h
 }
 
 // IncludeHandler sets the include tag handler.
-func (engine *LocalWrapperEngine) IncludeHandler(h IncludeTagHandler) {
-	engine.config = liquid.Configure().IncludeHandler(func(name string, w io.Writer, context map[string]interface{}) {
-		name = strings.TrimLeft(strings.TrimRight(name, "}}"), "{{")
-		err := h(name, w, context)
-		if err != nil {
-			panic(err)
-		}
-	})
+func (e *LocalWrapperEngine) IncludeHandler(h IncludeTagHandler) {
+	e.includeTagHandler = h
 }
 
 // Parse is a wrapper for liquid.Parse.
-func (engine *LocalWrapperEngine) Parse(text []byte) (Template, error) {
-	template, err := liquid.Parse(text, engine.config)
-	return &localTemplate{engine, template}, err
+func (e *LocalWrapperEngine) Parse(source []byte) (Template, error) {
+	// fmt.Println("parse", string(source))
+	t, err := e.engine.ParseTemplate(source)
+	// return &localTemplate{t}, err
+	return t, err
 }
 
 // ParseAndRender parses and then renders the template.
-func (engine *LocalWrapperEngine) ParseAndRender(text []byte, scope map[string]interface{}) ([]byte, error) {
-	template, err := engine.Parse(text)
+func (e *LocalWrapperEngine) ParseAndRender(source []byte, scope map[string]interface{}) ([]byte, error) {
+	t, err := e.Parse(source)
 	if err != nil {
 		return nil, err
 	}
-	return template.Render(scope)
-}
-
-// Render is a wrapper around liquid's template.Render that turns panics into errors.
-func (template *localTemplate) Render(scope map[string]interface{}) (out []byte, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			if e, ok := r.(error); ok {
-				err = e
-			} else {
-				panic(r)
-			}
-		}
-	}()
-	SetLinkHandler(template.engine.linkHandler)
-	writer := new(bytes.Buffer)
-	template.lt.Render(writer, scope)
-	return writer.Bytes(), nil
+	// fmt.Println("render", t)
+	return t.Render(scope)
 }

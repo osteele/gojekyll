@@ -29,11 +29,12 @@ This project is missing more functionality than it implements. It may accidental
       - [ ] Sass caching
 - [ ] Customization
   - [x] Templates
-    - [x] link tag
-    - [x] include tag
+    - [x] `link` tag
     - [ ] Remaining Jekyll Liquid tags
     - [ ] Jekyll Liquid filters
   - [x] Includes
+    - [ ] parameters
+    - [ ] `include_relative`
   - [x] Permalinks
   - [ ] Pagination
   - [ ] Themes
@@ -55,16 +56,6 @@ Intentional differences from Jekyll:
 go get -u osteele/gojekyll/cmd/gojekyll
 ```
 
-You get slightly better Liquid template parsing from some unmerged pull requests to the **acstech/liquid** library. If you want to use [my fork](https://github.com/osteele/liquid) instead:
-
-```bash
-cd $(go env GOPATH)/src/github.com/acstech/liquid
-git remote add osteele https://github.com/osteele/liquid.git
-git pull -f osteele
-```
-
-(See articles by [Shlomi Noach](http://code.openark.org/blog/development/forking-golang-repositories-on-github-and-managing-the-import-path) and [Francesc Campoy](http://blog.campoy.cat/2014/03/github-and-go-forking-pull-requests-and.html) for how this works and why it is necessary.)
-
 ## Usage
 
 ```bash
@@ -73,23 +64,6 @@ gojekyll -s path/to/site serve                # serves from memory, w/ live relo
 gojekyll help
 gojekyll help build
 ```
-
-### Liquid Template Server
-
-The embedded Liquid server isn't very compliant with Shopfiy Liquid syntax.
-
-You can run a "Liquid Template Server" on the same machine, and tell `gojekyll` to use this instead.
-This is currently about 10x slower than using the embedded engine, but still 5x faster than Ruby `jekyll`.
-
-1. Download and run (liquid-template-server)[https://github.com/osteele/liquid-template-server].
-2. Invoke `gojekyll` with the `--use-liquid-server` option; e.g.:
-
-  ```bash
-  gojekyll --use-liquid-server build
-  gojekyll --use-liquid-server serve
-  ```
-
-Neither the embedded Liquid server nor the Liquid Template Server implements very many Jekyll Liquid filters or tags. I'm adding to these as necessary to support my own sites.
 
 ## Contributing
 
@@ -120,8 +94,6 @@ go tool pprof gojekyll gojekyll.prof
 ```
 
 ## Credits
-
-For rendering Liquid templates: ACS Technologies's fork [acstech/liquid](https://github.com/acstech/liquid) of Karl Seguin's [karlseguin/liquid](https://github.com/karlseguin/liquid) Go implementation; or, Jun Yang's JavaScript implementation [harttle/shopify-liquid](https://github.com/harttle/shopify-liquid/) via JSON-RPC.
 
 Jascha Ephraim's [jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) Live Reload server.
 
