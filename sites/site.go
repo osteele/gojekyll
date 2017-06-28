@@ -64,6 +64,14 @@ func NewSiteFromDirectory(source string) (*Site, error) {
 	return s, nil
 }
 
+// SetAbsoluteURL overrides the loaded configuration.
+// The server uses this.
+func (s *Site) SetAbsoluteURL(url string) {
+	s.config.AbsoluteURL = url
+	s.config.Variables["url"] = url
+	s.Variables["url"] = url
+}
+
 // FilenameURLs returns a map of relative filenames to URL paths
 func (s *Site) FilenameURLs() map[string]string {
 	urls := map[string]string{}
@@ -108,10 +116,11 @@ func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
 }
 
 // InitializeRenderingPipeline initializes the rendering pipeline
-func (s *Site) InitializeRenderingPipeline() (err error) {
+func (s *Site) InitializeRenderingPipeline() error {
 	o := pipelines.PipelineOptions{UseRemoteLiquidEngine: s.UseRemoteLiquidEngine}
+	var err error
 	s.pipeline, err = pipelines.NewPipeline(s.Source, s.config, s, o)
-	return
+	return err
 }
 
 // OutputExt returns the output extension.

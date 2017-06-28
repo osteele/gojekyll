@@ -24,6 +24,7 @@ type Server struct {
 
 // Run runs the server.
 func (s *Server) Run(open bool, logger func(label, value string)) error {
+	s.Site.SetAbsoluteURL("")
 	err := s.Site.InitializeRenderingPipeline()
 	if err != nil {
 		return err
@@ -54,10 +55,12 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	site := s.Site
-	urlpath := r.URL.Path
-
+	var (
+		site    = s.Site
+		urlpath = r.URL.Path
+	)
 	p, found := site.URLPage(urlpath)
+
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
 		log.Println("Not found:", urlpath)
@@ -92,5 +95,6 @@ func (s *Server) reloadSite() {
 		fmt.Println()
 		fmt.Println(err.Error())
 	}
+	s.Site.SetAbsoluteURL("")
 	fmt.Printf("reloaded in %.2fs\n", time.Since(start).Seconds())
 }
