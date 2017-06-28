@@ -1,11 +1,7 @@
 package liquid
 
 import (
-	"fmt"
-	"io"
-
 	"github.com/osteele/liquid"
-	"github.com/osteele/liquid/chunks"
 )
 
 // LocalWrapperEngine is a wrapper around osteele/liquid.
@@ -18,22 +14,8 @@ type LocalWrapperEngine struct {
 // NewLocalWrapperEngine creates a LocalEngine.
 func NewLocalWrapperEngine() LocalEngine {
 	e := &LocalWrapperEngine{engine: liquid.NewEngine()}
-	AddStandardFilters(e)
-	e.engine.DefineTag("link", func(filename string) (func(io.Writer, chunks.Context) error, error) {
-		return func(w io.Writer, _ chunks.Context) error {
-			url, found := e.linkHandler(filename)
-			if !found {
-				return fmt.Errorf("missing link filename: %s", filename)
-			}
-			_, err := w.Write([]byte(url))
-			return err
-		}, nil
-	})
-	e.engine.DefineTag("include", func(filename string) (func(io.Writer, chunks.Context) error, error) {
-		return func(w io.Writer, ctx chunks.Context) error {
-			return e.includeTagHandler(filename, w, ctx.GetVariableMap())
-		}, nil
-	})
+	e.addJekyllFilters()
+	e.addJekyllTags()
 	return e
 }
 
@@ -49,10 +31,7 @@ func (e *LocalWrapperEngine) IncludeHandler(h IncludeTagHandler) {
 
 // Parse is a wrapper for liquid.Parse.
 func (e *LocalWrapperEngine) Parse(source []byte) (Template, error) {
-	// fmt.Println("parse", string(source))
-	t, err := e.engine.ParseTemplate(source)
-	// return &localTemplate{t}, err
-	return t, err
+	return e.engine.ParseTemplate(source)
 }
 
 // ParseAndRender parses and then renders the template.
@@ -61,6 +40,5 @@ func (e *LocalWrapperEngine) ParseAndRender(source []byte, scope map[string]inte
 	if err != nil {
 		return nil, err
 	}
-	// fmt.Println("render", t)
 	return t.Render(scope)
 }

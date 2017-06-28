@@ -1,12 +1,10 @@
 package liquid
 
 import (
-	"bytes"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/acstech/liquid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,12 +36,11 @@ func TestFilters(t *testing.T) {
 	}
 }
 
-func requireTemplateRender(t *testing.T, tmpl string, data map[string]interface{}, expected string) {
-	template, err := liquid.ParseString(tmpl, nil)
+func requireTemplateRender(t *testing.T, tmpl string, scope map[string]interface{}, expected string) {
+	engine := NewLocalWrapperEngine()
+	data, err := engine.ParseAndRender([]byte(tmpl), scope)
 	require.NoError(t, err)
-	writer := new(bytes.Buffer)
-	template.Render(writer, data)
-	require.Equal(t, expected, strings.TrimSpace(writer.String()))
+	require.Equal(t, expected, strings.TrimSpace(string(data)))
 }
 
 // func TestXMLEscapeFilter(t *testing.T) {

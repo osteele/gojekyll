@@ -30,3 +30,6 @@ type RemoteEngine interface {
 // IncludeTagHandler resolves the filename in a Liquid include tag into the expanded content
 // of the included file.
 type IncludeTagHandler func(string, io.Writer, map[string]interface{}) error
+
+// A LinkTagHandler given an include tag file name returns a URL.
+type LinkTagHandler func(string) (string, bool)
