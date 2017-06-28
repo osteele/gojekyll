@@ -89,8 +89,8 @@ func (p *Pipeline) renderTemplate(b []byte, e templates.VariableMap, filename st
 	return b, err
 }
 
-// ApplyLayout applies the named layout to bytes.
-func (p *Pipeline) ApplyLayout(name string, b []byte, e templates.VariableMap) ([]byte, error) {
+// ApplyLayout applies the named layout to the data.
+func (p *Pipeline) ApplyLayout(name string, data []byte, e templates.VariableMap) ([]byte, error) {
 	for name != "" {
 		var lfm templates.VariableMap
 		t, err := p.FindLayout(name, &lfm)
@@ -98,16 +98,16 @@ func (p *Pipeline) ApplyLayout(name string, b []byte, e templates.VariableMap) (
 			return nil, err
 		}
 		le := templates.MergeVariableMaps(e, templates.VariableMap{
-			"content": string(b),
+			"content": string(data),
 			"layout":  lfm,
 		})
-		b, err = t.Render(le)
+		data, err = t.Render(le)
 		if err != nil {
-			return nil, err
+			return nil, helpers.PathError(err, "render template", name)
 		}
 		name = lfm.String("layout", "")
 	}
-	return b, nil
+	return data, nil
 }
 
 func (p *Pipeline) makeLocalLiquidEngine() liquid.Engine {
