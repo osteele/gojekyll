@@ -64,7 +64,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
 		log.Println("Not found:", urlpath)
-		p, found = site.Paths["404.html"]
+		p, found = site.Routes["404.html"]
 	}
 	if !found {
 		fmt.Fprintf(rw, "404 page not found: %s", urlpath) // nolint: gas

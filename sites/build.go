@@ -62,10 +62,10 @@ func (s *Site) Build(options BuildOptions) (int, error) {
 	return count + n, err
 }
 
-// WritePages writes its files. It attends to page.Output, but not its own c.Output.
-// It attends to the global options.dry_run.
+// WritePages writes output files.
+// It attends to options.dry_run.
 func (s *Site) WritePages(options BuildOptions) (count int, err error) {
-	for _, p := range s.Paths {
+	for _, p := range s.OutputPages() {
 		count++
 		if err = s.WritePage(p, options); err != nil {
 			return
@@ -75,6 +75,7 @@ func (s *Site) WritePages(options BuildOptions) (count int, err error) {
 }
 
 // WritePage writes a page to the destination directory.
+// It attends to options.dry_run.
 func (s *Site) WritePage(p pages.Page, options BuildOptions) error {
 	from := filepath.Join(s.Source, filepath.ToSlash(p.SiteRelPath()))
 	to := filepath.Join(s.Destination, p.Permalink())
@@ -85,7 +86,7 @@ func (s *Site) WritePage(p pages.Page, options BuildOptions) error {
 		fmt.Println("create", to, "from", p.SiteRelPath())
 	}
 	if options.DryRun {
-		// FIXME render the page in dry run mode, just don't write it
+		// FIXME render the page, just don't write it
 		return nil
 	}
 	// nolint: gas

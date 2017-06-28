@@ -24,14 +24,23 @@ type Site struct {
 
 	Collections []*collections.Collection
 	Variables   templates.VariableMap
-	Paths       map[string]pages.Page // URL path -> Page, only for output pages
+	Routes      map[string]pages.Page // URL path -> Page, only for output pages
 
 	config   config.Config
 	pipeline pipelines.PipelineInterface
 	pages    []pages.Page // all pages, output or not
 }
 
-// Pages returns a slice of pages.
+// OutputPages returns a list of output pages.
+func (s *Site) OutputPages() []pages.Page {
+	out := make([]pages.Page, len(s.Routes))
+	for _, p := range s.Routes {
+		out = append(out, p)
+	}
+	return s.pages
+}
+
+// Pages returns all the pages, output or not.
 func (s *Site) Pages() []pages.Page { return s.pages }
 
 // PathPrefix returns the relative directory prefix.
@@ -89,7 +98,7 @@ func (s *Site) KeepFile(path string) bool {
 
 // RelPathPage returns a Page, give a file path relative to site source directory.
 func (s *Site) RelPathPage(relpath string) (pages.Page, bool) {
-	for _, p := range s.Paths {
+	for _, p := range s.Routes {
 		if p.SiteRelPath() == relpath {
 			return p, true
 		}
@@ -130,12 +139,12 @@ func (s *Site) OutputExt(pathname string) string {
 
 // URLPage returns the page that will be served at URL
 func (s *Site) URLPage(urlpath string) (p pages.Page, found bool) {
-	p, found = s.Paths[urlpath]
+	p, found = s.Routes[urlpath]
 	if !found {
-		p, found = s.Paths[filepath.Join(urlpath, "index.html")]
+		p, found = s.Routes[filepath.Join(urlpath, "index.html")]
 	}
 	if !found {
-		p, found = s.Paths[filepath.Join(urlpath, "index.htm")]
+		p, found = s.Routes[filepath.Join(urlpath, "index.htm")]
 	}
 	return
 }

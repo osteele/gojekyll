@@ -37,7 +37,7 @@ func (s *Site) Reload() error {
 
 // readFiles scans the source directory and creates pages and collections.
 func (s *Site) readFiles() error {
-	s.Paths = make(map[string]pages.Page)
+	s.Routes = make(map[string]pages.Page)
 
 	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -74,7 +74,7 @@ func (s *Site) AddPage(p pages.Page, output bool) {
 	if p.Published() {
 		s.pages = append(s.pages, p)
 		if output {
-			s.Paths[p.Permalink()] = p
+			s.Routes[p.Permalink()] = p
 		}
 	}
 }

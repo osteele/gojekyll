@@ -108,14 +108,14 @@ func varsCommand(site *sites.Site) error {
 func routesCommand(site *sites.Site) error {
 	printSetting("Routes:", "")
 	urls := []string{}
-	for u, p := range site.Paths {
+	for u, p := range site.Routes {
 		if !(*dynamicRoutes && p.Static()) {
 			urls = append(urls, u)
 		}
 	}
 	sort.Strings(urls)
 	for _, u := range urls {
-		filename := site.Paths[u].SiteRelPath()
+		filename := site.Routes[u].SiteRelPath()
 		fmt.Printf("  %s -> %s\n", u, filename)
 	}
 	return nil

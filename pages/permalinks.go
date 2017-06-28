@@ -89,7 +89,7 @@ func (p *pageFields) expandPermalink() (s string, err error) {
 		}
 		return value
 	})
-	return helpers.URLPathClean(s), nil
+	return helpers.URLPathClean("/" + s), nil
 }
 
 // The permalink is computed once instead of on demand, so that subsequent
