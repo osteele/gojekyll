@@ -98,9 +98,20 @@ go tool pprof gojekyll gojekyll.prof
 
 ## Credits
 
-Jascha Ephraim's [jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) Live Reload server.
+Gojekyll uses these libraries:
 
-<https://github.com/pkg/browser> to open the URL in a browser.
+| Package | Author | Description |
+| --- | --- | --- |
+| [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim | Live Reload server |
+| [github.com/osteele/liquid](https://github.com/osteele/liquid) | Oliver Steele | Liquid processor |
+| [github.com/pkg/browser](https://github.com/pkg/browser) | [pkg](https://github.com/pkg) | The `serve -o` option to open the site in the browser |
+| [github.com/russross/blackfriday](https://github.com/russross/blackfriday) | Russ Ross | Markdown processor |
+| [github.com/sass/libsass](https://github.com/sass/libsass) | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler |
+| [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass) | Drew Wells | Go bindings to libsass |
+| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)  | Alec Thomas | command line and flag parser |
+| [gopkg.in/yaml.v2](https://github.com/go-yaml) | Canonical | YAML support |
+
+In addition to being totally and obviously inspired by the Jekyll Ruby implementation, Jekyll's solid documentation was indispensible. The [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
 
 The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
@@ -109,8 +120,6 @@ The gopher image in the test directory is from [Wikimedia Commons](https://commo
 [Hugo](https://gohugo.io) isn't Jekyll-compatible (-), but actually works (+++).
 
 [Jekyll](https://jekyllrb.com), of course.
-
-This project is a clean-room implementation of Jekyll, based solely on Jekyll's documentation and testing it against a few sites. Hopefully this can pay off in contributing towards Jekyll's documentation.
 
 ## License
 
