@@ -16,7 +16,7 @@ type Collection struct {
 	Name      string
 	Metadata  templates.VariableMap
 	container pages.Container
-	pages     []pages.Page
+	pages     []pages.Document
 }
 
 // NewCollection creates a new Collection
@@ -43,7 +43,7 @@ func (c *Collection) Output() bool { return c.Metadata.Bool("output", false) }
 func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Name + "/") }
 
 // Pages is a list of pages.
-func (c *Collection) Pages() []pages.Page {
+func (c *Collection) Pages() []pages.Document {
 	return c.pages
 }
 
@@ -53,7 +53,7 @@ func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent
 	d := []templates.VariableMap{}
 	for _, p := range c.Pages() {
 		v := p.PageVariables()
-		dp, ok := p.(*pages.DynamicPage)
+		dp, ok := p.(*pages.Page)
 		if includeContent && ok {
 			c, err := dp.ComputeContent(ctx)
 			if err != nil {
@@ -105,7 +105,7 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 			return nil
 		}
 		defaultFrontmatter := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
-		p, err := pages.NewPageFromFile(filename, c, filepath.ToSlash(relname), defaultFrontmatter)
+		p, err := pages.NewFile(filename, c, filepath.ToSlash(relname), defaultFrontmatter)
 		switch {
 		case err != nil:
 			return err

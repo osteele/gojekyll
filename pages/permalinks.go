@@ -37,7 +37,7 @@ var permalinkDateVariables = map[string]string{
 var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 
 // See https://jekyllrb.com/docs/permalinks/#template-variables
-func (p *pageFields) permalinkTemplateVariables() map[string]string {
+func (p *file) permalinkTemplateVariables() map[string]string {
 	var (
 		relpath    = strings.TrimPrefix(p.relpath, p.container.PathPrefix())
 		root       = helpers.TrimExt(relpath)
@@ -63,7 +63,7 @@ func (p *pageFields) permalinkTemplateVariables() map[string]string {
 	return vs
 }
 
-func (p *pageFields) expandPermalink() (s string, err error) {
+func (p *file) expandPermalink() (s string, err error) {
 	pattern := p.frontMatter.String("permalink", constants.DefaultPermalinkPattern)
 
 	if p, found := PermalinkStyles[pattern]; found {
@@ -94,7 +94,7 @@ func (p *pageFields) expandPermalink() (s string, err error) {
 
 // The permalink is computed once instead of on demand, so that subsequent
 // access needn't check for an error.
-func (p *pageFields) initPermalink() (err error) {
+func (p *file) initPermalink() (err error) {
 	p.permalink, err = p.expandPermalink()
 	return
 }

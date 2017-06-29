@@ -37,7 +37,7 @@ func (s *Site) Reload() error {
 
 // readFiles scans the source directory and creates pages and collections.
 func (s *Site) readFiles() error {
-	s.Routes = make(map[string]pages.Page)
+	s.Routes = make(map[string]pages.Document)
 
 	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -55,7 +55,7 @@ func (s *Site) readFiles() error {
 			return nil
 		}
 		defaultFrontmatter := s.config.GetFrontMatterDefaults(relname, "")
-		p, err := pages.NewPageFromFile(filename, s, filepath.ToSlash(relname), defaultFrontmatter)
+		p, err := pages.NewFile(filename, s, filepath.ToSlash(relname), defaultFrontmatter)
 		if err != nil {
 			return helpers.PathError(err, "read", filename)
 		}
@@ -70,7 +70,7 @@ func (s *Site) readFiles() error {
 }
 
 // AddPage adds a page to the site structures.
-func (s *Site) AddPage(p pages.Page, output bool) {
+func (s *Site) AddPage(p pages.Document, output bool) {
 	if p.Published() {
 		s.pages = append(s.pages, p)
 		if output {

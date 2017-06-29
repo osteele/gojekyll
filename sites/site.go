@@ -24,16 +24,16 @@ type Site struct {
 
 	Collections []*collections.Collection
 	Variables   templates.VariableMap
-	Routes      map[string]pages.Page // URL path -> Page, only for output pages
+	Routes      map[string]pages.Document // URL path -> Page, only for output pages
 
 	config   config.Config
 	pipeline pipelines.PipelineInterface
-	pages    []pages.Page // all pages, output or not
+	pages    []pages.Document // all pages, output or not
 }
 
 // OutputPages returns a list of output pages.
-func (s *Site) OutputPages() []pages.Page {
-	out := make([]pages.Page, 0, len(s.Routes))
+func (s *Site) OutputPages() []pages.Document {
+	out := make([]pages.Document, 0, len(s.Routes))
 	for _, p := range s.Routes {
 		out = append(out, p)
 	}
@@ -41,7 +41,7 @@ func (s *Site) OutputPages() []pages.Page {
 }
 
 // Pages returns all the pages, output or not.
-func (s *Site) Pages() []pages.Page { return s.pages }
+func (s *Site) Pages() []pages.Document { return s.pages }
 
 // PathPrefix returns the relative directory prefix.
 func (s *Site) PathPrefix() string { return "" }
@@ -97,7 +97,7 @@ func (s *Site) KeepFile(path string) bool {
 }
 
 // RelPathPage returns a Page, give a file path relative to site source directory.
-func (s *Site) RelPathPage(relpath string) (pages.Page, bool) {
+func (s *Site) RelPathPage(relpath string) (pages.Document, bool) {
 	for _, p := range s.Routes {
 		if p.SiteRelPath() == relpath {
 			return p, true
@@ -142,7 +142,7 @@ func (s *Site) OutputExt(pathname string) string {
 }
 
 // URLPage returns the page that will be served at URL
-func (s *Site) URLPage(urlpath string) (p pages.Page, found bool) {
+func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 	p, found = s.Routes[urlpath]
 	if !found {
 		p, found = s.Routes[filepath.Join(urlpath, "index.html")]

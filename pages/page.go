@@ -1,113 +1,132 @@
 package pages
 
 import (
-	"fmt"
-	"os"
-	"path"
+	"bytes"
+	"io"
+	"io/ioutil"
 	"path/filepath"
-	"reflect"
-	"strings"
-	"time"
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
 )
 
-// pageFields is embedded in StaticPage and DynamicPage
-type pageFields struct {
-	container   Container
-	filename    string // target os filepath
-	relpath     string // slash-separated path relative to site or container source
-	outputExt   string
-	permalink   string // cached permalink
-	fileModTime time.Time
-	frontMatter templates.VariableMap
+// Page is a post or collection page.
+type Page struct {
+	file
+	raw       []byte
+	processed *[]byte
 }
 
-func (p *pageFields) String() string {
-	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
-}
+// Static is in the File interface.
+func (p *Page) Static() bool { return false }
 
-func (p *pageFields) OutputExt() string   { return p.outputExt }
-func (p *pageFields) Path() string        { return p.relpath }
-func (p *pageFields) Permalink() string   { return p.permalink }
-func (p *pageFields) Published() bool     { return p.frontMatter.Bool("published", true) }
-func (p *pageFields) SiteRelPath() string { return p.relpath }
-
-// NewPageFromFile reads a Page from a file, using defaults as the default front matter.
-func NewPageFromFile(filename string, c Container, relpath string, defaults templates.VariableMap) (Page, error) {
-	magic, err := helpers.ReadFileMagic(filename)
-	if err != nil {
-		return nil, err
-	}
-	info, err := os.Stat(filename)
+func newPage(filename string, f file) (*Page, error) {
+	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	fields := pageFields{
-		container:   c,
-		filename:    filename,
-		frontMatter: defaults,
-		fileModTime: info.ModTime(),
-		relpath:     relpath,
-		outputExt:   c.OutputExt(relpath),
-	}
-	var p Page
-	if string(magic) == "---\n" {
-		p, err = newDynamicPageFromFile(filename, fields)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		p = &StaticPage{fields}
-	}
-	// Compute this after creating the page, in order to pick up the front matter.
-	err = p.initPermalink()
+	frontMatter, err := templates.ReadFrontMatter(&b)
 	if err != nil {
 		return nil, err
 	}
-	return p, nil
+	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
+	return &Page{
+		file: f,
+		raw:  b,
+	}, nil
 }
 
-// Variables returns the attributes of the template page object.
-// See https://jekyllrb.com/docs/variables/#page-variables
-func (p *pageFields) PageVariables() templates.VariableMap {
+// PageVariables returns the attributes of the template page object.
+func (p *Page) PageVariables() templates.VariableMap {
 	var (
-		relpath = "/" + filepath.ToSlash(p.relpath)
-		base    = path.Base(relpath)
-		ext     = path.Ext(relpath)
+		relpath = p.relpath
+		ext     = filepath.Ext(relpath)
+		root    = helpers.TrimExt(p.relpath)
+		base    = filepath.Base(root)
 	)
 
-	return templates.MergeVariableMaps(p.frontMatter, templates.VariableMap{
-		"path":          relpath,
-		"modified_time": p.fileModTime,
-		"name":          base,
-		"basename":      helpers.TrimExt(base),
-		"extname":       ext,
-	})
-}
+	data := templates.VariableMap{
+		"path": relpath,
+		"url":  p.Permalink(),
+		// TODO output
 
-func (p *pageFields) categories() []string {
-	if v, found := p.frontMatter["categories"]; found {
-		switch v := v.(type) {
-		case string:
-			return strings.Fields(v)
-		case []interface{}:
-			sl := make([]string, len(v))
-			for i, s := range v {
-				switch s := s.(type) {
-				case fmt.Stringer:
-					sl[i] = s.String()
-				default:
-					sl[i] = fmt.Sprint(s)
-				}
-			}
-			return sl
+		// not documented, but present in both collection and non-collection pages
+		"permalink": p.Permalink(),
+
+		// TODO only in non-collection pages:
+		// TODO dir
+		// TODO name
+		// TODO next previous
+
+		// TODO Documented as present in all pages, but de facto only defined for collection pages
+		"id":    base,
+		"title": base, // TODO capitalize
+		// TODO date (of the collection?) 2017-06-15 07:44:21 -0400
+		// TODO excerpt category? categories tags
+		// TODO slug
+		"categories": []string{},
+		"tags":       []string{},
+
+		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
+		"relative_path": p.Path(),
+		// TODO collection(name)
+
+		// TODO undocumented; only present in collection pages:
+		"ext": ext,
+	}
+	for k, v := range p.frontMatter {
+		switch k {
+		// doc implies these aren't present, but they appear to be present in a collection page:
+		// case "layout", "published":
+		case "permalink":
+		// omit this, in order to use the value above
 		default:
-			fmt.Printf("%T", v)
-			panic("unimplemented")
+			data[k] = v
 		}
 	}
-	return []string{p.frontMatter.String("category", "")}
+	return data
+}
+
+// TemplateContext returns the local variables for template evaluation
+func (p *Page) TemplateContext(rc RenderingContext) templates.VariableMap {
+	return templates.VariableMap{
+		"page": p.PageVariables(),
+		"site": rc.SiteVariables(),
+	}
+}
+
+// Write applies Liquid and Markdown, as appropriate.
+func (p *Page) Write(rc RenderingContext, w io.Writer) error {
+	rp := rc.RenderingPipeline()
+	if p.processed != nil {
+		_, err := w.Write(*p.processed)
+		return err
+	}
+	b, err := rp.Render(w, p.raw, p.filename, p.TemplateContext(rc))
+	if err != nil {
+		return err
+	}
+	layout := p.frontMatter.String("layout", "")
+	if layout != "" {
+		b, err = rp.ApplyLayout(layout, b, p.TemplateContext(rc))
+		if err != nil {
+			return err
+		}
+	}
+	_, err = w.Write(b)
+	return err
+}
+
+// ComputeContent computes the page content.
+func (p *Page) ComputeContent(rc RenderingContext) ([]byte, error) {
+	if p.processed == nil {
+		w := new(bytes.Buffer)
+		if err := p.Write(rc, w); err != nil {
+			return nil, err
+		}
+		b := w.Bytes()
+		p.processed = &b
+	}
+	return *p.processed, nil
 }

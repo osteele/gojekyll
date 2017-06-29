@@ -138,7 +138,7 @@ func renderCommand(site *sites.Site) error {
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(s *sites.Site, path string) (pages.Page, error) {
+func cliPage(s *sites.Site, path string) (pages.Document, error) {
 	if path == "" {
 		path = "/"
 	}

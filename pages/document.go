@@ -7,8 +7,8 @@ import (
 	"github.com/osteele/gojekyll/templates"
 )
 
-// Page is a Jekyll page.
-type Page interface {
+// Document is a Jekyll page or file.
+type Document interface {
 	// Paths
 	SiteRelPath() string // relative to the site source directory
 	Permalink() string   // relative URL path
@@ -22,17 +22,19 @@ type Page interface {
 	// Variables
 	PageVariables() templates.VariableMap
 
-	// internal
+	// Document initialization uses this.
 	initPermalink() error
 }
 
-// RenderingContext provides context information to a Page.
+// RenderingContext provides context information for rendering.
 type RenderingContext interface {
 	RenderingPipeline() pipelines.PipelineInterface
+	// SiteVariables is the value of the "site" template variable.
 	SiteVariables() templates.VariableMap // value of the "site" template variable
 }
 
-// Container is the Page container; either the Site or Collection.
+// Container is the document container.
+// It's either the Site or Collection that immediately contains the document.
 type Container interface {
 	OutputExt(pathname string) string
 	PathPrefix() string // PathPrefix is the relative prefix, "" for the site and "_coll/" for a collection
