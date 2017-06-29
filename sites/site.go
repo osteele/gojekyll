@@ -17,10 +17,10 @@ import (
 
 // Site is a Jekyll site.
 type Site struct {
-	ConfigFile            *string
-	Source                string
-	Destination           string
-	UseRemoteLiquidEngine bool
+	ConfigFile  *string
+	Source      string
+	Destination string
+	bool
 
 	Collections []*collections.Collection
 	Variables   templates.VariableMap
@@ -125,11 +125,9 @@ func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
 }
 
 // InitializeRenderingPipeline initializes the rendering pipeline
-func (s *Site) InitializeRenderingPipeline() error {
-	o := pipelines.PipelineOptions{UseRemoteLiquidEngine: s.UseRemoteLiquidEngine}
-	var err error
-	s.pipeline, err = pipelines.NewPipeline(s.Source, s.config, s, o)
-	return err
+func (s *Site) InitializeRenderingPipeline() (err error) {
+	s.pipeline, err = pipelines.NewPipeline(s.Source, s.config, s, pipelines.PipelineOptions{})
+	return
 }
 
 // OutputExt returns the output extension.

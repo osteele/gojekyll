@@ -11,7 +11,7 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-func (e *LocalWrapperEngine) addJekyllFilters() {
+func (e *Wrapper) addJekyllFilters() {
 	// arrays
 	e.engine.DefineFilter("array_to_sentence_string", arrayToSentenceStringFilter)
 	// TODO neither Liquid nor Jekyll docs this, but it appears to be present

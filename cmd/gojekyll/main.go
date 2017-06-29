@@ -12,8 +12,7 @@ import (
 
 // Command-line options
 var (
-	buildOptions          sites.BuildOptions
-	useRemoteLiquidEngine bool
+	buildOptions sites.BuildOptions
 )
 
 const defaultDestination = "DEFAULT: ./_"
@@ -43,7 +42,6 @@ var (
 )
 
 func init() {
-	app.Flag("use-liquid-server", "Use Liquid JSON-RPC server").BoolVar(&useRemoteLiquidEngine)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
 }
 
@@ -99,7 +97,6 @@ func loadSite(source, destination string) (*sites.Site, error) {
 	if err != nil {
 		return nil, err
 	}
-	site.UseRemoteLiquidEngine = useRemoteLiquidEngine
 	if destination != "" && destination != defaultDestination {
 		site.Destination = destination
 	}

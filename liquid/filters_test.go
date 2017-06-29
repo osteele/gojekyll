@@ -64,7 +64,7 @@ func TestFilters(t *testing.T) {
 }
 
 func requireTemplateRender(t *testing.T, tmpl string, scope map[string]interface{}, expected string) {
-	engine := NewLocalWrapperEngine()
+	engine := NewEngine()
 	engine.BaseURL = "/my-baseurl"
 	engine.AbsoluteURL = "http://example.com"
 	data, err := engine.ParseAndRender([]byte(tmpl), scope)

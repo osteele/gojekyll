@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/osteele/gojekyll/liquid"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid"
 )
 
 // FindLayout returns a template for the named layout.

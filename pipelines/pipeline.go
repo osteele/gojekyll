@@ -42,11 +42,7 @@ type PageSupplier interface {
 // NewPipeline makes a rendering pipeline.
 func NewPipeline(sourceDir string, c config.Config, pageSupplier PageSupplier, o PipelineOptions) (*Pipeline, error) {
 	p := Pipeline{config: c, pageSupplier: pageSupplier, sourceDir: sourceDir}
-	engine, err := p.makeLiquidEngine(o)
-	if err != nil {
-		return nil, err
-	}
-	p.liquidEngine = engine
+	p.liquidEngine = p.makeLiquidEngine()
 	if err := p.CopySassFileIncludes(); err != nil {
 		return nil, err
 	}
@@ -76,15 +72,7 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, e templates.Va
 func (p *Pipeline) renderTemplate(b []byte, e templates.VariableMap, filename string) ([]byte, error) {
 	b, err := p.liquidEngine.ParseAndRender(b, e)
 	if err != nil {
-		switch err := err.(type) {
-		case *liquid.RenderError:
-			if err.Filename == "" {
-				err.Filename = filename
-			}
-			return nil, err
-		default:
-			return nil, helpers.PathError(err, "Liquid Error", filename)
-		}
+		return nil, helpers.PathError(err, "Liquid Error", filename)
 	}
 	return b, err
 }
@@ -110,8 +98,8 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e templates.VariableMap
 	return data, nil
 }
 
-func (p *Pipeline) makeLocalLiquidEngine() liquid.Engine {
-	engine := liquid.NewLocalWrapperEngine()
+func (p *Pipeline) makeLiquidEngine() liquid.Engine {
+	engine := liquid.NewEngine()
 	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
 		filename := filepath.Join(p.sourceDir, p.config.IncludesDir, name)
 		template, err := ioutil.ReadFile(filename)
@@ -130,24 +118,4 @@ func (p *Pipeline) makeLocalLiquidEngine() liquid.Engine {
 	engine.AbsoluteURL = p.config.AbsoluteURL
 	engine.BaseURL = p.config.BaseURL
 	return engine
-}
-
-func (p *Pipeline) makeLiquidClient() (engine liquid.RemoteEngine, err error) {
-	engine, err = liquid.NewRPCClientEngine(liquid.DefaultServer)
-	if err != nil {
-		return
-	}
-	err = engine.FileURLMap(p.pageSupplier.FilenameURLs())
-	if err != nil {
-		return
-	}
-	err = engine.IncludeDirs([]string{filepath.Join(p.sourceDir, p.config.IncludesDir)})
-	return
-}
-
-func (p *Pipeline) makeLiquidEngine(o PipelineOptions) (liquid.Engine, error) {
-	if o.UseRemoteLiquidEngine {
-		return p.makeLiquidClient()
-	}
-	return p.makeLocalLiquidEngine(), nil
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/osteele/liquid/chunks"
 )
 
-func (e *LocalWrapperEngine) addJekyllTags() {
+func (e *Wrapper) addJekyllTags() {
 	e.engine.DefineTag("link", func(filename string) (func(io.Writer, chunks.Context) error, error) {
 		return func(w io.Writer, _ chunks.Context) error {
 			url, found := e.linkHandler(filename)
