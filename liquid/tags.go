@@ -44,7 +44,7 @@ func (e *Wrapper) addJekyllTags() {
 			include := map[string]interface{}{}
 			for k, v := range params {
 				if v.eval {
-					value, err := ctx.EvaluateExpr(v.value)
+					value, err := ctx.EvaluateString(v.value)
 					if err != nil {
 						return err
 					}
