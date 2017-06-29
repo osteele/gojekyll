@@ -52,13 +52,7 @@ func (e *LocalWrapperEngine) addJekyllFilters() {
 	e.engine.DefineFilter("relative_url", func(s string) string {
 		return e.BaseURL + s
 	})
-	e.engine.DefineFilter("jsonify", func(value interface{}) []byte {
-		s, err := json.Marshal(value)
-		if err != nil {
-			panic(err)
-		}
-		return s
-	})
+	e.engine.DefineFilter("jsonify", json.Marshal)
 	e.engine.DefineFilter("markdownify", blackfriday.MarkdownCommon)
 }
 
