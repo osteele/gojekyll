@@ -119,7 +119,7 @@ Gojekyll uses these libraries:
 | [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)  | Alec Thomas | command line and flag parser |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml) | Canonical | YAML support |
 
-In addition to being totally and obviously inspired by the Jekyll Ruby implementation, Jekyll's solid documentation was indispensible. The [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
+In addition to being totally and obviously inspired by the Jekyll Ruby implementation, Jekyll's solid documentation was indispensible. Many of the filter test cases are taken directly from the Jekyll documentation, and the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
 
 The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
