@@ -62,8 +62,8 @@ func (s *Server) watchFiles() error {
 
 // debounce relays values from input to output, merging successive values within interval
 // TODO consider https://github.com/ReactiveX/RxGo
-func debounce(interval time.Duration, input chan string) (output chan []string) {
-	output = make(chan []string)
+func debounce(interval time.Duration, input <-chan string) <-chan []string {
+	output := make(chan []string)
 	var (
 		pending = []string{}
 		ticker  = time.Tick(interval) // nolint: staticcheck, megacheck
@@ -81,5 +81,5 @@ func debounce(interval time.Duration, input chan string) (output chan []string) 
 			}
 		}
 	}()
-	return
+	return output
 }
