@@ -91,6 +91,9 @@ func (e *Wrapper) addJekyllFilters() {
 	// 	return strings.Join(parts, "?")
 	// })
 	e.engine.DefineFilter("xml_escape", func(s string) string {
+		// TODO can't handle maps
+		// eval https://github.com/clbanning/mxj
+		// adapt https://stackoverflow.com/questions/30928770/marshall-map-to-xml-in-go
 		buf := new(bytes.Buffer)
 		if err := xml.EscapeText(buf, []byte(s)); err != nil {
 			panic(err)
@@ -121,9 +124,7 @@ func sortFilter(in []interface{}, key interface{}, nilFirst interface{}) []inter
 		nf = true
 	}
 	out := make([]interface{}, len(in))
-	for i, v := range in {
-		out[i] = v
-	}
+	copy(out, in)
 	if key == nil {
 		generics.Sort(out)
 	} else {
@@ -131,17 +132,6 @@ func sortFilter(in []interface{}, key interface{}, nilFirst interface{}) []inter
 	}
 	return out
 }
-
-// func xmlEscapeFilter(value interface{}) interface{} {
-// 	data, err := xml.Marshal(value)
-// 	// TODO can't handle maps
-// 	// eval https://github.com/clbanning/mxj
-// 	// adapt https://stackoverflow.com/questions/30928770/marshall-map-to-xml-in-go
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return data
-// }
 
 func whereExpFilter(in []interface{}, name string, expr expressions.Closure) ([]interface{}, error) {
 	rt := reflect.ValueOf(in)
