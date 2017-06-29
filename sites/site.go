@@ -126,7 +126,13 @@ func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
 
 // InitializeRenderingPipeline initializes the rendering pipeline
 func (s *Site) InitializeRenderingPipeline() (err error) {
-	s.pipeline, err = pipelines.NewPipeline(s.Source, s.config, s, pipelines.PipelineOptions{})
+	options := pipelines.PipelineOptions{
+		SourceDir:             s.Source,
+		AbsoluteURL:           s.config.AbsoluteURL,
+		BaseURL:               s.config.BaseURL,
+		RelativeFilenameToURL: s.RelativeFilenameToURL,
+	}
+	s.pipeline, err = pipelines.NewPipeline(s.config, options)
 	return
 }
 

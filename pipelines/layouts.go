@@ -35,7 +35,7 @@ func (p *Pipeline) FindLayout(base string, fm *templates.VariableMap) (t liquid.
 		}
 	}
 	if !found {
-		panic(fmt.Errorf("no template for %s", base))
+		return nil, fmt.Errorf("no template for %s", base)
 	}
 	*fm, err = templates.ReadFrontMatter(&content)
 	if err != nil {
@@ -46,5 +46,5 @@ func (p *Pipeline) FindLayout(base string, fm *templates.VariableMap) (t liquid.
 
 // LayoutsDir returns the path to the layouts directory.
 func (p *Pipeline) LayoutsDir() string {
-	return filepath.Join(p.sourceDir, p.config.LayoutsDir)
+	return filepath.Join(p.SourceDir, p.config.LayoutsDir)
 }

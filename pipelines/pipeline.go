@@ -1,6 +1,7 @@
 package pipelines
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"path/filepath"
@@ -21,27 +22,23 @@ type PipelineInterface interface {
 
 // Pipeline applies a rendering transformation to a file.
 type Pipeline struct {
+	PipelineOptions
 	config       config.Config
 	liquidEngine liquid.Engine
-	pageSupplier PageSupplier
 	sassTempDir  string
-	sourceDir    string
 }
 
 // PipelineOptions configures a pipeline.
 type PipelineOptions struct {
-	UseRemoteLiquidEngine bool
-}
-
-// PageSupplier tells a pipeline how to resolve link tags.
-type PageSupplier interface {
-	FilenameURLs() map[string]string
-	RelativeFilenameToURL(string) (string, bool)
+	SourceDir             string
+	AbsoluteURL, BaseURL  string
+	RelativeFilenameToURL liquid.LinkTagHandler
 }
 
 // NewPipeline makes a rendering pipeline.
-func NewPipeline(sourceDir string, c config.Config, pageSupplier PageSupplier, o PipelineOptions) (*Pipeline, error) {
-	p := Pipeline{config: c, pageSupplier: pageSupplier, sourceDir: sourceDir}
+func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
+	p := Pipeline{PipelineOptions: options, config: c}
+	fmt.Println("t", p.SourceDir)
 	p.liquidEngine = p.makeLiquidEngine()
 	if err := p.CopySassFileIncludes(); err != nil {
 		return nil, err
@@ -101,7 +98,7 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e templates.VariableMap
 func (p *Pipeline) makeLiquidEngine() liquid.Engine {
 	engine := liquid.NewEngine()
 	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
-		filename := filepath.Join(p.sourceDir, p.config.IncludesDir, name)
+		filename := filepath.Join(p.SourceDir, p.config.IncludesDir, name)
 		template, err := ioutil.ReadFile(filename)
 		if err != nil {
 			return err
@@ -114,8 +111,8 @@ func (p *Pipeline) makeLiquidEngine() liquid.Engine {
 		return err
 	}
 	engine.IncludeHandler(includeHandler)
-	engine.LinkTagHandler(p.pageSupplier.RelativeFilenameToURL)
-	engine.AbsoluteURL = p.config.AbsoluteURL
-	engine.BaseURL = p.config.BaseURL
+	engine.LinkTagHandler(p.RelativeFilenameToURL)
+	engine.AbsoluteURL = p.AbsoluteURL
+	engine.BaseURL = p.BaseURL
 	return engine
 }
