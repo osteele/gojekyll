@@ -1,7 +1,6 @@
 package pipelines
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"path/filepath"
@@ -38,7 +37,6 @@ type PipelineOptions struct {
 // NewPipeline makes a rendering pipeline.
 func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 	p := Pipeline{PipelineOptions: options, config: c}
-	fmt.Println("t", p.SourceDir)
 	p.liquidEngine = p.makeLiquidEngine()
 	if err := p.CopySassFileIncludes(); err != nil {
 		return nil, err

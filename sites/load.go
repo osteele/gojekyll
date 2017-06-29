@@ -10,16 +10,11 @@ import (
 )
 
 // Load loads the site data and files. It doesn't load the configuration file; NewSiteFromDirectory did that.
-func (s *Site) Load() (err error) {
-	err = s.readFiles()
-	if err != nil {
-		return
+func (s *Site) Load() error {
+	if err := s.readFiles(); err != nil {
+		return err
 	}
-	err = s.initSiteVariables()
-	if err != nil {
-		return
-	}
-	return
+	return s.readDataFiles()
 }
 
 // Reload reloads the config file and pages.
@@ -32,6 +27,7 @@ func (s *Site) Reload() error {
 	copy.Destination = s.Destination
 	*s = *copy
 	s.pipeline = nil
+	s.preparedToRender = false
 	return s.Load()
 }
 
@@ -59,7 +55,7 @@ func (s *Site) readFiles() error {
 		if err != nil {
 			return helpers.PathError(err, "read", filename)
 		}
-		s.AddPage(p, true)
+		s.AddDocument(p, true)
 		return nil
 	}
 
@@ -69,8 +65,8 @@ func (s *Site) readFiles() error {
 	return s.ReadCollections()
 }
 
-// AddPage adds a page to the site structures.
-func (s *Site) AddPage(p pages.Document, output bool) {
+// AddDocument adds a page to the site structures.
+func (s *Site) AddDocument(p pages.Document, output bool) {
 	if p.Published() {
 		s.pages = append(s.pages, p)
 		if output {
@@ -89,7 +85,7 @@ func (s *Site) ReadCollections() error {
 			return err
 		}
 		for _, p := range c.Pages() {
-			s.AddPage(p, c.Output())
+			s.AddDocument(p, c.Output())
 		}
 	}
 	return nil

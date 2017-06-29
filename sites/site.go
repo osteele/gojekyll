@@ -20,15 +20,17 @@ type Site struct {
 	ConfigFile  *string
 	Source      string
 	Destination string
-	bool
 
 	Collections []*collections.Collection
-	Variables   templates.VariableMap
-	Routes      map[string]pages.Document // URL path -> Page, only for output pages
+	// Variables   templates.VariableMap
+	Routes map[string]pages.Document // URL path -> Page, only for output pages
 
-	config   config.Config
-	pipeline pipelines.PipelineInterface
-	pages    []pages.Document // all pages, output or not
+	config           config.Config
+	data             map[string]interface{}
+	pipeline         pipelines.PipelineInterface
+	pages            []pages.Document // all pages, output or not
+	preparedToRender bool
+	siteVariables    templates.VariableMap
 }
 
 // OutputPages returns a list of output pages.
@@ -78,7 +80,9 @@ func NewSiteFromDirectory(source string) (*Site, error) {
 func (s *Site) SetAbsoluteURL(url string) {
 	s.config.AbsoluteURL = url
 	s.config.Variables["url"] = url
-	s.Variables["url"] = url
+	if s.siteVariables != nil {
+		s.siteVariables["url"] = url
+	}
 }
 
 // FilenameURLs returns a map of relative filenames to URL paths
@@ -124,8 +128,8 @@ func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
 	return s.pipeline
 }
 
-// InitializeRenderingPipeline initializes the rendering pipeline
-func (s *Site) InitializeRenderingPipeline() (err error) {
+// initializeRenderingPipeline initializes the rendering pipeline
+func (s *Site) initializeRenderingPipeline() (err error) {
 	options := pipelines.PipelineOptions{
 		SourceDir:             s.Source,
 		AbsoluteURL:           s.config.AbsoluteURL,

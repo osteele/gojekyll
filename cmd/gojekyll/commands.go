@@ -73,7 +73,7 @@ func serveCommand(site *sites.Site) error {
 
 func varsCommand(site *sites.Site) error {
 	printSetting("Variables:", "")
-	siteData := site.Variables
+	siteData := site.SiteVariables()
 	// The YAML representation including collections is impractically large for debugging.
 	// (Actually it's circular, which the yaml package can't handle.)
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
@@ -91,7 +91,7 @@ func varsCommand(site *sites.Site) error {
 			data = data[*variablePath].(templates.VariableMap)
 		}
 	default:
-		page, err := cliPage(site, *variablePath)
+		page, err := pageFromPathOrRoute(site, *variablePath)
 		if err != nil {
 			return err
 		}
@@ -122,23 +122,19 @@ func routesCommand(site *sites.Site) error {
 }
 
 func renderCommand(site *sites.Site) error {
-	p, err := cliPage(site, *renderPath)
+	p, err := pageFromPathOrRoute(site, *renderPath)
 	if err != nil {
 		return err
 	}
 	printPathSetting("Render:", filepath.Join(site.Source, p.SiteRelPath()))
 	printSetting("URL:", p.Permalink())
 	printSetting("Content:", "")
-	err = site.InitializeRenderingPipeline()
-	if err != nil {
-		return err
-	}
-	return p.Write(site, os.Stdout)
+	return site.WriteDocument(p, os.Stdout)
 }
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func cliPage(s *sites.Site, path string) (pages.Document, error) {
+func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
 	if path == "" {
 		path = "/"
 	}

@@ -25,10 +25,6 @@ type Server struct {
 // Run runs the server.
 func (s *Server) Run(open bool, logger func(label, value string)) error {
 	s.Site.SetAbsoluteURL("")
-	err := s.Site.InitializeRenderingPipeline()
-	if err != nil {
-		return err
-	}
 	address := "localhost:4000"
 	logger("Server address:", "http://"+address+"/")
 	if err := s.StartLiveReloader(); err != nil {
@@ -79,7 +75,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(mimeType, "text/html;") {
 		w = NewLiveReloadInjector(w)
 	}
-	err := p.Write(site, w)
+	err := site.WriteDocument(p, w)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}
