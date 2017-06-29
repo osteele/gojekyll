@@ -28,16 +28,24 @@ We are currently ~5x faster than Jekyll. Some obvious improvements would include
   - [ ] Assets
     - [ ] Coffeescript
     - [x] Sass/SCSS
-      - [ ] Sass caching
+      - [ ] Sass cache
 - [ ] Customization
   - [x] Templates
-    - [ ] Jekyll filters (partial)
-    - [ ] Jekyll tags (partial)
+    - [ ] Jekyll filters
+      - [ ] array filters: group_by group_by_exp sample pop shift
+      - [ ] string filters: cgi_escape uri_escape scssify smartify slugify normalize_whitespace
+      - [x] everything else
+    - [ ] Jekyll tags
+      - [x] `include`
+      - [ ] `include_relative`
+      - [x] `link`
+      - [ ] `post_url`
+      - [ ] `gist`
+      - [ ] `highlight`
     - [ ] `markdown=1`
   - [x] Includes
-    - [ ] `include_relative`
-    - [x] parameters
-    - [ ] variables `{% include {{ expr }} %}`
+      - [x] `include` parameters
+      - [ ] `include` variables (e.g. `{% include {{ expr }} %}`)
   - [x] Permalinks
   - [ ] Pagination
   - [ ] Themes
@@ -45,7 +53,7 @@ We are currently ~5x faster than Jekyll. Some obvious improvements would include
 - [x] Server
   - [x] Directory watch
   - [x] Live reload
-- [ ] Windows -- not tested
+- [ ] Windows
 
 Intentional differences from Jekyll:
 

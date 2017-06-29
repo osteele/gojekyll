@@ -1,13 +1,16 @@
 package liquid
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/osteele/liquid/expressions"
+	"github.com/osteele/liquid/generics"
 	"github.com/russross/blackfriday"
 )
 
@@ -24,9 +27,18 @@ func (e *Wrapper) addJekyllFilters() {
 		}
 		return out
 	})
+	// sort overrides the Liquid filter with one that takes parameters
+	e.engine.DefineFilter("sort", sortFilter)
 	e.engine.DefineFilter("where", whereFilter) // TODO test case
 	e.engine.DefineFilter("where_exp", whereExpFilter)
 	e.engine.DefineFilter("xml_escape", xml.Marshal)
+
+	e.engine.DefineFilter("push", func(array []interface{}, item interface{}) interface{} {
+		return append(array, generics.MustConvertItem(item, array))
+	})
+	e.engine.DefineFilter("unshift", func(array []interface{}, item interface{}) interface{} {
+		return append([]interface{}{generics.MustConvertItem(item, array)}, array...)
+	})
 
 	// dates
 	e.engine.DefineFilter("date_to_rfc822", func(date time.Time) string {
@@ -55,6 +67,36 @@ func (e *Wrapper) addJekyllFilters() {
 	})
 	e.engine.DefineFilter("jsonify", json.Marshal)
 	e.engine.DefineFilter("markdownify", blackfriday.MarkdownCommon)
+	// e.engine.DefineFilter("normalize_whitespace", func(s string) string {
+	// 	wsPattern := regexp.MustCompile(`(?s:[\s\n]+)`)
+	// 	return wsPattern.ReplaceAllString(s, " ")
+	// })
+	e.engine.DefineFilter("to_integer", func(n int) int { return n })
+	e.engine.DefineFilter("number_of_words", func(s string) int {
+		wordPattern := regexp.MustCompile(`\w+`) // TODO what's the Jekyll spec for a word?
+		m := wordPattern.FindAllStringIndex(s, -1)
+		if m == nil {
+			return 0
+		}
+		return len(m)
+	})
+
+	// string escapes
+	// e.engine.DefineFilter("uri_escape", func(s string) string {
+	// 	parts := strings.SplitN(s, "?", 2)
+	// 	if len(parts) > 0 {
+	// TODO PathEscape is the wrong function
+	// 		parts[len(parts)-1] = url.PathEscape(parts[len(parts)-1])
+	// 	}
+	// 	return strings.Join(parts, "?")
+	// })
+	e.engine.DefineFilter("xml_escape", func(s string) string {
+		buf := new(bytes.Buffer)
+		if err := xml.EscapeText(buf, []byte(s)); err != nil {
+			panic(err)
+		}
+		return buf.String()
+	})
 }
 
 func arrayToSentenceStringFilter(value []string, conjunction interface{}) string {
@@ -71,6 +113,23 @@ func arrayToSentenceStringFilter(value []string, conjunction interface{}) string
 		}
 	}
 	return strings.Join(ar, ", ")
+}
+
+func sortFilter(in []interface{}, key interface{}, nilFirst interface{}) []interface{} {
+	nf, ok := nilFirst.(bool)
+	if !ok {
+		nf = true
+	}
+	out := make([]interface{}, len(in))
+	for i, v := range in {
+		out[i] = v
+	}
+	if key == nil {
+		generics.Sort(out)
+	} else {
+		generics.SortByProperty(out, key.(string), nf)
+	}
+	return out
 }
 
 // func xmlEscapeFilter(value interface{}) interface{} {
@@ -105,19 +164,19 @@ func whereExpFilter(in []interface{}, name string, expr expressions.Closure) ([]
 	return out, nil
 }
 
-func whereFilter(in []interface{}, key string, value interface{}) []interface{} {
+func whereFilter(in []map[string]interface{}, key string, value interface{}) []interface{} {
 	rt := reflect.ValueOf(in)
 	switch rt.Kind() {
 	case reflect.Array, reflect.Slice:
 	default:
-		return in
+		return nil
 	}
 	out := []interface{}{}
 	for i := 0; i < rt.Len(); i++ {
 		item := rt.Index(i)
 		if item.Kind() == reflect.Map && item.Type().Key().Kind() == reflect.String {
 			attr := item.MapIndex(reflect.ValueOf(key))
-			if attr != reflect.Zero(attr.Type()) && (value == nil || attr.Interface() == value) {
+			if attr.IsValid() && (value == nil || attr.Interface() == value) {
 				out = append(out, item.Interface())
 			}
 		}
