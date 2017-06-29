@@ -3,10 +3,17 @@ package helpers
 import (
 	"io"
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+var testDataDir = filepath.Join("..", "testdata", "helpers")
+
+func testFile(name string) string {
+	return filepath.Join(testDataDir, name)
+}
 
 func TestCopyFileContents(t *testing.T) {
 	f, err := ioutil.TempFile("", "ioutil-test")
@@ -14,7 +21,7 @@ func TestCopyFileContents(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.Close()
-	err = CopyFileContents(f.Name(), "test/test.txt", 0x644)
+	err = CopyFileContents(f.Name(), testFile("test.txt"), 0x644)
 	require.NoError(t, err)
 
 	b, err := ioutil.ReadFile(f.Name())
@@ -23,20 +30,20 @@ func TestCopyFileContents(t *testing.T) {
 	}
 	require.Equal(t, "content\n", string(b))
 
-	err = CopyFileContents(f.Name(), "test/missing.txt", 0x644)
+	err = CopyFileContents(f.Name(), testFile("missing.txt"), 0x644)
 	require.Error(t, err)
 }
 
 func TestReadFileMagic(t *testing.T) {
-	b, err := ReadFileMagic("test/test.txt")
+	b, err := ReadFileMagic(testFile("test.txt"))
 	require.NoError(t, err)
 	require.Equal(t, "cont", string(b))
 
-	b, err = ReadFileMagic("test/empty.txt")
+	b, err = ReadFileMagic(testFile("empty.txt"))
 	require.NoError(t, err)
 	require.Equal(t, []byte{0, 0, 0, 0}, b)
 
-	b, err = ReadFileMagic("test/missing.txt")
+	b, err = ReadFileMagic(testFile("missing.txt"))
 	require.Error(t, err)
 }
 
