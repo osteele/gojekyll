@@ -33,11 +33,11 @@ type Site struct {
 
 // OutputPages returns a list of output pages.
 func (s *Site) OutputPages() []pages.Page {
-	out := make([]pages.Page, len(s.Routes))
+	out := make([]pages.Page, 0, len(s.Routes))
 	for _, p := range s.Routes {
 		out = append(out, p)
 	}
-	return s.pages
+	return out
 }
 
 // Pages returns all the pages, output or not.

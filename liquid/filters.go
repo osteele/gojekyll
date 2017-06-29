@@ -24,6 +24,7 @@ func (e *LocalWrapperEngine) addJekyllFilters() {
 		}
 		return out
 	})
+	e.engine.DefineFilter("where", whereFilter) // TODO test case
 	e.engine.DefineFilter("where_exp", whereExpFilter)
 	e.engine.DefineFilter("xml_escape", xml.Marshal)
 

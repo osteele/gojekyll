@@ -66,7 +66,7 @@ func debounce(interval time.Duration, input chan string) (output chan []string) 
 	output = make(chan []string)
 	var (
 		pending = []string{}
-		ticker  = time.Tick(interval) // nolint: staticcheck
+		ticker  = time.Tick(interval) // nolint: staticcheck, megacheck
 	)
 	go func() {
 		for {

@@ -13,7 +13,6 @@ import (
 // Command-line options
 var (
 	buildOptions          sites.BuildOptions
-	site                  *sites.Site
 	useRemoteLiquidEngine bool
 )
 
