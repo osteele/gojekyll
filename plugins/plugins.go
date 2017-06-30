@@ -33,8 +33,8 @@ func warnUnimplemented(name string) {
 	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", name)
 }
 
-func emptyTag(lexer string) (func(io.Writer, chunks.Context) error, error) {
-	return func(w io.Writer, _ chunks.Context) error { return nil }, nil
+func emptyTag(lexer string) (func(io.Writer, chunks.RenderContext) error, error) {
+	return func(w io.Writer, _ chunks.RenderContext) error { return nil }, nil
 }
 
 func init() {
@@ -60,15 +60,42 @@ func init() {
 	// registerPlugin("jemoji")
 }
 
-const avatarTemplate = `<img class="avatar avatar-small" src="https://avatars3.githubusercontent.com/{username}?v=3&amp;s=40" alt="{username}" srcset="https://avatars3.githubusercontent.com/{username}?v=3&amp;s=40 1x, https://avatars3.githubusercontent.com/{username}?v=3&amp;s=80 2x, https://avatars3.githubusercontent.com/{username}?v=3&amp;s=120 3x, https://avatars3.githubusercontent.com/{username}?v=3&amp;s=160 4x" width="40" height="40" />`
+// this template is from the plugin documentation
+const avatarTemplate = `<img class="avatar avatar-small" src="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40" alt="{user}" srcset="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40 1x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=80 2x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=120 3x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=160 4x" width="40" height="40" />`
 
-func avatarTag(filename string) (func(io.Writer, chunks.Context) error, error) {
-	username := "osteele" // TODO replace with real name
-	size := 40
-	return func(w io.Writer, _ chunks.Context) error {
-		s := strings.Replace(avatarTemplate, "40", fmt.Sprintf("%s", size), -1)
-		s = strings.Replace(s, "{username}", username, -1)
-		_, err := w.Write([]byte(s))
+func avatarTag(_ string) (func(io.Writer, chunks.RenderContext) error, error) {
+	return func(w io.Writer, ctx chunks.RenderContext) error {
+		var (
+			user string
+			size = "40"
+		)
+		args, err := ctx.ParseTagArgs()
+		fmt.Sprintln("args", args)
+		if err != nil {
+			fmt.Println("err", err)
+			return err
+		}
+		for _, arg := range strings.Fields(args) {
+			split := strings.SplitN(arg, "=", 2)
+			if len(split) == 1 {
+				split = []string{"user", arg}
+			}
+			switch split[0] {
+			case "user":
+				user = split[1]
+			case "size":
+				size = split[1]
+			default:
+				return fmt.Errorf("unknown avatar argument: %s", split[0])
+			}
+		}
+		if user == "" {
+			return fmt.Errorf("parse error in avatar tag parameters %s", args)
+		}
+		s := strings.Replace(avatarTemplate, "40", fmt.Sprint(size), -1)
+		s = strings.Replace(s, "{user}", user, -1)
+		fmt.Println(args, "->", user, size)
+		_, err = w.Write([]byte(s))
 		return err
 	}, nil
 }

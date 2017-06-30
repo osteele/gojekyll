@@ -11,7 +11,7 @@ import (
 type Engine interface {
 	Parse([]byte) (liquid.Template, error)
 	ParseAndRender([]byte, map[string]interface{}) ([]byte, error)
-	DefineTag(string, func(string) (func(io.Writer, chunks.Context) error, error))
+	DefineTag(string, func(string) (func(io.Writer, chunks.RenderContext) error, error))
 }
 
 // Wrapper is a wrapper around the Liquid engine.
@@ -38,7 +38,7 @@ func NewEngine() *Wrapper {
 }
 
 // DefineTag is in the Engine interface.
-func (e *Wrapper) DefineTag(name string, f func(string) (func(io.Writer, chunks.Context) error, error)) {
+func (e *Wrapper) DefineTag(name string, f func(string) (func(io.Writer, chunks.RenderContext) error, error)) {
 	e.engine.DefineTag(name, f)
 }
 
