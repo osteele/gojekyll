@@ -4,12 +4,14 @@ import (
 	"io"
 
 	"github.com/osteele/liquid"
+	"github.com/osteele/liquid/chunks"
 )
 
 // Engine is a configured liquid engine.
 type Engine interface {
 	Parse([]byte) (liquid.Template, error)
 	ParseAndRender([]byte, map[string]interface{}) ([]byte, error)
+	DefineTag(string, func(string) (func(io.Writer, chunks.Context) error, error))
 }
 
 // Wrapper is a wrapper around the Liquid engine.
@@ -33,6 +35,11 @@ func NewEngine() *Wrapper {
 	e.addJekyllFilters()
 	e.addJekyllTags()
 	return e
+}
+
+// DefineTag is in the Engine interface.
+func (e *Wrapper) DefineTag(name string, f func(string) (func(io.Writer, chunks.Context) error, error)) {
+	e.engine.DefineTag(name, f)
 }
 
 // LinkTagHandler sets the link tag handler.

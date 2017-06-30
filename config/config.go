@@ -23,6 +23,9 @@ type Config struct {
 	Exclude     []string
 	MarkdownExt string `yaml:"markdown_ext"`
 
+	// Plugins
+	Plugins []string `yaml:"gems"` // TODO this differs from the Jekyll docs
+
 	// Serving
 	AbsoluteURL string `yaml:"url"`
 	BaseURL     string
@@ -78,6 +81,7 @@ func (c *Config) GetFrontMatterDefaults(relpath, typename string) (m templates.V
 }
 
 // From https://jekyllrb.com/docs/configuration/#default-configuration
+// The following includes only those keys that are currently implemented.
 const defaultSiteConfig = `
 # Where things are
 source:       .
@@ -96,6 +100,9 @@ keep_files:           [".git", ".svn"]
 encoding:             "utf-8"
 markdown_ext:         "markdown,mkdown,mkdn,mkd,md"
 strict_front_matter: false
+
+# Plugins
+plugins:   []
 
 # Outputting
 permalink:     date

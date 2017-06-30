@@ -30,7 +30,6 @@ type Pipeline struct {
 // PipelineOptions configures a pipeline.
 type PipelineOptions struct {
 	SourceDir             string
-	AbsoluteURL, BaseURL  string
 	RelativeFilenameToURL liquid.LinkTagHandler
 }
 
@@ -42,6 +41,11 @@ func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 		return nil, err
 	}
 	return &p, nil
+}
+
+// Engine returns the Liquid engine.
+func (p *Pipeline) TemplateEngine() liquid.Engine {
+	return p.liquidEngine
 }
 
 // OutputExt returns the output extension.
@@ -108,9 +112,9 @@ func (p *Pipeline) makeLiquidEngine() liquid.Engine {
 		_, err = w.Write(text)
 		return err
 	}
+	engine.AbsoluteURL = p.config.AbsoluteURL
+	engine.BaseURL = p.config.BaseURL
 	engine.IncludeHandler(includeHandler)
 	engine.LinkTagHandler(p.RelativeFilenameToURL)
-	engine.AbsoluteURL = p.AbsoluteURL
-	engine.BaseURL = p.BaseURL
 	return engine
 }
