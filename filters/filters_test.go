@@ -1,4 +1,4 @@
-package liquid
+package filters
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package liquid
+package filters
 
 import (
 	"bytes"
@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/config"
-	lq "github.com/osteele/liquid"
+	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/expressions"
 	"github.com/osteele/liquid/generics"
 	"github.com/russross/blackfriday"
 )
 
-func AddJekyllFilters(engine lq.Engine, config config.Config) {
+func AddJekyllFilters(engine liquid.Engine, config config.Config) {
 	// array filters
 	engine.DefineFilter("array_to_sentence_string", arrayToSentenceStringFilter)
 	// TODO neither Liquid nor Jekyll docs this, but it appears to be present

@@ -6,8 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/filters"
 	"github.com/osteele/gojekyll/helpers"
-	tags "github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/liquid"
 	"github.com/russross/blackfriday"
@@ -44,7 +45,7 @@ func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 	return &p, nil
 }
 
-// Engine returns the Liquid engine.
+// TemplateEngine returns the Liquid engine.
 func (p *Pipeline) TemplateEngine() liquid.Engine {
 	return p.liquidEngine
 }
@@ -113,11 +114,7 @@ func (p *Pipeline) makeLiquidEngine() liquid.Engine {
 		_, err = w.Write(text)
 		return err
 	}
-	tags.AddJekyllFilters(engine, p.config)
+	filters.AddJekyllFilters(engine, p.config)
 	tags.AddJekyllTags(engine, p.config, includeHandler, p.RelativeFilenameToURL)
-	// engine.AbsoluteURL = p.config.AbsoluteURL
-	// engine.BaseURL = p.config.BaseURL
-	// engine.IncludeHandler(includeHandler)
-	// engine.LinkTagHandler(p.RelativeFilenameToURL)
 	return engine
 }

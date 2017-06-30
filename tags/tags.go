@@ -1,4 +1,4 @@
-package liquid
+package tags
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/config"
-	lq "github.com/osteele/liquid"
+	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/chunks"
 )
 
@@ -20,7 +20,7 @@ type IncludeTagHandler func(string, io.Writer, map[string]interface{}) error
 // A LinkTagHandler given an include tag file name returns a URL.
 type LinkTagHandler func(string) (string, bool)
 
-func AddJekyllTags(engine lq.Engine, config config.Config, includeHandler IncludeTagHandler, linkHandler LinkTagHandler) {
+func AddJekyllTags(engine liquid.Engine, config config.Config, includeHandler IncludeTagHandler, linkHandler LinkTagHandler) {
 	tc := tagContext{config, includeHandler, linkHandler}
 	engine.DefineTag("link", tc.linkTag)
 	engine.DefineTag("include", tc.includeTag)
