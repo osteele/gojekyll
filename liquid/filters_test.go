@@ -28,7 +28,11 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ site.pages | sort: "weight", true | map: "name" | join }}`, "b, a, d, c"},
 	{`{{ site.pages | sort: "weight", false | map: "name" | join }}`, "a, d, c, b"},
 
-	{`{{ site.members | where: "graduation_year", "2014" | map: "name" | join }}`, "yes"},
+	{`{{ site.members | where: "graduation_year", "2014" | map: "name" }}`, "Alan"},
+	{`{{ site.members | where_exp: "item", "item.graduation_year == 2014" | map: "name" }}`, "Alan"},
+	{`{{ site.members | where_exp: "item", "item.graduation_year < 2014" | map: "name" }}`, "Alonzo"},
+	{`{{ site.members | where_exp: "item", "item.name contains 'Al'" | map: "name" | join }}`, "Alonzo, Alan"},
+	{`{{ site.members | group_by: "graduation_year" | map: "name" | sort | join }}`, "2013, 2014, 2015"},
 
 	{`{{ page.tags | push: 'Spokane' | join }}`, "Seattle, Tacoma, Spokane"},
 	// {`{{ page.tags | pop }}`, "Seattle"},
@@ -63,9 +67,10 @@ var filterTestScope = map[string]interface{}{
 	},
 	"site": map[string]interface{}{
 		"members": []map[string]interface{}{
-			{"name": "yes", "graduation_year": "2014"},
-			{"name": "no", "graduation_year": "2015"},
-			{"name": "no"},
+			{"name": "Alonzo", "graduation_year": 2013},
+			{"name": "Alan", "graduation_year": 2014},
+			{"name": "Moses", "graduation_year": 2015},
+			{"name": "Haskell"},
 		},
 		"pages": []map[string]interface{}{
 			{"name": "a", "weight": 10},

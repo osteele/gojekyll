@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -15,7 +16,7 @@ import (
 )
 
 func (e *Wrapper) addJekyllFilters() {
-	// arrays
+	// array filters
 	e.engine.DefineFilter("array_to_sentence_string", arrayToSentenceStringFilter)
 	// TODO neither Liquid nor Jekyll docs this, but it appears to be present
 	e.engine.DefineFilter("filter", func(values []map[string]interface{}, key string) []interface{} {
@@ -27,6 +28,7 @@ func (e *Wrapper) addJekyllFilters() {
 		}
 		return out
 	})
+	e.engine.DefineFilter("group_by", groupByFilter)
 	// sort overrides the Liquid filter with one that takes parameters
 	e.engine.DefineFilter("sort", sortFilter)
 	e.engine.DefineFilter("where", whereFilter) // TODO test case
@@ -102,14 +104,14 @@ func (e *Wrapper) addJekyllFilters() {
 	})
 }
 
-func arrayToSentenceStringFilter(value []string, conjunction interface{}) string {
+func arrayToSentenceStringFilter(array []string, conjunction interface{}) string {
 	conj, ok := conjunction.(string)
 	if !ok {
 		conj = "and "
 	}
-	rt := reflect.ValueOf(value)
+	rt := reflect.ValueOf(array)
 	ar := make([]string, rt.Len())
-	for i, v := range value {
+	for i, v := range array {
 		ar[i] = v
 		if i == rt.Len()-1 {
 			ar[i] = conj + v
@@ -118,13 +120,44 @@ func arrayToSentenceStringFilter(value []string, conjunction interface{}) string
 	return strings.Join(ar, ", ")
 }
 
-func sortFilter(in []interface{}, key interface{}, nilFirst interface{}) []interface{} {
+func groupByFilter(array []map[string]interface{}, property string) []map[string]interface{} {
+	rt := reflect.ValueOf(array)
+	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
+		return nil
+	}
+	groups := map[interface{}][]interface{}{}
+	for i := 0; i < rt.Len(); i++ {
+		item := rt.Index(i)
+		if item.Kind() == reflect.Map && item.Type().Key().Kind() == reflect.String {
+			attr := item.MapIndex(reflect.ValueOf(property))
+			// fmt.Println("invalid", item)
+			if attr.IsValid() {
+				key := attr.Interface()
+				group, found := groups[key]
+				// fmt.Println("found", attr)
+				if found {
+					group = append(group, groups[key])
+				} else {
+					group = []interface{}{item}
+				}
+				groups[key] = group
+			}
+		}
+	}
+	out := []map[string]interface{}{}
+	for k, v := range groups {
+		out = append(out, map[string]interface{}{"name": k, "items": v})
+	}
+	return out
+}
+
+func sortFilter(array []interface{}, key interface{}, nilFirst interface{}) []interface{} {
 	nf, ok := nilFirst.(bool)
 	if !ok {
 		nf = true
 	}
-	out := make([]interface{}, len(in))
-	copy(out, in)
+	out := make([]interface{}, len(array))
+	copy(out, array)
 	if key == nil {
 		generics.Sort(out)
 	} else {
@@ -133,12 +166,10 @@ func sortFilter(in []interface{}, key interface{}, nilFirst interface{}) []inter
 	return out
 }
 
-func whereExpFilter(in []interface{}, name string, expr expressions.Closure) ([]interface{}, error) {
-	rt := reflect.ValueOf(in)
-	switch rt.Kind() {
-	case reflect.Array, reflect.Slice:
-	default:
-		return in, nil
+func whereExpFilter(array []interface{}, name string, expr expressions.Closure) ([]interface{}, error) {
+	rt := reflect.ValueOf(array)
+	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
+		return nil, nil
 	}
 	out := []interface{}{}
 	for i := 0; i < rt.Len(); i++ {
@@ -154,11 +185,9 @@ func whereExpFilter(in []interface{}, name string, expr expressions.Closure) ([]
 	return out, nil
 }
 
-func whereFilter(in []map[string]interface{}, key string, value interface{}) []interface{} {
-	rt := reflect.ValueOf(in)
-	switch rt.Kind() {
-	case reflect.Array, reflect.Slice:
-	default:
+func whereFilter(array []map[string]interface{}, key string, value interface{}) []interface{} {
+	rt := reflect.ValueOf(array)
+	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
 		return nil
 	}
 	out := []interface{}{}
@@ -166,7 +195,7 @@ func whereFilter(in []map[string]interface{}, key string, value interface{}) []i
 		item := rt.Index(i)
 		if item.Kind() == reflect.Map && item.Type().Key().Kind() == reflect.String {
 			attr := item.MapIndex(reflect.ValueOf(key))
-			if attr.IsValid() && (value == nil || attr.Interface() == value) {
+			if attr.IsValid() && fmt.Sprint(attr) == value {
 				out = append(out, item.Interface())
 			}
 		}
