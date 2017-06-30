@@ -2,19 +2,17 @@ package sites
 
 import (
 	"fmt"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/osteele/gojekyll/collections"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
-	"github.com/osteele/gojekyll/liquid"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid"
 )
 
 // Site is a Jekyll site.
@@ -47,34 +45,12 @@ func (s *Site) OutputPages() []pages.Document {
 // Pages returns all the pages, output or not.
 func (s *Site) Pages() []pages.Document { return s.pages }
 
-// PathPrefix returns the relative directory prefix.
+// PathPrefix is in the page.Container interface.
 func (s *Site) PathPrefix() string { return "" }
 
 // NewSite creates a new site record, initialized with the site defaults.
 func NewSite() *Site {
 	return &Site{config: config.Default()}
-}
-
-// NewSiteFromDirectory reads the configuration file, if it exists.
-func NewSiteFromDirectory(source string) (*Site, error) {
-	s := NewSite()
-	configPath := filepath.Join(source, "_config.yml")
-	bytes, err := ioutil.ReadFile(configPath)
-	switch {
-	case err != nil && os.IsNotExist(err):
-		// ok
-	case err != nil:
-		return nil, err
-	default:
-		err = config.Unmarshal(bytes, &s.config)
-		if err != nil {
-			return nil, err
-		}
-		s.Source = filepath.Join(source, s.config.Source)
-		s.ConfigFile = &configPath
-	}
-	s.Destination = filepath.Join(s.Source, s.config.Destination)
-	return s, nil
 }
 
 // SetAbsoluteURL overrides the loaded configuration.
@@ -153,7 +129,7 @@ func (s *Site) initializeRenderingPipeline() (err error) {
 	return
 }
 
-// OutputExt returns the output extension.
+// OutputExt is in the page.Container interface.
 func (s *Site) OutputExt(pathname string) string {
 	return s.config.OutputExt(pathname)
 }

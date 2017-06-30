@@ -28,19 +28,20 @@ func NewCollection(name string, metadata templates.VariableMap, c pages.Containe
 	}
 }
 
-// OutputExt returns the output extension.
+// OutputExt is in the page.Container interface.
 func (c *Collection) OutputExt(pathname string) string {
 	return c.container.OutputExt(pathname)
 }
+
+// PathPrefix is in the page.Container interface.
+// PathPrefix returns the collection's directory prefix, e.g. "_posts/"
+func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Name + "/") }
 
 // IsPostsCollection returns true if the collection is the special "posts" collection.
 func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
 
 // Output returns a bool indicating whether files in this collection should be written.
 func (c *Collection) Output() bool { return c.Metadata.Bool("output", false) }
-
-// PathPrefix returns the collection's directory prefix, e.g. "_posts/"
-func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Name + "/") }
 
 // Pages is a list of pages.
 func (c *Collection) Pages() []pages.Document {

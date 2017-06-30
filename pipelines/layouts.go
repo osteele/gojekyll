@@ -41,7 +41,7 @@ func (p *Pipeline) FindLayout(base string, fm *templates.VariableMap) (t liquid.
 	if err != nil {
 		return
 	}
-	return p.liquidEngine.Parse(content)
+	return p.liquidEngine.ParseTemplate(content)
 }
 
 // LayoutsDir returns the path to the layouts directory.

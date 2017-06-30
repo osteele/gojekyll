@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/osteele/gojekyll/liquid"
+	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/chunks"
 )
 
@@ -94,7 +94,6 @@ func avatarTag(_ string) (func(io.Writer, chunks.RenderContext) error, error) {
 		}
 		s := strings.Replace(avatarTemplate, "40", fmt.Sprint(size), -1)
 		s = strings.Replace(s, "{user}", user, -1)
-		fmt.Println(args, "->", user, size)
 		_, err = w.Write([]byte(s))
 		return err
 	}, nil

@@ -1,13 +1,37 @@
 package sites
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/osteele/gojekyll/collections"
+	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 )
+
+// NewSiteFromDirectory reads the configuration file, if it exists.
+func NewSiteFromDirectory(source string) (*Site, error) {
+	s := NewSite()
+	configPath := filepath.Join(source, "_config.yml")
+	bytes, err := ioutil.ReadFile(configPath)
+	switch {
+	case err != nil && os.IsNotExist(err):
+		// ok
+	case err != nil:
+		return nil, err
+	default:
+		err = config.Unmarshal(bytes, &s.config)
+		if err != nil {
+			return nil, err
+		}
+		s.Source = filepath.Join(source, s.config.Source)
+		s.ConfigFile = &configPath
+	}
+	s.Destination = filepath.Join(s.Source, s.config.Destination)
+	return s, nil
+}
 
 // Load loads the site data and files. It doesn't load the configuration file; NewSiteFromDirectory did that.
 func (s *Site) Load() error {

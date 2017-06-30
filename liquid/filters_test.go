@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/liquid"
 	"github.com/stretchr/testify/require"
 )
 
@@ -99,9 +101,11 @@ func TestFilters(t *testing.T) {
 }
 
 func requireTemplateRender(t *testing.T, tmpl string, scope map[string]interface{}, expected string) {
-	engine := NewEngine()
-	engine.BaseURL = "/my-baseurl"
-	engine.AbsoluteURL = "http://example.com"
+	engine := liquid.NewEngine()
+	c := config.Default()
+	c.BaseURL = "/my-baseurl"
+	c.AbsoluteURL = "http://example.com"
+	AddJekyllFilters(engine, c)
 	data, err := engine.ParseAndRender([]byte(tmpl), scope)
 	require.NoErrorf(t, err, tmpl)
 	require.Equalf(t, expected, strings.TrimSpace(string(data)), tmpl)

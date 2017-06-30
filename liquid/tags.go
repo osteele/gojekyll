@@ -8,16 +8,32 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/osteele/gojekyll/config"
+	lq "github.com/osteele/liquid"
 	"github.com/osteele/liquid/chunks"
 )
 
-func (e *Wrapper) addJekyllTags() {
-	e.engine.DefineTag("link", e.linkTag)
-	e.engine.DefineTag("include", e.includeTag)
+// IncludeTagHandler resolves the filename in a Liquid include tag into the expanded content
+// of the included file.
+type IncludeTagHandler func(string, io.Writer, map[string]interface{}) error
+
+// A LinkTagHandler given an include tag file name returns a URL.
+type LinkTagHandler func(string) (string, bool)
+
+func AddJekyllTags(engine lq.Engine, config config.Config, includeHandler IncludeTagHandler, linkHandler LinkTagHandler) {
+	tc := tagContext{config, includeHandler, linkHandler}
+	engine.DefineTag("link", tc.linkTag)
+	engine.DefineTag("include", tc.includeTag)
 
 	// TODO unimplemented
-	e.engine.DefineTag("post_url", emptyTag)
-	e.engine.DefineStartTag("highlight", highlightTag)
+	engine.DefineTag("post_url", emptyTag)
+	engine.DefineStartTag("highlight", highlightTag)
+}
+
+type tagContext struct {
+	config         config.Config
+	includeHandler IncludeTagHandler
+	linkHandler    LinkTagHandler
 }
 
 func emptyTag(_ string) (func(io.Writer, chunks.RenderContext) error, error) {
@@ -48,9 +64,9 @@ func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
 	return cmd.Run()
 }
 
-func (e *Wrapper) linkTag(filename string) (func(io.Writer, chunks.RenderContext) error, error) {
+func (tc tagContext) linkTag(filename string) (func(io.Writer, chunks.RenderContext) error, error) {
 	return func(w io.Writer, _ chunks.RenderContext) error {
-		url, found := e.linkHandler(filename)
+		url, found := tc.linkHandler(filename)
 		if !found {
 			return fmt.Errorf("missing link filename: %s", filename)
 		}
@@ -59,7 +75,7 @@ func (e *Wrapper) linkTag(filename string) (func(io.Writer, chunks.RenderContext
 	}, nil
 }
 
-func (e *Wrapper) includeTag(line string) (func(io.Writer, chunks.RenderContext) error, error) {
+func (tc tagContext) includeTag(line string) (func(io.Writer, chunks.RenderContext) error, error) {
 	// TODO string escapes
 	includeLinePattern := regexp.MustCompile(`^\S+(?:\s+\S+=("[^"]+"|'[^']'|[^'"\s]+))*$`)
 	includeParamPattern := regexp.MustCompile(`\b(\S+)=("[^"]+"|'[^']'|[^'"\s]+)(?:\s|$)`)
@@ -97,6 +113,6 @@ func (e *Wrapper) includeTag(line string) (func(io.Writer, chunks.RenderContext)
 			bindings[k] = v
 		}
 		bindings["include"] = include
-		return e.includeTagHandler(filename, w, bindings)
+		return tc.includeHandler(filename, w, bindings)
 	}, nil
 }

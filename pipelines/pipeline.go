@@ -7,8 +7,9 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
-	"github.com/osteele/gojekyll/liquid"
+	tags "github.com/osteele/gojekyll/liquid"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid"
 	"github.com/russross/blackfriday"
 )
 
@@ -30,7 +31,7 @@ type Pipeline struct {
 // PipelineOptions configures a pipeline.
 type PipelineOptions struct {
 	SourceDir             string
-	RelativeFilenameToURL liquid.LinkTagHandler
+	RelativeFilenameToURL tags.LinkTagHandler
 }
 
 // NewPipeline makes a rendering pipeline.
@@ -112,9 +113,11 @@ func (p *Pipeline) makeLiquidEngine() liquid.Engine {
 		_, err = w.Write(text)
 		return err
 	}
-	engine.AbsoluteURL = p.config.AbsoluteURL
-	engine.BaseURL = p.config.BaseURL
-	engine.IncludeHandler(includeHandler)
-	engine.LinkTagHandler(p.RelativeFilenameToURL)
+	tags.AddJekyllFilters(engine, p.config)
+	tags.AddJekyllTags(engine, p.config, includeHandler, p.RelativeFilenameToURL)
+	// engine.AbsoluteURL = p.config.AbsoluteURL
+	// engine.BaseURL = p.config.BaseURL
+	// engine.IncludeHandler(includeHandler)
+	// engine.LinkTagHandler(p.RelativeFilenameToURL)
 	return engine
 }
