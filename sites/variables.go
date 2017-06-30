@@ -8,6 +8,11 @@ import (
 
 // SiteVariables returns the site variable for template evaluation.
 func (s *Site) SiteVariables() templates.VariableMap {
+	if len(s.siteVariables) == 0 {
+		if err := s.initializeSiteVariables(); err != nil {
+			panic(err)
+		}
+	}
 	return s.siteVariables
 }
 
@@ -19,6 +24,10 @@ func (s *Site) initializeSiteVariables() error {
 		// TODO pages, posts, related_posts, static_files, html_pages, html_files, collections, data, documents, categories.CATEGORY, tags.TAG
 	})
 	return s.setCollectionVariables(false)
+}
+
+func normalizeMaps(value interface{}) interface{} {
+	return value
 }
 
 func (s *Site) setCollectionVariables(includeContent bool) error {

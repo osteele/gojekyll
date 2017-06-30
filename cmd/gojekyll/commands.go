@@ -81,7 +81,6 @@ func varsCommand(site *sites.Site) error {
 		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]templates.VariableMap)))
 	}
 	var data templates.VariableMap
-	// var data interface{} //templates.VariableMap
 	switch {
 	case *siteVariable:
 		data = siteData

@@ -33,7 +33,7 @@ func CopyFileContents(dst, src string, perm os.FileMode) error {
 }
 
 // ReadFileMagic returns the first four bytes of the file, with final '\r' replaced by '\n'.
-func ReadFileMagic(filename string) ([]byte,  error) {
+func ReadFileMagic(filename string) ([]byte, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func PathError(err error, op, name string) *os.PathError {
 	case *os.PathError:
 		return err
 	default:
-		return &os.PathError{Op: "read", Path: name, Err: err}
+		return &os.PathError{Op: op, Path: name, Err: err}
 	}
 }
 
