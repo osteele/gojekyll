@@ -13,7 +13,7 @@ This is currently 5-30x faster than Jekyll, depending on the use of `{% highligh
 - [ ] Content
   - [x] Front Matter
   - [ ] Posts
-    - [ ] Categories
+    - [x] Categories
     - [ ] Tags
     - [ ] Drafts
     - [ ] Future
