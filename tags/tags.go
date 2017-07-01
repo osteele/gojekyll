@@ -15,19 +15,20 @@ import (
 // A LinkTagHandler given an include tag file name returns a URL.
 type LinkTagHandler func(string) (string, bool)
 
-func AddJekyllTags(engine liquid.Engine, config config.Config, linkHandler LinkTagHandler) {
-	tc := tagContext{config, linkHandler}
-	engine.DefineTag("link", tc.linkTag)
-	engine.DefineTag("include", tc.includeTag)
+// AddJekyllTags adds the Jekyll tags to the Liquid engine.
+func AddJekyllTags(e liquid.Engine, c config.Config, lh LinkTagHandler) {
+	tc := tagContext{c, lh}
+	e.DefineTag("link", tc.linkTag)
+	e.DefineTag("include", tc.includeTag)
 
 	// TODO unimplemented
-	engine.DefineTag("post_url", emptyTag)
-	engine.DefineStartTag("highlight", highlightTag)
+	e.DefineTag("post_url", emptyTag)
+	e.DefineStartTag("highlight", highlightTag)
 }
 
 type tagContext struct {
-	config      config.Config
-	linkHandler LinkTagHandler
+	config config.Config
+	lh     LinkTagHandler
 }
 
 func emptyTag(_ string) (func(io.Writer, chunks.RenderContext) error, error) {
@@ -47,11 +48,12 @@ func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
 	if err != nil {
 		return err
 	}
+	// TODO this is disabled for performance; make it configurable instead.
 	if true {
 		_, err = w.Write([]byte(s))
 		return err
 	}
-	cmd := exec.Command("pygmentize", cargs...)
+	cmd := exec.Command("pygmentize", cargs...) // nolint: gas
 	cmd.Stdin = strings.NewReader(s)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -60,7 +62,7 @@ func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
 
 func (tc tagContext) linkTag(filename string) (func(io.Writer, chunks.RenderContext) error, error) {
 	return func(w io.Writer, _ chunks.RenderContext) error {
-		url, found := tc.linkHandler(filename)
+		url, found := tc.lh(filename)
 		if !found {
 			return fmt.Errorf("missing link filename: %s", filename)
 		}

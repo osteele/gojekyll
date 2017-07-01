@@ -42,6 +42,8 @@ func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 	return &p, nil
 }
 
+// SourceDir returns the site source directory. Seeing how far we can bend
+// the Law of Demeter.
 func (p *Pipeline) SourceDir() string {
 	return p.config.Source
 }

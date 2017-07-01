@@ -134,6 +134,8 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 	return filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn)
 }
 
+// DateFromFilename returns the date for a filename that uses Jekyll post convention.
+// It also returns a bool indicating whether a date was found.
 func DateFromFilename(s string) (time.Time, bool) {
 	layout := "2006-01-02-"
 	t, err := time.Parse(layout, filepath.Base(s + layout)[:len(layout)])

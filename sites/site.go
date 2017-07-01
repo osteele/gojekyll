@@ -29,8 +29,10 @@ type Site struct {
 	siteVariables    map[string]interface{}
 }
 
+// SourceDir returns the site source directory.
 func (s *Site) SourceDir() string { return s.config.Source }
 
+// DestDir returns the site destination directory.
 func (s *Site) DestDir() string {
 	if filepath.IsAbs(s.config.Destination) {
 		return s.config.Destination
