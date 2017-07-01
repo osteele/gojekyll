@@ -17,7 +17,7 @@ func (s *Site) SiteVariables() map[string]interface{} {
 }
 
 func (s *Site) initializeSiteVariables() error {
-	s.siteVariables = templates.MergeVariableMaps(s.config.Variables, templates.VariableMap{
+	s.siteVariables = templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data": s.data,
 		// TODO read time from _config, if it's available
 		"time": time.Now(),

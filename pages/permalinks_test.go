@@ -41,13 +41,13 @@ var collectionTests = []pathTest{
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
 		c = containerMock{}
-		d = templates.VariableMap{
+		d = map[string]interface{}{
 			"categories": "b a",
 		}
 	)
 
-	testPermalinkPattern := func(pattern, path string, data templates.VariableMap) (string, error) {
-		vs := templates.MergeVariableMaps(data, templates.VariableMap{"permalink": pattern})
+	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
+		vs := templates.MergeVariableMaps(data, map[string]interface{}{"permalink": pattern})
 		ext := filepath.Ext(path)
 		switch ext {
 		case ".md", ".markdown":

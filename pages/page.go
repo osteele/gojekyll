@@ -38,7 +38,7 @@ func newPage(filename string, f file) (*Page, error) {
 }
 
 // PageVariables returns the attributes of the template page object.
-func (p *Page) PageVariables() templates.VariableMap {
+func (p *Page) PageVariables() map[string]interface{} {
 	var (
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
@@ -46,7 +46,7 @@ func (p *Page) PageVariables() templates.VariableMap {
 		base    = filepath.Base(root)
 	)
 
-	data := templates.VariableMap{
+	data := map[string]interface{}{
 		"path": relpath,
 		"url":  p.Permalink(),
 		// TODO output
@@ -88,8 +88,8 @@ func (p *Page) PageVariables() templates.VariableMap {
 }
 
 // TemplateContext returns the local variables for template evaluation
-func (p *Page) TemplateContext(rc RenderingContext) templates.VariableMap {
-	return templates.VariableMap{
+func (p *Page) TemplateContext(rc RenderingContext) map[string]interface{} {
+	return map[string]interface{}{
 		"page": p.PageVariables(),
 		"site": rc.SiteVariables(),
 	}
@@ -106,7 +106,7 @@ func (p *Page) Write(rc RenderingContext, w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	layout := p.frontMatter.String("layout", "")
+	layout := templates.VariableMap(p.frontMatter).String("layout", "")
 	if layout != "" {
 		b, err = rp.ApplyLayout(layout, b, p.TemplateContext(rc))
 		if err != nil {

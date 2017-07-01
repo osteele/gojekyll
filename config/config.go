@@ -16,7 +16,7 @@ type Config struct {
 	LayoutsDir  string `yaml:"layouts_dir"`
 	DataDir     string `yaml:"data_dir"`
 	IncludesDir string `yaml:"includes_dir"`
-	Collections map[string]templates.VariableMap
+	Collections map[string]map[string]interface{}
 
 	// Handling Reading
 	Include     []string
@@ -38,10 +38,10 @@ type Config struct {
 			Path string
 			Type string
 		}
-		Values templates.VariableMap
+		Values map[string]interface{}
 	}
 
-	Variables templates.VariableMap `yaml:"-"`
+	Variables map[string]interface{} `yaml:"-"`
 }
 
 // Default returns a default site configuration.
@@ -68,7 +68,7 @@ func Unmarshal(bytes []byte, c *Config) error {
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
-func (c *Config) GetFrontMatterDefaults(relpath, typename string) (m templates.VariableMap) {
+func (c *Config) GetFrontMatterDefaults(relpath, typename string) (m map[string]interface{}) {
 	for _, entry := range c.Defaults {
 		scope := &entry.Scope
 		hasPrefix := strings.HasPrefix(relpath, scope.Path)

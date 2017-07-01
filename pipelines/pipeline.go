@@ -14,9 +14,9 @@ import (
 
 // PipelineInterface applies transformations to a document.
 type PipelineInterface interface {
-	ApplyLayout(string, []byte, templates.VariableMap) ([]byte, error)
+	ApplyLayout(string, []byte, map[string]interface{}) ([]byte, error)
 	OutputExt(pathname string) string
-	Render(io.Writer, []byte, string, templates.VariableMap) ([]byte, error)
+	Render(io.Writer, []byte, string, map[string]interface{}) ([]byte, error)
 }
 
 // Pipeline applies a rendering transformation to a file.
@@ -59,7 +59,7 @@ func (p *Pipeline) OutputExt(pathname string) string {
 }
 
 // Render returns nil iff it wrote to the writer
-func (p *Pipeline) Render(w io.Writer, b []byte, filename string, e templates.VariableMap) ([]byte, error) {
+func (p *Pipeline) Render(w io.Writer, b []byte, filename string, e map[string]interface{}) ([]byte, error) {
 	if p.config.IsSassPath(filename) {
 		return nil, p.WriteSass(w, b)
 	}
@@ -73,7 +73,7 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, e templates.Va
 	return b, nil
 }
 
-func (p *Pipeline) renderTemplate(b []byte, e templates.VariableMap, filename string) ([]byte, error) {
+func (p *Pipeline) renderTemplate(b []byte, e map[string]interface{}, filename string) ([]byte, error) {
 	b, err := p.liquidEngine.ParseAndRender(b, e)
 	if err != nil {
 		return nil, helpers.PathError(err, "Liquid Error", filename)
@@ -82,14 +82,14 @@ func (p *Pipeline) renderTemplate(b []byte, e templates.VariableMap, filename st
 }
 
 // ApplyLayout applies the named layout to the data.
-func (p *Pipeline) ApplyLayout(name string, data []byte, e templates.VariableMap) ([]byte, error) {
+func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{}) ([]byte, error) {
 	for name != "" {
-		var lfm templates.VariableMap
+		var lfm map[string]interface{}
 		t, err := p.FindLayout(name, &lfm)
 		if err != nil {
 			return nil, err
 		}
-		le := templates.MergeVariableMaps(e, templates.VariableMap{
+		le := templates.MergeVariableMaps(e, map[string]interface{}{
 			"content": string(data),
 			"layout":  lfm,
 		})
@@ -97,7 +97,7 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e templates.VariableMap
 		if err != nil {
 			return nil, helpers.PathError(err, "render template", name)
 		}
-		name = lfm.String("layout", "")
+		name = templates.VariableMap(lfm).String("layout", "")
 	}
 	return data, nil
 }

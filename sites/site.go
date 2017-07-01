@@ -18,7 +18,7 @@ import (
 type Site struct {
 	ConfigFile  *string
 	Collections []*collections.Collection
-	// Variables   templates.VariableMap
+	// Variables   map[string]interface{}
 	Routes map[string]pages.Document // URL path -> Page, only for output pages
 
 	config           config.Config

@@ -21,7 +21,7 @@ type file struct {
 	outputExt   string
 	permalink   string // cached permalink
 	fileModTime time.Time
-	frontMatter templates.VariableMap
+	frontMatter map[string]interface{}
 }
 
 func (p *file) String() string {
@@ -31,11 +31,11 @@ func (p *file) String() string {
 func (p *file) OutputExt() string   { return p.outputExt }
 func (p *file) Path() string        { return p.relpath }
 func (p *file) Permalink() string   { return p.permalink }
-func (p *file) Published() bool     { return p.frontMatter.Bool("published", true) }
+func (p *file) Published() bool     { return templates.VariableMap(p.frontMatter).Bool("published", true) }
 func (p *file) SiteRelPath() string { return p.relpath }
 
 // NewFile creates a Post or StaticFile.
-func NewFile(filename string, c Container, relpath string, defaults templates.VariableMap) (Document, error) {
+func NewFile(filename string, c Container, relpath string, defaults map[string]interface{}) (Document, error) {
 	magic, err := helpers.ReadFileMagic(filename)
 	if err != nil {
 		return nil, err
@@ -72,14 +72,14 @@ func NewFile(filename string, c Container, relpath string, defaults templates.Va
 
 // Variables returns the attributes of the template page object.
 // See https://jekyllrb.com/docs/variables/#page-variables
-func (p *file) PageVariables() templates.VariableMap {
+func (p *file) PageVariables() map[string]interface{} {
 	var (
 		relpath = "/" + filepath.ToSlash(p.relpath)
 		base    = path.Base(relpath)
 		ext     = path.Ext(relpath)
 	)
 
-	return templates.MergeVariableMaps(p.frontMatter, templates.VariableMap{
+	return templates.MergeVariableMaps(p.frontMatter, map[string]interface{}{
 		"path":          relpath,
 		"modified_time": p.fileModTime,
 		"name":          base,
@@ -109,5 +109,5 @@ func (p *file) categories() []string {
 			panic("unimplemented")
 		}
 	}
-	return []string{p.frontMatter.String("category", "")}
+	return []string{templates.VariableMap(p.frontMatter).String("category", "")}
 }

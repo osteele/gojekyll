@@ -4,7 +4,6 @@ import (
 	"io"
 
 	"github.com/osteele/gojekyll/pipelines"
-	"github.com/osteele/gojekyll/templates"
 )
 
 // Document is a Jekyll page or file.
@@ -20,7 +19,7 @@ type Document interface {
 	Write(RenderingContext, io.Writer) error
 
 	// Variables
-	PageVariables() templates.VariableMap
+	PageVariables() map[string]interface{}
 
 	// Document initialization uses this.
 	initPermalink() error

@@ -16,13 +16,13 @@ import (
 // Collection is a Jekyll collection https://jekyllrb.com/docs/collections/.
 type Collection struct {
 	Name      string
-	Metadata  templates.VariableMap
+	Metadata  map[string]interface{}
 	container pages.Container
 	pages     []pages.Document
 }
 
 // NewCollection creates a new Collection
-func NewCollection(name string, metadata templates.VariableMap, c pages.Container) *Collection {
+func NewCollection(name string, metadata map[string]interface{}, c pages.Container) *Collection {
 	return &Collection{
 		Name:      name,
 		Metadata:  metadata,
@@ -43,7 +43,7 @@ func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Nam
 func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
 
 // Output returns a bool indicating whether files in this collection should be written.
-func (c *Collection) Output() bool { return c.Metadata.Bool("output", false) }
+func (c *Collection) Output() bool { return templates.VariableMap(c.Metadata).Bool("output", false) }
 
 // Pages is a list of pages.
 func (c *Collection) Pages() []pages.Document {
@@ -62,7 +62,7 @@ func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent
 			if err != nil {
 				return nil, err
 			}
-			v = templates.MergeVariableMaps(v, templates.VariableMap{
+			v = templates.MergeVariableMaps(v, map[string]interface{}{
 				"content": string(c),
 			})
 		}
@@ -84,12 +84,12 @@ func (c *Collection) PermalinkPattern() string {
 	if c.IsPostsCollection() {
 		defaultPattern = constants.DefaultPostsCollectionPermalinkPattern
 	}
-	return c.Metadata.String("permalink", defaultPattern)
+	return templates.VariableMap(c.Metadata).String("permalink", defaultPattern)
 }
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string, string) templates.VariableMap) error {
-	pageDefaults := templates.VariableMap{
+func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string, string) map[string]interface{}) error {
+	pageDefaults := map[string]interface{}{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
 	}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/templates"
 )
 
 // PermalinkStyles defines built-in styles from https://jekyllrb.com/docs/permalinks/#builtinpermalinkstyles
@@ -45,14 +46,15 @@ func (p *file) permalinkTemplateVariables() map[string]string {
 		categories = p.categories()
 	)
 	sort.Strings(categories)
+	bindings := templates.VariableMap(p.frontMatter)
 	// TODO recognize category; list
 	vs := map[string]string{
 		"categories": strings.Join(categories, "/"),
-		"collection": p.frontMatter.String("collection", ""),
+		"collection": bindings.String("collection", ""),
 		"name":       helpers.Slugify(name),
 		"path":       "/" + root,
-		"slug":       p.frontMatter.String("slug", helpers.Slugify(name)),
-		"title":      p.frontMatter.String("slug", helpers.Slugify(name)),
+		"slug":       bindings.String("slug", helpers.Slugify(name)),
+		"title":      bindings.String("slug", helpers.Slugify(name)),
 		// The following aren't documented, but is evident
 		"output_ext": p.OutputExt(),
 		"y_day":      strconv.Itoa(p.fileModTime.YearDay()),
@@ -64,7 +66,7 @@ func (p *file) permalinkTemplateVariables() map[string]string {
 }
 
 func (p *file) expandPermalink() (s string, err error) {
-	pattern := p.frontMatter.String("permalink", constants.DefaultPermalinkPattern)
+	pattern := templates.VariableMap(p.frontMatter).String("permalink", constants.DefaultPermalinkPattern)
 
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
