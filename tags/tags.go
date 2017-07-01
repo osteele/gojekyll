@@ -3,9 +3,6 @@ package tags
 import (
 	"fmt"
 	"io"
-	"os"
-	"os/exec"
-	"strings"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/liquid"
@@ -42,31 +39,6 @@ func MakeUnimplementedTag() liquid.TagDefinition {
 		}
 		return nil
 	}
-}
-
-func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
-	args, err := ctx.ParseTagArgs()
-	if err != nil {
-		return err
-	}
-	cargs := []string{}
-	if args != "" {
-		cargs = append(cargs, "-l"+args)
-	}
-	s, err := ctx.InnerString()
-	if err != nil {
-		return err
-	}
-	// TODO this is disabled for performance; make it configurable instead.
-	if true {
-		_, err = w.Write([]byte(s))
-		return err
-	}
-	cmd := exec.Command("pygmentize", cargs...) // nolint: gas
-	cmd.Stdin = strings.NewReader(s)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	return cmd.Run()
 }
 
 func (tc tagContext) linkTag(w io.Writer, ctx chunks.RenderContext) error {

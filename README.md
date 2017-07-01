@@ -12,12 +12,14 @@ Missing features:
 - Jekyll's `include_relative`, `post_url`, `gist`, and `highlight` tags
 - The [Go Liquid template engine](https://github.com/osteele/gojekyll) is also missing some tags and filters.
 - Data files must be YAML; CSV and JSON are not supported.
+- `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge.
 - Parse errors aren't reported very nicely.
 
 Other differences from Jekyll:
 
 - `serve` generates pages on the fly; it doesn't write to the file system.
-- No `.sass-cache`; therefore, no `--safe` option.
+- Files are cached to `/tmp/gojekyll-${USER}`.
+- No `.sass-cache`; therefore, no `sass: cache: false` option.
 - Server live reload is always on.
 - The server reloads the `_config.yml` file too.
 
@@ -25,6 +27,7 @@ Other differences from Jekyll:
 
 1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier.
 2. `go get -u osteele/gojekyll/cmd/gojekyll`
+3. You need to install Pygments `pip install Pygments` to use the `{% highlight %}` tag.
 
 ## Usage
 
