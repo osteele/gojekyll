@@ -27,7 +27,7 @@ func (p *Pipeline) CopySassFileIncludes() error {
 		p.sassTempDir = dir
 	}
 
-	src := filepath.Join(p.SourceDir, "_sass")
+	src := filepath.Join(p.SourceDir(), "_sass")
 	dst := p.sassTempDir
 	err := filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {

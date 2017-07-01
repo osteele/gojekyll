@@ -2,8 +2,6 @@ package pipelines
 
 import (
 	"io"
-	"io/ioutil"
-	"path/filepath"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
@@ -31,7 +29,6 @@ type Pipeline struct {
 
 // PipelineOptions configures a pipeline.
 type PipelineOptions struct {
-	SourceDir             string
 	RelativeFilenameToURL tags.LinkTagHandler
 }
 
@@ -43,6 +40,10 @@ func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 		return nil, err
 	}
 	return &p, nil
+}
+
+func (p *Pipeline) SourceDir() string {
+	return p.config.Source
 }
 
 // TemplateEngine returns the Liquid engine.
@@ -101,20 +102,7 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e templates.VariableMap
 
 func (p *Pipeline) makeLiquidEngine() liquid.Engine {
 	engine := liquid.NewEngine()
-	includeHandler := func(name string, w io.Writer, scope map[string]interface{}) error {
-		filename := filepath.Join(p.SourceDir, p.config.IncludesDir, name)
-		template, err := ioutil.ReadFile(filename)
-		if err != nil {
-			return err
-		}
-		text, err := engine.ParseAndRender(template, scope)
-		if err != nil {
-			return err
-		}
-		_, err = w.Write(text)
-		return err
-	}
 	filters.AddJekyllFilters(engine, p.config)
-	tags.AddJekyllTags(engine, p.config, includeHandler, p.RelativeFilenameToURL)
+	tags.AddJekyllTags(engine, p.config, p.RelativeFilenameToURL)
 	return engine
 }

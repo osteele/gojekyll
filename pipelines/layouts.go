@@ -18,14 +18,14 @@ func (p *Pipeline) FindLayout(base string, fm *templates.VariableMap) (t liquid.
 		exts = append(exts, "."+ext)
 	}
 	var (
-		name    string
-		content []byte
-		found   bool
+		filename string
+		content  []byte
+		found    bool
 	)
 	for _, ext := range exts {
 		// TODO respect layout config
-		name = filepath.Join(p.LayoutsDir(), base+ext)
-		content, err = ioutil.ReadFile(name)
+		filename = filepath.Join(p.LayoutsDir(), base+ext)
+		content, err = ioutil.ReadFile(filename)
 		if err == nil {
 			found = true
 			break
@@ -46,5 +46,5 @@ func (p *Pipeline) FindLayout(base string, fm *templates.VariableMap) (t liquid.
 
 // LayoutsDir returns the path to the layouts directory.
 func (p *Pipeline) LayoutsDir() string {
-	return filepath.Join(p.SourceDir, p.config.LayoutsDir)
+	return filepath.Join(p.SourceDir(), p.config.LayoutsDir)
 }

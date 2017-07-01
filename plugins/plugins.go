@@ -39,7 +39,6 @@ func emptyTag(lexer string) (func(io.Writer, chunks.RenderContext) error, error)
 
 func init() {
 	registerPlugin("jekyll-avatar", func(ctx PluginContext) error {
-		warnUnimplemented("jekyll-avatar")
 		ctx.TemplateEngine().DefineTag("avatar", avatarTag)
 		return nil
 	})
