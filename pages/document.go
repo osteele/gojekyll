@@ -30,7 +30,7 @@ type Document interface {
 type RenderingContext interface {
 	RenderingPipeline() pipelines.PipelineInterface
 	// SiteVariables is the value of the "site" template variable.
-	SiteVariables() templates.VariableMap // value of the "site" template variable
+	SiteVariables() map[string]interface{} // value of the "site" template variable
 }
 
 // Container is the document container.

@@ -91,7 +91,7 @@ func avatarTag(_ string) (func(io.Writer, chunks.RenderContext) error, error) {
 		if user == "" {
 			return fmt.Errorf("parse error in avatar tag parameters %s", args)
 		}
-		s := strings.Replace(avatarTemplate, "40", fmt.Sprint(size), -1)
+		s := strings.Replace(avatarTemplate, "40", size, -1)
 		s = strings.Replace(s, "{user}", user, -1)
 		_, err = w.Write([]byte(s))
 		return err

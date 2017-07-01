@@ -11,7 +11,6 @@ import (
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/plugins"
-	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/liquid"
 )
 
@@ -27,7 +26,7 @@ type Site struct {
 	pipeline         *pipelines.Pipeline
 	pages            []pages.Document // all pages, output or not
 	preparedToRender bool
-	siteVariables    templates.VariableMap
+	siteVariables    map[string]interface{}
 }
 
 func (s *Site) SourceDir() string { return s.config.Source }

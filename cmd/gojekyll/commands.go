@@ -15,7 +15,6 @@ import (
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/server"
 	"github.com/osteele/gojekyll/sites"
-	"github.com/osteele/gojekyll/templates"
 )
 
 // main sets this
@@ -78,16 +77,16 @@ func varsCommand(site *sites.Site) error {
 	// (Actually it's circular, which the yaml package can't handle.)
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
 	for _, c := range site.Collections {
-		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]templates.VariableMap)))
+		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]interface{})))
 	}
-	var data templates.VariableMap
+	var data map[string]interface{}
 	switch {
 	case *siteVariable:
 		data = siteData
 	case *dataVariable:
-		data = siteData["data"].(templates.VariableMap)
+		data = siteData["data"].(map[string]interface{})
 		if *variablePath != "" {
-			data = data[*variablePath].(templates.VariableMap)
+			data = data[*variablePath].(map[string]interface{})
 		}
 	default:
 		page, err := pageFromPathOrRoute(site, *variablePath)
