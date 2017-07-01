@@ -44,6 +44,11 @@ func init() {
 		return nil
 	})
 
+	// no-op; the server always does this
+	registerPlugin("jekyll-live-reload", func(ctx PluginContext, h pluginHelper) error {
+		return nil
+	})
+
 	registerPlugin("jekyll-seo-tag", func(ctx PluginContext, h pluginHelper) error {
 		h.stubbed()
 		ctx.TemplateEngine().DefineTag("seo", h.makeUnimplementedTag())

@@ -1,14 +1,41 @@
-# Go Jekyll
-
-When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyll](https://jekyllrb.com).
-
-## Status
+# Gojekyll
 [![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 
-See the significant missing functionality below. This tool currently works on some simple sites that don't use drafts, templates, future posts, or various other features listed below.
+Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
 
-This is currently 5-30x faster than Jekyll, depending on the use of `{% highlight %}` (which is shellout). Some obvious improvements include caching SASS, caching templates, and using goroutines to render pages.
+Missing features:
+
+- Themes, drafts, tags, excerpts, plugins (except for `avatar`), and pagination
+- Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
+- Jekyll's `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify` filters
+- Jekyll's `include_relative`, `post_url`, `gist`, and `highlight` tags
+- The [Go Liquid template engine](https://github.com/osteele/gojekyll) is also missing some tags and filters.
+- Data files must be YAML; CSV and JSON are not supported.
+- Parse errors aren't reported very nicely.
+
+Other differences from Jekyll:
+
+- `serve` generates pages on the fly; it doesn't write to the file system.
+- No `.sass-cache`; therefore, no `--safe` option.
+- Server live reload is always on.
+- The server reloads the `_config.yml` file too.
+
+## Installation
+
+1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier.
+2. `go get -u osteele/gojekyll/cmd/gojekyll`
+
+## Usage
+
+```bash
+gojekyll -s path/to/site build                # builds into ./_site
+gojekyll -s path/to/site serve                # serves from memory, w/ live reload
+gojekyll help
+gojekyll help build
+```
+
+## Status
 
 - [ ] Content
   - [x] Front Matter
@@ -47,33 +74,29 @@ This is currently 5-30x faster than Jekyll, depending on the use of `{% highligh
       - [ ] `include` variables (e.g. `{% include {{ expr }} %}`)
   - [x] Permalinks
   - [ ] Pagination
+  - [ ] Plugins
+    - [x] `jekyll-avatar`
+    - [ ] `jekyll-coffeescript`
+    - [x] `jekyll-live-reload` (always on)
+    - [ ] `jekyll-paginate`
   - [ ] Themes
   - [x] Layouts
 - [x] Server
   - [x] Directory watch
-  - [x] Live reload
+- [ ] Commands
+  - [x] `build`
+    - [x] `--source`, `--destination`
+    - [ ] `--config`, `--future`, `--drafts`, `--unpublished`, etc.
+  - [x] `clean`
+  - [ ] `doctor`
+  - [x] `help`
+  - [ ] `import`
+  - [ ] `new`
+  - [ ] `new-theme`
+  - [x] `serve`
+    - [x] `--open-uri`
+    - [ ] `--detach`, `--host`, `--port`, etc.
 - [ ] Windows
-
-Intentional differences from Jekyll:
-
-- `serve` doesn't write to the file system
-- No `.sass-cache`. (When caching is added, it will go to a temporary directory.)
-- Server live reload is always on.
-
-## Install
-
-```bash
-go get -u osteele/gojekyll/cmd/gojekyll
-```
-
-## Usage
-
-```bash
-gojekyll -s path/to/site build                # builds into ./_site
-gojekyll -s path/to/site serve                # serves from memory, w/ live reload
-gojekyll help
-gojekyll help build
-```
 
 ## Contributing
 

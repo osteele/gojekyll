@@ -39,8 +39,7 @@ func (s *Site) setCollectionVariables(includeContent bool) error {
 		}
 	}
 	// Set these here instead of initializeSiteVariables so that they're
-	// re-generated once page.content has been rendered. Obviously
-	// this method has the wrong name.
+	// re-generated once page.content has been rendered.
 	return nil
 }
 

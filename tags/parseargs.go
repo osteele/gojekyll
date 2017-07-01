@@ -11,7 +11,8 @@ import (
 var argPattern = regexp.MustCompile(`^([^=\s]+)(?:\s+|$)`)
 var optionPattern = regexp.MustCompile(`^(\w+)=("[^"]*"|'[^']*'|[^'"\s]*)(?:\s+|$)`)
 
-type parsedArgs struct {
+// ParsedArgs holds the parsed arguments from ParseArgs.
+type ParsedArgs struct {
 	Args    []string
 	Options map[string]optionRecord
 }
@@ -22,8 +23,8 @@ type optionRecord struct {
 }
 
 // ParseArgs parses a tag argument line {% include arg1 arg2 opt=a opt2='b' %}
-func ParseArgs(argsline string) (*parsedArgs, error) {
-	args := parsedArgs{
+func ParseArgs(argsline string) (*ParsedArgs, error) {
+	args := ParsedArgs{
 		[]string{},
 		map[string]optionRecord{},
 	}
@@ -38,6 +39,9 @@ func ParseArgs(argsline string) (*parsedArgs, error) {
 			i = len(am[0])
 		case om != nil:
 			k, v, quoted := om[1], om[2], false
+			if v[0] == '\'' || v[0] == '"' {
+				v, quoted = v[1:len(v)-1], true
+			}
 			args.Options[k] = optionRecord{v, quoted}
 			i = len(om[0])
 		default:
@@ -48,7 +52,7 @@ func ParseArgs(argsline string) (*parsedArgs, error) {
 }
 
 // EvalOptions evaluates unquoted options.
-func (r *parsedArgs) EvalOptions(ctx chunks.RenderContext) (map[string]interface{}, error) {
+func (r *ParsedArgs) EvalOptions(ctx chunks.RenderContext) (map[string]interface{}, error) {
 	options := map[string]interface{}{}
 	for k, v := range r.Options {
 		if v.quoted {

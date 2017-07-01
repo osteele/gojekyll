@@ -23,7 +23,7 @@ func AddJekyllTags(e liquid.Engine, c config.Config, lh LinkTagHandler) {
 
 	// TODO unimplemented
 	e.DefineTag("post_url", MakeUnimplementedTag())
-	e.DefineStartTag("highlight", MakeUnimplementedTag())
+	e.DefineStartTag("highlight", highlightTag)
 }
 
 type tagContext struct {
@@ -31,6 +31,8 @@ type tagContext struct {
 	lh     LinkTagHandler
 }
 
+// MakeUnimplementedTag creates a tag definition that prints a warning the first
+// time it's rendered, and otherwise does nothing.
 func MakeUnimplementedTag() liquid.TagDefinition {
 	warned := false
 	return func(_ io.Writer, ctx chunks.RenderContext) error {
