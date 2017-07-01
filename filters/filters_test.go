@@ -2,6 +2,7 @@ package filters
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
 	"testing"
 	"time"
@@ -22,7 +23,10 @@ var filterTests = []struct{ in, expected string }{
 	// arrays
 	// TODO group_by group_by_exp sample pop shift
 	// pop and shift are challenging because they require lvalues
-	{`{{ ar | array_to_sentence_string }}`, "first, second, and third"},
+	{`{{ array | array_to_sentence_string }}`, "first, second, and third"},
+	{`{{ array | sample }}`, "third"},
+
+	{`{{ site.members | group_by: "graduation_year" | map: "name" | sort | join }}`, "2013, 2014, 2015"},
 
 	// TODO what is the default for nil first?
 	{`{{ animals | sort | join: ", " }}`, "Sally Snake, giraffe, octopus, zebra"},
@@ -34,7 +38,6 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ site.members | where_exp: "item", "item.graduation_year == 2014" | map: "name" }}`, "Alan"},
 	{`{{ site.members | where_exp: "item", "item.graduation_year < 2014" | map: "name" }}`, "Alonzo"},
 	{`{{ site.members | where_exp: "item", "item.name contains 'Al'" | map: "name" | join }}`, "Alonzo, Alan"},
-	{`{{ site.members | group_by: "graduation_year" | map: "name" | sort | join }}`, "2013, 2014, 2015"},
 
 	{`{{ page.tags | push: 'Spokane' | join }}`, "Seattle, Tacoma, Spokane"},
 	// {`{{ page.tags | pop }}`, "Seattle"},
@@ -49,18 +52,25 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ obj | jsonify }}`, `{"a":[1,2,3,4]}`},
 	{`{{ site.pages | map: "name" | join }}`, "a, b, c, d"},
 	{`{{ site.pages | filter: "weight" | map: "name" | join }}`, "a, c, d"},
-	// {"{{ \"a \n b\" | normalize_whitespace }}", "a b"},
+	{"{{ ws | normalize_whitespace }}", "a b c"},
 	{`{{ "123" | to_integer | type }}`, "int"},
 	{`{{ false | to_integer }}`, "0"},
 	{`{{ true | to_integer }}`, "1"},
 	{`{{ "here are some words" | number_of_words}}`, "4"},
+
+	{`{{ "The _config.yml file" | slugify }}`, "the-config-yml-file"},
+	{`{{ "The _config.yml file" | slugify: 'none' }}`, "the _config.yml file"},
+	{`{{ "The _config.yml file" | slugify: 'raw' }}`, "the-_config.yml-file"},
+	{`{{ "The _config.yml file" | slugify: 'default' }}`, "the-config-yml-file"},
+	{`{{ "The _config.yml file" | slugify: 'pretty' }}`, "the-_config.yml-file"},
+
 	{`{{ "1 < 2 & 3" | xml_escape }}`, "1 &lt; 2 &amp; 3"},
 	// {`{{ "http://foo.com/?q=foo, \bar?" | uri_escape }}`, "http://foo.com/?q=foo,%20%5Cbar?"},
 }
 
 var filterTestScope = map[string]interface{}{
 	"animals": []string{"zebra", "octopus", "giraffe", "Sally Snake"},
-	"ar":      []string{"first", "second", "third"},
+	"array":   []string{"first", "second", "third"},
 	"obj": map[string]interface{}{
 		"a": []int{1, 2, 3, 4},
 	},
@@ -82,6 +92,7 @@ var filterTestScope = map[string]interface{}{
 		},
 	},
 	"time": timeMustParse("2008-11-07T13:07:54Z"),
+	"ws":   "a  b\n\t c",
 }
 
 func timeMustParse(s string) time.Time {
@@ -93,6 +104,7 @@ func timeMustParse(s string) time.Time {
 }
 
 func TestFilters(t *testing.T) {
+	rand.Seed(1)
 	for i, test := range filterTests {
 		t.Run(fmt.Sprintf("%02d", i+1), func(t *testing.T) {
 			requireTemplateRender(t, test.in, filterTestScope, test.expected)

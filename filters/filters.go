@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"regexp"
 	"strings"
@@ -31,6 +32,13 @@ func AddJekyllFilters(engine liquid.Engine, config config.Config) {
 		return out
 	})
 	engine.DefineFilter("group_by", groupByFilter)
+	engine.DefineFilter("group_by_exp", unimplementedFilter("group_by_exp"))
+	engine.DefineFilter("sample", func(array []interface{}) interface{} {
+		if len(array) == 0 {
+			return nil
+		}
+		return array[rand.Intn(len(array))]
+	})
 	// sort overrides the Liquid filter with one that takes parameters
 	engine.DefineFilter("sort", sortFilter)
 	engine.DefineFilter("where", whereFilter) // TODO test case
@@ -40,6 +48,8 @@ func AddJekyllFilters(engine liquid.Engine, config config.Config) {
 	engine.DefineFilter("push", func(array []interface{}, item interface{}) interface{} {
 		return append(array, generics.MustConvertItem(item, array))
 	})
+	engine.DefineFilter("pop", unimplementedFilter("pop"))
+	engine.DefineFilter("shift", unimplementedFilter("shift"))
 	engine.DefineFilter("unshift", func(array []interface{}, item interface{}) interface{} {
 		return append([]interface{}{generics.MustConvertItem(item, array)}, array...)
 	})
@@ -71,10 +81,25 @@ func AddJekyllFilters(engine liquid.Engine, config config.Config) {
 	})
 	engine.DefineFilter("jsonify", json.Marshal)
 	engine.DefineFilter("markdownify", blackfriday.MarkdownCommon)
-	// engine.DefineFilter("normalize_whitespace", func(s string) string {
-	// 	wsPattern := regexp.MustCompile(`(?s:[\s\n]+)`)
-	// 	return wsPattern.ReplaceAllString(s, " ")
-	// })
+	engine.DefineFilter("normalize_whitespace", func(s string) string {
+		// s = strings.Replace(s, "n", "N", -1)
+		wsPattern := regexp.MustCompile(`(?s:[\s\n]+)`)
+		return wsPattern.ReplaceAllString(s, " ")
+	})
+	engine.DefineFilter("slugify", func(s, mode string) string {
+		if mode == "" {
+			mode = "default"
+		}
+		p := map[string]string{
+			"raw":     `\s+`,
+			"default": `[^[:alnum:]]+`,
+			"pretty":  `[^[:alnum:]\._~!$&'()+,;=@]+`,
+		}[mode]
+		if p != "" {
+			s = regexp.MustCompile(p).ReplaceAllString(s, "-")
+		}
+		return strings.ToLower(s)
+	})
 	engine.DefineFilter("to_integer", func(n int) int { return n })
 	engine.DefineFilter("number_of_words", func(s string) int {
 		wordPattern := regexp.MustCompile(`\w+`) // TODO what's the Jekyll spec for a word?
@@ -94,6 +119,10 @@ func AddJekyllFilters(engine liquid.Engine, config config.Config) {
 	// 	}
 	// 	return strings.Join(parts, "?")
 	// })
+	engine.DefineFilter("cgi_escape", unimplementedFilter("cgi_escape"))
+	engine.DefineFilter("uri_escape", unimplementedFilter("uri_escape"))
+	engine.DefineFilter("scssify", unimplementedFilter("scssify"))
+	engine.DefineFilter("smartify", unimplementedFilter("smartify"))
 	engine.DefineFilter("xml_escape", func(s string) string {
 		// TODO can't handle maps
 		// eval https://github.com/clbanning/mxj
@@ -104,6 +133,17 @@ func AddJekyllFilters(engine liquid.Engine, config config.Config) {
 		}
 		return buf.String()
 	})
+}
+
+func unimplementedFilter(name string) func(value interface{}) interface{} {
+	warned := false
+	return func(value interface{}) interface{} {
+		if !warned {
+			fmt.Println("warning: unimplemented filter:", name)
+			warned = true
+		}
+		return value
+	}
 }
 
 func arrayToSentenceStringFilter(array []string, conjunction interface{}) string {

@@ -32,8 +32,7 @@ This is currently 5-30x faster than Jekyll, depending on the use of `{% highligh
 - [ ] Customization
   - [x] Templates
     - [ ] Jekyll filters
-      - [ ] array filters: `group_by_exp` `sample` `pop` `shift`
-      - [ ] string filters: `cgi_escape` `uri_escape` `scssify` `smartify` `slugify` `normalize_whitespace`
+      - [ ] `group_by_exp` `pop` `shift` `cgi_escape` `uri_escape` `scssify` `smartify`
       - [x] everything else
     - [ ] Jekyll tags
       - [x] `include`
