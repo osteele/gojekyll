@@ -23,7 +23,7 @@ type Site struct {
 
 	config           config.Config
 	data             map[string]interface{}
-	flags config.Flags
+	flags            config.Flags
 	pipeline         *pipelines.Pipeline
 	pages            []pages.Document // all pages, output or not
 	preparedToRender bool
@@ -64,7 +64,7 @@ func (s *Site) PathPrefix() string { return "" }
 // NewSite creates a new site record, initialized with the site defaults.
 func NewSite(flags config.Flags) *Site {
 	s := &Site{config: config.Default(), flags: flags}
-	s.config.UpdateFrom(flags)
+	s.config.ApplyFlags(flags)
 	return s
 }
 

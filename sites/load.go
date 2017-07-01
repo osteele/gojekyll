@@ -29,7 +29,7 @@ func NewSiteFromDirectory(source string, flags config.Flags) (*Site, error) {
 		s.ConfigFile = &configPath
 	}
 	s.config.Source = source
-	s.config.UpdateFrom(s.flags)
+	s.config.ApplyFlags(s.flags)
 	return s, nil
 }
 

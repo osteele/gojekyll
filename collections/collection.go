@@ -95,6 +95,7 @@ func (c *Collection) PermalinkPattern() string {
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
 func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string, string) map[string]interface{}) error {
+	buildTime := time.Now()
 	pageDefaults := map[string]interface{}{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
@@ -122,11 +123,14 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 		}
 		defaultFrontMatter := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
 		if c.IsPostsCollection() {
-			filedate, ok := DateFromFilename(relname)
+			t, ok := DateFromFilename(relname)
 			if !ok {
 				return nil
 			}
-			defaultFrontMatter["date"] = filedate
+			if t.After(buildTime) && !c.Config().Future {
+				return nil
+			}
+			defaultFrontMatter["date"] = t
 		}
 		p, err := pages.NewFile(filename, c, filepath.ToSlash(relname), defaultFrontMatter)
 		switch {

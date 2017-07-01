@@ -85,8 +85,8 @@ gojekyll help build
   - [x] Directory watch
 - [ ] Commands
   - [x] `build`
-    - [x] `--source`, `--destination`
-    - [ ] `--config`, `--future`, `--drafts`, `--unpublished`, etc.
+    - [x] `--source`, `--destination`, `--future`, `--unpublished`
+    - [ ] `--config`, `--drafts`, etc.
   - [x] `clean`
   - [ ] `doctor`
   - [x] `help`
