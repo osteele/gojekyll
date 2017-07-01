@@ -47,7 +47,7 @@ func profileCommand(_ *sites.Site) error {
 	}
 	t0 := time.Now()
 	for i := 0; time.Since(t0) < 10*time.Second; i++ {
-		site, err := loadSite(*source, *destination)
+		site, err := loadSite(*source, configFlags)
 		if err != nil {
 			return err
 		}

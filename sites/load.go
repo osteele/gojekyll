@@ -12,8 +12,8 @@ import (
 )
 
 // NewSiteFromDirectory reads the configuration file, if it exists.
-func NewSiteFromDirectory(source, destination string) (*Site, error) {
-	s := NewSite()
+func NewSiteFromDirectory(source string, flags config.Flags) (*Site, error) {
+	s := NewSite(flags)
 	configPath := filepath.Join(source, "_config.yml")
 	bytes, err := ioutil.ReadFile(configPath)
 	switch {
@@ -29,9 +29,7 @@ func NewSiteFromDirectory(source, destination string) (*Site, error) {
 		s.ConfigFile = &configPath
 	}
 	s.config.Source = source
-	if destination != "" {
-		s.config.Destination = destination
-	}
+	s.config.UpdateFrom(s.flags)
 	return s, nil
 }
 
@@ -46,12 +44,10 @@ func (s *Site) Load() error {
 // Reload reloads the config file and pages.
 // If there's an error loading the config file, it has no effect.
 func (s *Site) Reload() error {
-	copy, err := NewSiteFromDirectory(s.SourceDir(), s.config.Destination)
-	// TODO re-apply site load settings
+	copy, err := NewSiteFromDirectory(s.SourceDir(), s.flags)
 	if err != nil {
 		return err
 	}
-	copy.config.Destination = s.config.Destination
 	*s = *copy
 	return s.Load()
 }
@@ -92,7 +88,7 @@ func (s *Site) readFiles() error {
 
 // AddDocument adds a page to the site structures.
 func (s *Site) AddDocument(p pages.Document, output bool) {
-	if p.Published() {
+	if p.Published() || s.config.Unpublished {
 		s.pages = append(s.pages, p)
 		if output {
 			s.Routes[p.Permalink()] = p

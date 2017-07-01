@@ -143,6 +143,8 @@ Gojekyll uses these libraries:
 
 In addition to being totally and obviously inspired by the Jekyll, Jekyll's solid documentation was indispensible. Many of the filter test cases are taken directly from the Jekyll documentation, and the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
 
+The help text was taken from the output of `jekyll help`.
+
 The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
 ## Related

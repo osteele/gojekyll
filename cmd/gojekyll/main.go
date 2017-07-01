@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/sites"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -15,12 +16,13 @@ var (
 	buildOptions sites.BuildOptions
 )
 
-const defaultDestination = "DEFAULT: ./_"
+var configFlags = config.Flags{}
 
 var (
 	app         = kingpin.New("gojekyll", "a (maybe someday) Jekyll-compatible blog generator in Go")
 	source      = app.Flag("source", "Source directory").Short('s').Default(".").String()
-	destination = app.Flag("destination", "Destination directory").Short('d').Default(defaultDestination).String()
+	destination = app.Flag("destination", "Destination directory").Short('d').Action(stringAction("destination", &configFlags.Destination)).String()
+	unpublished = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolAction("unpublished", &configFlags.Unpublished)).Bool()
 
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
 	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
@@ -69,7 +71,7 @@ func main() {
 
 }
 func run(cmd string) error {
-	site, err := loadSite(*source, *destination)
+	site, err := loadSite(*source, configFlags)
 	if err != nil {
 		return err
 	}
@@ -91,12 +93,9 @@ func run(cmd string) error {
 	return nil
 }
 
-// Load the site specified at destination into the site global, and print the common banner settings.
-func loadSite(source, destination string) (*sites.Site, error) {
-	if destination == defaultDestination {
-		destination = ""
-	}
-	site, err := sites.NewSiteFromDirectory(source, destination)
+// Load the site, and print the common banner settings.
+func loadSite(source string, flags config.Flags) (*sites.Site, error) {
+	site, err := sites.NewSiteFromDirectory(source, flags)
 	if err != nil {
 		return nil, err
 	}

@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
@@ -28,6 +29,11 @@ func NewCollection(name string, metadata map[string]interface{}, c pages.Contain
 		Metadata:  metadata,
 		container: c,
 	}
+}
+
+// Config is in the page.Container interface.
+func (c *Collection) Config() config.Config {
+	return c.container.Config()
 }
 
 // OutputExt is in the page.Container interface.
@@ -126,7 +132,7 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 		switch {
 		case err != nil:
 			return err
-		case p.Published():
+		case p.Published() || c.Config().Unpublished:
 			c.pages = append(c.pages, p)
 		}
 		return nil

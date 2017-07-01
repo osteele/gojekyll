@@ -4,6 +4,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/osteele/gojekyll/config"
 	"github.com/stretchr/testify/require"
 )
 
@@ -13,23 +14,14 @@ var tests = []struct{ in, out string }{
 	{"post", ":insertion:post"},
 }
 
-type MockContainer struct{}
+type MockContainer struct{ c config.Config }
 
+func (c MockContainer) Config() config.Config            { return c.c }
 func (c MockContainer) PathPrefix() string               { return "" }
 func (c MockContainer) OutputExt(filename string) string { return path.Ext(filename) }
 
-// func (c MockPipeline) Render(_ io.Writer, _ []byte, _ string, _ map[string]interface{}) ([]byte, error) {
-// 	return nil, fmt.Errorf("unimplemented")
-// }
-
-// func (c MockPipeline) ApplyLayout(_ string, _ []byte, _ map[string]interface{}) ([]byte, error) {
-// 	return nil, fmt.Errorf("unimplemented")
-// }
-
-// func (c MockPipeline) SiteVariables() map[string]interface{} { return map[string]interface{}{} }
-
 func TestNewCollection(t *testing.T) {
-	ctx := MockContainer{}
+	ctx := MockContainer{config.Default()}
 
 	c1 := NewCollection("c", map[string]interface{}{"output": true}, ctx)
 	require.Equal(t, true, c1.Output())
@@ -40,7 +32,7 @@ func TestNewCollection(t *testing.T) {
 }
 
 func TestPermalinkPattern(t *testing.T) {
-	ctx := MockContainer{}
+	ctx := MockContainer{config.Default()}
 
 	c1 := NewCollection("c", map[string]interface{}{}, ctx)
 	require.Contains(t, c1.PermalinkPattern(), ":collection")

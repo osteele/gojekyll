@@ -31,7 +31,8 @@ type Config struct {
 	BaseURL     string
 
 	// Outputting
-	Permalink string
+	Permalink   string
+	Unpublished bool
 
 	Defaults []struct {
 		Scope struct {
@@ -44,6 +45,13 @@ type Config struct {
 	Variables map[string]interface{} `yaml:"-"`
 }
 
+// Flags are applied after the configuration file is loaded.
+// They are pointers to represent optional types, to tell whether they have been set.
+type Flags struct {
+	Destination *string
+	Unpublished *bool
+}
+
 // Default returns a default site configuration.
 // This is a function instead of a global variable, and returns a new value each time,
 // since the caller may overwrite it.
@@ -54,6 +62,16 @@ func Default() Config {
 		panic(err)
 	}
 	return c
+}
+
+// UpdateFrom overwrites the configuration with values from flags.
+func (c *Config) UpdateFrom(flags Flags) {
+	if flags.Destination != nil {
+		c.Destination = *flags.Destination
+	}
+	if flags.Unpublished != nil {
+		c.Unpublished = *flags.Unpublished
+	}
 }
 
 // Unmarshal reads a YAML configuration.

@@ -3,11 +3,12 @@ package sites
 import (
 	"testing"
 
+	"github.com/osteele/gojekyll/config"
 	"github.com/stretchr/testify/require"
 )
 
 func TestIsMarkdown(t *testing.T) {
-	s := NewSite()
+	s := NewSite(config.Flags{})
 	require.Equal(t, "", s.PathPrefix())
 	require.False(t, s.KeepFile("random"))
 }

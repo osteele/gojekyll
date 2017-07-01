@@ -5,14 +5,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/stretchr/testify/require"
 )
 
-type containerMock struct{ pathPrefix string }
+type containerMock struct {
+	c config.Config
+	p string
+}
 
+func (c containerMock) Config() config.Config     { return c.c }
 func (c containerMock) OutputExt(p string) string { return filepath.Ext(p) }
-func (c containerMock) PathPrefix() string        { return c.pathPrefix }
+func (c containerMock) PathPrefix() string        { return c.p }
 
 type pathTest struct{ path, pattern, out string }
 
@@ -40,7 +45,7 @@ var collectionTests = []pathTest{
 
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
-		c = containerMock{}
+		c = containerMock{config.Default(), ""}
 		d = map[string]interface{}{
 			"categories": "b a",
 		}
@@ -72,7 +77,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 
 	runTests(tests)
 
-	c = containerMock{"_c/"}
+	c = containerMock{config.Default(), "_c/"}
 	d["collection"] = "c"
 	runTests(collectionTests)
 

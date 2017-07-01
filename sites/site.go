@@ -23,6 +23,7 @@ type Site struct {
 
 	config           config.Config
 	data             map[string]interface{}
+	flags config.Flags
 	pipeline         *pipelines.Pipeline
 	pages            []pages.Document // all pages, output or not
 	preparedToRender bool
@@ -52,12 +53,19 @@ func (s *Site) OutputPages() []pages.Document {
 // Pages returns all the pages, output or not.
 func (s *Site) Pages() []pages.Document { return s.pages }
 
+// Config is in the page.Container interface.
+func (s *Site) Config() config.Config {
+	return s.config
+}
+
 // PathPrefix is in the page.Container interface.
 func (s *Site) PathPrefix() string { return "" }
 
 // NewSite creates a new site record, initialized with the site defaults.
-func NewSite() *Site {
-	return &Site{config: config.Default()}
+func NewSite(flags config.Flags) *Site {
+	s := &Site{config: config.Default(), flags: flags}
+	s.config.UpdateFrom(flags)
+	return s
 }
 
 // SetAbsoluteURL overrides the loaded configuration.
