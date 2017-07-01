@@ -22,7 +22,7 @@ import (
 var commandStartTime = time.Now()
 
 func buildCommand(site *sites.Site) error {
-	printPathSetting("Destination:", site.Destination)
+	printPathSetting("Destination:", site.DestDir())
 	printSetting("Generating...", "")
 	if buildOptions.DryRun {
 		buildOptions.Verbose = true
@@ -125,7 +125,7 @@ func renderCommand(site *sites.Site) error {
 	if err != nil {
 		return err
 	}
-	printPathSetting("Render:", filepath.Join(site.Source, p.SiteRelPath()))
+	printPathSetting("Render:", filepath.Join(site.SourceDir(), p.SiteRelPath()))
 	printSetting("URL:", p.Permalink())
 	printSetting("Content:", "")
 	return site.WriteDocument(p, os.Stdout)

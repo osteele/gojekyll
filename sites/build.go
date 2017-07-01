@@ -37,10 +37,10 @@ func (s *Site) Clean(options BuildOptions) error {
 			return os.Remove(name)
 		}
 	}
-	if err := filepath.Walk(s.Destination, removeFiles); err != nil {
+	if err := filepath.Walk(s.DestDir(), removeFiles); err != nil {
 		return err
 	}
-	return helpers.RemoveEmptyDirectories(s.Destination)
+	return helpers.RemoveEmptyDirectories(s.DestDir())
 }
 
 // Build cleans the destination and create files in it.

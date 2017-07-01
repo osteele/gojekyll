@@ -18,9 +18,6 @@ import (
 // Site is a Jekyll site.
 type Site struct {
 	ConfigFile  *string
-	Source      string
-	Destination string
-
 	Collections []*collections.Collection
 	// Variables   templates.VariableMap
 	Routes map[string]pages.Document // URL path -> Page, only for output pages
@@ -31,6 +28,15 @@ type Site struct {
 	pages            []pages.Document // all pages, output or not
 	preparedToRender bool
 	siteVariables    templates.VariableMap
+}
+
+func (s *Site) SourceDir() string { return s.config.Source }
+
+func (s *Site) DestDir() string {
+	if filepath.IsAbs(s.config.Destination) {
+		return s.config.Destination
+	}
+	return filepath.Join(s.config.Source, s.config.Destination)
 }
 
 // OutputPages returns a list of output pages.
@@ -116,7 +122,6 @@ func (c pluginContext) TemplateEngine() liquid.Engine { return c.engine }
 // initializeRenderingPipeline initializes the rendering pipeline
 func (s *Site) initializeRenderingPipeline() (err error) {
 	options := pipelines.PipelineOptions{
-		SourceDir:             s.Source,
 		RelativeFilenameToURL: s.RelativeFilenameToURL,
 	}
 	s.pipeline, err = pipelines.NewPipeline(s.config, options)

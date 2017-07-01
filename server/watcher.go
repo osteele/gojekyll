@@ -38,7 +38,7 @@ func (s *Server) watchFiles() error {
 			// remaps permalinks.
 			urls := map[string]bool{}
 			for _, filename := range filenames {
-				relpath, err := filepath.Rel(site.Source, filename)
+				relpath, err := filepath.Rel(site.SourceDir(), filename)
 				if err != nil {
 					log.Println("error:", err)
 					continue
@@ -57,7 +57,7 @@ func (s *Server) watchFiles() error {
 		}
 	}()
 
-	return watcher.Add(site.Source)
+	return watcher.Add(site.SourceDir())
 }
 
 // debounce relays values from input to output, merging successive values within interval

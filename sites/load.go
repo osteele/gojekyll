@@ -12,7 +12,7 @@ import (
 )
 
 // NewSiteFromDirectory reads the configuration file, if it exists.
-func NewSiteFromDirectory(source string) (*Site, error) {
+func NewSiteFromDirectory(source, destination string) (*Site, error) {
 	s := NewSite()
 	configPath := filepath.Join(source, "_config.yml")
 	bytes, err := ioutil.ReadFile(configPath)
@@ -26,10 +26,12 @@ func NewSiteFromDirectory(source string) (*Site, error) {
 		if err != nil {
 			return nil, err
 		}
-		s.Source = filepath.Join(source, s.config.Source)
 		s.ConfigFile = &configPath
 	}
-	s.Destination = filepath.Join(s.Source, s.config.Destination)
+	s.config.Source = source
+	if destination != "" {
+		s.config.Destination = destination
+	}
 	return s, nil
 }
 
@@ -44,14 +46,13 @@ func (s *Site) Load() error {
 // Reload reloads the config file and pages.
 // If there's an error loading the config file, it has no effect.
 func (s *Site) Reload() error {
-	copy, err := NewSiteFromDirectory(s.Source)
+	copy, err := NewSiteFromDirectory(s.SourceDir(), s.config.Destination)
+	// TODO re-apply site load settings
 	if err != nil {
 		return err
 	}
-	copy.Destination = s.Destination
+	copy.config.Destination = s.config.Destination
 	*s = *copy
-	s.pipeline = nil
-	s.preparedToRender = false
 	return s.Load()
 }
 
@@ -64,7 +65,7 @@ func (s *Site) readFiles() error {
 			return err
 		}
 
-		relname, err := filepath.Rel(s.Source, filename)
+		relname, err := filepath.Rel(s.SourceDir(), filename)
 		if err != nil {
 			panic(err)
 		}
@@ -83,7 +84,7 @@ func (s *Site) readFiles() error {
 		return nil
 	}
 
-	if err := filepath.Walk(s.Source, walkFn); err != nil {
+	if err := filepath.Walk(s.SourceDir(), walkFn); err != nil {
 		return err
 	}
 	return s.ReadCollections()
@@ -105,7 +106,7 @@ func (s *Site) ReadCollections() error {
 	for name, data := range s.config.Collections {
 		c := collections.NewCollection(name, data, s)
 		s.Collections = append(s.Collections, c)
-		if err := c.ReadPages(s.Source, s.config.GetFrontMatterDefaults); err != nil {
+		if err := c.ReadPages(s.SourceDir(), s.config.GetFrontMatterDefaults); err != nil {
 			return err
 		}
 		for _, p := range c.Pages() {

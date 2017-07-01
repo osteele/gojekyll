@@ -93,19 +93,19 @@ func run(cmd string) error {
 
 // Load the site specified at destination into the site global, and print the common banner settings.
 func loadSite(source, destination string) (*sites.Site, error) {
-	site, err := sites.NewSiteFromDirectory(source)
+	if destination == defaultDestination {
+		destination = ""
+	}
+	site, err := sites.NewSiteFromDirectory(source, destination)
 	if err != nil {
 		return nil, err
-	}
-	if destination != "" && destination != defaultDestination {
-		site.Destination = destination
 	}
 	if site.ConfigFile != nil {
 		printPathSetting(configurationFileLabel, *site.ConfigFile)
 	} else {
 		printSetting(configurationFileLabel, "none")
 	}
-	printPathSetting("Source:", site.Source)
+	printPathSetting("Source:", site.SourceDir())
 	err = site.Load()
 	return site, err
 }
