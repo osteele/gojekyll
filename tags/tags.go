@@ -22,8 +22,8 @@ func AddJekyllTags(e liquid.Engine, c config.Config, lh LinkTagHandler) {
 	e.DefineTag("include", tc.includeTag)
 
 	// TODO unimplemented
-	e.DefineTag("post_url", emptyTag)
-	e.DefineStartTag("highlight", highlightTag)
+	e.DefineTag("post_url", MakeUnimplementedTag())
+	e.DefineStartTag("highlight", MakeUnimplementedTag())
 }
 
 type tagContext struct {
@@ -31,8 +31,15 @@ type tagContext struct {
 	lh     LinkTagHandler
 }
 
-func emptyTag(_ string) (func(io.Writer, chunks.RenderContext) error, error) {
-	return func(w io.Writer, _ chunks.RenderContext) error { return nil }, nil
+func MakeUnimplementedTag() liquid.TagDefinition {
+	warned := false
+	return func(_ io.Writer, ctx chunks.RenderContext) error {
+		if !warned {
+			fmt.Printf("The %q tag has not been implemented. It is being ignored.\n", ctx.TagName())
+			warned = true
+		}
+		return nil
+	}
 }
 
 func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
@@ -60,13 +67,12 @@ func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
 	return cmd.Run()
 }
 
-func (tc tagContext) linkTag(filename string) (func(io.Writer, chunks.RenderContext) error, error) {
-	return func(w io.Writer, _ chunks.RenderContext) error {
-		url, found := tc.lh(filename)
-		if !found {
-			return fmt.Errorf("missing link filename: %s", filename)
-		}
-		_, err := w.Write([]byte(url))
-		return err
-	}, nil
+func (tc tagContext) linkTag(w io.Writer, ctx chunks.RenderContext) error {
+	filename := ctx.TagArgs()
+	url, found := tc.lh(filename)
+	if !found {
+		return fmt.Errorf("missing link filename: %s", filename)
+	}
+	_, err := w.Write([]byte(url))
+	return err
 }

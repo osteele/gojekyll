@@ -23,38 +23,47 @@ type PluginContext interface {
 func Install(name string, ctx PluginContext) bool {
 	p, found := plugins[name]
 	if p != nil {
-		if err := p(ctx); err != nil {
+		if err := p(ctx, pluginHelper{name}); err != nil {
 			panic(err)
 		}
 	}
 	return found
 }
 
-var plugins = map[string]func(PluginContext) error{}
+var plugins = map[string]func(PluginContext, pluginHelper) error{}
 
 // registerPlugin installs a plugin in the plugin directory.
-func registerPlugin(name string, fn func(PluginContext) error) {
+func registerPlugin(name string, fn func(PluginContext, pluginHelper) error) {
 	plugins[name] = fn
 }
 
-func warnUnimplemented(name string) {
-	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", name)
-}
-
-func emptyTag(lexer string) (func(io.Writer, chunks.RenderContext) error, error) {
-	return func(w io.Writer, _ chunks.RenderContext) error { return nil }, nil
-}
-
 func init() {
-	registerPlugin("jekyll-feed", func(ctx PluginContext) error {
-		warnUnimplemented("jekyll-feed")
-		ctx.TemplateEngine().DefineTag("feed_meta", emptyTag)
+	registerPlugin("jekyll-feed", func(ctx PluginContext, h pluginHelper) error {
+		h.stubbed()
+		ctx.TemplateEngine().DefineTag("feed_meta", h.makeUnimplementedTag())
 		return nil
 	})
 
-	registerPlugin("jekyll-seo-tag", func(ctx PluginContext) error {
-		warnUnimplemented("jekyll-seo-tag")
-		ctx.TemplateEngine().DefineTag("seo", emptyTag)
+	registerPlugin("jekyll-seo-tag", func(ctx PluginContext, h pluginHelper) error {
+		h.stubbed()
+		ctx.TemplateEngine().DefineTag("seo", h.makeUnimplementedTag())
 		return nil
 	})
+}
+
+type pluginHelper struct{ name string }
+
+func (h pluginHelper) stubbed() {
+	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", h.name)
+}
+
+func (h pluginHelper) makeUnimplementedTag() liquid.TagDefinition {
+	warned := false
+	return func(_ io.Writer, ctx chunks.RenderContext) error {
+		if !warned {
+			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), h.name)
+			warned = true
+		}
+		return nil
+	}
 }
