@@ -22,8 +22,9 @@ var (
 	app    = kingpin.New("gojekyll", "a (maybe someday) Jekyll-compatible blog generator in Go")
 	source = app.Flag("source", "Source directory").Short('s').Default(".").String()
 	_      = app.Flag("destination", "Destination directory").Short('d').Action(stringAction("destination", &configFlags.Destination)).String()
-	_      = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolAction("unpublished", &configFlags.Unpublished)).Bool()
 	_      = app.Flag("future", "Publishes posts with a future date").Action(boolAction("future", &configFlags.Future)).Bool()
+	_      = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolAction("drafts", &configFlags.Drafts)).Bool()
+	_      = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolAction("unpublished", &configFlags.Unpublished)).Bool()
 
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
 	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()

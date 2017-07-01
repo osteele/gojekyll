@@ -6,7 +6,7 @@ Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) s
 
 Missing features:
 
-- Themes, drafts, tags, excerpts, plugins (except for `avatar`), and pagination
+- Themes, page tags, excerpts, plugins (except for `avatar`), and pagination
 - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
 - Jekyll's `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify` filters
 - Jekyll's `include_relative`, `post_url`, `gist`, and `highlight` tags
@@ -85,8 +85,8 @@ gojekyll help build
   - [x] Directory watch
 - [ ] Commands
   - [x] `build`
-    - [x] `--source`, `--destination`, `--future`, `--unpublished`
-    - [ ] `--config`, `--drafts`, etc.
+    - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`
+    - [ ] `--config`, `--baseurl`, `--lsi`, etc.
   - [x] `clean`
   - [ ] `doctor`
   - [x] `help`

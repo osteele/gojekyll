@@ -141,6 +141,11 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 		}
 		return nil
 	}
+	if c.IsPostsCollection() && c.Config().Drafts {
+		if err := filepath.Walk(filepath.Join(sitePath, "_drafts"), walkFn); err != nil {
+			return err
+		}
+	}
 	return filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn)
 }
 

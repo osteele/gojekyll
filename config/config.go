@@ -33,6 +33,7 @@ type Config struct {
 	// Outputting
 	Permalink   string
 	Future      bool
+	Drafts      bool
 	Unpublished bool
 
 	Defaults []struct {

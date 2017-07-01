@@ -5,6 +5,7 @@ package config
 type Flags struct {
 	Destination *string
 	Unpublished *bool
+	Drafts      *bool
 	Future      *bool
 }
 
@@ -12,6 +13,9 @@ type Flags struct {
 func (c *Config) ApplyFlags(flags Flags) {
 	if flags.Destination != nil {
 		c.Destination = *flags.Destination
+	}
+	if flags.Drafts != nil {
+		c.Drafts = *flags.Drafts
 	}
 	if flags.Future != nil {
 		c.Future = *flags.Future
