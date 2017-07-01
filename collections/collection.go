@@ -58,7 +58,7 @@ func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent
 		v := p.PageVariables()
 		dp, ok := p.(*pages.Page)
 		if includeContent && ok {
-			c, err := dp.ComputeContent(ctx)
+			c, err := dp.Content(ctx)
 			if err != nil {
 				return nil, err
 			}

@@ -13,8 +13,8 @@ import (
 // Page is a post or collection page.
 type Page struct {
 	file
-	raw       []byte
-	processed *[]byte
+	raw     []byte
+	content *[]byte
 }
 
 // Static is in the File interface.
@@ -98,10 +98,6 @@ func (p *Page) TemplateContext(rc RenderingContext) map[string]interface{} {
 // Write applies Liquid and Markdown, as appropriate.
 func (p *Page) Write(rc RenderingContext, w io.Writer) error {
 	rp := rc.RenderingPipeline()
-	if p.processed != nil {
-		_, err := w.Write(*p.processed)
-		return err
-	}
 	b, err := rp.Render(w, p.raw, p.filename, p.TemplateContext(rc))
 	if err != nil {
 		return err
@@ -117,15 +113,17 @@ func (p *Page) Write(rc RenderingContext, w io.Writer) error {
 	return err
 }
 
-// ComputeContent computes the page content.
-func (p *Page) ComputeContent(rc RenderingContext) ([]byte, error) {
-	if p.processed == nil {
-		w := new(bytes.Buffer)
-		if err := p.Write(rc, w); err != nil {
+// Content computes the page content.
+func (p *Page) Content(rc RenderingContext) ([]byte, error) {
+	if p.content == nil {
+		// TODO DRY w/ Page.Write
+		rp := rc.RenderingPipeline()
+		buf := new(bytes.Buffer)
+		b, err := rp.Render(buf, p.raw, p.filename, p.TemplateContext(rc))
+		if err != nil {
 			return nil, err
 		}
-		b := w.Bytes()
-		p.processed = &b
+		p.content = &b
 	}
-	return *p.processed, nil
+	return *p.content, nil
 }
