@@ -1,11 +1,7 @@
 package collections
 
 import (
-	"fmt"
-	"os"
 	"path/filepath"
-	"strings"
-	"time"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/constants"
@@ -91,68 +87,4 @@ func (c *Collection) PermalinkPattern() string {
 		defaultPattern = constants.DefaultPostsCollectionPermalinkPattern
 	}
 	return templates.VariableMap(c.Metadata).String("permalink", defaultPattern)
-}
-
-// ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string, string) map[string]interface{}) error {
-	buildTime := time.Now()
-	pageDefaults := map[string]interface{}{
-		"collection": c.Name,
-		"permalink":  c.PermalinkPattern(),
-	}
-
-	walkFn := func(filename string, info os.FileInfo, err error) error {
-		if err != nil {
-			// if the issue is simply that the directory doesn't exist, warn instead of error
-			if os.IsNotExist(err) {
-				if !c.IsPostsCollection() {
-					fmt.Printf("Missing collection directory: _%s\n", c.Name)
-				}
-				return nil
-			}
-			return err
-		}
-		relname, err := filepath.Rel(sitePath, filename)
-		switch {
-		case strings.HasPrefix(filepath.Base(relname), "."):
-			return nil
-		case err != nil:
-			return err
-		case info.IsDir():
-			return nil
-		}
-		defaultFrontMatter := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
-		if c.IsPostsCollection() {
-			t, ok := DateFromFilename(relname)
-			if !ok {
-				return nil
-			}
-			if t.After(buildTime) && !c.Config().Future {
-				return nil
-			}
-			defaultFrontMatter["date"] = t
-		}
-		p, err := pages.NewFile(filename, c, filepath.ToSlash(relname), defaultFrontMatter)
-		switch {
-		case err != nil:
-			return err
-		case p.Published() || c.Config().Unpublished:
-			c.pages = append(c.pages, p)
-		}
-		return nil
-	}
-	if c.IsPostsCollection() && c.Config().Drafts {
-		if err := filepath.Walk(filepath.Join(sitePath, "_drafts"), walkFn); err != nil {
-			return err
-		}
-	}
-	return filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn)
-}
-
-// DateFromFilename returns the date for a filename that uses Jekyll post convention.
-// It also returns a bool indicating whether a date was found.
-func DateFromFilename(s string) (time.Time, bool) {
-	layout := "2006-01-02-"
-	t, err := time.Parse(layout, filepath.Base(s + layout)[:len(layout)])
-	return t, err == nil
 }
