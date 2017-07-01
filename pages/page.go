@@ -62,7 +62,6 @@ func (p *Page) PageVariables() templates.VariableMap {
 		// TODO Documented as present in all pages, but de facto only defined for collection pages
 		"id":    base,
 		"title": base, // TODO capitalize
-		// TODO date (of the collection?) 2017-06-15 07:44:21 -0400
 		// TODO excerpt category? categories tags
 		// TODO slug
 		"categories": []string{},

@@ -8,7 +8,7 @@ When I grow up, I want to be a [Go](https://golang.org) implementation of [Jekyl
 
 See the significant missing functionality below. This tool currently works on some simple sites that don't use drafts, templates, future posts, or various other features listed below.
 
-We are currently ~5x faster than Jekyll. Some obvious improvements would include caching SASS, caching templates, and using goroutines to render pages.
+This is currently 5-30x faster than Jekyll, depending on the use of `{% highlight %}` (which is shellout). Some obvious improvements include caching SASS, caching templates, and using goroutines to render pages.
 
 - [ ] Content
   - [x] Front Matter
@@ -17,7 +17,7 @@ We are currently ~5x faster than Jekyll. Some obvious improvements would include
     - [ ] Tags
     - [ ] Drafts
     - [ ] Future
-    - [ ] Related
+    - [x] Related
   - [x] Static Files
   - [x] Variables
   - [x] Collections
@@ -32,8 +32,8 @@ We are currently ~5x faster than Jekyll. Some obvious improvements would include
 - [ ] Customization
   - [x] Templates
     - [ ] Jekyll filters
-      - [ ] array filters: group_by group_by_exp sample pop shift
-      - [ ] string filters: cgi_escape uri_escape scssify smartify slugify normalize_whitespace
+      - [ ] array filters: `group_by_exp` `sample` `pop` `shift`
+      - [ ] string filters: `cgi_escape` `uri_escape` `scssify` `smartify` `slugify` `normalize_whitespace`
       - [x] everything else
     - [ ] Jekyll tags
       - [x] `include`

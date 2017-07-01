@@ -32,11 +32,18 @@ func normalizeMaps(value interface{}) interface{} {
 
 func (s *Site) setCollectionVariables(includeContent bool) error {
 	for _, c := range s.Collections {
-		v, err := c.TemplateVariable(s, includeContent)
+		pages, err := c.TemplateVariable(s, includeContent)
 		if err != nil {
 			return err
 		}
-		s.siteVariables[c.Name] = v
+		s.siteVariables[c.Name] = pages
+		if c.IsPostsCollection() {
+			related := pages
+			if len(related) > 10 {
+				related = related[:10]
+			}
+			s.siteVariables["related_posts"] = related
+		}
 	}
 	return nil
 }

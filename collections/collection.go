@@ -5,10 +5,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid/generics"
 )
 
 // Collection is a Jekyll collection https://jekyllrb.com/docs/collections/.
@@ -50,8 +52,8 @@ func (c *Collection) Pages() []pages.Document {
 
 // TemplateVariable returns an array of page objects, for use as the template variable
 // value of the collection.
-func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent bool) ([]templates.VariableMap, error) {
-	d := []templates.VariableMap{}
+func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent bool) ([]interface{}, error) {
+	d := []interface{}{}
 	for _, p := range c.Pages() {
 		v := p.PageVariables()
 		dp, ok := p.(*pages.Page)
@@ -66,7 +68,14 @@ func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent
 		}
 		d = append(d, v)
 	}
-	return d, nil
+	if c.IsPostsCollection() {
+		generics.SortByProperty(d, "date", true)
+	}
+	out := make([]interface{}, len(d))
+	for i, v := range d {
+		out[len(d)-1-i] = v
+	}
+	return out, nil
 }
 
 // PermalinkPattern returns the permalink pattern for this collection.
@@ -105,8 +114,15 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 		case info.IsDir():
 			return nil
 		}
-		defaultFrontmatter := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
-		p, err := pages.NewFile(filename, c, filepath.ToSlash(relname), defaultFrontmatter)
+		defaultFrontMatter := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
+		if c.IsPostsCollection() {
+			filedate, ok := DateFromFilename(relname)
+			if !ok {
+				return nil
+			}
+			defaultFrontMatter["date"] = filedate
+		}
+		p, err := pages.NewFile(filename, c, filepath.ToSlash(relname), defaultFrontMatter)
 		switch {
 		case err != nil:
 			return err
@@ -116,4 +132,10 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 		return nil
 	}
 	return filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn)
+}
+
+func DateFromFilename(s string) (time.Time, bool) {
+	layout := "2006-01-02-"
+	t, err := time.Parse(layout, filepath.Base(s + layout)[:len(layout)])
+	return t, err == nil
 }
