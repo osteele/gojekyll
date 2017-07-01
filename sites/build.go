@@ -18,9 +18,13 @@ type BuildOptions struct {
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
 func (s *Site) Clean(options BuildOptions) error {
 	// TODO PERF when called as part of build, keep files that will be re-generated
-	removeFiles := func(name string, info os.FileInfo, err error) error {
+	removeFiles := func(filename string, info os.FileInfo, err error) error {
 		if options.Verbose {
-			fmt.Println("rm", name)
+			fmt.Println("rm", filename)
+		}
+		relpath, e := filepath.Rel(s.DestDir(), filename)
+		if e != nil {
+			return err
 		}
 		switch {
 		case err != nil && os.IsNotExist(err):
@@ -29,12 +33,12 @@ func (s *Site) Clean(options BuildOptions) error {
 			return err
 		case info.IsDir():
 			return nil
-		case s.KeepFile(name):
+		case s.KeepFile(relpath):
 			return nil
 		case options.DryRun:
 			return nil
 		default:
-			return os.Remove(name)
+			return os.Remove(filename)
 		}
 	}
 	if err := filepath.Walk(s.DestDir(), removeFiles); err != nil {

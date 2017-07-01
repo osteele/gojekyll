@@ -26,10 +26,11 @@ var (
 	_      = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolAction("drafts", &configFlags.Drafts)).Bool()
 	_      = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolAction("unpublished", &configFlags.Unpublished)).Bool()
 
+	build = app.Command("build", "Build your site").Alias("b")
+	clean = app.Command("clean", "Clean the site (removes site output) without building.")
+
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
 	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
-
-	build = app.Command("build", "Build your site").Alias("b")
 
 	profile = app.Command("profile", "Build several times, and write a profile file")
 
@@ -67,11 +68,14 @@ func printPathSetting(label string, name string) {
 func main() {
 	app.HelpFlag.Short('h')
 	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
-	if err := run(cmd); err != nil {
+	if configFlags.Destination != nil {
+		dest, err := filepath.Abs(*configFlags.Destination)
 		app.FatalIfError(err, "")
+		configFlags.Destination = &dest
 	}
-
+	app.FatalIfError(run(cmd), "")
 }
+
 func run(cmd string) error {
 	site, err := loadSite(*source, configFlags)
 	if err != nil {
@@ -81,6 +85,8 @@ func run(cmd string) error {
 	switch cmd {
 	case build.FullCommand():
 		return buildCommand(site)
+	case clean.FullCommand():
+		return cleanCommand(site)
 	case profile.FullCommand():
 		return profileCommand(site)
 	case render.FullCommand():
@@ -91,6 +97,9 @@ func run(cmd string) error {
 		return serveCommand(site)
 	case variables.FullCommand():
 		return varsCommand(site)
+	default:
+		// kingpin should have provided help and exited before here
+		panic("unknown command")
 	}
 	return nil
 }

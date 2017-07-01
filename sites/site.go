@@ -88,9 +88,8 @@ func (s *Site) FilenameURLs() map[string]string {
 }
 
 // KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
-func (s *Site) KeepFile(path string) bool {
-	// TODO
-	return false
+func (s *Site) KeepFile(filename string) bool {
+	return helpers.SearchStrings(s.config.KeepFiles, filename)
 }
 
 // FilePathPage returns a Page, give a file path relative to site source directory.

@@ -11,4 +11,6 @@ func TestIsMarkdown(t *testing.T) {
 	s := NewSite(config.Flags{})
 	require.Equal(t, "", s.PathPrefix())
 	require.False(t, s.KeepFile("random"))
+	require.True(t, s.KeepFile(".git"))
+	require.True(t, s.KeepFile(".svn"))
 }

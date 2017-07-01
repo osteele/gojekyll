@@ -35,6 +35,14 @@ func buildCommand(site *sites.Site) error {
 	return nil
 }
 
+func cleanCommand(site *sites.Site) error {
+	printPathSetting("Cleaner:", fmt.Sprint("Removing %s...", site.DestDir()))
+	if buildOptions.DryRun {
+		buildOptions.Verbose = true
+	}
+	return site.Clean(buildOptions)
+}
+
 func profileCommand(_ *sites.Site) error {
 	printSetting("Profiling...", "")
 	var profilePath = "gojekyll.prof"

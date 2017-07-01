@@ -21,20 +21,24 @@ type Config struct {
 	// Handling Reading
 	Include     []string
 	Exclude     []string
-	MarkdownExt string `yaml:"markdown_ext"`
+	KeepFiles   []string `yaml:"keep_files"`
+	MarkdownExt string   `yaml:"markdown_ext"`
+
+	// Filtering Content
+	Drafts      bool `yaml:"show_drafts"`
+	Future      bool
+	Unpublished bool
 
 	// Plugins
-	Plugins []string `yaml:"gems"` // TODO this differs from the Jekyll docs
+	Plugins []string
+	Gems    []string // bwcompat
 
 	// Serving
 	AbsoluteURL string `yaml:"url"`
 	BaseURL     string
 
 	// Outputting
-	Permalink   string
-	Future      bool
-	Drafts      bool
-	Unpublished bool
+	Permalink string
 
 	Defaults []struct {
 		Scope struct {
@@ -66,6 +70,9 @@ func Unmarshal(bytes []byte, c *Config) error {
 	}
 	if err := yaml.Unmarshal(bytes, &c.Variables); err != nil {
 		return err
+	}
+	if len(c.Gems) > 0 {
+		c.Plugins = c.Gems
 	}
 	return nil
 }

@@ -22,7 +22,8 @@ Other differences from Jekyll:
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
-- The server reloads the `_config.yml` file too.
+- The server reloads the `_config.yml` (and the rest of the site) when it changes.
+- `build` with no `-d` option resolves the destination relative to the source directory, not the current directory.
 
 ## Installation
 
@@ -99,7 +100,8 @@ gojekyll help build
 - [ ] Commands
   - [x] `build`
     - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`
-    - [ ] `--config`, `--baseurl`, `--lsi`, etc.
+    - [ ] `--config`, `--baseurl`, `--lsi`, `--watch`, etc.
+    - [ ] won't implement: `--force-polling`, `--limit-posts`, `--incremental`, `JEKYLL_ENV=production`
   - [x] `clean`
   - [ ] `doctor`
   - [x] `help`
@@ -108,7 +110,8 @@ gojekyll help build
   - [ ] `new-theme`
   - [x] `serve`
     - [x] `--open-uri`
-    - [ ] `--detach`, `--host`, `--port`, etc.
+    - [ ] `--detach`, `--host`, `--port`, `--baseurl`
+    - [ ] won't implement: `--incremental`, `--ssl-*`
 - [ ] Windows
 
 ## Contributing
