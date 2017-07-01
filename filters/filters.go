@@ -152,15 +152,20 @@ func arrayToSentenceStringFilter(array []string, conjunction interface{}) string
 	if !ok {
 		conj = "and "
 	}
-	rt := reflect.ValueOf(array)
-	ar := make([]string, rt.Len())
-	for i, v := range array {
-		ar[i] = v
-		if i == rt.Len()-1 {
-			ar[i] = conj + v
+	switch len(array) {
+	case 1:
+		return array[0]
+	default:
+		rt := reflect.ValueOf(array)
+		ar := make([]string, rt.Len())
+		for i, v := range array {
+			ar[i] = v
+			if i == rt.Len()-1 {
+				ar[i] = conj + v
+			}
 		}
+		return strings.Join(ar, ", ")
 	}
-	return strings.Join(ar, ", ")
 }
 
 func groupByFilter(array []map[string]interface{}, property string) []map[string]interface{} {
