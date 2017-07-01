@@ -13,6 +13,7 @@ Missing features:
 - The [Go Liquid template engine](https://github.com/osteele/gojekyll) is also missing some tags and filters.
 - Data files must be YAML; CSV and JSON are not supported.
 - `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge.
+- `<div markdown=1>` doesn't work. I think this is a limitation of the *blackfriday* Markdown processor.
 - Parse errors aren't reported very nicely.
 
 Other differences from Jekyll:
@@ -45,8 +46,8 @@ gojekyll help build
   - [ ] Posts
     - [x] Categories
     - [ ] Tags
-    - [ ] Drafts
-    - [ ] Future
+    - [x] Drafts
+    - [x] Future
     - [x] Related
   - [x] Static Files
   - [x] Variables
@@ -58,7 +59,6 @@ gojekyll help build
   - [ ] Assets
     - [ ] Coffeescript
     - [x] Sass/SCSS
-      - [ ] Sass cache
 - [ ] Customization
   - [x] Templates
     - [ ] Jekyll filters
@@ -68,13 +68,12 @@ gojekyll help build
       - [x] `include`
       - [ ] `include_relative`
       - [x] `link`
-      - [ ] `post_url`
+      - [x] `post_url`
       - [ ] `gist`
-      - [ ] `highlight`
-    - [ ] `markdown=1`
+      - [x] `highlight`
   - [x] Includes
       - [x] `include` parameters
-      - [ ] `include` variables (e.g. `{% include {{ expr }} %}`)
+      - [x] `include` variables (e.g. `{% include {{ expr }} %}`)
   - [x] Permalinks
   - [ ] Pagination
   - [ ] Plugins

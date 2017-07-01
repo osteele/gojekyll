@@ -3,6 +3,7 @@ package tags
 import (
 	"fmt"
 	"io"
+	"path"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/liquid"
@@ -19,10 +20,11 @@ func AddJekyllTags(e liquid.Engine, c config.Config, lh LinkTagHandler) {
 	e.DefineTag("include", tc.includeTag)
 
 	// TODO unimplemented
-	e.DefineTag("post_url", MakeUnimplementedTag())
+	e.DefineTag("post_url", tc.postURLTag)
 	e.DefineStartTag("highlight", highlightTag)
 }
 
+// tagContext provides the context to a tag renderer.
 type tagContext struct {
 	config config.Config
 	lh     LinkTagHandler
@@ -46,6 +48,25 @@ func (tc tagContext) linkTag(w io.Writer, ctx chunks.RenderContext) error {
 	url, found := tc.lh(filename)
 	if !found {
 		return fmt.Errorf("missing link filename: %s", filename)
+	}
+	_, err := w.Write([]byte(url))
+	return err
+}
+
+func (tc tagContext) postURLTag(w io.Writer, ctx chunks.RenderContext) error {
+	var (
+		filename = ctx.TagArgs()
+		found    = false
+		url      string
+	)
+	for _, ext := range append(tc.config.MarkdownExtensions(), ",") {
+		url, found = tc.lh(path.Join("_posts", filename+ext))
+		if found {
+			break
+		}
+	}
+	if !found {
+		return fmt.Errorf("missing post_url filename: %s", filename)
 	}
 	_, err := w.Write([]byte(url))
 	return err

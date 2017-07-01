@@ -144,7 +144,7 @@ func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
 		}
 		return page, nil
 	default:
-		page, found := s.RelPathPage(path)
+		page, found := s.FilePathPage(path)
 		if !found {
 			return nil, helpers.NewPathError("render", path, "no such file")
 		}

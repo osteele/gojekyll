@@ -9,7 +9,11 @@ import (
 )
 
 func (tc tagContext) includeTag(w io.Writer, ctx chunks.RenderContext) error {
-	args, err := ParseArgs(ctx.TagArgs())
+	argsline, err := ctx.ParseTagArgs()
+	if err != nil {
+		return err
+	}
+	args, err := ParseArgs(argsline)
 	if err != nil {
 		return err
 	}
@@ -24,5 +28,4 @@ func (tc tagContext) includeTag(w io.Writer, ctx chunks.RenderContext) error {
 	ctx2 := ctx.Clone()
 	ctx2.UpdateBindings(map[string]interface{}{"include": include})
 	return ctx2.RenderFile(w, filename)
-
 }

@@ -93,8 +93,8 @@ func (s *Site) KeepFile(path string) bool {
 	return false
 }
 
-// RelPathPage returns a Page, give a file path relative to site source directory.
-func (s *Site) RelPathPage(relpath string) (pages.Document, bool) {
+// FilePathPage returns a Page, give a file path relative to site source directory.
+func (s *Site) FilePathPage(relpath string) (pages.Document, bool) {
 	for _, p := range s.Routes {
 		if p.SiteRelPath() == relpath {
 			return p, true
@@ -103,14 +103,12 @@ func (s *Site) RelPathPage(relpath string) (pages.Document, bool) {
 	return nil, false
 }
 
-// RelativeFilenameToURL returns a page's relative URL, give a file path relative to the site source directory.
-func (s *Site) RelativeFilenameToURL(relpath string) (string, bool) {
-	var url string
-	p, found := s.RelPathPage(relpath)
-	if found {
-		url = p.Permalink()
+// FilenameURLPath returns a page's URL path, give a relative file path relative to the site source directory.
+func (s *Site) FilenameURLPath(relpath string) (string, bool) {
+	if p, found := s.FilePathPage(relpath); found {
+		return p.Permalink(), true
 	}
-	return url, found
+	return "", false
 }
 
 // RenderingPipeline returns the rendering pipeline.
@@ -131,7 +129,7 @@ func (c pluginContext) TemplateEngine() liquid.Engine { return c.engine }
 // initializeRenderingPipeline initializes the rendering pipeline
 func (s *Site) initializeRenderingPipeline() (err error) {
 	options := pipelines.PipelineOptions{
-		RelativeFilenameToURL: s.RelativeFilenameToURL,
+		RelativeFilenameToURL: s.FilenameURLPath,
 	}
 	s.pipeline, err = pipelines.NewPipeline(s.config, options)
 	ctx := pluginContext{s.pipeline.TemplateEngine()}

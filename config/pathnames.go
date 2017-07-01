@@ -18,10 +18,19 @@ func (c *Config) IsSassPath(name string) bool {
 	return strings.HasSuffix(name, ".sass") || strings.HasSuffix(name, ".scss")
 }
 
-// MarkdownExtensions returns a set of markdown extensions, without the initial dots.
+// markdownExtensions returns a set of markdown extensions, without the initial dots.
 func (c *Config) markdownExtensions() map[string]bool {
-	extns := strings.SplitN(c.MarkdownExt, `,`, -1)
-	return helpers.StringArrayToMap(extns)
+	exts := strings.SplitN(c.MarkdownExt, `,`, -1)
+	return helpers.StringArrayToMap(exts)
+}
+
+// MarkdownExtensions returns a list of markdown extensions, with dotsa.
+func (c *Config) MarkdownExtensions() []string {
+	exts := strings.SplitN(c.MarkdownExt, `,`, -1)
+	for i, k :=range exts {
+		exts[i] = "." + k
+	}
+	return exts
 }
 
 // OutputExt returns the pathname's output extension. This is generally the pathname extension;

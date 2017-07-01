@@ -43,7 +43,7 @@ func (s *Server) watchFiles() error {
 					log.Println("error:", err)
 					continue
 				}
-				url, found := site.RelativeFilenameToURL(relpath)
+				url, found := site.FilenameURLPath(relpath)
 				if !found {
 					// TODO don't warn re config and excluded files
 					log.Println("error:", filename, "does not match a site URL")
