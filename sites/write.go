@@ -36,14 +36,24 @@ func (s *Site) WriteDocument(p pages.Document, w io.Writer) error {
 
 // WritePages writes output files.
 // It attends to options.dry_run.
-func (s *Site) WritePages(options BuildOptions) (count int, err error) {
+func (s *Site) WritePages(options BuildOptions) (int, error) {
+	count := 0
+	var err error
+	errs := make(chan error)
+
 	for _, p := range s.OutputPages() {
 		count++
-		if err = s.WritePage(p, options); err != nil {
-			return
+		go func(p pages.Document) {
+			errs <- s.WritePage(p, options)
+		}(p)
+	}
+	for i := 0; i < count; i++ {
+		// might as well report the last error as the first
+		if e := <-errs; e != nil {
+			err = e
 		}
 	}
-	return
+	return count, err
 }
 
 // WritePage writes a page to the destination directory.

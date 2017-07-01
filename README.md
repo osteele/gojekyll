@@ -4,23 +4,23 @@
 
 Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
 
-Missing features:
+Major omissions:
 
-- Themes, page tags, excerpts, plugins (except for `avatar`), and pagination
+- Themes, page tags, excerpts, plugins (except for `avatar`), pagination
 - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
 - Jekyll's `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify` filters
-- Jekyll's `include_relative`, `post_url`, `gist`, and `highlight` tags
-- The [Go Liquid template engine](https://github.com/osteele/gojekyll) is also missing some tags and filters.
+- Jekyll's `include_relative` and `gist`
+- The [Go Liquid template engine](https://github.com/osteele/gojekyll) is also missing some tags (notably around iteration and conditionals) and filters; see its README for status.
 - Data files must be YAML; CSV and JSON are not supported.
 - `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge.
-- `<div markdown=1>` doesn't work. I think this is a limitation of the *blackfriday* Markdown processor.
+- `<div markdown=1>` doesn't work. I think this is a limitation of the **blackfriday** Markdown processor.
+- The Liquid engine is probably much stricter than the original. It is also likely to have bugs.
 - Parse errors aren't reported very nicely.
 
 Other differences from Jekyll:
 
 - `serve` generates pages on the fly; it doesn't write to the file system.
-- Files are cached to `/tmp/gojekyll-${USER}`.
-- No `.sass-cache`; therefore, no `sass: cache: false` option.
+- Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
 - The server reloads the `_config.yml` file too.
 
@@ -38,6 +38,17 @@ gojekyll -s path/to/site serve                # serves from memory, w/ live relo
 gojekyll help
 gojekyll help build
 ```
+
+## Benchmark
+
+`[go]jekyll -s jekyll/docs build`
+
+| Executable | Options                              | Time   |
+|------------|--------------------------------------|--------|
+| gojekyll   | multi-threaded; cache doesn't matter | 0.34s  |
+| gojekyll   | warm cache, single-threaded          | 0.61s  |
+| gojekyll   | cold cache, single-threaded          | 6.85s  |
+| jekyll     |                                      | 18.53s |
 
 ## Status
 
@@ -132,16 +143,16 @@ go tool pprof gojekyll gojekyll.prof
 
 Gojekyll uses these libraries:
 
-| Package | Author | Description |
-| --- | --- | --- |
-| [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim | Live Reload server |
-| [github.com/osteele/liquid](https://github.com/osteele/liquid) | Oliver Steele | Liquid processor |
-| [github.com/pkg/browser](https://github.com/pkg/browser) | [pkg](https://github.com/pkg) | The `serve -o` option to open the site in the browser |
-| [github.com/russross/blackfriday](https://github.com/russross/blackfriday) | Russ Ross | Markdown processor |
-| [github.com/sass/libsass](https://github.com/sass/libsass) | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler |
-| [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass) | Drew Wells | Go bindings to libsass |
-| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)  | Alec Thomas | command line and flag parser |
-| [gopkg.in/yaml.v2](https://github.com/go-yaml) | Canonical | YAML support |
+| Package                                                                        | Author(s)                                              | Description                                           |
+|--------------------------------------------------------------------------------|--------------------------------------------------------|-------------------------------------------------------|
+| [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim                                         | Live Reload server                                    |
+| [github.com/osteele/liquid](https://github.com/osteele/liquid)                 | yours truly                                            | Liquid processor                                      |
+| [github.com/pkg/browser](https://github.com/pkg/browser)                       | [pkg](https://github.com/pkg)                          | The `serve -o` option to open the site in the browser |
+| [github.com/russross/blackfriday](https://github.com/russross/blackfriday)     | Russ Ross                                              | Markdown processor                                    |
+| [github.com/sass/libsass](https://github.com/sass/libsass)                     | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler                      |
+| [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass)   | Drew Wells                                             | Go bindings for **libsass**                           |
+| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command line and flag parser                          |
+| [gopkg.in/yaml.v2](https://github.com/go-yaml)                                 | Canonical                                              | YAML support                                          |
 
 In addition to being totally and obviously inspired by the Jekyll, Jekyll's solid documentation was indispensible. Many of the filter test cases are taken directly from the Jekyll documentation, and the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
 

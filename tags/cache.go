@@ -2,7 +2,7 @@ package tags
 
 import (
 	"bytes"
-	"crypto/md5"
+	"crypto/md5" // nolint: gas
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,10 +17,10 @@ import (
 // header and content are distinct parameters to relieve the caller from
 // having to concatenate them.
 func withFileCache(w io.Writer, header string, content string, fn func(w io.Writer) error) error {
-	h := md5.New()
-	io.WriteString(h, content)
-	io.WriteString(h, "\n")
-	io.WriteString(h, header)
+	h := md5.New()             // nolint: gas
+	io.WriteString(h, content) // nolint: errcheck, gas
+	io.WriteString(h, "\n")    // nolint: errcheck, gas
+	io.WriteString(h, header)  // nolint: errcheck, gas
 	sum := h.Sum(nil)
 
 	// don't use ioutil.TempDir, because we want this to last across invocations
@@ -29,12 +29,11 @@ func withFileCache(w io.Writer, header string, content string, fn func(w io.Writ
 
 	// ignore errors; if there's a missing file we don't care, and if it's
 	// another error we'll pick it up during write
-	b, err := ioutil.ReadFile(cachepath)
 	// WriteFile truncates the file before writing it, so ignore empty files.
 	// If the writer actually wrote an empty file, we'll end up gratuitously
 	// re-running it, which is okay.
-	if err == nil && len(b) > 0 {
-		_, err := w.Write(b)
+	if b, err := ioutil.ReadFile(cachepath); err == nil && len(b) > 0 {
+		_, err = w.Write(b)
 		return err
 	}
 
@@ -50,6 +49,6 @@ func withFileCache(w io.Writer, header string, content string, fn func(w io.Writ
 	if err := ioutil.WriteFile(cachepath, out, 0600); err != nil {
 		return err
 	}
-	_, err = w.Write(out)
+	_, err := w.Write(out)
 	return err
 }
