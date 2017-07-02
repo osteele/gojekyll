@@ -2,18 +2,21 @@
 [![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 
-Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator in the [Go](https://golang.org) programming language. This was my “learn Go” project.
+Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator in the [Go](https://golang.org) programming language.
+
+This was my “weekend project” for learning Go, that took on a life of its own (and more than a weekend).
 
 <!-- TOC -->
 
 - [Gojekyll](#gojekyll)
-    - [Overview](#overview)
-        - [Major omissions](#major-omissions)
-        - [Other differences](#other-differences)
-        - [Timings](#timings)
     - [Installation](#installation)
     - [Usage](#usage)
     - [Status](#status)
+        - [Major omissions](#major-omissions)
+        - [Other Caveats](#other-caveats)
+        - [Intentional Differences](#intentional-differences)
+        - [Timings](#timings)
+        - [Features](#features)
     - [Contributing](#contributing)
         - [Testing](#testing)
         - [Profiling](#profiling)
@@ -23,23 +26,41 @@ Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) s
 
 <!-- /TOC -->
 
-## Overview
+## Installation
+
+1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier than the linked instructions.
+2. `go get -u osteele/gojekyll/cmd/gojekyll`
+3. To use the `{% highlight %}` tag, you need to install Pygments: `pip install Pygments`.
+
+## Usage
+
+```bash
+gojekyll -s path/to/site build                # builds into ./_site
+gojekyll -s path/to/site serve                # serves from memory, w/ live reload
+gojekyll help
+gojekyll help build
+```
+
+## Status
 
 ### Major omissions
 
 - Major features: themes, page tags, excerpts, plugins (except for `avatar`), pagination, math, warning mode
 - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
-- Jekyll's `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify` filters
+- Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`.
 - Jekyll's `include_relative` and `gist`
-- The [Go Liquid template engine](https://github.com/osteele/gojekyll) is also missing some tags (notably around iteration and conditionals) and filters; see its README for status.
-- Data files must be YAML; CSV and JSON are not supported.
-- `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge.
-- `<div markdown=1>` doesn't work. I think this is a limitation of the **blackfriday** Markdown processor.
+- The Go Liquid is also missing some tags and a few filters. See its [README](https://github.com/osteele/gojekyll/#status) for status.
+- Data files must be YAML. CSV and JSON are not (yet) supported.
+- `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge. Also, I don't know what will happen if Pygments isn't installed.
+- `<div markdown=1>` doesn't work. I think this is a limitation of the Blackfriday Markdown processor.
+
+### Other Caveats
+
 - The Liquid engine is probably much stricter than the original.
 - This implementation is much less robust. It probably panics or otherwise fails on a lot of legitimate constructs.
 - Liquid errors aren't reported very nicely.
 
-### Other differences
+### Intentional Differences
 
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
@@ -62,22 +83,7 @@ There's currently no way to disable concurrency or the cache. They were switched
 
 The cache is for calls to **Pygments** via the `highlight` tag.
 
-## Installation
-
-1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier.
-2. `go get -u osteele/gojekyll/cmd/gojekyll`
-3. To use the `{% highlight %}` tag, you need to install **Pygments**: `pip install Pygments`.
-
-## Usage
-
-```bash
-gojekyll -s path/to/site build                # builds into ./_site
-gojekyll -s path/to/site serve                # serves from memory, w/ live reload
-gojekyll help
-gojekyll help build
-```
-
-## Status
+### Features
 
 - [ ] Content
   - [x] Front Matter
@@ -193,7 +199,7 @@ The gopher image in the test directory is from [Wikimedia Commons](https://commo
 
 [Hugo](https://gohugo.io) isn't Jekyll-compatible (-), but actually works (+++).
 
-[Jekyll](https://github.com/osteele/liquid) is a Go implementation of Liquid templates. I ended up having to write that in order to finish this, but in principle it could be used elsewhere.
+[Liquid](https://github.com/osteele/liquid) is a Go implementation of Liquid templates. I ended up having to write that in order to finish this, but in principle it could be used elsewhere.
 
 [Jekyll](https://jekyllrb.com), of course.
 
