@@ -4,7 +4,7 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-func boolAction(name string, ptr **bool) kingpin.Action {
+func boolVar(name string, ptr **bool) kingpin.Action {
 	return func(pc *kingpin.ParseContext) error {
 		value := lookupKingpinValue(name, pc)
 		option := false
@@ -16,7 +16,7 @@ func boolAction(name string, ptr **bool) kingpin.Action {
 	}
 }
 
-func stringAction(name string, ptr **string) kingpin.Action {
+func stringVar(name string, ptr **string) kingpin.Action {
 	return func(pc *kingpin.ParseContext) error {
 		value := lookupKingpinValue(name, pc)
 		if value != nil {

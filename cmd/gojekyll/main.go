@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/sites"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -14,17 +12,17 @@ import (
 // Command-line options
 var (
 	buildOptions sites.BuildOptions
+	configFlags  = config.Flags{}
+	quiet        = false
 )
 
-var configFlags = config.Flags{}
-
 var (
-	app    = kingpin.New("gojekyll", "a (maybe someday) Jekyll-compatible blog generator in Go")
+	app    = kingpin.New("gojekyll", "a (somewhat) Jekyll-compatible blog generator")
 	source = app.Flag("source", "Source directory").Short('s').Default(".").String()
-	_      = app.Flag("destination", "Destination directory").Short('d').Action(stringAction("destination", &configFlags.Destination)).String()
-	_      = app.Flag("future", "Publishes posts with a future date").Action(boolAction("future", &configFlags.Future)).Bool()
-	_      = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolAction("drafts", &configFlags.Drafts)).Bool()
-	_      = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolAction("unpublished", &configFlags.Unpublished)).Bool()
+	_      = app.Flag("destination", "Destination directory").Short('d').Action(stringVar("destination", &configFlags.Destination)).String()
+	_      = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolVar("drafts", &configFlags.Drafts)).Bool()
+	_      = app.Flag("future", "Publishes posts with a future date").Action(boolVar("future", &configFlags.Future)).Bool()
+	_      = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolVar("unpublished", &configFlags.Unpublished)).Bool()
 
 	build = app.Command("build", "Build your site").Alias("b")
 	clean = app.Command("clean", "Clean the site (removes site output) without building.")
@@ -47,22 +45,8 @@ var (
 )
 
 func init() {
+	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
-}
-
-// This is the longest label. Pull it out here so we can both use it, and measure it for alignment.
-const configurationFileLabel = "Configuration file:"
-
-func printSetting(label string, value string) {
-	fmt.Printf("%s %s\n", helpers.LeftPad(label, len(configurationFileLabel)), value)
-}
-
-func printPathSetting(label string, name string) {
-	name, err := filepath.Abs(name)
-	if err != nil {
-		panic("Couldn't convert to absolute path")
-	}
-	printSetting(label, name)
 }
 
 func main() {
@@ -72,6 +56,9 @@ func main() {
 		dest, err := filepath.Abs(*configFlags.Destination)
 		app.FatalIfError(err, "")
 		configFlags.Destination = &dest
+	}
+	if buildOptions.DryRun {
+		buildOptions.Verbose = true
 	}
 	app.FatalIfError(run(cmd), "")
 }

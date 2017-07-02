@@ -23,9 +23,6 @@ var commandStartTime = time.Now()
 func buildCommand(site *sites.Site) error {
 	printPathSetting("Destination:", site.DestDir())
 	printSetting("Generating...", "")
-	if buildOptions.DryRun {
-		buildOptions.Verbose = true
-	}
 	count, err := site.Build(buildOptions)
 	if err != nil {
 		return err
@@ -37,9 +34,6 @@ func buildCommand(site *sites.Site) error {
 
 func cleanCommand(site *sites.Site) error {
 	printPathSetting("Cleaner:", fmt.Sprintf("Removing %s...", site.DestDir()))
-	if buildOptions.DryRun {
-		buildOptions.Verbose = true
-	}
 	return site.Clean(buildOptions)
 }
 
