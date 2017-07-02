@@ -73,12 +73,12 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, e map[string]i
 	return b, nil
 }
 
-func (p *Pipeline) renderTemplate(b []byte, e map[string]interface{}, filename string) ([]byte, error) {
-	b, err := p.liquidEngine.ParseAndRender(b, e)
+func (p *Pipeline) renderTemplate(tpl []byte, b map[string]interface{}, filename string) ([]byte, error) {
+	out, err := p.liquidEngine.ParseAndRender(tpl, liquid.NewContext(b))
 	if err != nil {
 		return nil, helpers.PathError(err, "Liquid Error", filename)
 	}
-	return b, err
+	return out, err
 }
 
 // ApplyLayout applies the named layout to the data.
@@ -89,11 +89,11 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{
 		if err != nil {
 			return nil, err
 		}
-		le := templates.MergeVariableMaps(e, map[string]interface{}{
+		b := templates.MergeVariableMaps(e, map[string]interface{}{
 			"content": string(data),
 			"layout":  lfm,
 		})
-		data, err = t.Render(le)
+		data, err = t.Render(liquid.NewContext(b))
 		if err != nil {
 			return nil, helpers.PathError(err, "render template", name)
 		}

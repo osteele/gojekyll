@@ -112,13 +112,13 @@ func TestFilters(t *testing.T) {
 	}
 }
 
-func requireTemplateRender(t *testing.T, tmpl string, scope map[string]interface{}, expected string) {
+func requireTemplateRender(t *testing.T, tmpl string, bindings map[string]interface{}, expected string) {
 	engine := liquid.NewEngine()
 	c := config.Default()
 	c.BaseURL = "/my-baseurl"
 	c.AbsoluteURL = "http://example.com"
 	AddJekyllFilters(engine, c)
-	data, err := engine.ParseAndRender([]byte(tmpl), scope)
+	data, err := engine.ParseAndRender([]byte(tmpl), liquid.NewContext(bindings))
 	require.NoErrorf(t, err, tmpl)
 	require.Equalf(t, expected, strings.TrimSpace(string(data)), tmpl)
 }
