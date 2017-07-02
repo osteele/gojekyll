@@ -43,7 +43,7 @@ func TestReadFileMagic(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []byte{0, 0, 0, 0}, b)
 
-	b, err = ReadFileMagic(testFile("missing.txt"))
+	_, err = ReadFileMagic(testFile("missing.txt"))
 	require.Error(t, err)
 }
 

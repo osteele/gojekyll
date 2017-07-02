@@ -2,9 +2,9 @@
 [![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 
-Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator in the [Go](https://golang.org) programming language.
+Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
 
-This was my “weekend project” for learning Go, that took on a life of its own (and more than a weekend).
+This was my “weekend project” for learning Go. It took on a life of its own (and more than a weekend).
 
 <!-- TOC -->
 
@@ -12,7 +12,7 @@ This was my “weekend project” for learning Go, that took on a life of its ow
     - [Installation](#installation)
     - [Usage](#usage)
     - [Status](#status)
-        - [Major omissions](#major-omissions)
+        - [Major Omissions](#major-omissions)
         - [Other Caveats](#other-caveats)
         - [Intentional Differences](#intentional-differences)
         - [Timings](#timings)
@@ -43,7 +43,7 @@ gojekyll help build
 
 ## Status
 
-### Major omissions
+### Major Omissions
 
 - Major features: themes, page tags, excerpts, plugins (except for `avatar`), pagination, math, warning mode
 - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`

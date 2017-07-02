@@ -27,7 +27,7 @@ func (c *Config) markdownExtensions() map[string]bool {
 // MarkdownExtensions returns a list of markdown extensions, with dotsa.
 func (c *Config) MarkdownExtensions() []string {
 	exts := strings.SplitN(c.MarkdownExt, `,`, -1)
-	for i, k :=range exts {
+	for i, k := range exts {
 		exts[i] = "." + k
 	}
 	return exts
