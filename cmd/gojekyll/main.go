@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/sites"
@@ -13,6 +15,7 @@ import (
 var (
 	buildOptions sites.BuildOptions
 	configFlags  = config.Flags{}
+	profile      = false
 	quiet        = false
 )
 
@@ -30,7 +33,7 @@ var (
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
 	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
 
-	profile = app.Command("profile", "Build several times, and write a profile file")
+	benchmark = app.Command("profile", "Repeat build for ten seconds. Implies --profile.")
 
 	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
 	dataVariable = variables.Flag("data", "Display site.data").Bool()
@@ -45,6 +48,7 @@ var (
 )
 
 func init() {
+	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
 	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
 }
@@ -60,6 +64,9 @@ func main() {
 	if buildOptions.DryRun {
 		buildOptions.Verbose = true
 	}
+	if cmd == benchmark.FullCommand() {
+		profile = true
+	}
 	app.FatalIfError(run(cmd), "")
 }
 
@@ -68,14 +75,28 @@ func run(cmd string) error {
 	if err != nil {
 		return err
 	}
+	if profile {
+		profilePath := "gojekyll.prof"
+		printSetting("Profiling...", "")
+		f, err := os.Create(profilePath)
+		app.FatalIfError(err, "")
+		err = pprof.StartCPUProfile(f)
+		app.FatalIfError(err, "")
+		defer func() {
+			pprof.StopCPUProfile()
+			err = f.Close()
+			app.FatalIfError(err, "")
+			fmt.Println("Wrote", profilePath)
+		}()
+	}
 
 	switch cmd {
+	case benchmark.FullCommand():
+		return benchmarkCommand(site)
 	case build.FullCommand():
 		return buildCommand(site)
 	case clean.FullCommand():
 		return cleanCommand(site)
-	case profile.FullCommand():
-		return profileCommand(site)
 	case render.FullCommand():
 		return renderCommand(site)
 	case routes.FullCommand():
