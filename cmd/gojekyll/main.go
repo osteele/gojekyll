@@ -101,7 +101,6 @@ func run(cmd string) error {
 		// kingpin should have provided help and exited before here
 		panic("unknown command")
 	}
-	return nil
 }
 
 // Load the site, and print the common banner settings.

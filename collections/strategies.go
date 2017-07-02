@@ -41,7 +41,6 @@ func (s postsStrategy) collectible(filename string) bool {
 
 func (s postsStrategy) future(filename string) bool {
 	t, ok := DateFromFilename(filename)
-	return false
 	return ok && t.After(time.Now())
 }
 

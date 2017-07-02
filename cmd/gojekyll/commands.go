@@ -36,7 +36,7 @@ func buildCommand(site *sites.Site) error {
 }
 
 func cleanCommand(site *sites.Site) error {
-	printPathSetting("Cleaner:", fmt.Sprint("Removing %s...", site.DestDir()))
+	printPathSetting("Cleaner:", fmt.Sprintf("Removing %s...", site.DestDir()))
 	if buildOptions.DryRun {
 		buildOptions.Verbose = true
 	}
