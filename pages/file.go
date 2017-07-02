@@ -13,7 +13,7 @@ import (
 	"github.com/osteele/gojekyll/templates"
 )
 
-// file is embedded in StaticPage and DynamicPage
+// file is embedded in StaticFile and page
 type file struct {
 	container   Container
 	filename    string // target os filepath
@@ -28,11 +28,11 @@ func (p *file) String() string {
 	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
 }
 
-func (p *file) OutputExt() string   { return p.outputExt }
-func (p *file) Path() string        { return p.relpath }
-func (p *file) Permalink() string   { return p.permalink }
-func (p *file) Published() bool     { return templates.VariableMap(p.frontMatter).Bool("published", true) }
-func (p *file) SiteRelPath() string { return p.relpath }
+func (f *file) OutputExt() string   { return f.outputExt }
+func (f *file) Path() string        { return f.relpath }
+func (f *file) Permalink() string   { return f.permalink }
+func (f *file) Published() bool     { return templates.VariableMap(f.frontMatter).Bool("published", true) }
+func (f *file) SiteRelPath() string { return f.relpath }
 
 // NewFile creates a Post or StaticFile.
 func NewFile(filename string, c Container, relpath string, defaults map[string]interface{}) (Document, error) {

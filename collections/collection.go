@@ -15,7 +15,7 @@ type Collection struct {
 	Name      string
 	Metadata  map[string]interface{}
 	container pages.Container
-	pages     []*pages.Page
+	pages     []pages.Page
 }
 
 // NewCollection creates a new Collection
@@ -53,7 +53,7 @@ func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
 func (c *Collection) Output() bool { return templates.VariableMap(c.Metadata).Bool("output", false) }
 
 // Pages is a list of pages.
-func (c *Collection) Pages() []*pages.Page {
+func (c *Collection) Pages() []pages.Page {
 	return c.pages
 }
 

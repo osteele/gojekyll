@@ -66,7 +66,7 @@ func (c *Collection) readFile(abs string, rel string, fm map[string]interface{})
 	case f.Static():
 		return nil
 	case f.Published() || c.Config().Unpublished:
-		 p:=f.(*pages.Page)
+		p := f.(pages.Page)
 		c.pages = append(c.pages, p)
 	}
 	return nil

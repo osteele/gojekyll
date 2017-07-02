@@ -10,17 +10,22 @@ import (
 	"github.com/osteele/gojekyll/templates"
 )
 
+type Page interface {
+	Document
+	Content(rc RenderingContext) ([]byte, error)
+}
+
 // Page is a post or collection page.
-type Page struct {
+type page struct {
 	file
 	raw     []byte
 	content *[]byte
 }
 
 // Static is in the File interface.
-func (p *Page) Static() bool { return false }
+func (p *page) Static() bool { return false }
 
-func newPage(filename string, f file) (*Page, error) {
+func newPage(filename string, f file) (*page, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -31,14 +36,14 @@ func newPage(filename string, f file) (*Page, error) {
 		return nil, err
 	}
 	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
-	return &Page{
+	return &page{
 		file: f,
 		raw:  b,
 	}, nil
 }
 
 // PageVariables returns the attributes of the template page object.
-func (p *Page) PageVariables() map[string]interface{} {
+func (p *page) PageVariables() map[string]interface{} {
 	var (
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
@@ -88,7 +93,7 @@ func (p *Page) PageVariables() map[string]interface{} {
 }
 
 // TemplateContext returns the local variables for template evaluation
-func (p *Page) TemplateContext(rc RenderingContext) map[string]interface{} {
+func (p *page) TemplateContext(rc RenderingContext) map[string]interface{} {
 	return map[string]interface{}{
 		"page": p.PageVariables(),
 		"site": rc.SiteVariables(),
@@ -96,7 +101,7 @@ func (p *Page) TemplateContext(rc RenderingContext) map[string]interface{} {
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (p *Page) Write(rc RenderingContext, w io.Writer) error {
+func (p *page) Write(rc RenderingContext, w io.Writer) error {
 	rp := rc.RenderingPipeline()
 	b, err := rp.Render(w, p.raw, p.filename, p.TemplateContext(rc))
 	if err != nil {
@@ -114,7 +119,7 @@ func (p *Page) Write(rc RenderingContext, w io.Writer) error {
 }
 
 // Content computes the page content.
-func (p *Page) Content(rc RenderingContext) ([]byte, error) {
+func (p *page) Content(rc RenderingContext) ([]byte, error) {
 	if p.content == nil {
 		// TODO DRY w/ Page.Write
 		rp := rc.RenderingPipeline()
