@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
+[![Coverage Status](https://coveralls.io/repos/github/osteele/gojekyll/badge.svg?branch=master)](https://coveralls.io/github/osteele/gojekyll?branch=master)
 
 Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
 

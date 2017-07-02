@@ -3,10 +3,13 @@ language: go
 go:
   - 1.8.3
 
+before_install:
+  - go get github.com/mattn/goveralls
+
 install:
   - make setup
   - go get ./...
 
 script:
-  - go test ./...
+  - $HOME/gopath/bin/goveralls -service=travis-ci
   - gometalinter --deadline=5m ./...
