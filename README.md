@@ -45,19 +45,19 @@ gojekyll help build
 
 ### Major Omissions
 
-- Major features: themes, page tags, excerpts, plugins (except for `avatar`), pagination, math, warning mode
+- Major features: themes, page tags, excerpts, plugins (except for a few listed below), pagination, math, warning mode.
 - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
 - Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`.
-- Jekyll's `include_relative` and `gist`
-- The Go Liquid is also missing some tags and a few filters. See its [README](https://github.com/osteele/gojekyll/#status) for status.
+- Jekyll's `include_relative` tag
+- The Go Liquid engine is also missing some tags and a few filters. See its [README](https://github.com/osteele/gojekyll/#status) for status.
 - Data files must be YAML. CSV and JSON are not (yet) supported.
 - `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge. Also, I don't know what will happen if Pygments isn't installed.
 - `<div markdown=1>` doesn't work. I think this is a limitation of the Blackfriday Markdown processor.
 
 ### Other Caveats
 
-- The Liquid engine is probably much stricter than the original.
-- This implementation is much less robust. It probably panics or otherwise fails on a lot of legitimate constructs.
+- This Liquid engine is probably much stricter than the original.
+- Both the Liquid and Jekyll implementations are much less robust than the originals. They probably panic or otherwise fails on a lot of legitimate constructs.
 - Liquid errors aren't reported very nicely.
 
 ### Intentional Differences
@@ -65,7 +65,7 @@ gojekyll help build
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
-- The server reloads the `_config.yml` (and the rest of the site) when it changes.
+- The server reloads the `_config.yml` (and the rest of the site) when that file changes.
 - `build` with no `-d` option resolves the destination relative to the source directory, not the current directory.
 
 ### Timings
@@ -81,7 +81,7 @@ gojekyll help build
 
 There's currently no way to disable concurrency or the cache. They were switched off by editing the code for these timings.
 
-The cache is for calls to **Pygments** via the `highlight` tag.
+The cache is for calls to Pygments (via the `highlight` tag).
 
 ### Features
 
@@ -123,6 +123,7 @@ The cache is for calls to **Pygments** via the `highlight` tag.
   - [ ] Plugins
     - [x] `jekyll-avatar`
     - [ ] `jekyll-coffeescript`
+    - [x] `jekyll-gist` (ignores `noscript: false`)
     - [x] `jekyll-live-reload` (always on)
     - [ ] `jekyll-paginate`
   - [ ] Themes
@@ -189,17 +190,17 @@ Gojekyll uses these libraries:
 | [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command line and flag parser                          | MIT                               |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                                          | Apache License 2.0                |
 
-In addition to being totally and obviously inspired by the Jekyll, Jekyll's solid documentation was indispensible. Many of the filter test cases are taken directly from the Jekyll documentation, and the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
+In addition to being totally and obviously inspired by Jekyll, Jekyll's *documentation* was solid and indispensible. Many of the filter test cases are taken directly from the Jekyll documentation, and during development the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
 
-The help text was taken from the output of `jekyll help`.
+The text for `gojekyll help` was taken from the output of `jekyll help`.
 
-The gopher image in the test directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
+The gopher image in the `testdata` directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
 ## Related
 
-[Hugo](https://gohugo.io) isn't Jekyll-compatible (-), but actually works (+++).
+[Hugo](https://gohugo.io) is *the* pre-eminent Go static site generator. It isn't Jekyll-compatible (-), but it's extraordinarily polished, performant, and productized (+++).
 
-[Liquid](https://github.com/osteele/liquid) is a Go implementation of Liquid templates. I ended up having to write that in order to finish this, but in principle it could be used elsewhere.
+[Liquid](https://github.com/osteele/liquid) is a Go implementation of Liquid templates. I wrote it for gojekyll, but it's implemented as a standalone library.
 
 [Jekyll](https://jekyllrb.com), of course.
 

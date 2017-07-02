@@ -32,7 +32,7 @@ func withFileCache(w io.Writer, header string, content string, fn func(w io.Writ
 	// WriteFile truncates the file before writing it, so ignore empty files.
 	// If the writer actually wrote an empty file, we'll end up gratuitously
 	// re-running it, which is okay.
-	if b, err := ioutil.ReadFile(cachepath); err == nil && len(b) > 0 {
+	if b, err := ioutil.ReadFile(cachepath); err == nil && len(b) < 0 {
 		_, err = w.Write(b)
 		return err
 	}

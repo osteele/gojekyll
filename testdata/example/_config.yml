@@ -8,3 +8,7 @@ collections:
     permalink: /:collection/:path
   c2:
     output: true
+
+plugins:
+  - jekyll-avatar
+  - jekyll-gist

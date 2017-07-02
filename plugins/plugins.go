@@ -23,7 +23,7 @@ type PluginContext interface {
 func Install(name string, ctx PluginContext) bool {
 	p, found := plugins[name]
 	if p != nil {
-		if err := p(ctx, pluginHelper{name}); err != nil {
+		if err := p(ctx, pluginHelper{name, ctx}); err != nil {
 			panic(err)
 		}
 	}
@@ -40,26 +40,33 @@ func registerPlugin(name string, fn func(PluginContext, pluginHelper) error) {
 func init() {
 	registerPlugin("jekyll-feed", func(ctx PluginContext, h pluginHelper) error {
 		h.stubbed()
-		ctx.TemplateEngine().DefineTag("feed_meta", h.makeUnimplementedTag())
+		h.tag("feed_meta", h.makeUnimplementedTag())
 		return nil
 	})
 
-	// no-op; the server always does this
+	// no warning but effect; the server runs in this mode anyway
 	registerPlugin("jekyll-live-reload", func(ctx PluginContext, h pluginHelper) error {
 		return nil
 	})
 
 	registerPlugin("jekyll-seo-tag", func(ctx PluginContext, h pluginHelper) error {
 		h.stubbed()
-		ctx.TemplateEngine().DefineTag("seo", h.makeUnimplementedTag())
+		h.tag("seo", h.makeUnimplementedTag())
 		return nil
 	})
 }
 
-type pluginHelper struct{ name string }
+type pluginHelper struct {
+	name string
+	ctx  PluginContext
+}
 
 func (h pluginHelper) stubbed() {
 	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", h.name)
+}
+
+func (h pluginHelper) tag(name string, t liquid.TagDefinition) {
+	h.ctx.TemplateEngine().DefineTag(name, t)
 }
 
 func (h pluginHelper) makeUnimplementedTag() liquid.TagDefinition {

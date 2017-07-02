@@ -15,7 +15,7 @@ func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
 	if err != nil {
 		return err
 	}
-	cargs := []string{}
+	cargs := []string{"-f", "html"}
 	if args != "" {
 		cargs = append(cargs, "-l"+args)
 	}

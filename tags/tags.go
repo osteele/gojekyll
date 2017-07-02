@@ -16,12 +16,13 @@ type LinkTagHandler func(string) (string, bool)
 // AddJekyllTags adds the Jekyll tags to the Liquid engine.
 func AddJekyllTags(e liquid.Engine, c config.Config, lh LinkTagHandler) {
 	tc := tagContext{c, lh}
-	e.DefineTag("link", tc.linkTag)
+	e.DefineStartTag("highlight", highlightTag)
 	e.DefineTag("include", tc.includeTag)
+	e.DefineTag("link", tc.linkTag)
+	e.DefineTag("post_url", tc.postURLTag)
 
 	// TODO unimplemented
-	e.DefineTag("post_url", tc.postURLTag)
-	e.DefineStartTag("highlight", highlightTag)
+	e.DefineTag("post_url", CreateUnimplementedTag())
 }
 
 // tagContext provides the context to a tag renderer.
@@ -30,9 +31,9 @@ type tagContext struct {
 	lh     LinkTagHandler
 }
 
-// MakeUnimplementedTag creates a tag definition that prints a warning the first
+// CreateUnimplementedTag creates a tag definition that prints a warning the first
 // time it's rendered, and otherwise does nothing.
-func MakeUnimplementedTag() liquid.TagDefinition {
+func CreateUnimplementedTag() liquid.TagDefinition {
 	warned := false
 	return func(_ io.Writer, ctx chunks.RenderContext) error {
 		if !warned {

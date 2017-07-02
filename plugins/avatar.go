@@ -10,8 +10,8 @@ import (
 )
 
 func init() {
-	registerPlugin("jekyll-avatar", func(ctx PluginContext, _ pluginHelper) error {
-		ctx.TemplateEngine().DefineTag("avatar", avatarTag)
+	registerPlugin("jekyll-avatar", func(_ PluginContext, h pluginHelper) error {
+		h.tag("avatar", avatarTag)
 		return nil
 	})
 }
