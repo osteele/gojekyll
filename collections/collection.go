@@ -15,7 +15,7 @@ type Collection struct {
 	Name      string
 	Metadata  map[string]interface{}
 	container pages.Container
-	pages     []pages.Document
+	pages     []*pages.Page
 }
 
 // NewCollection creates a new Collection
@@ -37,6 +37,11 @@ func (c *Collection) OutputExt(pathname string) string {
 	return c.container.OutputExt(pathname)
 }
 
+// AbsDir is in the page.Container interface.
+func (c *Collection) AbsDir() string {
+	return filepath.Join(c.container.AbsDir(), c.PathPrefix())
+}
+
 // PathPrefix is in the page.Container interface.
 // PathPrefix returns the collection's directory prefix, e.g. "_posts/"
 func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Name + "/") }
@@ -48,19 +53,18 @@ func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
 func (c *Collection) Output() bool { return templates.VariableMap(c.Metadata).Bool("output", false) }
 
 // Pages is a list of pages.
-func (c *Collection) Pages() []pages.Document {
+func (c *Collection) Pages() []*pages.Page {
 	return c.pages
 }
 
 // TemplateVariable returns an array of page objects, for use as the template variable
 // value of the collection.
 func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent bool) ([]interface{}, error) {
-	d := []interface{}{}
+	pages := []interface{}{}
 	for _, p := range c.Pages() {
 		v := p.PageVariables()
-		dp, ok := p.(*pages.Page)
-		if includeContent && ok {
-			c, err := dp.Content(ctx)
+		if includeContent {
+			c, err := p.Content(ctx)
 			if err != nil {
 				return nil, err
 			}
@@ -68,16 +72,31 @@ func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent
 				"content": string(c),
 			})
 		}
-		d = append(d, v)
+		pages = append(pages, v)
 	}
 	if c.IsPostsCollection() {
-		generics.SortByProperty(d, "date", true)
+		generics.SortByProperty(pages, "date", true)
+		reversed := make([]interface{}, len(pages))
+		for i, v := range pages {
+			reversed[len(pages)-1-i] = v
+		}
+		pages = reversed
 	}
-	out := make([]interface{}, len(d))
-	for i, v := range d {
-		out[len(d)-1-i] = v
-	}
-	return out, nil
+	return pages, nil
+}
+
+// TemplateObject returns the value of the collection in the template
+// "collections" array.
+func (c *Collection) TemplateObject(pages interface{}) interface{} {
+	return templates.MergeVariableMaps(
+		c.Metadata,
+		map[string]interface{}{
+			"label":              c.Name,
+			"docs":               pages,
+			"files":              []string{},
+			"relative_directory": c.PathPrefix(),
+			"directory":          c.AbsDir(),
+		})
 }
 
 // PermalinkPattern returns the permalink pattern for this collection.

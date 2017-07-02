@@ -1,6 +1,8 @@
 ---
 ---
 
+# Plugins
+
 ## Avatar
 
 {% avatar osteele %}

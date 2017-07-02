@@ -53,6 +53,15 @@ func (s *Site) OutputPages() []pages.Document {
 // Pages returns all the pages, output or not.
 func (s *Site) Pages() []pages.Document { return s.pages }
 
+// AbsDir is in the page.Container interface.
+func (s *Site) AbsDir() string {
+	d, err := filepath.Abs(s.SourceDir())
+	if err != nil {
+		panic(err)
+	}
+	return d
+}
+
 // Config is in the page.Container interface.
 func (s *Site) Config() config.Config {
 	return s.config

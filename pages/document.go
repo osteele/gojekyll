@@ -36,6 +36,7 @@ type RenderingContext interface {
 // Container is the document container.
 // It's either the Site or Collection that immediately contains the document.
 type Container interface {
+	AbsDir() string
 	Config() config.Config
 	OutputExt(pathname string) string
 	PathPrefix() string // PathPrefix is the relative prefix, "" for the site and "_coll/" for a collection

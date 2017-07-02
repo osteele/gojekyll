@@ -10,6 +10,7 @@ import (
 
 type MockContainer struct{ c config.Config }
 
+func (c MockContainer) AbsDir() string                   { return "" }
 func (c MockContainer) Config() config.Config            { return c.c }
 func (c MockContainer) PathPrefix() string               { return "" }
 func (c MockContainer) OutputExt(filename string) string { return path.Ext(filename) }

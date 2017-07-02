@@ -59,11 +59,14 @@ func (c *Collection) readFile(abs string, rel string, fm map[string]interface{})
 	default:
 		strategy.addDate(rel, fm)
 	}
-	p, err := pages.NewFile(abs, c, filepath.ToSlash(rel), fm)
+	f, err := pages.NewFile(abs, c, filepath.ToSlash(rel), fm)
 	switch {
 	case err != nil:
 		return err
-	case p.Published() || c.Config().Unpublished:
+	case f.Static():
+		return nil
+	case f.Published() || c.Config().Unpublished:
+		 p:=f.(*pages.Page)
 		c.pages = append(c.pages, p)
 	}
 	return nil

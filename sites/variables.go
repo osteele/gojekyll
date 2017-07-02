@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid/generics"
 )
 
 // SiteVariables returns the site variable for template evaluation.
@@ -20,6 +21,7 @@ func (s *Site) SiteVariables() map[string]interface{} {
 func (s *Site) initializeSiteVariables() error {
 	s.siteVariables = templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data": s.data,
+		// "collections": s.computeCollections(), // generics.MustConvert(s.config.Collections, reflect.TypeOf([]interface{}{})),
 		// TODO read time from _config, if it's available
 		"time": time.Now(),
 		// TODO pages, static_files, html_pages, html_files, documents, tags.TAG
@@ -27,19 +29,22 @@ func (s *Site) initializeSiteVariables() error {
 	return s.setCollectionVariables(false)
 }
 
+// set site[collection.name] for each collection.
 func (s *Site) setCollectionVariables(includeContent bool) error {
+	cv := []interface{}{}
 	for _, c := range s.Collections {
 		pages, err := c.TemplateVariable(s, includeContent)
 		if err != nil {
 			return err
 		}
+		cv = append(cv, c.TemplateObject(pages))
 		s.siteVariables[c.Name] = pages
 		if c.IsPostsCollection() {
 			s.setPostVariables(pages)
 		}
 	}
-	// Set these here instead of initializeSiteVariables so that they're
-	// re-generated once page.content has been rendered.
+	generics.SortByProperty(cv, "label", true)
+	s.siteVariables["collections"] = cv
 	return nil
 }
 

@@ -15,6 +15,7 @@ type containerMock struct {
 	p string
 }
 
+func (c containerMock) AbsDir() string            { return "" }
 func (c containerMock) Config() config.Config     { return c.c }
 func (c containerMock) OutputExt(p string) string { return filepath.Ext(p) }
 func (c containerMock) PathPrefix() string        { return c.p }
