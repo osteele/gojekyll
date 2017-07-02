@@ -4,21 +4,17 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
 [![Coverage Status](https://coveralls.io/repos/github/osteele/gojekyll/badge.svg?branch=master)](https://coveralls.io/github/osteele/gojekyll?branch=master)
 
-Gojekyll is an incomplete implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
-
-This was my “weekend project” for learning Go. It took on a life of its own (and more than a weekend).
+Gojekyll is a re-implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
 
 <!-- TOC -->
 
 - [Gojekyll](#gojekyll)
     - [Installation](#installation)
     - [Usage](#usage)
-    - [Status](#status)
-        - [Major Omissions](#major-omissions)
-        - [Other Caveats](#other-caveats)
-        - [Intentional Differences](#intentional-differences)
-        - [Timings](#timings)
-        - [Features](#features)
+    - [Limitations](#limitations)
+    - [Other Differences](#other-differences)
+    - [Timings](#timings)
+        - [Feature Status](#feature-status)
     - [Contributing](#contributing)
         - [Testing](#testing)
         - [Profiling](#profiling)
@@ -32,47 +28,45 @@ This was my “weekend project” for learning Go. It took on a life of its own 
 
 1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier than the linked instructions.
 2. `go get -u osteele/gojekyll/cmd/gojekyll`
-3. To use the `{% highlight %}` tag, you need to install Pygments: `pip install Pygments`.
+3. You need Pygments in order use the `{% highlight %}` tag: `pip install Pygments`.
 
 ## Usage
 
 ```bash
-gojekyll -s path/to/site build                # builds into ./_site
-gojekyll -s path/to/site serve                # serves from memory, w/ live reload
+gojekyll build
+gojekyll serve
 gojekyll help
 gojekyll help build
 ```
 
-## Status
+## Limitations
 
-### Major Omissions
-
-- Major features: themes, page tags, excerpts, plugins (except for a few listed below), pagination, math, warning mode.
-- Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
-- Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`.
-- Jekyll's `include_relative` tag
-- The Go Liquid engine is also missing some tags and a few filters. See its [README](https://github.com/osteele/gojekyll/#status) for status.
-- Data files must be YAML. CSV and JSON are not (yet) supported.
+- Missing features:
+  - themes, page tags, excerpts, plugins (except for a few listed below), pagination, math, warning mode.
+  - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
+  - Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`.
+  - Jekyll's `include_relative` tag
+  - The Go Liquid engine is also missing some tags and a few filters. See its [README](https://github.com/osteele/gojekyll/#status) for status.
+  - Data files must be YAML. CSV and JSON data files are not supported.
 - `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge. Also, I don't know what will happen if Pygments isn't installed.
 - `<div markdown=1>` doesn't work. I think this is a limitation of the Blackfriday Markdown processor.
-
-### Other Caveats
-
-- This Liquid engine is probably much stricter than the original.
-- Both the Liquid and Jekyll implementations are much less robust than the originals. They probably panic or otherwise fails on a lot of legitimate constructs.
+- This is a new code base. It probably panics or otherwise fails on a lot of legitimate constructs, and misbehaves on others.
 - Liquid errors aren't reported very nicely.
 
-### Intentional Differences
+## Other Differences
+
+These will probably not change.
 
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
 - The server reloads the `_config.yml` (and the rest of the site) when that file changes.
 - `build` with no `-d` option resolves the destination relative to the source directory, not the current directory.
+- Some plugins are built into the executable. Others may be added. There's no an extensible plugin mechanism in the near-to-medium future.
 
-### Timings
+## Timings
 
-`[go]jekyll -s jekyll/docs build`
+`[go]jekyll -s jekyll/docs build` on a late-2015 MacBook Pro, running current versions of everything as of 2017-07-01.
 
 | Executable | Options                              | Time   |
 |------------|--------------------------------------|--------|
@@ -81,11 +75,11 @@ gojekyll help build
 | gojekyll   | single-threaded; warm cache          | 0.61s  |
 | gojekyll   | multi-threaded; cache doesn't matter | 0.34s  |
 
-There's currently no way to disable concurrency or the cache. They were switched off by editing the code for these timings.
+[There's currently no way to disable concurrency or the cache. They were switched off by re-building the executable to produce these timings.]
 
-The cache is for calls to Pygments (via the `highlight` tag).
+The cache is for calls to Pygments (via the `highlight` tag). For another site, SASS is greater overhead. This is another candidate for caching, but with multi-threading it may not matter.
 
-### Features
+### Feature Status
 
 - [ ] Content
   - [x] Front Matter

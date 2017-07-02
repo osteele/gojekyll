@@ -42,7 +42,7 @@ var (
 	routes        = app.Command("routes", "Display site permalinks and associated files")
 	dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files").Bool()
 
-	render     = app.Command("render", "Render a file or URL path")
+	render     = app.Command("render", "Render a file or URL path to standard output")
 	renderPath = render.Arg("PATH", "Path or URL").String()
 )
 
