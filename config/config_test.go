@@ -15,7 +15,8 @@ func TestDefaultConfig(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
 	c := Default()
-	Unmarshal([]byte(`source: x`), &c)
+	err := Unmarshal([]byte(`source: x`), &c)
+	require.NoError(t, err)
 	require.Equal(t, "x", c.Source)
 	require.Equal(t, "./_site", c.Destination)
 }

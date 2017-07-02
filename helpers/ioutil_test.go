@@ -20,7 +20,8 @@ func TestCopyFileContents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.Close()
+	err = f.Close()
+	require.NoError(t, err)
 	err = CopyFileContents(f.Name(), testFile("test.txt"), 0x644)
 	require.NoError(t, err)
 
@@ -52,11 +53,13 @@ func TestVisitCreatedFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f.Close()
-	VisitCreatedFile(f.Name(), func(w io.Writer) error {
-		w.Write([]byte("test"))
-		return nil
+	err = f.Close()
+	require.NoError(t, err)
+	err = VisitCreatedFile(f.Name(), func(w io.Writer) error {
+		_, e := w.Write([]byte("test"))
+		return e
 	})
+	require.NoError(t, err)
 
 	b, err := ioutil.ReadFile(f.Name())
 	if err != nil {

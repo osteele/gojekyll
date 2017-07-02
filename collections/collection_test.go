@@ -8,12 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var tests = []struct{ in, out string }{
-	{"pre</head>post", "pre:insertion:</head>post"},
-	{"pre:insertion:</head>post", "pre:insertion:</head>post"},
-	{"post", ":insertion:post"},
-}
-
 type MockContainer struct{ c config.Config }
 
 func (c MockContainer) Config() config.Config            { return c.c }
