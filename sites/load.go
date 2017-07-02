@@ -86,7 +86,7 @@ func (s *Site) readFiles() error {
 // AddDocument adds a page to the site structures.
 func (s *Site) AddDocument(p pages.Document, output bool) {
 	if p.Published() || s.config.Unpublished {
-		s.pages = append(s.pages, p)
+		s.docs = append(s.docs, p)
 		if output {
 			s.Routes[p.Permalink()] = p
 		}

@@ -24,8 +24,8 @@ type file struct {
 	frontMatter map[string]interface{}
 }
 
-func (p *file) String() string {
-	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(p).Name(), p.relpath, p.permalink)
+func (f *file) String() string {
+	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(f).Name(), f.relpath, f.permalink)
 }
 
 func (f *file) OutputExt() string   { return f.outputExt }
@@ -72,24 +72,24 @@ func NewFile(filename string, c Container, relpath string, defaults map[string]i
 
 // Variables returns the attributes of the template page object.
 // See https://jekyllrb.com/docs/variables/#page-variables
-func (p *file) PageVariables() map[string]interface{} {
+func (f *file) PageVariables() map[string]interface{} {
 	var (
-		relpath = "/" + filepath.ToSlash(p.relpath)
+		relpath = "/" + filepath.ToSlash(f.relpath)
 		base    = path.Base(relpath)
 		ext     = path.Ext(relpath)
 	)
 
-	return templates.MergeVariableMaps(p.frontMatter, map[string]interface{}{
+	return templates.MergeVariableMaps(f.frontMatter, map[string]interface{}{
 		"path":          relpath,
-		"modified_time": p.fileModTime,
+		"modified_time": f.fileModTime,
 		"name":          base,
 		"basename":      helpers.TrimExt(base),
 		"extname":       ext,
 	})
 }
 
-func (p *file) categories() []string {
-	if v, found := p.frontMatter["categories"]; found {
+func (f *file) categories() []string {
+	if v, found := f.frontMatter["categories"]; found {
 		switch v := v.(type) {
 		case string:
 			return strings.Fields(v)
@@ -109,5 +109,5 @@ func (p *file) categories() []string {
 			panic("unimplemented")
 		}
 	}
-	return []string{templates.VariableMap(p.frontMatter).String("category", "")}
+	return []string{templates.VariableMap(f.frontMatter).String("category", "")}
 }

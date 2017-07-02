@@ -10,12 +10,12 @@ import (
 	"github.com/osteele/gojekyll/templates"
 )
 
+// Page is a post or collection page.
 type Page interface {
 	Document
 	Content(rc RenderingContext) ([]byte, error)
 }
 
-// Page is a post or collection page.
 type page struct {
 	file
 	raw     []byte

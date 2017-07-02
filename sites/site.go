@@ -25,7 +25,7 @@ type Site struct {
 	data             map[string]interface{}
 	flags            config.Flags
 	pipeline         *pipelines.Pipeline
-	pages            []pages.Document // all pages, output or not
+	docs             []pages.Document // all documents, whether or not they are output
 	preparedToRender bool
 	siteVariables    map[string]interface{}
 }
@@ -51,7 +51,7 @@ func (s *Site) OutputPages() []pages.Document {
 }
 
 // Pages returns all the pages, output or not.
-func (s *Site) Pages() []pages.Document { return s.pages }
+func (s *Site) Pages() []pages.Document { return s.docs }
 
 // AbsDir is in the page.Container interface.
 func (s *Site) AbsDir() string {

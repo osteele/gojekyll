@@ -12,34 +12,41 @@ import (
 
 // Collection is a Jekyll collection https://jekyllrb.com/docs/collections/.
 type Collection struct {
-	Name      string
-	Metadata  map[string]interface{}
-	container pages.Container
-	pages     []pages.Page
+	Name     string
+	Metadata map[string]interface{}
+	site     Site
+	pages    []pages.Page
+}
+
+// Site is the interface a site provides to collections it contains.
+type Site interface {
+	AbsDir() string
+	Config() config.Config
+	OutputExt(pathname string) string
 }
 
 // NewCollection creates a new Collection
-func NewCollection(name string, metadata map[string]interface{}, c pages.Container) *Collection {
+func NewCollection(name string, metadata map[string]interface{}, s Site) *Collection {
 	return &Collection{
-		Name:      name,
-		Metadata:  metadata,
-		container: c,
+		Name:     name,
+		Metadata: metadata,
+		site:     s,
 	}
 }
 
 // Config is in the page.Container interface.
 func (c *Collection) Config() config.Config {
-	return c.container.Config()
+	return c.site.Config()
 }
 
 // OutputExt is in the page.Container interface.
 func (c *Collection) OutputExt(pathname string) string {
-	return c.container.OutputExt(pathname)
+	return c.site.OutputExt(pathname)
 }
 
 // AbsDir is in the page.Container interface.
 func (c *Collection) AbsDir() string {
-	return filepath.Join(c.container.AbsDir(), c.PathPrefix())
+	return filepath.Join(c.site.AbsDir(), c.PathPrefix())
 }
 
 // PathPrefix is in the page.Container interface.
