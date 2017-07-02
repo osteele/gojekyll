@@ -21,9 +21,9 @@ import (
 // AddJekyllFilters adds the Jekyll filters to the Liquid engine.
 func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	// array filters
-	e.DefineFilter("array_to_sentence_string", arrayToSentenceStringFilter)
+	e.RegisterFilter("array_to_sentence_string", arrayToSentenceStringFilter)
 	// TODO neither Liquid nor Jekyll docs this, but it appears to be present
-	e.DefineFilter("filter", func(values []map[string]interface{}, key string) []interface{} {
+	e.RegisterFilter("filter", func(values []map[string]interface{}, key string) []interface{} {
 		out := []interface{}{}
 		for _, value := range values {
 			if _, ok := value[key]; ok {
@@ -32,62 +32,62 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 		}
 		return out
 	})
-	e.DefineFilter("group_by", groupByFilter)
-	e.DefineFilter("group_by_exp", unimplementedFilter("group_by_exp"))
-	e.DefineFilter("sample", func(array []interface{}) interface{} {
+	e.RegisterFilter("group_by", groupByFilter)
+	e.RegisterFilter("group_by_exp", unimplementedFilter("group_by_exp"))
+	e.RegisterFilter("sample", func(array []interface{}) interface{} {
 		if len(array) == 0 {
 			return nil
 		}
 		return array[rand.Intn(len(array))]
 	})
 	// sort overrides the Liquid filter with one that takes parameters
-	e.DefineFilter("sort", sortFilter)
-	e.DefineFilter("where", whereFilter) // TODO test case
-	e.DefineFilter("where_exp", whereExpFilter)
-	e.DefineFilter("xml_escape", xml.Marshal)
+	e.RegisterFilter("sort", sortFilter)
+	e.RegisterFilter("where", whereFilter) // TODO test case
+	e.RegisterFilter("where_exp", whereExpFilter)
+	e.RegisterFilter("xml_escape", xml.Marshal)
 
-	e.DefineFilter("push", func(array []interface{}, item interface{}) interface{} {
+	e.RegisterFilter("push", func(array []interface{}, item interface{}) interface{} {
 		return append(array, generics.MustConvertItem(item, array))
 	})
-	e.DefineFilter("pop", unimplementedFilter("pop"))
-	e.DefineFilter("shift", unimplementedFilter("shift"))
-	e.DefineFilter("unshift", func(array []interface{}, item interface{}) interface{} {
+	e.RegisterFilter("pop", unimplementedFilter("pop"))
+	e.RegisterFilter("shift", unimplementedFilter("shift"))
+	e.RegisterFilter("unshift", func(array []interface{}, item interface{}) interface{} {
 		return append([]interface{}{generics.MustConvertItem(item, array)}, array...)
 	})
 
 	// dates
-	e.DefineFilter("date_to_rfc822", func(date time.Time) string {
+	e.RegisterFilter("date_to_rfc822", func(date time.Time) string {
 		return date.Format(time.RFC822)
 		// Out: Mon, 07 Nov 2008 13:07:54 -0800
 	})
-	e.DefineFilter("date_to_string", func(date time.Time) string {
+	e.RegisterFilter("date_to_string", func(date time.Time) string {
 		return date.Format("02 Jan 2006")
 		// Out: 07 Nov 2008
 	})
-	e.DefineFilter("date_to_long_string", func(date time.Time) string {
+	e.RegisterFilter("date_to_long_string", func(date time.Time) string {
 		return date.Format("02 January 2006")
 		// Out: 07 November 2008
 	})
-	e.DefineFilter("date_to_xmlschema", func(date time.Time) string {
+	e.RegisterFilter("date_to_xmlschema", func(date time.Time) string {
 		return date.Format("2006-01-02T15:04:05-07:00")
 		// Out: 2008-11-07T13:07:54-08:00
 	})
 
 	// strings
-	e.DefineFilter("absolute_url", func(s string) string {
+	e.RegisterFilter("absolute_url", func(s string) string {
 		return c.AbsoluteURL + c.BaseURL + s
 	})
-	e.DefineFilter("relative_url", func(s string) string {
+	e.RegisterFilter("relative_url", func(s string) string {
 		return c.BaseURL + s
 	})
-	e.DefineFilter("jsonify", json.Marshal)
-	e.DefineFilter("markdownify", blackfriday.MarkdownCommon)
-	e.DefineFilter("normalize_whitespace", func(s string) string {
+	e.RegisterFilter("jsonify", json.Marshal)
+	e.RegisterFilter("markdownify", blackfriday.MarkdownCommon)
+	e.RegisterFilter("normalize_whitespace", func(s string) string {
 		// s = strings.Replace(s, "n", "N", -1)
 		wsPattern := regexp.MustCompile(`(?s:[\s\n]+)`)
 		return wsPattern.ReplaceAllString(s, " ")
 	})
-	e.DefineFilter("slugify", func(s, mode string) string {
+	e.RegisterFilter("slugify", func(s, mode string) string {
 		if mode == "" {
 			mode = "default"
 		}
@@ -101,8 +101,8 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 		}
 		return strings.ToLower(s)
 	})
-	e.DefineFilter("to_integer", func(n int) int { return n })
-	e.DefineFilter("number_of_words", func(s string) int {
+	e.RegisterFilter("to_integer", func(n int) int { return n })
+	e.RegisterFilter("number_of_words", func(s string) int {
 		wordPattern := regexp.MustCompile(`\w+`) // TODO what's the Jekyll spec for a word?
 		m := wordPattern.FindAllStringIndex(s, -1)
 		if m == nil {
@@ -112,7 +112,7 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	})
 
 	// string escapes
-	// engine.DefineFilter("uri_escape", func(s string) string {
+	// engine.RegisterFilter("uri_escape", func(s string) string {
 	// 	parts := strings.SplitN(s, "?", 2)
 	// 	if len(parts) > 0 {
 	// TODO PathEscape is the wrong function
@@ -120,11 +120,11 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	// 	}
 	// 	return strings.Join(parts, "?")
 	// })
-	e.DefineFilter("cgi_escape", unimplementedFilter("cgi_escape"))
-	e.DefineFilter("uri_escape", unimplementedFilter("uri_escape"))
-	e.DefineFilter("scssify", unimplementedFilter("scssify"))
-	e.DefineFilter("smartify", unimplementedFilter("smartify"))
-	e.DefineFilter("xml_escape", func(s string) string {
+	e.RegisterFilter("cgi_escape", unimplementedFilter("cgi_escape"))
+	e.RegisterFilter("uri_escape", unimplementedFilter("uri_escape"))
+	e.RegisterFilter("scssify", unimplementedFilter("scssify"))
+	e.RegisterFilter("smartify", unimplementedFilter("smartify"))
+	e.RegisterFilter("xml_escape", func(s string) string {
 		// TODO can't handle maps
 		// eval https://github.com/clbanning/mxj
 		// adapt https://stackoverflow.com/questions/30928770/marshall-map-to-xml-in-go

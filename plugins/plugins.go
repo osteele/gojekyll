@@ -66,7 +66,7 @@ func (h pluginHelper) stubbed() {
 }
 
 func (h pluginHelper) tag(name string, t liquid.TagDefinition) {
-	h.ctx.TemplateEngine().DefineTag(name, t)
+	h.ctx.TemplateEngine().RegisterTag(name, t)
 }
 
 func (h pluginHelper) makeUnimplementedTag() liquid.TagDefinition {
