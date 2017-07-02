@@ -33,10 +33,7 @@ func (p *Pipeline) CopySassFileIncludes() error {
 		if err != nil || info.IsDir() {
 			return err
 		}
-		rel, err := filepath.Rel(src, from)
-		if err != nil {
-			return err
-		}
+		rel := helpers.MustRel(src, from)
 		to := filepath.Join(dst, strings.TrimPrefix(rel, "_"))
 		return helpers.CopyFileContents(to, from, 0644)
 	})

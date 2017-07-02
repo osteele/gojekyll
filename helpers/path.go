@@ -2,8 +2,18 @@ package helpers
 
 import (
 	"path"
+	"path/filepath"
 	"strings"
 )
+
+// MustRel is like filepath.Rel, but panics if the path cannot be relativized.
+func MustRel(basepath, targpath string) string {
+	relpath, err := filepath.Rel(basepath, targpath)
+	if err != nil {
+		panic(err)
+	}
+	return relpath
+}
 
 // TrimExt returns a path without its extension, if any
 func TrimExt(name string) string {

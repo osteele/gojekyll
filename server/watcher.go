@@ -2,10 +2,10 @@ package server
 
 import (
 	"log"
-	"path/filepath"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/osteele/gojekyll/helpers"
 )
 
 func (s *Server) watchFiles() error {
@@ -38,11 +38,7 @@ func (s *Server) watchFiles() error {
 			// remaps permalinks.
 			urls := map[string]bool{}
 			for _, filename := range filenames {
-				relpath, err := filepath.Rel(site.SourceDir(), filename)
-				if err != nil {
-					log.Println("error:", err)
-					continue
-				}
+				relpath := helpers.MustRel(site.SourceDir(), filename)
 				url, found := site.FilenameURLPath(relpath)
 				if !found {
 					// TODO don't warn re config and excluded files

@@ -61,10 +61,7 @@ func (s *Site) readFiles() error {
 			return err
 		}
 
-		relname, err := filepath.Rel(s.SourceDir(), filename)
-		if err != nil {
-			panic(err)
-		}
+		relname := helpers.MustRel(s.SourceDir(), filename)
 		switch {
 		case info.IsDir() && s.Exclude(relname):
 			return filepath.SkipDir

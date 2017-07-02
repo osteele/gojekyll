@@ -22,10 +22,6 @@ func (s *Site) Clean(options BuildOptions) error {
 		if options.Verbose {
 			fmt.Println("rm", filename)
 		}
-		relpath, e := filepath.Rel(s.DestDir(), filename)
-		if e != nil {
-			return err
-		}
 		switch {
 		case err != nil && os.IsNotExist(err):
 			return nil
@@ -33,7 +29,7 @@ func (s *Site) Clean(options BuildOptions) error {
 			return err
 		case info.IsDir():
 			return nil
-		case s.KeepFile(relpath):
+		case s.KeepFile(helpers.MustRel(s.DestDir(), filename)):
 			return nil
 		case options.DryRun:
 			return nil

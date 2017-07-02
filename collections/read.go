@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
@@ -27,7 +28,7 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 			}
 			return err
 		}
-		relname, err := filepath.Rel(sitePath, filename)
+		relname := helpers.MustRel(sitePath, filename)
 		switch {
 		case strings.HasPrefix(filepath.Base(relname), "."):
 			return nil
