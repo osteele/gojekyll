@@ -1,6 +1,8 @@
 package collections
 
-import "github.com/osteele/gojekyll/pages"
+import (
+	"github.com/osteele/gojekyll/pages"
+)
 
 type pagesByDate struct{ pages []pages.Page }
 
@@ -12,7 +14,7 @@ func (p pagesByDate) Len() int {
 // Less is part of sort.Interface.
 func (p pagesByDate) Less(i, j int) bool {
 	a, b := p.pages[i].PostDate(), p.pages[j].PostDate()
-	return a.Before(b)
+	return a.After(b)
 }
 
 // Swap is part of sort.Interface.

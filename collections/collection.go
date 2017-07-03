@@ -12,8 +12,10 @@ import (
 type Collection struct {
 	Name     string
 	Metadata map[string]interface{}
-	site     Site
-	pages    []pages.Page
+
+	config *config.Config
+	pages  []pages.Page
+	site   Site
 }
 
 // Site is the interface a site provides to collections it contains.
@@ -27,12 +29,9 @@ func NewCollection(s Site, name string, metadata map[string]interface{}) *Collec
 	return &Collection{
 		Name:     name,
 		Metadata: metadata,
+		config:   s.Config(),
 		site:     s,
 	}
-}
-
-func (c *Collection) Config() *config.Config {
-	return c.site.Config()
 }
 
 // OutputExt is in the page.Container interface.
@@ -42,7 +41,7 @@ func (c *Collection) OutputExt(pathname string) string {
 
 // AbsDir is in the page.Container interface.
 func (c *Collection) AbsDir() string {
-	return filepath.Join(c.Config().SourceDir(), c.PathPrefix())
+	return filepath.Join(c.config.SourceDir(), c.PathPrefix())
 }
 
 // PathPrefix is in the page.Container interface.

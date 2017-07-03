@@ -22,7 +22,7 @@ func TestSafeReplaceAllStringFunc(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "true > false", out)
 
-	out, err = SafeReplaceAllStringFunc(re, "1 > 0", func(m string) (string, error) {
+	_, err = SafeReplaceAllStringFunc(re, "1 > 0", func(m string) (string, error) {
 		return "", fmt.Errorf("an expected error")
 	})
 	require.Error(t, err)

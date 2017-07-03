@@ -20,11 +20,11 @@ func TestDefaultConfig(t *testing.T) {
 
 func TestPlugins(t *testing.T) {
 	c := Default()
-	Unmarshal([]byte(`plugins: ['a']`), &c)
+	require.NoError(t, Unmarshal([]byte(`plugins: ['a']`), &c))
 	require.Equal(t, []string{"a"}, c.Plugins)
 
 	c = Default()
-	Unmarshal([]byte(`gems: ['a']`), &c)
+	require.NoError(t, Unmarshal([]byte(`gems: ['a']`), &c))
 	require.Equal(t, []string{"a"}, c.Plugins)
 }
 

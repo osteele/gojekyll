@@ -30,21 +30,19 @@ var (
 	build = app.Command("build", "Build your site").Alias("b")
 	clean = app.Command("clean", "Clean the site (removes site output) without building.")
 
-	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
-	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
-
 	benchmark = app.Command("profile", "Repeat build for ten seconds. Implies --profile.")
 
-	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
-	dataVariable = variables.Flag("data", "Display site.data").Bool()
-	siteVariable = variables.Flag("site", "Display site variables instead of page variables").Bool()
-	variablePath = variables.Arg("PATH", "Path or URL").String()
+	render     = app.Command("render", "Render a file or URL path to standard output")
+	renderPath = render.Arg("PATH", "Path or URL").String()
 
 	routes        = app.Command("routes", "Display site permalinks and associated files")
 	dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files").Bool()
 
-	render     = app.Command("render", "Render a file or URL path to standard output")
-	renderPath = render.Arg("PATH", "Path or URL").String()
+	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
+	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
+
+	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
+	variablePath = variables.Arg("PATH", "Path, URL, site, or site...").String()
 )
 
 func init() {

@@ -40,16 +40,16 @@ func TestPermalinkPattern(t *testing.T) {
 func TestReadPosts(t *testing.T) {
 	site := siteMock{config.FromString("source: testdata")}
 	c := NewCollection(site, "posts", map[string]interface{}{})
-	c.ReadPages()
+	require.NoError(t, c.ReadPages())
 	require.Len(t, c.Pages(), 1)
 
 	site = siteMock{config.FromString("source: testdata\nunpublished: true")}
 	c = NewCollection(site, "posts", map[string]interface{}{})
-	c.ReadPages()
+	require.NoError(t, c.ReadPages())
 	require.Len(t, c.Pages(), 2)
 
 	site = siteMock{config.FromString("source: testdata\nfuture: true")}
 	c = NewCollection(site, "posts", map[string]interface{}{})
-	c.ReadPages()
+	require.NoError(t, c.ReadPages())
 	require.Len(t, c.Pages(), 2)
 }

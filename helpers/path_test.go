@@ -25,7 +25,7 @@ func TestFilenameDate(t *testing.T) {
 	require.True(t, found)
 	require.Equal(t, timeMustParse("2017-07-02T00:00:00Z"), d)
 
-	d, found = FilenameDate("not-post.html")
+	_, found = FilenameDate("not-post.html")
 	require.False(t, found)
 }
 

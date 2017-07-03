@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -108,30 +109,40 @@ func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
 }
 
 func varsCommand(site *sites.Site) error {
-	printSetting("Variables:", "")
-	siteData := site.ToLiquid().(map[string]interface{})
-	// The YAML representation including collections is impractically large for debugging.
-	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
-	// for _, c := range site.Collections {
-	// 	siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]pages.Page)))
-	// }
 	var data interface{}
 	switch {
-	case *siteVariable:
-		data = siteData
-	case *dataVariable:
-		data = siteData["data"]
-	default:
+	case strings.HasPrefix(*variablePath, "site"):
+		data = site
+		for _, name := range strings.Split(*variablePath, ".")[1:] {
+			if drop, ok := data.(liquid.Drop); ok {
+				data = drop.ToLiquid()
+			}
+			if reflect.TypeOf(data).Kind() == reflect.Map {
+				item := reflect.ValueOf(data).MapIndex(reflect.ValueOf(name))
+				if item.CanInterface() && !item.IsNil() {
+					data = item.Interface()
+					continue
+				}
+			}
+			return fmt.Errorf("no such property: %q", name)
+		}
+	case *variablePath != "":
 		page, err := pageFromPathOrRoute(site, *variablePath)
 		if err != nil {
 			return err
 		}
 		data = page.(liquid.Drop).ToLiquid()
+	default:
+		data = site
+	}
+	if drop, ok := data.(liquid.Drop); ok {
+		data = drop
 	}
 	b, err := yaml.Marshal(data)
 	if err != nil {
 		return err
 	}
+	printSetting("Variables:", "")
 	fmt.Println(string(b))
 	return nil
 }

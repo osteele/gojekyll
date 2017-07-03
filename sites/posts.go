@@ -1,8 +1,6 @@
 package sites
 
 import (
-	"fmt"
-
 	"github.com/osteele/gojekyll/collections"
 	"github.com/osteele/gojekyll/pages"
 )
@@ -13,7 +11,6 @@ func (s *Site) findPostCollection() *collections.Collection {
 			return c
 		}
 	}
-	panic(fmt.Errorf("no posts!"))
 	return nil
 }
 
