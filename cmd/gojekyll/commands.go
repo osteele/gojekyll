@@ -22,19 +22,19 @@ import (
 var commandStartTime = time.Now()
 
 func buildCommand(site *sites.Site) error {
-	printPathSetting("Destination:", site.DestDir())
-	printSetting("Generating...", "")
+	logger.path("Destination:", site.DestDir())
+	logger.label("Generating...", "")
 	count, err := site.Build(buildOptions)
 	if err != nil {
 		return err
 	}
 	elapsed := time.Since(commandStartTime)
-	printSetting("", fmt.Sprintf("wrote %d files in %.2fs.", count, elapsed.Seconds()))
+	logger.label("", "wrote %d files in %.2fs.", count, elapsed.Seconds())
 	return nil
 }
 
 func cleanCommand(site *sites.Site) error {
-	printPathSetting("Cleaner:", fmt.Sprintf("Removing %s...", site.DestDir()))
+	logger.label("Cleaner:", "Removing %s...", site.DestDir())
 	return site.Clean(buildOptions)
 }
 
@@ -49,18 +49,18 @@ func benchmarkCommand(_ *sites.Site) error {
 		if err != nil {
 			return err
 		}
-		printSetting("", fmt.Sprintf("Run #%d; %.1fs elapsed", i+1, time.Since(t0).Seconds()))
+		logger.label("", "Run #%d; %.1fs elapsed", i+1, time.Since(t0).Seconds())
 	}
 	return nil
 }
 
 func serveCommand(site *sites.Site) error {
 	server := server.Server{Site: site}
-	return server.Run(*open, printSetting)
+	return server.Run(*open, func(label, value string) { logger.label(label, value) })
 }
 
 func routesCommand(site *sites.Site) error {
-	printSetting("Routes:", "")
+	logger.label("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Routes {
 		if !(*dynamicRoutes && p.Static()) {
@@ -80,9 +80,9 @@ func renderCommand(site *sites.Site) error {
 	if err != nil {
 		return err
 	}
-	printPathSetting("Render:", filepath.Join(site.SourceDir(), p.SiteRelPath()))
-	printSetting("URL:", p.Permalink())
-	printSetting("Content:", "")
+	logger.path("Render:", filepath.Join(site.SourceDir(), p.SiteRelPath()))
+	logger.label("URL:", p.Permalink())
+	logger.label("Content:", "")
 	return site.WriteDocument(p, os.Stdout)
 }
 
@@ -142,7 +142,7 @@ func varsCommand(site *sites.Site) error {
 	if err != nil {
 		return err
 	}
-	printSetting("Variables:", "")
+	logger.label("Variables:", "")
 	fmt.Println(string(b))
 	return nil
 }

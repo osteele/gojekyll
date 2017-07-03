@@ -52,7 +52,6 @@ func (c *Collection) ReadPages() error {
 	if err := filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn); err != nil {
 		return err
 	}
-	fmt.Println("is", c.Name, c.IsPostsCollection())
 	if c.IsPostsCollection() {
 		sort.Sort(pagesByDate{c.pages})
 	}

@@ -2,26 +2,27 @@ package main
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/osteele/gojekyll/helpers"
 )
 
-// This is the longest label. Pull it out here so we can both use it, and measure it for alignment.
-const configurationFileLabel = "Configuration file:"
+type bannerLogger struct{ labelWidth int }
 
-func printSetting(label string, value string) {
+var logger = bannerLogger{}
+
+func (l *bannerLogger) Info(a ...interface{}) {
+	fmt.Println(a...)
+}
+
+func (l *bannerLogger) label(label string, msg string, a ...interface{}) {
+	if len(label) > l.labelWidth {
+		l.labelWidth = len(label)
+	}
 	if !quiet {
-		fmt.Printf("%s %s\n", helpers.LeftPad(label, len(configurationFileLabel)), value)
+		fmt.Printf("%s %s\n", helpers.LeftPad(label, l.labelWidth), fmt.Sprintf(msg, a...))
 	}
 }
 
-func printPathSetting(label string, name string) {
-	name, err := filepath.Abs(name)
-	if err != nil {
-		panic("Couldn't convert to absolute path")
-	}
-	if !quiet {
-		printSetting(label, name)
-	}
+func (l *bannerLogger) path(label string, filename string) {
+	l.label(label, helpers.MustAbs(filename))
 }

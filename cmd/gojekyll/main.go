@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
@@ -75,7 +74,7 @@ func run(cmd string) error {
 	}
 	if profile {
 		profilePath := "gojekyll.prof"
-		printSetting("Profiling...", "")
+		logger.label("Profiling...", "")
 		f, err := os.Create(profilePath)
 		app.FatalIfError(err, "")
 		err = pprof.StartCPUProfile(f)
@@ -84,7 +83,7 @@ func run(cmd string) error {
 			pprof.StopCPUProfile()
 			err = f.Close()
 			app.FatalIfError(err, "")
-			fmt.Println("Wrote", profilePath)
+			logger.Info("Wrote", profilePath)
 		}()
 	}
 
@@ -115,12 +114,13 @@ func loadSite(source string, flags config.Flags) (*sites.Site, error) {
 	if err != nil {
 		return nil, err
 	}
+	const configurationFileLabel = "Configuration file:"
 	if site.ConfigFile != nil {
-		printPathSetting(configurationFileLabel, *site.ConfigFile)
+		logger.path(configurationFileLabel, *site.ConfigFile)
 	} else {
-		printSetting(configurationFileLabel, "none")
+		logger.label(configurationFileLabel, "none")
 	}
-	printPathSetting("Source:", site.SourceDir())
+	logger.label("Source:", site.SourceDir())
 	err = site.Load()
 	return site, err
 }
