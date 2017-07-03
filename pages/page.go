@@ -2,18 +2,22 @@ package pages
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"path/filepath"
+	"time"
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid/generics"
 )
 
 // Page is a post or collection page.
 type Page interface {
 	Document
 	Content(rc RenderingContext) ([]byte, error)
+	PostDate() time.Time
 }
 
 type page struct {
@@ -42,8 +46,8 @@ func newPage(filename string, f file) (*page, error) {
 	}, nil
 }
 
-// PageVariables returns the attributes of the template page object.
-func (p *page) PageVariables() map[string]interface{} {
+// ToLiquid is in the liquid.Drop interface.
+func (p *page) ToLiquid() interface{} {
 	var (
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
@@ -69,8 +73,8 @@ func (p *page) PageVariables() map[string]interface{} {
 		"title": base, // TODO capitalize
 		// TODO excerpt category? categories tags
 		// TODO slug
-		"categories": []string{},
-		"tags":       []string{},
+		"categories": p.Categories(),
+		"tags":       p.Tags(),
 
 		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
 		"relative_path": p.Path(),
@@ -89,15 +93,51 @@ func (p *page) PageVariables() map[string]interface{} {
 			data[k] = v
 		}
 	}
+	if p.content != nil {
+		data["content"] = string(*p.content)
+		// TODO excerpt
+	}
 	return data
+}
+
+// MarshalYAML is part of the yaml.Marshaler interface
+// The variables subcommand uses this.
+func (p *page) MarshalYAML() (interface{}, error) {
+	return p.ToLiquid(), nil
 }
 
 // TemplateContext returns the local variables for template evaluation
 func (p *page) TemplateContext(rc RenderingContext) map[string]interface{} {
 	return map[string]interface{}{
-		"page": p.PageVariables(),
+		"page": p,
 		"site": rc.SiteVariables(),
 	}
+}
+
+// // Categories is part of the Page interface.
+// func (p *page) Categories() []string {
+// 	return []string{}
+// }
+
+// Tags is part of the Page interface.
+func (p *page) Tags() []string {
+	return []string{}
+}
+
+// PostDate is part of the Page interface.
+func (p *page) PostDate() time.Time {
+	switch value := p.frontMatter["date"].(type) {
+	case time.Time:
+		return value
+	case string:
+		t, err := generics.ParseTime(value)
+		if err == nil {
+			return t
+		}
+	default:
+		panic(fmt.Sprintf("expected a date %v", value))
+	}
+	panic("read posts should have set this")
 }
 
 // Write applies Liquid and Markdown, as appropriate.

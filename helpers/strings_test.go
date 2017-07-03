@@ -1,10 +1,33 @@
 package helpers
 
 import (
+	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+func TestLeftPad(t *testing.T) {
+	require.Equal(t, "abc", LeftPad("abc", 0))
+	require.Equal(t, "abc", LeftPad("abc", 3))
+	require.Equal(t, "   abc", LeftPad("abc", 6))
+}
+
+func TestSafeReplaceAllStringFunc(t *testing.T) {
+	re := regexp.MustCompile(`\w+`)
+	out, err := SafeReplaceAllStringFunc(re, "1 > 0", func(m string) (string, error) {
+		return fmt.Sprint(m == "1"), nil
+	})
+	require.NoError(t, err)
+	require.Equal(t, "true > false", out)
+
+	out, err = SafeReplaceAllStringFunc(re, "1 > 0", func(m string) (string, error) {
+		return "", fmt.Errorf("an expected error")
+	})
+	require.Error(t, err)
+	require.Equal(t, "an expected error", err.Error())
+}
 
 func TestSlugify(t *testing.T) {
 	require.Equal(t, "abc", Slugify("abc"))
@@ -12,11 +35,6 @@ func TestSlugify(t *testing.T) {
 	require.Equal(t, "ab-c", Slugify("ab-c"))
 	require.Equal(t, "ab-c", Slugify("ab()[]c"))
 	require.Equal(t, "ab123-cde-f-g", Slugify("ab123(cde)[]f.g"))
-}
-func TestLeftPad(t *testing.T) {
-	require.Equal(t, "abc", LeftPad("abc", 0))
-	require.Equal(t, "abc", LeftPad("abc", 3))
-	require.Equal(t, "   abc", LeftPad("abc", 6))
 }
 
 func TestStringArrayToMap(t *testing.T) {

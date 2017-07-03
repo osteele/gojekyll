@@ -14,6 +14,7 @@ import (
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/server"
 	"github.com/osteele/gojekyll/sites"
+	"github.com/osteele/liquid"
 )
 
 // main sets this
@@ -55,39 +56,6 @@ func benchmarkCommand(_ *sites.Site) error {
 func serveCommand(site *sites.Site) error {
 	server := server.Server{Site: site}
 	return server.Run(*open, printSetting)
-}
-
-func varsCommand(site *sites.Site) error {
-	printSetting("Variables:", "")
-	siteData := site.SiteVariables()
-	// The YAML representation including collections is impractically large for debugging.
-	// (Actually it's circular, which the yaml package can't handle.)
-	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
-	for _, c := range site.Collections {
-		siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]interface{})))
-	}
-	var data map[string]interface{}
-	switch {
-	case *siteVariable:
-		data = siteData
-	case *dataVariable:
-		data = siteData["data"].(map[string]interface{})
-		if *variablePath != "" {
-			data = data[*variablePath].(map[string]interface{})
-		}
-	default:
-		page, err := pageFromPathOrRoute(site, *variablePath)
-		if err != nil {
-			return err
-		}
-		data = page.PageVariables()
-	}
-	b, err := yaml.Marshal(data)
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(b))
-	return nil
 }
 
 func routesCommand(site *sites.Site) error {
@@ -137,4 +105,33 @@ func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
 		}
 		return page, nil
 	}
+}
+
+func varsCommand(site *sites.Site) error {
+	printSetting("Variables:", "")
+	siteData := site.SiteVariables()
+	// The YAML representation including collections is impractically large for debugging.
+	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
+	// for _, c := range site.Collections {
+	// 	siteData[c.Name] = fmt.Sprintf("<elided page data for %d items>", len(siteData[c.Name].([]pages.Page)))
+	// }
+	var data interface{}
+	switch {
+	case *siteVariable:
+		data = siteData
+	case *dataVariable:
+		data = siteData["data"]
+	default:
+		page, err := pageFromPathOrRoute(site, *variablePath)
+		if err != nil {
+			return err
+		}
+		data = page.(liquid.Drop).ToLiquid()
+	}
+	b, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(b))
+	return nil
 }

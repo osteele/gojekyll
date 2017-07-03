@@ -6,11 +6,13 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid/generics"
 )
 
 // file is embedded in StaticFile and page
@@ -63,16 +65,15 @@ func NewFile(filename string, c Container, relpath string, defaults map[string]i
 		p = &StaticFile{fields}
 	}
 	// Compute this after creating the page, in order to pick up the front matter.
-	err = p.initPermalink()
-	if err != nil {
+	if err = p.setPermalink(); err != nil {
 		return nil, err
 	}
 	return p, nil
 }
 
-// Variables returns the attributes of the template page object.
+// ToLiquid returns the attributes of the template page object.
 // See https://jekyllrb.com/docs/variables/#page-variables
-func (f *file) PageVariables() map[string]interface{} {
+func (f *file) ToLiquid() interface{} {
 	var (
 		relpath = "/" + filepath.ToSlash(f.relpath)
 		base    = path.Base(relpath)
@@ -88,26 +89,34 @@ func (f *file) PageVariables() map[string]interface{} {
 	})
 }
 
-func (f *file) categories() []string {
-	if v, found := f.frontMatter["categories"]; found {
-		switch v := v.(type) {
-		case string:
-			return strings.Fields(v)
-		case []interface{}:
-			sl := make([]string, len(v))
-			for i, s := range v {
-				switch s := s.(type) {
-				case fmt.Stringer:
-					sl[i] = s.String()
-				default:
-					sl[i] = fmt.Sprint(s)
-				}
-			}
-			return sl
-		default:
-			fmt.Printf("%T", v)
-			panic("unimplemented")
+// MarshalYAML is part of the yaml.Marshaler interface
+// The variables subcommand uses this.
+func (f *file) MarshalYAML() (interface{}, error) {
+	return f.ToLiquid(), nil
+}
+
+// Categories is in the File interface
+func (f *file) Categories() []string {
+	return sortedStringValue(f.frontMatter["categories"])
+}
+
+// Categories is in the File interface
+func (f *file) Tags() []string {
+	return sortedStringValue(f.frontMatter["tags"])
+}
+
+func sortedStringValue(field interface{}) []string {
+	out := []string{}
+	switch value := field.(type) {
+	case string:
+		out = strings.Fields(value)
+	case []interface{}:
+		if c, e := generics.Convert(value, reflect.TypeOf(out)); e == nil {
+			out = c.([]string)
 		}
+	case []string:
+		out = value
 	}
-	return []string{templates.VariableMap(f.frontMatter).String("category", "")}
+	sort.Strings(out)
+	return out
 }

@@ -2,12 +2,12 @@ package collections
 
 import (
 	"path/filepath"
+	"sort"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
-	"github.com/osteele/liquid/generics"
 )
 
 // Collection is a Jekyll collection https://jekyllrb.com/docs/collections/.
@@ -64,30 +64,39 @@ func (c *Collection) Pages() []pages.Page {
 	return c.pages
 }
 
+type pagesByDate struct{ pages []pages.Page }
+
+// Len is part of sort.Interface.
+func (p pagesByDate) Len() int {
+	return len(p.pages)
+}
+
+// Less is part of sort.Interface.
+func (p pagesByDate) Less(i, j int) bool {
+	a, b := p.pages[i].PostDate(), p.pages[j].PostDate()
+	return a.Before(b)
+}
+
+// Swap is part of sort.Interface.
+func (p pagesByDate) Swap(i, j int) {
+	pages := p.pages
+	pages[i], pages[j] = pages[j], pages[i]
+}
+
 // TemplateVariable returns an array of page objects, for use as the template variable
 // value of the collection.
-func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent bool) ([]interface{}, error) {
-	pages := []interface{}{}
-	for _, p := range c.Pages() {
-		v := p.PageVariables()
-		if includeContent {
-			c, err := p.Content(ctx)
+func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent bool) ([]pages.Page, error) {
+	if includeContent {
+		for _, p := range c.Pages() {
+			_, err := p.Content(ctx)
 			if err != nil {
 				return nil, err
 			}
-			v = templates.MergeVariableMaps(v, map[string]interface{}{
-				"content": string(c),
-			})
 		}
-		pages = append(pages, v)
 	}
+	pages := c.Pages()
 	if c.IsPostsCollection() {
-		generics.SortByProperty(pages, "date", true)
-		reversed := make([]interface{}, len(pages))
-		for i, v := range pages {
-			reversed[len(pages)-1-i] = v
-		}
-		pages = reversed
+		sort.Sort(pagesByDate{pages})
 	}
 	return pages, nil
 }

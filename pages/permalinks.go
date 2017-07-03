@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -38,65 +37,53 @@ var permalinkDateVariables = map[string]string{
 var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 
 // See https://jekyllrb.com/docs/permalinks/#template-variables
-func (p *file) permalinkTemplateVariables() map[string]string {
+func (f *file) permalinkVariables() map[string]string {
 	var (
-		relpath    = strings.TrimPrefix(p.relpath, p.container.PathPrefix())
-		root       = helpers.TrimExt(relpath)
-		name       = filepath.Base(root)
-		categories = p.categories()
+		relpath  = strings.TrimPrefix(f.relpath, f.container.PathPrefix())
+		root     = helpers.TrimExt(relpath)
+		name     = filepath.Base(root)
+		fm       = f.frontMatter
+		bindings = templates.VariableMap(fm)
+		slug     = bindings.String("slug", helpers.Slugify(name))
 	)
-	sort.Strings(categories)
-	bindings := templates.VariableMap(p.frontMatter)
-	// TODO recognize category; list
-	vs := map[string]string{
-		"categories": strings.Join(categories, "/"),
+	vars := map[string]string{
+		"categories": strings.Join(f.Categories(), "/"),
 		"collection": bindings.String("collection", ""),
 		"name":       helpers.Slugify(name),
-		"path":       "/" + root,
-		"slug":       bindings.String("slug", helpers.Slugify(name)),
-		"title":      bindings.String("slug", helpers.Slugify(name)),
-		// The following aren't documented, but is evident
-		"output_ext": p.OutputExt(),
-		"y_day":      strconv.Itoa(p.fileModTime.YearDay()),
+		"path":       "/" + root, // TODO are we removing and then adding this?
+		"slug":       slug,
+		"title":      slug,
+		// The following aren't documented, but are evident
+		"output_ext": f.OutputExt(),
+		"y_day":      strconv.Itoa(f.fileModTime.YearDay()),
 	}
-	for name, f := range permalinkDateVariables {
-		vs[name] = p.fileModTime.Format(f)
+	for k, v := range permalinkDateVariables {
+		vars[k] = f.fileModTime.Format(v)
 	}
-	return vs
+	return vars
 }
 
-func (p *file) expandPermalink() (s string, err error) {
-	pattern := templates.VariableMap(p.frontMatter).String("permalink", constants.DefaultPermalinkPattern)
-
+func (f *file) computePermalink(vars map[string]string) (src string, err error) {
+	pattern := templates.VariableMap(f.frontMatter).String("permalink", constants.DefaultPermalinkPattern)
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}
-	templateVariables := p.permalinkTemplateVariables()
-	// The ReplaceAllStringFunc callback signals errors via panic.
-	// Turn them into return values.
-	defer func() {
-		if r := recover(); r != nil {
-			if e, ok := r.(error); ok {
-				err = e
-			} else {
-				panic(r)
-			}
-		}
-	}()
-	s = templateVariableMatcher.ReplaceAllStringFunc(pattern, func(m string) string {
+	templateVariables := f.permalinkVariables()
+	s, err := helpers.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
 		varname := m[1:]
 		value, found := templateVariables[varname]
 		if !found {
-			panic(fmt.Errorf("unknown variable %q in permalink template %q", varname, pattern))
+			return "", fmt.Errorf("unknown variable %q in permalink template %q", varname, pattern)
 		}
-		return value
+		return value, nil
 	})
+	if err != nil {
+		return "", err
+	}
 	return helpers.URLPathClean("/" + s), nil
 }
 
-// The permalink is computed once instead of on demand, so that subsequent
-// access needn't check for an error.
-func (p *file) initPermalink() (err error) {
-	p.permalink, err = p.expandPermalink()
+func (f *file) setPermalink() (err error) {
+	f.permalink, err = f.computePermalink(f.permalinkVariables())
 	return
 }

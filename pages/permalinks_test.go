@@ -10,16 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type containerMock struct {
-	c config.Config
-	p string
-}
-
-func (c containerMock) AbsDir() string            { return "" }
-func (c containerMock) Config() config.Config     { return c.c }
-func (c containerMock) OutputExt(p string) string { return filepath.Ext(p) }
-func (c containerMock) PathPrefix() string        { return c.p }
-
 type pathTest struct{ path, pattern, out string }
 
 var tests = []pathTest{
@@ -53,17 +43,17 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	)
 
 	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
-		vs := templates.MergeVariableMaps(data, map[string]interface{}{"permalink": pattern})
+		fm := templates.MergeVariableMaps(data, map[string]interface{}{"permalink": pattern})
 		ext := filepath.Ext(path)
 		switch ext {
 		case ".md", ".markdown":
 			ext = ".html"
 		}
-		p := file{container: c, relpath: path, frontMatter: vs, outputExt: ext}
+		p := file{container: c, relpath: path, frontMatter: fm, outputExt: ext}
 		t0, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
 		require.NoError(t, err)
 		p.fileModTime = t0
-		return p.expandPermalink()
+		return p.computePermalink(p.permalinkVariables())
 	}
 
 	runTests := func(tests []pathTest) {

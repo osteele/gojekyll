@@ -1,9 +1,9 @@
 package sites
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/liquid/generics"
 )
@@ -48,27 +48,22 @@ func (s *Site) setCollectionVariables(includeContent bool) error {
 	return nil
 }
 
-func (s *Site) setPostVariables(pages []interface{}) {
+func (s *Site) setPostVariables(ps []pages.Page) {
 	var (
-		related    = pages
-		categories = map[string][]interface{}{}
-		tags       = map[string][]interface{}{}
+		related    = ps
+		categories = map[string][]pages.Page{}
+		tags       = map[string][]pages.Page{}
 	)
 	if len(related) > 10 {
 		related = related[:10]
 	}
-	for _, p := range pages {
-		b := p.(map[string]interface{})
-		switch cs := b["categories"].(type) {
-		case []interface{}:
-			for _, c := range cs {
-				key := fmt.Sprint(c)
-				ps, found := categories[key]
-				if !found {
-					ps = []interface{}{}
-				}
-				categories[key] = append(ps, p)
+	for _, p := range ps {
+		for _, k := range p.Categories() {
+			ps, found := categories[k]
+			if !found {
+				ps = []pages.Page{}
 			}
+			categories[k] = append(ps, p)
 		}
 	}
 	s.siteVariables["categories"] = categories
