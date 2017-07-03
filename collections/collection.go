@@ -2,7 +2,6 @@ package collections
 
 import (
 	"path/filepath"
-	"sort"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/constants"
@@ -64,51 +63,25 @@ func (c *Collection) Pages() []pages.Page {
 	return c.pages
 }
 
-type pagesByDate struct{ pages []pages.Page }
-
-// Len is part of sort.Interface.
-func (p pagesByDate) Len() int {
-	return len(p.pages)
-}
-
-// Less is part of sort.Interface.
-func (p pagesByDate) Less(i, j int) bool {
-	a, b := p.pages[i].PostDate(), p.pages[j].PostDate()
-	return a.Before(b)
-}
-
-// Swap is part of sort.Interface.
-func (p pagesByDate) Swap(i, j int) {
-	pages := p.pages
-	pages[i], pages[j] = pages[j], pages[i]
-}
-
-// TemplateVariable returns an array of page objects, for use as the template variable
-// value of the collection.
-func (c *Collection) TemplateVariable(ctx pages.RenderingContext, includeContent bool) ([]pages.Page, error) {
-	if includeContent {
-		for _, p := range c.Pages() {
-			_, err := p.Content(ctx)
-			if err != nil {
-				return nil, err
-			}
+// SetPageContent sets up the collection's pages' "content".
+func (c *Collection) SetPageContent(ctx pages.RenderingContext) error {
+	for _, p := range c.Pages() {
+		_, err := p.Content(ctx)
+		if err != nil {
+			return err
 		}
 	}
-	pages := c.Pages()
-	if c.IsPostsCollection() {
-		sort.Sort(pagesByDate{pages})
-	}
-	return pages, nil
+	return nil
 }
 
-// TemplateObject returns the value of the collection in the template
+// ToLiquid returns the value of the collection in the template
 // "collections" array.
-func (c *Collection) TemplateObject(pages interface{}) interface{} {
+func (c *Collection) ToLiquid() interface{} {
 	return templates.MergeVariableMaps(
 		c.Metadata,
 		map[string]interface{}{
 			"label":              c.Name,
-			"docs":               pages,
+			"docs":               c.pages,
 			"files":              []string{},
 			"relative_directory": c.PathPrefix(),
 			"directory":          c.AbsDir(),

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/osteele/gojekyll/helpers"
@@ -44,6 +45,7 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 		if err := filepath.Walk(filepath.Join(sitePath, "_drafts"), walkFn); err != nil {
 			return err
 		}
+		sort.Sort(pagesByDate{c.pages})
 	}
 	return filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn)
 }

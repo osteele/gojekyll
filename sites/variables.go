@@ -31,21 +31,27 @@ func (s *Site) initializeSiteVariables() error {
 
 // set site[collection.name] for each collection.
 func (s *Site) setCollectionVariables(includeContent bool) error {
-	cv := []interface{}{}
+	vars := []interface{}{}
+	if includeContent {
+		s.setPageContent()
+	}
 	for _, c := range s.Collections {
-		pages, err := c.TemplateVariable(s, includeContent)
-		if err != nil {
+		s.siteVariables[c.Name] = c.Pages()
+		vars = append(vars, c.ToLiquid())
+	}
+	generics.SortByProperty(vars, "label", true)
+	s.siteVariables["collections"] = vars
+	return nil
+}
+
+func (s *Site) setPageContent() error {
+	for _, c := range s.Collections {
+		if err := c.SetPageContent(s); err != nil {
 			return err
 		}
-		cv = append(cv, c.TemplateObject(pages))
-		s.siteVariables[c.Name] = pages
-		if c.IsPostsCollection() {
-			s.setPostVariables(pages)
-		}
 	}
-	generics.SortByProperty(cv, "label", true)
-	s.siteVariables["collections"] = cv
 	return nil
+
 }
 
 func (s *Site) setPostVariables(ps []pages.Page) {
