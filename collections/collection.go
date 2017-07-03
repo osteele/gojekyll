@@ -4,7 +4,6 @@ import (
 	"path/filepath"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 )
@@ -88,11 +87,8 @@ func (c *Collection) ToLiquid() interface{} {
 		})
 }
 
-// PermalinkPattern returns the permalink pattern for this collection.
+// PermalinkPattern returns the default permalink pattern for this collection.
 func (c *Collection) PermalinkPattern() string {
-	defaultPattern := constants.DefaultCollectionPermalinkPattern
-	if c.IsPostsCollection() {
-		defaultPattern = constants.DefaultPostsCollectionPermalinkPattern
-	}
+	defaultPattern := c.strategy().defaultPermalinkPattern()
 	return templates.VariableMap(c.Metadata).String("permalink", defaultPattern)
 }

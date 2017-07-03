@@ -13,13 +13,6 @@ import (
 	"github.com/osteele/liquid/generics"
 )
 
-// Page is a post or collection page.
-type Page interface {
-	Document
-	Content(rc RenderingContext) ([]byte, error)
-	PostDate() time.Time
-}
-
 type page struct {
 	file
 	raw     []byte
@@ -110,7 +103,7 @@ func (p *page) MarshalYAML() (interface{}, error) {
 func (p *page) TemplateContext(rc RenderingContext) map[string]interface{} {
 	return map[string]interface{}{
 		"page": p,
-		"site": rc.SiteVariables(),
+		"site": rc.Site(),
 	}
 }
 

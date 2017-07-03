@@ -109,7 +109,7 @@ func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
 
 func varsCommand(site *sites.Site) error {
 	printSetting("Variables:", "")
-	siteData := site.SiteVariables()
+	siteData := site.ToLiquid().(map[string]interface{})
 	// The YAML representation including collections is impractically large for debugging.
 	// Neuter it. This destroys it as Liquid data, but that's okay in this context.
 	// for _, c := range site.Collections {

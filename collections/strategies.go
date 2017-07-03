@@ -1,8 +1,9 @@
 package collections
 
 import (
-	"path/filepath"
 	"time"
+
+	"github.com/osteele/gojekyll/helpers"
 )
 
 // A collectionStrategy encapsulates behavior differences between the _post
@@ -10,6 +11,7 @@ import (
 type collectionStrategy interface {
 	addDate(filename string, fm map[string]interface{})
 	collectible(filename string) bool
+	defaultPermalinkPattern() string
 	future(filename string) bool
 }
 
@@ -29,25 +31,31 @@ func (s defaultStrategy) future(filename string) bool                { return fa
 type postsStrategy struct{}
 
 func (s postsStrategy) addDate(filename string, fm map[string]interface{}) {
-	if t, found := DateFromFilename(filename); found {
+	if t, found := helpers.FilenameDate(filename); found {
 		fm["date"] = t
 	}
 }
 
 func (s postsStrategy) collectible(filename string) bool {
-	_, ok := DateFromFilename(filename)
+	_, ok := helpers.FilenameDate(filename)
 	return ok
 }
 
 func (s postsStrategy) future(filename string) bool {
-	t, ok := DateFromFilename(filename)
+	t, ok := helpers.FilenameDate(filename)
 	return ok && t.After(time.Now())
 }
 
-// DateFromFilename returns the date for a filename that uses Jekyll post convention.
-// It also returns a bool indicating whether a date was found.
-func DateFromFilename(s string) (time.Time, bool) {
-	layout := "2006-01-02-"
-	t, err := time.Parse(layout, filepath.Base(s + layout)[:len(layout)])
-	return t, err == nil
+// DefaultCollectionPermalinkPattern is the default permalink pattern for pages in the posts collection
+const DefaultCollectionPermalinkPattern = "/:collection/:path:output_ext"
+
+// DefaultPostsCollectionPermalinkPattern is the default collection permalink pattern
+const DefaultPostsCollectionPermalinkPattern = "/:categories/:year/:month/:day/:title.html"
+
+func (s defaultStrategy) defaultPermalinkPattern() string {
+	return DefaultCollectionPermalinkPattern
+}
+
+func (s postsStrategy) defaultPermalinkPattern() string {
+	return DefaultPostsCollectionPermalinkPattern
 }

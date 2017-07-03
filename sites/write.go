@@ -15,10 +15,7 @@ func (s *Site) prepareRendering() error {
 		if err := s.initializeRenderingPipeline(); err != nil {
 			return err
 		}
-		if err := s.initializeSiteVariables(); err != nil {
-			return err
-		}
-		if err := s.setCollectionContent(); err != nil {
+		if err := s.setPageContent(); err != nil {
 			return err
 		}
 		s.preparedToRender = true

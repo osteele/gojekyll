@@ -7,10 +7,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/osteele/gojekyll/constants"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
 )
+
+// DefaultPermalinkPattern is the default permalink pattern for pages that aren't in a collection
+const DefaultPermalinkPattern = "/:path:output_ext"
 
 // PermalinkStyles defines built-in styles from https://jekyllrb.com/docs/permalinks/#builtinpermalinkstyles
 var PermalinkStyles = map[string]string{
@@ -64,7 +66,7 @@ func (f *file) permalinkVariables() map[string]string {
 }
 
 func (f *file) computePermalink(vars map[string]string) (src string, err error) {
-	pattern := templates.VariableMap(f.frontMatter).String("permalink", constants.DefaultPermalinkPattern)
+	pattern := templates.VariableMap(f.frontMatter).String("permalink", DefaultPermalinkPattern)
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}

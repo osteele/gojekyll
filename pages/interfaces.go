@@ -2,6 +2,7 @@ package pages
 
 import (
 	"io"
+	"time"
 
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/liquid"
@@ -30,11 +31,23 @@ type Document interface {
 	setPermalink() error
 }
 
+// Page is a document with frontmatter.
+type Page interface {
+	Document
+	// Content asks a page to compute its content.
+	// This has the side effect of causing the content to subsequently appear in the drop.
+	Content(rc RenderingContext) ([]byte, error)
+	// PostDate returns the date computed from the filename or frontmatter.
+	// It is an uncaught error to call this on a page that is not a Post.
+	// TODO Should posts have their own interface?
+	PostDate() time.Time
+}
+
 // RenderingContext provides context information for rendering.
 type RenderingContext interface {
 	RenderingPipeline() pipelines.PipelineInterface
-	// SiteVariables is the value of the "site" template variable.
-	SiteVariables() map[string]interface{} // value of the "site" template variable
+	// Site is the value of the "site" template variable.
+	Site() interface{} // used as a drop in the rendering context
 }
 
 // Container is the document container.

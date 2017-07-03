@@ -27,7 +27,7 @@ type Site struct {
 	pipeline         *pipelines.Pipeline
 	docs             []pages.Document // all documents, whether or not they are output
 	preparedToRender bool
-	siteVariables    map[string]interface{}
+	drop             map[string]interface{}
 }
 
 // SourceDir returns the site source directory.
@@ -53,7 +53,7 @@ func (s *Site) OutputPages() []pages.Document {
 // Pages returns all the pages, output or not.
 func (s *Site) Pages() []pages.Document { return s.docs }
 
-// AbsDir is in the page.Container interface.
+// AbsDir is in the collections.Site interface.
 func (s *Site) AbsDir() string {
 	d, err := filepath.Abs(s.SourceDir())
 	if err != nil {
@@ -65,6 +65,11 @@ func (s *Site) AbsDir() string {
 // Config is in the page.Container interface.
 func (s *Site) Config() config.Config {
 	return s.config
+}
+
+// Site is in the pages.RenderingContext interface.
+func (s *Site) Site() interface{} {
+	return s
 }
 
 // PathPrefix is in the page.Container interface.
@@ -82,8 +87,8 @@ func NewSite(flags config.Flags) *Site {
 func (s *Site) SetAbsoluteURL(url string) {
 	s.config.AbsoluteURL = url
 	s.config.Variables["url"] = url
-	if s.siteVariables != nil {
-		s.siteVariables["url"] = url
+	if s.drop != nil {
+		s.drop["url"] = url
 	}
 }
 
