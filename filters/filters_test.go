@@ -118,7 +118,7 @@ func requireTemplateRender(t *testing.T, tmpl string, bindings map[string]interf
 	c.BaseURL = "/my-baseurl"
 	c.AbsoluteURL = "http://example.com"
 	AddJekyllFilters(engine, c)
-	data, err := engine.ParseAndRender([]byte(tmpl), liquid.NewContext(bindings))
+	data, err := engine.ParseAndRender([]byte(tmpl), bindings)
 	require.NoErrorf(t, err, tmpl)
 	require.Equalf(t, expected, strings.TrimSpace(string(data)), tmpl)
 }
