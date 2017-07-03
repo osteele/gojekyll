@@ -3,6 +3,7 @@ package config
 import (
 	"strings"
 
+	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -31,7 +32,6 @@ type Config struct {
 
 	// Plugins
 	Plugins []string
-	Gems    []string // bwcompat
 
 	// Serving
 	AbsoluteURL string `yaml:"url"`
@@ -51,34 +51,17 @@ type Config struct {
 	Variables map[string]interface{} `yaml:"-"`
 }
 
-// Default returns a default site configuration.
-// This is a function instead of a global variable, and returns a new value each time,
-// since the caller may overwrite it.
-func Default() Config {
-	var c Config
-	err := Unmarshal([]byte(defaultSiteConfig), &c)
-	if err != nil {
-		panic(err)
-	}
-	return c
+type configCompat struct {
+	Gems []string
 }
 
-// Unmarshal reads a YAML configuration.
-func Unmarshal(bytes []byte, c *Config) error {
-	if err := yaml.Unmarshal(bytes, &c); err != nil {
-		return err
-	}
-	if err := yaml.Unmarshal(bytes, &c.Variables); err != nil {
-		return err
-	}
-	if len(c.Gems) > 0 {
-		c.Plugins = c.Gems
-	}
-	return nil
+// SourceDir returns the source directory as an absolute path.
+func (c *Config) SourceDir() string {
+	return helpers.MustAbs(c.Source)
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
-func (c *Config) GetFrontMatterDefaults(relpath, typename string) (m map[string]interface{}) {
+func (c *Config) GetFrontMatterDefaults(typename, relpath string) (m map[string]interface{}) {
 	for _, entry := range c.Defaults {
 		scope := &entry.Scope
 		hasPrefix := strings.HasPrefix(relpath, scope.Path)
@@ -90,32 +73,20 @@ func (c *Config) GetFrontMatterDefaults(relpath, typename string) (m map[string]
 	return
 }
 
-// From https://jekyllrb.com/docs/configuration/#default-configuration
-// The following includes only those keys that are currently implemented.
-const defaultSiteConfig = `
-# Where things are
-source:       .
-destination:  ./_site
-layouts_dir:  _layouts
-data_dir:     _data
-includes_dir: _includes
-collections:
-  posts:
-    output:   true
-
-# Handling Reading
-include:              [".htaccess"]
-exclude:              ["Gemfile", "Gemfile.lock", "node_modules", "vendor/bundle/", "vendor/cache/", "vendor/gems/", "vendor/ruby/"]
-keep_files:           [".git", ".svn"]
-encoding:             "utf-8"
-markdown_ext:         "markdown,mkdown,mkdn,mkd,md"
-strict_front_matter: false
-
-# Plugins
-plugins:   []
-
-# Outputting
-permalink:     date
-paginate_path: /page:num
-timezone:      null
-`
+// Unmarshal updates site from a YAML configuration file.
+func Unmarshal(bytes []byte, c *Config) error {
+	compat := configCompat{}
+	if err := yaml.Unmarshal(bytes, &c); err != nil {
+		return err
+	}
+	if err := yaml.Unmarshal(bytes, &c.Variables); err != nil {
+		return err
+	}
+	if err := yaml.Unmarshal(bytes, &compat); err != nil {
+		return err
+	}
+	if len(c.Plugins) == 0 {
+		c.Plugins = compat.Gems
+	}
+	return nil
+}

@@ -62,9 +62,9 @@ func (s *Site) AbsDir() string {
 	return d
 }
 
-// Config is in the page.Container interface.
-func (s *Site) Config() config.Config {
-	return s.config
+// Config is in the collections.Site interface.
+func (s *Site) Config() *config.Config {
+	return &s.config
 }
 
 // Site is in the pages.RenderingContext interface.

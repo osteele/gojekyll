@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -13,6 +14,10 @@ func timeMustParse(s string) time.Time {
 		panic(err)
 	}
 	return t
+}
+
+func TestMustAbs(t *testing.T) {
+	require.True(t, strings.HasPrefix(MustAbs("."), "/"))
 }
 
 func TestFilenameDate(t *testing.T) {

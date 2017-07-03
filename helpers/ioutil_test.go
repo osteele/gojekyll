@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testDataDir = filepath.Join("..", "testdata", "helpers")
+var testDataDir = filepath.Join("testdata")
 
 func testFile(name string) string {
 	return filepath.Join(testDataDir, name)

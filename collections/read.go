@@ -12,8 +12,11 @@ import (
 	"github.com/osteele/gojekyll/templates"
 )
 
+const draftsPath = "_drafts"
+
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string, string) map[string]interface{}) error {
+func (c *Collection) ReadPages() error {
+	sitePath := c.Config().Source
 	pageDefaults := map[string]interface{}{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
@@ -38,11 +41,11 @@ func (c *Collection) ReadPages(sitePath string, frontMatterDefaults func(string,
 		case info.IsDir():
 			return nil
 		}
-		fm := templates.MergeVariableMaps(pageDefaults, frontMatterDefaults(relname, c.Name))
+		fm := templates.MergeVariableMaps(pageDefaults, c.Config().GetFrontMatterDefaults(c.Name, relname))
 		return c.readFile(filename, relname, fm)
 	}
 	if c.IsPostsCollection() && c.Config().Drafts {
-		if err := filepath.Walk(filepath.Join(sitePath, "_drafts"), walkFn); err != nil {
+		if err := filepath.Walk(filepath.Join(sitePath, draftsPath), walkFn); err != nil {
 			return err
 		}
 		sort.Sort(pagesByDate{c.pages})

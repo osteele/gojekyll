@@ -15,13 +15,22 @@ func FilenameDate(s string) (time.Time, bool) {
 	return t, err == nil
 }
 
-// MustRel is like filepath.Rel, but panics if the path cannot be relativized.
-func MustRel(basepath, targpath string) string {
-	relpath, err := filepath.Rel(basepath, targpath)
+// MustAbs is like filepath.Abs, but panics instead of returning an error.
+func MustAbs(path string) string {
+	abs, err := filepath.Abs(path)
 	if err != nil {
 		panic(err)
 	}
-	return relpath
+	return abs
+}
+
+// MustRel is like filepath.Rel, but panics if the path cannot be relativized.
+func MustRel(basepath, targpath string) string {
+	rel, err := filepath.Rel(basepath, targpath)
+	if err != nil {
+		panic(err)
+	}
+	return rel
 }
 
 // TrimExt returns a path without its extension, if any
