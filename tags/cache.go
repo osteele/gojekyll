@@ -1,7 +1,6 @@
 package tags
 
 import (
-	"bytes"
 	"crypto/md5" // nolint: gas
 	"fmt"
 	"io"
@@ -16,7 +15,7 @@ import (
 //
 // header and content are distinct parameters to relieve the caller from
 // having to concatenate them.
-func withFileCache(w io.Writer, header string, content string, fn func(w io.Writer) error) error {
+func withFileCache(header string, content string, fn func() (string, error)) (string, error) {
 	h := md5.New()             // nolint: gas
 	io.WriteString(h, content) // nolint: errcheck, gas
 	io.WriteString(h, "\n")    // nolint: errcheck, gas
@@ -34,20 +33,17 @@ func withFileCache(w io.Writer, header string, content string, fn func(w io.Writ
 	// If the writer actually wrote an empty file, we'll end up gratuitously
 	// re-running it, which is okay.
 	if b, err := ioutil.ReadFile(cachefile); err == nil && len(b) > 0 {
-		_, err = w.Write(b)
-		return err
+		return string(b), err
 	}
-	buf := new(bytes.Buffer)
-	if err := fn(buf); err != nil {
-		return err
+	s, err := fn()
+	if err != nil {
+		return "", err
 	}
-	out := buf.Bytes()
 	if err := os.MkdirAll(filepath.Dir(cachefile), 0700); err != nil {
-		return err
+		return "", err
 	}
-	if err := ioutil.WriteFile(cachefile, out, 0600); err != nil {
-		return err
+	if err := ioutil.WriteFile(cachefile, []byte(s), 0600); err != nil {
+		return "", err
 	}
-	_, err := w.Write(out)
-	return err
+	return s, nil
 }

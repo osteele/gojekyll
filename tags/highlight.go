@@ -1,8 +1,8 @@
 package tags
 
 import (
+	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -10,10 +10,10 @@ import (
 	"github.com/osteele/liquid/chunks"
 )
 
-func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
+func highlightTag(ctx chunks.RenderContext) (string, error) {
 	args, err := ctx.ParseTagArgs()
 	if err != nil {
-		return err
+		return "", err
 	}
 	cargs := []string{"-f", "html"}
 	if args != "" {
@@ -21,13 +21,17 @@ func highlightTag(w io.Writer, ctx chunks.RenderContext) error {
 	}
 	s, err := ctx.InnerString()
 	if err != nil {
-		return err
+		return "", err
 	}
-	return withFileCache(w, fmt.Sprintf("pygments %s", args), s, func(w io.Writer) error {
+	return withFileCache(fmt.Sprintf("pygments %s", args), s, func() (string, error) {
+		buf := new(bytes.Buffer)
 		cmd := exec.Command("pygmentize", cargs...) // nolint: gas
 		cmd.Stdin = strings.NewReader(s)
-		cmd.Stdout = w
+		cmd.Stdout = buf
 		cmd.Stderr = os.Stderr
-		return cmd.Run()
+		if err := cmd.Run(); err != nil {
+			return "", err
+		}
+		return buf.String(), nil
 	})
 }

@@ -2,7 +2,6 @@ package plugins
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/liquid/chunks"
@@ -15,22 +14,21 @@ func init() {
 	})
 }
 
-func gistTag(w io.Writer, ctx chunks.RenderContext) error {
+func gistTag(ctx chunks.RenderContext) (string, error) {
 	argsline, err := ctx.ParseTagArgs()
 	if err != nil {
-		return err
+		return "", err
 	}
 	args, err := tags.ParseArgs(argsline)
 	if err != nil {
-		return err
+		return "", err
 	}
 	if len(args.Args) < 1 {
-		return fmt.Errorf("gist tag: missing argument")
+		return "", fmt.Errorf("gist tag: missing argument")
 	}
 	url := fmt.Sprintf("https://gist.github.com/%s.js", args.Args[0])
 	if len(args.Args) >= 2 {
 		url += fmt.Sprintf("?file=%s", args.Args[1])
 	}
-	_, err = w.Write([]byte(`<script src=` + url + `> </script>`))
-	return err
+	return `<script src=` + url + `> </script>`, nil
 }

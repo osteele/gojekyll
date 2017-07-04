@@ -7,7 +7,6 @@ package plugins
 
 import (
 	"fmt"
-	"io"
 
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/chunks"
@@ -65,17 +64,17 @@ func (h pluginHelper) stubbed() {
 	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", h.name)
 }
 
-func (h pluginHelper) tag(name string, t liquid.TagDefinition) {
-	h.ctx.TemplateEngine().RegisterTag(name, t)
+func (h pluginHelper) tag(name string, r liquid.Renderer) {
+	h.ctx.TemplateEngine().RegisterTag(name, r)
 }
 
-func (h pluginHelper) makeUnimplementedTag() liquid.TagDefinition {
+func (h pluginHelper) makeUnimplementedTag() liquid.Renderer {
 	warned := false
-	return func(_ io.Writer, ctx chunks.RenderContext) error {
+	return func(ctx chunks.RenderContext) (string, error) {
 		if !warned {
 			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), h.name)
 			warned = true
 		}
-		return nil
+		return "", nil
 	}
 }
