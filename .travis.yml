@@ -12,7 +12,8 @@ before_install:
 install:
   - make install_dev_tools
   - go get -t ./...
-  - pip install Pygments
+  - pip install --user Pygments
+  - export PATH=$HOME/.local/bin:$PATH
 
 script:
   - $HOME/gopath/bin/goveralls -service=travis-ci

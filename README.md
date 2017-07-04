@@ -45,7 +45,7 @@ gojekyll help build
   - themes, page tags, excerpts, plugins (except for a few listed below), pagination, math, warning mode.
   - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
   - Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`.
-  - The Go Liquid engine is also missing some tags and a few filters. See its [README](https://github.com/osteele/gojekyll/#status) for status.
+  - See the [Liquid README](https://github.com/osteele/liquid/#status) for documentation of its limitations.
   - Data files must be YAML. CSV and JSON data files are not supported.
 - `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge. Also, I don't know what will happen if Pygments isn't installed.
 - `<div markdown=1>` doesn't work. I think this is a limitation of the Blackfriday Markdown processor.
