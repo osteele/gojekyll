@@ -38,18 +38,21 @@ func cleanCommand(site *sites.Site) error {
 	return site.Clean(buildOptions)
 }
 
-func benchmarkCommand(_ *sites.Site) error {
-	t0 := time.Now()
-	for i := 0; time.Since(t0) < 10*time.Second; i++ {
-		site, err := loadSite(*source, configFlags)
-		if err != nil {
-			return err
+func benchmarkCommand(site *sites.Site) (err error) {
+	for i := 0; time.Since(commandStartTime) < 10*time.Second; i++ {
+		// skip this the first time, since the caller has already
+		// started the profile and loaded the site once.
+		if i > 0 {
+			site, err = loadSite(*source, configFlags)
+			if err != nil {
+				return err
+			}
 		}
 		_, err = site.Build(buildOptions)
 		if err != nil {
 			return err
 		}
-		logger.label("", "Run #%d; %.1fs elapsed", i+1, time.Since(t0).Seconds())
+		logger.label("", "Run #%d; %.1fs elapsed", i+1, time.Since(commandStartTime).Seconds())
 	}
 	return nil
 }
@@ -108,41 +111,53 @@ func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
 	}
 }
 
-func varsCommand(site *sites.Site) error {
+func varsCommand(site *sites.Site) (err error) {
 	var data interface{}
 	switch {
 	case strings.HasPrefix(*variablePath, "site"):
-		data = site
-		for _, name := range strings.Split(*variablePath, ".")[1:] {
-			if drop, ok := data.(liquid.Drop); ok {
-				data = drop.ToLiquid()
-			}
-			if reflect.TypeOf(data).Kind() == reflect.Map {
-				item := reflect.ValueOf(data).MapIndex(reflect.ValueOf(name))
-				if item.CanInterface() && !item.IsNil() {
-					data = item.Interface()
-					continue
-				}
-			}
-			return fmt.Errorf("no such property: %q", name)
+		data, err = followDots(site, strings.Split(*variablePath, ".")[1:])
+		if err != nil {
+			return
 		}
 	case *variablePath != "":
-		page, err := pageFromPathOrRoute(site, *variablePath)
+		data, err = pageFromPathOrRoute(site, *variablePath)
 		if err != nil {
-			return err
+			return
 		}
-		data = page.(liquid.Drop).ToLiquid()
 	default:
 		data = site
 	}
-	if drop, ok := data.(liquid.Drop); ok {
-		data = drop
-	}
-	b, err := yaml.Marshal(data)
+	b, err := yaml.Marshal(toLiquid(data))
 	if err != nil {
 		return err
 	}
 	logger.label("Variables:", "")
 	fmt.Println(string(b))
 	return nil
+}
+
+func followDots(data interface{}, props []string) (interface{}, error) {
+	for _, name := range props {
+		if drop, ok := data.(liquid.Drop); ok {
+			data = drop.ToLiquid()
+		}
+		if reflect.TypeOf(data).Kind() == reflect.Map {
+			item := reflect.ValueOf(data).MapIndex(reflect.ValueOf(name))
+			if item.CanInterface() && !item.IsNil() {
+				data = item.Interface()
+				continue
+			}
+		}
+		return nil, fmt.Errorf("no such property: %q", name)
+	}
+	return data, nil
+}
+
+func toLiquid(value interface{}) interface{} {
+	switch value := value.(type) {
+	case liquid.Drop:
+		return value.ToLiquid()
+	default:
+		return value
+	}
 }

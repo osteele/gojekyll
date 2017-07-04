@@ -51,8 +51,12 @@ func init() {
 }
 
 func main() {
+	parseAndRun(os.Args[1:])
+}
+
+func parseAndRun(args []string) {
 	app.HelpFlag.Short('h')
-	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
+	cmd := kingpin.MustParse(app.Parse(args))
 	if configFlags.Destination != nil {
 		dest, err := filepath.Abs(*configFlags.Destination)
 		app.FatalIfError(err, "")
@@ -67,24 +71,13 @@ func main() {
 	app.FatalIfError(run(cmd), "")
 }
 
-func run(cmd string) error {
+func run(cmd string) error { // nolint: gocyclo
+	if profile {
+		setupProfiling()
+	}
 	site, err := loadSite(*source, configFlags)
 	if err != nil {
 		return err
-	}
-	if profile {
-		profilePath := "gojekyll.prof"
-		logger.label("Profiling...", "")
-		f, err := os.Create(profilePath)
-		app.FatalIfError(err, "")
-		err = pprof.StartCPUProfile(f)
-		app.FatalIfError(err, "")
-		defer func() {
-			pprof.StopCPUProfile()
-			err = f.Close()
-			app.FatalIfError(err, "")
-			logger.Info("Wrote", profilePath)
-		}()
 	}
 
 	switch cmd {
@@ -123,4 +116,19 @@ func loadSite(source string, flags config.Flags) (*sites.Site, error) {
 	logger.label("Source:", site.SourceDir())
 	err = site.Load()
 	return site, err
+}
+
+func setupProfiling() {
+	profilePath := "gojekyll.prof"
+	logger.label("Profiling...", "")
+	f, err := os.Create(profilePath)
+	app.FatalIfError(err, "")
+	err = pprof.StartCPUProfile(f)
+	app.FatalIfError(err, "")
+	defer func() {
+		pprof.StopCPUProfile()
+		err = f.Close()
+		app.FatalIfError(err, "")
+		logger.Info("Wrote", profilePath)
+	}()
 }

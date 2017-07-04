@@ -14,8 +14,8 @@ import (
 
 const draftsPath = "_drafts"
 
-// ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages() error {
+// ScanDirectory scans the file system for collection pages, and adds them to c.Pages.
+func (c *Collection) ScanDirectory(dirname string) error {
 	sitePath := c.config.Source
 	pageDefaults := map[string]interface{}{
 		"collection": c.Name,
@@ -44,12 +44,17 @@ func (c *Collection) ReadPages() error {
 		fm := templates.MergeVariableMaps(pageDefaults, c.config.GetFrontMatterDefaults(c.Name, relname))
 		return c.readFile(filename, relname, fm)
 	}
+	return filepath.Walk(filepath.Join(sitePath, dirname), walkFn)
+}
+
+// ReadPages scans the file system for collection pages, and adds them to c.Pages.
+func (c *Collection) ReadPages() error {
 	if c.IsPostsCollection() && c.config.Drafts {
-		if err := filepath.Walk(filepath.Join(sitePath, draftsPath), walkFn); err != nil {
+		if err := c.ScanDirectory(draftsPath); err != nil {
 			return err
 		}
 	}
-	if err := filepath.Walk(filepath.Join(sitePath, c.PathPrefix()), walkFn); err != nil {
+	if err := c.ScanDirectory(c.PathPrefix()); err != nil {
 		return err
 	}
 	if c.IsPostsCollection() {
