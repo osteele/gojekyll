@@ -22,7 +22,7 @@ type Document interface {
 	// Output
 	Published() bool
 	Static() bool
-	Write(RenderingContext, io.Writer) error
+	Write(io.Writer, RenderingContext) error
 
 	Categories() []string
 	Tags() []string

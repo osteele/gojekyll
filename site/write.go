@@ -28,7 +28,7 @@ func (s *Site) WriteDocument(p pages.Document, w io.Writer) error {
 	if err := s.prepareRendering(); err != nil {
 		return err
 	}
-	return p.Write(s, w)
+	return p.Write(w, s)
 }
 
 // WritePages writes output files.
@@ -76,6 +76,8 @@ func (s *Site) WritePage(p pages.Document, options BuildOptions) error {
 	case p.Static():
 		return helpers.CopyFileContents(to, from, 0644)
 	default:
-		return helpers.VisitCreatedFile(to, func(w io.Writer) error { return p.Write(s, w) })
+		return helpers.VisitCreatedFile(to, func(w io.Writer) error {
+			return p.Write(w,s)
+		})
 	}
 }

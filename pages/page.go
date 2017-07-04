@@ -72,7 +72,7 @@ func (p *page) PostDate() time.Time {
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (p *page) Write(rc RenderingContext, w io.Writer) error {
+func (p *page) Write(w io.Writer, rc RenderingContext) error {
 	rp := rc.RenderingPipeline()
 	b, err := rp.Render(w, p.raw, p.filename, p.TemplateContext(rc))
 	if err != nil {

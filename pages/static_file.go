@@ -14,7 +14,7 @@ type StaticFile struct {
 func (p *StaticFile) Static() bool { return true }
 
 // Write returns a bool indicating that the page is a static page.
-func (p *StaticFile) Write(_ RenderingContext, w io.Writer) error {
+func (p *StaticFile) Write(w io.Writer, _ RenderingContext) error {
 	in, err := os.Open(p.filename)
 	if err != nil {
 		return err
