@@ -146,7 +146,8 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
 Install package dependencies and development tools:
 
 ```bash
-make setup
+make install_dev_tools
+go get -t ./...
 ```
 
 ### Testing

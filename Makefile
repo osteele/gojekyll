@@ -24,8 +24,7 @@ clean: ## remove binary files
 deps: ## list dependencies
 	go list -f '{{join .Imports "\n"}}' ./... | grep -v ${PACKAGE} | grep '\.' | sort | uniq
 
-setup: ## install dependencies and development tools
-	go get -t ./...
+install_dev_tools: ## install dependencies and development tools
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
 

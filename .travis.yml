@@ -3,12 +3,16 @@ language: go
 go:
   - 1.8.3
 
+python:
+  - "3.4"
+
 before_install:
   - go get github.com/mattn/goveralls
 
 install:
-  - make setup
-  - go get ./...
+  - make install_dev_tools
+  - go get -t ./...
+  - pip install Pygments
 
 script:
   - $HOME/gopath/bin/goveralls -service=travis-ci
