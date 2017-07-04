@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/osteele/gojekyll/tags"
-	"github.com/osteele/liquid/chunks"
+	"github.com/osteele/liquid/render"
 )
 
 func init() {
@@ -14,7 +14,7 @@ func init() {
 	})
 }
 
-func gistTag(ctx chunks.RenderContext) (string, error) {
+func gistTag(ctx render.Context) (string, error) {
 	argsline, err := ctx.ParseTagArgs()
 	if err != nil {
 		return "", err

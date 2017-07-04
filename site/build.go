@@ -46,13 +46,11 @@ func (s *Site) Clean(options BuildOptions) error {
 // Build cleans the destination and create files in it.
 // It attends to the global options.dry_run.
 func (s *Site) Build(options BuildOptions) (int, error) {
-	count := 0
 	if err := s.prepareRendering(); err != nil {
 		return 0, err
 	}
 	if err := s.Clean(options); err != nil {
 		return 0, err
 	}
-	n, err := s.WritePages(options)
-	return count + n, err
+	return s.WritePages(options)
 }

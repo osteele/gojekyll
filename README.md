@@ -45,7 +45,6 @@ gojekyll help build
   - themes, page tags, excerpts, plugins (except for a few listed below), pagination, math, warning mode.
   - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
   - Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`.
-  - Jekyll's `include_relative` tag
   - The Go Liquid engine is also missing some tags and a few filters. See its [README](https://github.com/osteele/gojekyll/#status) for status.
   - Data files must be YAML. CSV and JSON data files are not supported.
 - `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge. Also, I don't know what will happen if Pygments isn't installed.
@@ -104,12 +103,11 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
     - [ ] Jekyll filters
       - [ ] `group_by_exp` `pop` `shift` `cgi_escape` `uri_escape` `scssify` `smartify`
       - [x] everything else
-    - [ ] Jekyll tags
+    - [x] Jekyll tags
       - [x] `include`
-      - [ ] `include_relative`
+      - [x] `include_relative`
       - [x] `link`
       - [x] `post_url`
-      - [ ] `gist`
       - [x] `highlight`
   - [x] Includes
       - [x] `include` parameters
@@ -130,7 +128,7 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
   - [x] `build`
     - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`
     - [ ] `--config`, `--baseurl`, `--lsi`, `--watch`, etc.
-    - [ ] won't implement: `--force-polling`, `--limit-posts`, `--incremental`, `JEKYLL_ENV=production`
+    - [ ] not planned: `--force-polling`, `--limit-posts`, `--incremental`, `JEKYLL_ENV=production`
   - [x] `clean`
   - [ ] `doctor`
   - [x] `help`
@@ -140,7 +138,7 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
   - [x] `serve`
     - [x] `--open-uri`
     - [ ] `--detach`, `--host`, `--port`, `--baseurl`
-    - [ ] won't implement: `--incremental`, `--ssl-*`
+    - [ ] not planned: `--incremental`, `--ssl`-*
 - [ ] Windows
 
 ## Contributing

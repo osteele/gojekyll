@@ -7,10 +7,10 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/osteele/liquid/chunks"
+	"github.com/osteele/liquid/render"
 )
 
-func highlightTag(ctx chunks.RenderContext) (string, error) {
+func highlightTag(ctx render.Context) (string, error) {
 	args, err := ctx.ParseTagArgs()
 	if err != nil {
 		return "", err

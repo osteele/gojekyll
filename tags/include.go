@@ -2,12 +2,23 @@ package tags
 
 import (
 	"fmt"
+	"path"
 	"path/filepath"
 
-	"github.com/osteele/liquid/chunks"
+	"github.com/osteele/liquid/render"
 )
 
-func (tc tagContext) includeTag(ctx chunks.RenderContext) (string, error) {
+func (tc tagContext) includeTag(ctx render.Context) (string, error) {
+	return includeFromDir(ctx, filepath.Join(tc.config.Source, tc.config.IncludesDir))
+}
+
+func (tc tagContext) includeRelativeTag(ctx render.Context) (string, error) {
+	fmt.Println("include relative", ctx.SourceFile())
+	// TODO Note that you cannot use the ../ syntax
+	return includeFromDir(ctx, path.Dir(ctx.SourceFile()))
+}
+
+func includeFromDir(ctx render.Context, dirname string) (string, error) {
 	argsline, err := ctx.ParseTagArgs()
 	if err != nil {
 		return "", err
@@ -23,8 +34,6 @@ func (tc tagContext) includeTag(ctx chunks.RenderContext) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filename := filepath.Join(tc.config.Source, tc.config.IncludesDir, args.Args[0])
-	ctx2 := ctx.Clone()
-	ctx2.UpdateBindings(map[string]interface{}{"include": include})
-	return ctx2.RenderFile(filename)
+	filename := filepath.Join(dirname, args.Args[0])
+	return ctx.RenderFile(filename, map[string]interface{}{"include": include})
 }

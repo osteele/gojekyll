@@ -78,8 +78,8 @@ func (p *page) Write(rc RenderingContext, w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	layout := templates.VariableMap(p.frontMatter).String("layout", "")
-	if layout != "" {
+	layout, ok := p.frontMatter["layout"].(string)
+	if ok && layout != "" {
 		b, err = rp.ApplyLayout(layout, b, p.TemplateContext(rc))
 		if err != nil {
 			return err

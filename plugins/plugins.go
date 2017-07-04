@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/osteele/liquid"
-	"github.com/osteele/liquid/chunks"
+	"github.com/osteele/liquid/render"
 )
 
 // PluginContext is the context for plugin initialization.
@@ -22,7 +22,7 @@ type PluginContext interface {
 func Install(name string, ctx PluginContext) bool {
 	p, found := plugins[name]
 	if p != nil {
-		if err := p(ctx, pluginHelper{name, ctx}); err != nil {
+		if err := p(ctx, pluginHelper{ctx, name}); err != nil {
 			panic(err)
 		}
 	}
@@ -56,8 +56,8 @@ func init() {
 }
 
 type pluginHelper struct {
+	PluginContext
 	name string
-	ctx  PluginContext
 }
 
 func (h pluginHelper) stubbed() {
@@ -65,12 +65,12 @@ func (h pluginHelper) stubbed() {
 }
 
 func (h pluginHelper) tag(name string, r liquid.Renderer) {
-	h.ctx.TemplateEngine().RegisterTag(name, r)
+	h.TemplateEngine().RegisterTag(name, r)
 }
 
 func (h pluginHelper) makeUnimplementedTag() liquid.Renderer {
 	warned := false
-	return func(ctx chunks.RenderContext) (string, error) {
+	return func(ctx render.Context) (string, error) {
 		if !warned {
 			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), h.name)
 			warned = true

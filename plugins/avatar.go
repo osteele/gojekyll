@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/tags"
-	"github.com/osteele/liquid/chunks"
+	"github.com/osteele/liquid/render"
 )
 
 func init() {
@@ -17,7 +17,7 @@ func init() {
 
 const avatarTemplate = `<img class="avatar avatar-small" src="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40" alt="{user}" srcset="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40 1x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=80 2x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=120 3x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=160 4x" width="40" height="40" data-proofer-ignore="true" />`
 
-func avatarTag(ctx chunks.RenderContext) (string, error) {
+func avatarTag(ctx render.Context) (string, error) {
 	var (
 		user string
 		size interface{} = 40

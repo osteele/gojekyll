@@ -6,7 +6,7 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/liquid"
-	"github.com/osteele/liquid/chunks"
+	"github.com/osteele/liquid/render"
 )
 
 // A LinkTagHandler given an include tag file name returns a URL.
@@ -17,6 +17,7 @@ func AddJekyllTags(e liquid.Engine, c config.Config, lh LinkTagHandler) {
 	tc := tagContext{c, lh}
 	e.RegisterBlock("highlight", highlightTag)
 	e.RegisterTag("include", tc.includeTag)
+	e.RegisterTag("include_relative", tc.includeRelativeTag)
 	e.RegisterTag("link", tc.linkTag)
 	e.RegisterTag("post_url", tc.postURLTag)
 }
@@ -31,7 +32,7 @@ type tagContext struct {
 // time it's rendered, and otherwise does nothing.
 func CreateUnimplementedTag() liquid.Renderer {
 	warned := false
-	return func(ctx chunks.RenderContext) (string, error) {
+	return func(ctx render.Context) (string, error) {
 		if !warned {
 			fmt.Printf("The %q tag has not been implemented. It is being ignored.\n", ctx.TagName())
 			warned = true
@@ -40,7 +41,7 @@ func CreateUnimplementedTag() liquid.Renderer {
 	}
 }
 
-func (tc tagContext) linkTag(ctx chunks.RenderContext) (string, error) {
+func (tc tagContext) linkTag(ctx render.Context) (string, error) {
 	filename := ctx.TagArgs()
 	url, found := tc.lh(filename)
 	if !found {
@@ -49,7 +50,7 @@ func (tc tagContext) linkTag(ctx chunks.RenderContext) (string, error) {
 	return url, nil
 }
 
-func (tc tagContext) postURLTag(ctx chunks.RenderContext) (string, error) {
+func (tc tagContext) postURLTag(ctx render.Context) (string, error) {
 	var (
 		filename = ctx.TagArgs()
 		found    = false

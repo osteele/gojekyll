@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/osteele/liquid/chunks"
+	"github.com/osteele/liquid/render"
 )
 
 // TODO string escapes
@@ -52,7 +52,7 @@ func ParseArgs(argsline string) (*ParsedArgs, error) {
 }
 
 // EvalOptions evaluates unquoted options.
-func (r *ParsedArgs) EvalOptions(ctx chunks.RenderContext) (map[string]interface{}, error) {
+func (r *ParsedArgs) EvalOptions(ctx render.Context) (map[string]interface{}, error) {
 	options := map[string]interface{}{}
 	for k, v := range r.Options {
 		if v.quoted {

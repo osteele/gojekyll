@@ -73,8 +73,13 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, e map[string]i
 	return b, nil
 }
 
-func (p *Pipeline) renderTemplate(tpl []byte, b map[string]interface{}, filename string) ([]byte, error) {
-	out, err := p.liquidEngine.ParseAndRender(tpl, b)
+func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename string) ([]byte, error) {
+	tpl, err := p.liquidEngine.ParseTemplate(src)
+	if err != nil {
+		return nil, helpers.PathError(err, "Liquid Error", filename)
+	}
+	tpl.SetSourcePath(filename)
+	out, err := tpl.Render(b)
 	if err != nil {
 		return nil, helpers.PathError(err, "Liquid Error", filename)
 	}

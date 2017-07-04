@@ -13,7 +13,7 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/liquid"
-	"github.com/osteele/liquid/expressions"
+	"github.com/osteele/liquid/expression"
 	"github.com/osteele/liquid/generics"
 	"github.com/russross/blackfriday"
 )
@@ -214,7 +214,7 @@ func sortFilter(array []interface{}, key interface{}, nilFirst interface{}) []in
 	return out
 }
 
-func whereExpFilter(array []interface{}, name string, expr expressions.Closure) ([]interface{}, error) {
+func whereExpFilter(array []interface{}, name string, expr expression.Closure) ([]interface{}, error) {
 	rt := reflect.ValueOf(array)
 	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
 		return nil, nil
