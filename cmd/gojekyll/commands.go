@@ -14,14 +14,14 @@ import (
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/server"
-	"github.com/osteele/gojekyll/sites"
+	"github.com/osteele/gojekyll/site"
 	"github.com/osteele/liquid"
 )
 
 // main sets this
 var commandStartTime = time.Now()
 
-func buildCommand(site *sites.Site) error {
+func buildCommand(site *site.Site) error {
 	logger.path("Destination:", site.DestDir())
 	logger.label("Generating...", "")
 	count, err := site.Build(buildOptions)
@@ -33,12 +33,12 @@ func buildCommand(site *sites.Site) error {
 	return nil
 }
 
-func cleanCommand(site *sites.Site) error {
+func cleanCommand(site *site.Site) error {
 	logger.label("Cleaner:", "Removing %s...", site.DestDir())
 	return site.Clean(buildOptions)
 }
 
-func benchmarkCommand(site *sites.Site) (err error) {
+func benchmarkCommand(site *site.Site) (err error) {
 	for i := 0; time.Since(commandStartTime) < 10*time.Second; i++ {
 		// skip this the first time, since the caller has already
 		// started the profile and loaded the site once.
@@ -57,12 +57,12 @@ func benchmarkCommand(site *sites.Site) (err error) {
 	return nil
 }
 
-func serveCommand(site *sites.Site) error {
+func serveCommand(site *site.Site) error {
 	server := server.Server{Site: site}
 	return server.Run(*open, func(label, value string) { logger.label(label, value) })
 }
 
-func routesCommand(site *sites.Site) error {
+func routesCommand(site *site.Site) error {
 	logger.label("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Routes {
@@ -78,7 +78,7 @@ func routesCommand(site *sites.Site) error {
 	return nil
 }
 
-func renderCommand(site *sites.Site) error {
+func renderCommand(site *site.Site) error {
 	p, err := pageFromPathOrRoute(site, *renderPath)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func renderCommand(site *sites.Site) error {
 
 // If path starts with /, it's a URL path. Else it's a file path relative
 // to the site source directory.
-func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
+func pageFromPathOrRoute(s *site.Site, path string) (pages.Document, error) {
 	if path == "" {
 		path = "/"
 	}
@@ -111,7 +111,7 @@ func pageFromPathOrRoute(s *sites.Site, path string) (pages.Document, error) {
 	}
 }
 
-func varsCommand(site *sites.Site) (err error) {
+func varsCommand(site *site.Site) (err error) {
 	var data interface{}
 	switch {
 	case strings.HasPrefix(*variablePath, "site"):

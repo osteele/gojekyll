@@ -3,8 +3,6 @@ package pages
 import (
 	"fmt"
 	"os"
-	"path"
-	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
@@ -69,30 +67,6 @@ func NewFile(filename string, c Container, relpath string, defaults map[string]i
 		return nil, err
 	}
 	return p, nil
-}
-
-// ToLiquid returns the attributes of the template page object.
-// See https://jekyllrb.com/docs/variables/#page-variables
-func (f *file) ToLiquid() interface{} {
-	var (
-		relpath = "/" + filepath.ToSlash(f.relpath)
-		base    = path.Base(relpath)
-		ext     = path.Ext(relpath)
-	)
-
-	return templates.MergeVariableMaps(f.frontMatter, map[string]interface{}{
-		"path":          relpath,
-		"modified_time": f.fileModTime,
-		"name":          base,
-		"basename":      helpers.TrimExt(base),
-		"extname":       ext,
-	})
-}
-
-// MarshalYAML is part of the yaml.Marshaler interface
-// The variables subcommand uses this.
-func (f *file) MarshalYAML() (interface{}, error) {
-	return f.ToLiquid(), nil
 }
 
 // Categories is in the File interface

@@ -1,11 +1,11 @@
-package sites
+package site
 
 import (
 	"fmt"
 	"path/filepath"
 	"strings"
 
-	"github.com/osteele/gojekyll/collections"
+	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
@@ -17,7 +17,7 @@ import (
 // Site is a Jekyll site.
 type Site struct {
 	ConfigFile  *string
-	Collections []*collections.Collection
+	Collections []*collection.Collection
 	// Variables   map[string]interface{}
 	Routes map[string]pages.Document // URL path -> Page, only for output pages
 
@@ -53,7 +53,7 @@ func (s *Site) OutputPages() []pages.Document {
 // Pages returns all the pages, output or not.
 func (s *Site) Pages() []pages.Document { return s.docs }
 
-// AbsDir is in the collections.Site interface.
+// AbsDir is in the collection.Site interface.
 func (s *Site) AbsDir() string {
 	d, err := filepath.Abs(s.SourceDir())
 	if err != nil {
@@ -62,7 +62,7 @@ func (s *Site) AbsDir() string {
 	return d
 }
 
-// Config is in the collections.Site interface.
+// Config is in the collection.Site interface.
 func (s *Site) Config() *config.Config {
 	return &s.config
 }
@@ -75,8 +75,8 @@ func (s *Site) Site() interface{} {
 // PathPrefix is in the page.Container interface.
 func (s *Site) PathPrefix() string { return "" }
 
-// NewSite creates a new site record, initialized with the site defaults.
-func NewSite(flags config.Flags) *Site {
+// New creates a new site record, initialized with the site defaults.
+func New(flags config.Flags) *Site {
 	s := &Site{config: config.Default(), flags: flags}
 	s.config.ApplyFlags(flags)
 	return s

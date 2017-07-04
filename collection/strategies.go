@@ -1,4 +1,4 @@
-package collections
+package collection
 
 import (
 	"time"
@@ -7,7 +7,7 @@ import (
 )
 
 // A collectionStrategy encapsulates behavior differences between the _post
-// collection and other collections.
+// collection and other collection.
 type collectionStrategy interface {
 	addDate(filename string, fm map[string]interface{})
 	collectible(filename string) bool

@@ -1,4 +1,4 @@
-package collections
+package collection
 
 import (
 	"github.com/osteele/gojekyll/pages"

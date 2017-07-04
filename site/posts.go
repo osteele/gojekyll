@@ -1,11 +1,11 @@
-package sites
+package site
 
 import (
-	"github.com/osteele/gojekyll/collections"
+	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/pages"
 )
 
-func (s *Site) findPostCollection() *collections.Collection {
+func (s *Site) findPostCollection() *collection.Collection {
 	for _, c := range s.Collections {
 		if c.Name == "posts" {
 			return c

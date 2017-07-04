@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/jaschaephraim/lrserver"
-	"github.com/osteele/gojekyll/sites"
+	"github.com/osteele/gojekyll/site"
 	"github.com/pkg/browser"
 )
 
 // Server serves the site on HTTP.
 type Server struct {
-	Site *sites.Site
+	Site *site.Site
 	mu   sync.Mutex
 	lr   *lrserver.Server
 }

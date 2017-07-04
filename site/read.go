@@ -1,19 +1,19 @@
-package sites
+package site
 
 import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/collections"
+	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 )
 
-// NewSiteFromDirectory reads the configuration file, if it exists.
-func NewSiteFromDirectory(source string, flags config.Flags) (*Site, error) {
-	s := NewSite(flags)
+// FromDirectory reads the configuration file, if it exists.
+func FromDirectory(source string, flags config.Flags) (*Site, error) {
+	s := New(flags)
 	configPath := filepath.Join(source, "_config.yml")
 	bytes, err := ioutil.ReadFile(configPath)
 	switch {
@@ -44,7 +44,7 @@ func (s *Site) Load() error {
 // Reload reloads the config file and pages.
 // If there's an error loading the config file, it has no effect.
 func (s *Site) Reload() error {
-	copy, err := NewSiteFromDirectory(s.SourceDir(), s.flags)
+	copy, err := FromDirectory(s.SourceDir(), s.flags)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (s *Site) Reload() error {
 	return s.Load()
 }
 
-// readFiles scans the source directory and creates pages and collections.
+// readFiles scans the source directory and creates pages and collection.
 func (s *Site) readFiles() error {
 	s.Routes = make(map[string]pages.Document)
 
@@ -97,7 +97,7 @@ func (s *Site) AddDocument(p pages.Document, output bool) {
 // It adds each collection's pages to the site map, and creates a template site variable for each collection.
 func (s *Site) ReadCollections() error {
 	for name, data := range s.config.Collections {
-		c := collections.NewCollection(s, name, data)
+		c := collection.New(s, name, data)
 		s.Collections = append(s.Collections, c)
 		if err := c.ReadPages(); err != nil {
 			return err

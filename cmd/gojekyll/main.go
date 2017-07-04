@@ -6,13 +6,13 @@ import (
 	"runtime/pprof"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/sites"
+	"github.com/osteele/gojekyll/site"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Command-line options
 var (
-	buildOptions sites.BuildOptions
+	buildOptions site.BuildOptions
 	configFlags  = config.Flags{}
 	profile      = false
 	quiet        = false
@@ -102,8 +102,8 @@ func run(cmd string) error { // nolint: gocyclo
 }
 
 // Load the site, and print the common banner settings.
-func loadSite(source string, flags config.Flags) (*sites.Site, error) {
-	site, err := sites.NewSiteFromDirectory(source, flags)
+func loadSite(source string, flags config.Flags) (*site.Site, error) {
+	site, err := site.FromDirectory(source, flags)
 	if err != nil {
 		return nil, err
 	}

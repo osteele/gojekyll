@@ -1,4 +1,4 @@
-package collections
+package collection
 
 import (
 	"path/filepath"
@@ -24,8 +24,8 @@ type Site interface {
 	OutputExt(pathname string) string
 }
 
-// NewCollection creates a new Collection
-func NewCollection(s Site, name string, metadata map[string]interface{}) *Collection {
+// New creates a new Collection
+func New(s Site, name string, metadata map[string]interface{}) *Collection {
 	return &Collection{
 		Name:     name,
 		Metadata: metadata,

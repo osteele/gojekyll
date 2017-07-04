@@ -33,7 +33,7 @@ install: ## compile and install the executable
 	go install ${LDFLAGS} ${PACKAGE}/cmd/gojekyll
 
 lint: ## lint the package
-	gometalinter ./...
+	gometalinter ./... --disable=gotype
 
 test: ## test the package
 	go test ./...
