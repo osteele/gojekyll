@@ -1,11 +1,13 @@
 # Contributing
 
-Refer to the [Liquid contribution guidelines](https://github.com/Shopify/liquid/blob/master/CONTRIBUTING.md).
+Here's some ways to help:
 
-In addition to those checklists, I also won't merge:
+* Try it on your site. Use this as fodder for test cases.
+* Pick an un-checked item from [Status](https://github.com/osteele/gojekyll#feature-status). Let me know you want to work on it – I have ideas for some of these.
+* Search the source for FIXME and TODO.
+* Improve the [code coverage](https://coveralls.io/github/osteele/gojekyll?branch=master).
 
-- [ ] Performance improvements that don't include a benchmark.
-- [ ] Meager (<3%) performance improvements that increase code verbosity or complexity.
+If you choose to contribute code, please review the [pull request template](https://github.com/osteele/liquid/blob/master/.github/PULL_REQUEST_TEMPLATE.md) before you get too far along.
 
 ## Developer Cookbook
 
