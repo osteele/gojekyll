@@ -1,0 +1,5 @@
+collections:
+  coll1:
+    output: true
+  coll2:
+    output: false

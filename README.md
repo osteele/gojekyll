@@ -40,15 +40,21 @@ gojekyll help build
 ## Limitations
 
 - Missing features:
-  - themes, page tags, excerpts, plugins (except for a few listed below), pagination, math, warning mode.
-  - Site variables: `pages`, `static_files`, `html_pages`, `html_files`, `documents`, and `tags`
-  - Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`.
-  - See the [Liquid README](https://github.com/osteele/liquid/#status) for documentation of its limitations.
-  - Data files must be YAML. CSV and JSON data files are not supported.
+  - Themes
+  - Excerpts
+  - Pagination
+  - Math
+  - Warning mode
+  - Plugins, except `jekyll-avatar` and `jekyll-gist`
+  - Site variables: `html_pages`, `html_files`, and `tags`
+  - Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+  - Some Liquid features. See [Go Liquid README](https://github.com/osteele/liquid/#status).
+  - CSV and JSON data files.
 - `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge. Also, I don't know what will happen if Pygments isn't installed.
 - `<div markdown=1>` doesn't work. I think this is a limitation of the Blackfriday Markdown processor.
-- This is a new code base. It probably panics or otherwise fails on a lot of legitimate constructs, and misbehaves on others.
+- This is a very new code base. It probably panics or otherwise fails on a lot of legitimate constructs, and misbehaves on others.
 - Liquid errors aren't reported very nicely.
+- `build` with no `-d` option resolves the destination relative to the source directory, not the current directory.
 
 ## Other Differences
 
@@ -58,8 +64,7 @@ These will probably not change.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
 - The server reloads the `_config.yml` (and the rest of the site) when that file changes.
-- `build` with no `-d` option resolves the destination relative to the source directory, not the current directory.
-- Some plugins are built into the executable. Others may be added. There's no an extensible plugin mechanism in the near-to-medium future.
+- An extensible plugin mechanism. Emulations of commonly-used plugins can be added to the repo.
 
 ## Timings
 

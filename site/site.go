@@ -19,7 +19,7 @@ import (
 type Site struct {
 	ConfigFile  *string
 	Collections []*collection.Collection
-	Routes map[string]pages.Document // URL path -> Page, only for output pages
+	Routes      map[string]pages.Document // URL path -> Document, only for output pages
 
 	config           config.Config
 	data             map[string]interface{}
@@ -27,7 +27,7 @@ type Site struct {
 	pipeline         *pipelines.Pipeline
 	docs             []pages.Document // all documents, whether or not they are output
 	preparedToRender bool
-	drop             map[string]interface{}  // cached drop value
+	drop             map[string]interface{} // cached drop value
 	sync.Mutex
 }
 
@@ -51,8 +51,25 @@ func (s *Site) OutputPages() []pages.Document {
 	return out
 }
 
+// StaticFiles returns a list of static files.
+func (s *Site) StaticFiles() (out []*pages.StaticFile) {
+	for _, d := range s.docs {
+		if sd, ok := d.(*pages.StaticFile); ok {
+			out = append(out, sd)
+		}
+	}
+	return
+}
+
 // Pages returns all the pages, output or not.
-func (s *Site) Pages() []pages.Document { return s.docs }
+func (s *Site) Pages() (out []pages.Page) {
+	for _, d := range s.docs {
+		if p, ok := d.(pages.Page); ok {
+			out = append(out, p)
+		}
+	}
+	return
+}
 
 // AbsDir is in the collection.Site interface.
 func (s *Site) AbsDir() string {

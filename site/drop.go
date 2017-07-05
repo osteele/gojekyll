@@ -29,10 +29,13 @@ func (s *Site) MarshalYAML() (interface{}, error) {
 
 func (s *Site) initializeDrop() {
 	vars := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
-		"data": s.data,
+		"data":      s.data,
+		"documents": s.docs,
 		// "collections": s.computeCollections(), // generics.MustConvert(s.config.Collections, reflect.TypeOf([]interface{}{})),
 		// TODO read time from _config, if it's available
-		"time": time.Now(),
+		"time":         time.Now(),
+		"pages":        s.Pages(),
+		"static_files": s.StaticFiles(),
 		// TODO pages, static_files, html_pages, html_files, documents, tags.TAG
 	})
 	collections := []interface{}{}

@@ -8,8 +8,15 @@ import (
 	"github.com/osteele/gojekyll/templates"
 )
 
-// ToLiquid returns the attributes of the template page object.
-// See https://jekyllrb.com/docs/variables/#page-variables
+// ToLiquid is part of the liquid.Drop interface.
+func (d *StaticFile) ToLiquid() interface{} {
+	return map[string]interface{}{
+		"path":          d.Path(), // TODO is this the absolute or relative path?
+		"modified_time": d.fileModTime,
+		"extname":       d.OutputExt(),
+	}
+}
+
 func (f *file) ToLiquid() interface{} {
 	var (
 		relpath = "/" + filepath.ToSlash(f.relpath)

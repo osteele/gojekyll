@@ -209,6 +209,7 @@ func sortFilter(array []interface{}, key interface{}, nilFirst interface{}) []in
 	if key == nil {
 		evaluator.Sort(out)
 	} else {
+		// TODO error if key is not a string
 		evaluator.SortByProperty(out, key.(string), nf)
 	}
 	return out
