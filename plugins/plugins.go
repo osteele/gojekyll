@@ -43,14 +43,18 @@ func init() {
 		return nil
 	})
 
+	registerPlugin("jekyll-seo-tag", func(ctx PluginContext, h pluginHelper) error {
+		h.stubbed()
+		h.tag("seo", h.makeUnimplementedTag())
+		return nil
+	})
+
+	// the following plugins are always active
 	// no warning but effect; the server runs in this mode anyway
 	registerPlugin("jekyll-live-reload", func(ctx PluginContext, h pluginHelper) error {
 		return nil
 	})
-
-	registerPlugin("jekyll-seo-tag", func(ctx PluginContext, h pluginHelper) error {
-		h.stubbed()
-		h.tag("seo", h.makeUnimplementedTag())
+	registerPlugin("jekyll-sass-converter", func(ctx PluginContext, h pluginHelper) error {
 		return nil
 	})
 }
