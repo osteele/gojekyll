@@ -26,35 +26,32 @@ Gojekyll is a re-implementation of the [Jekyll](https://jekyllrb.com) static sit
 
 1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier than the linked instructions.
 2. `go get -u osteele/gojekyll/cmd/gojekyll`
-3. You need Pygments in order use the `{% highlight %}` tag: `pip install Pygments`.
+3. To use the `{% highlight %}` tag, ou need Pygments. `pip install Pygments`.
 
 ## Usage
 
 ```bash
-gojekyll build
-gojekyll serve
+gojekyll build       # builds the site in the current directory into _site
+gojekyll serve       # serve the app at http://localhost:8080
 gojekyll help
 gojekyll help build
 ```
 
 ## Limitations
 
-- Missing features:
-  - Themes
-  - Excerpts
-  - Pagination
-  - Math
-  - Warning mode
-  - Plugins, except `jekyll-avatar` and `jekyll-gist`
-  - Site variables: `html_pages`, `html_files`, and `tags`
-  - Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
-  - Some Liquid features. See [Go Liquid README](https://github.com/osteele/liquid/#status).
-  - CSV and JSON data files.
-- `{% highlight %}` uses Pygments. There's no way to tell it to use Rouge. Also, I don't know what will happen if Pygments isn't installed.
-- `<div markdown=1>` doesn't work. I think this is a limitation of the Blackfriday Markdown processor.
-- This is a very new code base. It probably panics or otherwise fails on a lot of legitimate constructs, and misbehaves on others.
-- Liquid errors aren't reported very nicely.
-- `build` with no `-d` option resolves the destination relative to the source directory, not the current directory.
+Major missing features:
+- Themes
+- Excerpts
+- Pagination
+- Math
+- Plugins, except `jekyll-avatar` and `jekyll-gist`
+- Site variables: `html_pages`, `html_files`, and `tags`
+- CSV and JSON data files.
+- Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+
+The [feature parity](https://github.com/osteele/gojekyll/projects/1) board gives a more complete list of differences between gojekyll and Jekyll.
+
+Also see the [Go Liquid README](https://github.com/osteele/liquid/#status) for a current list of limitations in the Liquid engine.
 
 ## Other Differences
 
