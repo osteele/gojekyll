@@ -4,11 +4,8 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 BINARY = gojekyll
 PACKAGE = github.com/osteele/gojekyll
 COMMIT_HASH = `git rev-parse --short HEAD 2>/dev/null`
-BUILD_TIME = `date +%FT%T%z`
 
-VERSION=0.0.0
-
-LDFLAGS=-ldflags "-X ${PACKAGE}.Version=${VERSION} -X ${PACKAGE}.BuildTime=${BUILD_TIME}"
+LDFLAGS=-ldflags "-X ${PACKAGE}.Version=${COMMIT_HASH}"
 
 .DEFAULT_GOAL: $(BINARY)
 .PHONY: build clean dependencies setup install lint test help

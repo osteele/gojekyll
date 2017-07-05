@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime/pprof"
 
+	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/site"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -19,12 +21,13 @@ var (
 )
 
 var (
-	app    = kingpin.New("gojekyll", "a (somewhat) Jekyll-compatible blog generator")
-	source = app.Flag("source", "Source directory").Short('s').Default(".").String()
-	_      = app.Flag("destination", "Destination directory").Short('d').Action(stringVar("destination", &configFlags.Destination)).String()
-	_      = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolVar("drafts", &configFlags.Drafts)).Bool()
-	_      = app.Flag("future", "Publishes posts with a future date").Action(boolVar("future", &configFlags.Future)).Bool()
-	_      = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolVar("unpublished", &configFlags.Unpublished)).Bool()
+	app         = kingpin.New("gojekyll", "a (somewhat) Jekyll-compatible blog generator")
+	source      = app.Flag("source", "Source directory").Short('s').Default(".").String()
+	_           = app.Flag("destination", "Destination directory").Short('d').Action(stringVar("destination", &configFlags.Destination)).String()
+	_           = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolVar("drafts", &configFlags.Drafts)).Bool()
+	_           = app.Flag("future", "Publishes posts with a future date").Action(boolVar("future", &configFlags.Future)).Bool()
+	_           = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolVar("unpublished", &configFlags.Unpublished)).Bool()
+	versionFlag = app.Flag("version", "Print the name and version").Short('v').Bool()
 
 	build = app.Command("build", "Build your site").Alias("b")
 	clean = app.Command("clean", "Clean the site (removes site output) without building.")
@@ -42,9 +45,12 @@ var (
 
 	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
 	variablePath = variables.Arg("PATH", "Path, URL, site, or site...").String()
+
+	versionCmd = app.Command("version", "Print the name and version")
 )
 
 func init() {
+	app.HelpFlag.Short('h')
 	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
 	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
@@ -55,7 +61,6 @@ func main() {
 }
 
 func parseAndRun(args []string) {
-	app.HelpFlag.Short('h')
 	cmd := kingpin.MustParse(app.Parse(args))
 	if configFlags.Destination != nil {
 		dest, err := filepath.Abs(*configFlags.Destination)
@@ -68,13 +73,29 @@ func parseAndRun(args []string) {
 	if cmd == benchmark.FullCommand() {
 		profile = true
 	}
+	if *versionFlag {
+		printVersion()
+	}
 	app.FatalIfError(run(cmd), "")
+}
+
+func printVersion() {
+	fmt.Printf("gojekyll %s\n", gojekyll.Version)
 }
 
 func run(cmd string) error { // nolint: gocyclo
 	if profile {
 		setupProfiling()
 	}
+
+	switch cmd {
+	case versionCmd.FullCommand():
+		if !*versionFlag {
+			printVersion()
+		}
+		return nil
+	}
+
 	site, err := loadSite(*source, configFlags)
 	if err != nil {
 		return err
