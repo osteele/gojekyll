@@ -77,7 +77,7 @@ func (s *Site) WritePage(p pages.Document, options BuildOptions) error {
 		return helpers.CopyFileContents(to, from, 0644)
 	default:
 		return helpers.VisitCreatedFile(to, func(w io.Writer) error {
-			return p.Write(w,s)
+			return p.Write(w, s)
 		})
 	}
 }
