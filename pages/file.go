@@ -10,7 +10,7 @@ import (
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
-	"github.com/osteele/liquid/generics"
+	"github.com/osteele/liquid/evaluator"
 )
 
 // file is embedded in StaticFile and page
@@ -85,7 +85,7 @@ func sortedStringValue(field interface{}) []string {
 	case string:
 		out = strings.Fields(value)
 	case []interface{}:
-		if c, e := generics.Convert(value, reflect.TypeOf(out)); e == nil {
+		if c, e := evaluator.Convert(value, reflect.TypeOf(out)); e == nil {
 			out = c.([]string)
 		}
 	case []string:

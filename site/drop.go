@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/templates"
-	"github.com/osteele/liquid/generics"
+	"github.com/osteele/liquid/evaluator"
 )
 
 // ToLiquid returns the site variable for template evaluation.
@@ -40,7 +40,7 @@ func (s *Site) initializeDrop() {
 		vars[c.Name] = c.Pages()
 		collections = append(collections, c.ToLiquid())
 	}
-	generics.SortByProperty(collections, "label", true)
+	evaluator.SortByProperty(collections, "label", true)
 	vars["collections"] = collections
 	s.drop = vars
 	s.setPostVariables()

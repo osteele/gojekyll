@@ -13,8 +13,8 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/liquid"
+	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expression"
-	"github.com/osteele/liquid/generics"
 	"github.com/russross/blackfriday"
 )
 
@@ -47,12 +47,12 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	e.RegisterFilter("xml_escape", xml.Marshal)
 
 	e.RegisterFilter("push", func(array []interface{}, item interface{}) interface{} {
-		return append(array, generics.MustConvertItem(item, array))
+		return append(array, evaluator.MustConvertItem(item, array))
 	})
 	e.RegisterFilter("pop", unimplementedFilter("pop"))
 	e.RegisterFilter("shift", unimplementedFilter("shift"))
 	e.RegisterFilter("unshift", func(array []interface{}, item interface{}) interface{} {
-		return append([]interface{}{generics.MustConvertItem(item, array)}, array...)
+		return append([]interface{}{evaluator.MustConvertItem(item, array)}, array...)
 	})
 
 	// dates
@@ -207,9 +207,9 @@ func sortFilter(array []interface{}, key interface{}, nilFirst interface{}) []in
 	out := make([]interface{}, len(array))
 	copy(out, array)
 	if key == nil {
-		generics.Sort(out)
+		evaluator.Sort(out)
 	} else {
-		generics.SortByProperty(out, key.(string), nf)
+		evaluator.SortByProperty(out, key.(string), nf)
 	}
 	return out
 }

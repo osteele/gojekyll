@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/templates"
-	"github.com/osteele/liquid/generics"
+	"github.com/osteele/liquid/evaluator"
 )
 
 type page struct {
@@ -61,7 +61,7 @@ func (p *page) PostDate() time.Time {
 	case time.Time:
 		return value
 	case string:
-		t, err := generics.ParseTime(value)
+		t, err := evaluator.ParseTime(value)
 		if err == nil {
 			return t
 		}
