@@ -77,6 +77,8 @@ These will probably not change.
 | gojekyll   | single-threaded; warm cache | 0.61s  |
 | gojekyll   | multi-threaded              | 0.34s  |
 
+This isn't a fair comparison but Gojekyll doesn't use all the plugins that Jekyll does. In particular, `jekyll-mentions` parses each page's HTML. This could slow Gojekyll down once it's added.
+
 There's currently no way to disable concurrency or the cache. They were switched off by re-building the executable to produce these timings.
 
 In the multi-threaded case, whether the cache is warm or cold doesn't seem to matter.
