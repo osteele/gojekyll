@@ -14,10 +14,8 @@ Gojekyll is a re-implementation of the [Jekyll](https://jekyllrb.com) static sit
     - [Limitations](#limitations)
     - [Other Differences](#other-differences)
     - [Timings](#timings)
-        - [Feature Status](#feature-status)
+    - [Feature Status](#feature-status)
     - [Contributing](#contributing)
-        - [Testing](#testing)
-        - [Profiling](#profiling)
     - [Credits](#credits)
     - [Related](#related)
     - [License](#license)
@@ -67,18 +65,20 @@ These will probably not change.
 
 `[go]jekyll -s jekyll/docs build` on a late-2015 MacBook Pro, running current versions of everything as of 2017-07-01.
 
-| Executable | Options                              | Time   |
-|------------|--------------------------------------|--------|
-| jekyll     |                                      | 18.53s |
-| gojekyll   | single-threaded; cold cache          | 6.85s  |
-| gojekyll   | single-threaded; warm cache          | 0.61s  |
-| gojekyll   | multi-threaded; cache doesn't matter | 0.34s  |
+| Executable | Options                     | Time   |
+|------------|-----------------------------|--------|
+| jekyll     |                             | 18.53s |
+| gojekyll   | single-threaded; cold cache | 6.85s  |
+| gojekyll   | single-threaded; warm cache | 0.61s  |
+| gojekyll   | multi-threaded              | 0.34s  |
 
-[There's currently no way to disable concurrency or the cache. They were switched off by re-building the executable to produce these timings.]
+There's currently no way to disable concurrency or the cache. They were switched off by re-building the executable to produce these timings.
+
+In the multi-threaded case, whether the cache is warm or cold doesn't seem to matter.
 
 The cache is for calls to Pygments (via the `highlight` tag). For another site, SASS is greater overhead. This is another candidate for caching, but with multi-threading it may not matter.
 
-### Feature Status
+## Feature Status
 
 - [ ] Content
   - [x] Front Matter
@@ -143,32 +143,8 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
 
 ## Contributing
 
-Install package dependencies and development tools:
-
-```bash
-make install_dev_tools
-go get -t ./...
-```
-
-### Testing
-
-```bash
-make test
-make lint
-gojekyll  -s path/to/site render index.md      # render a file to stdout
-gojekyll  -s path/to/site render /             # render a URL to stdout
-gojekyll  -s path/to/site variables /          # print a file or URL's variables
-./scripts/coverage && go tool cover -html=coverage.out
-```
-
-`./scripts/gojekyll` is an alternative to the `gojekyll` executable, that uses `go run` each time it's invoked.
-
-### Profiling
-
-```bash
-gojekyll -s path/to/site profile
-go tool pprof gojekyll gojekyll.prof
-```
+Bug reports, test cases, and code contributions are more than welcome.
+Please refer to the [contribution guidelines](./CONTRIBUTING.md).
 
 ## Credits
 
