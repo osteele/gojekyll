@@ -42,14 +42,14 @@ func (s *Site) Load() error {
 }
 
 // Reload reloads the config file and pages.
+// It returns a copy.
 // If there's an error loading the config file, it has no effect.
-func (s *Site) Reload() error {
+func (s *Site) Reload() (*Site, error) {
 	copy, err := FromDirectory(s.SourceDir(), s.flags)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	*s = *copy
-	return s.Load()
+	return copy, copy.Load()
 }
 
 // readFiles scans the source directory and creates pages and collection.

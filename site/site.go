@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
@@ -18,7 +19,6 @@ import (
 type Site struct {
 	ConfigFile  *string
 	Collections []*collection.Collection
-	// Variables   map[string]interface{}
 	Routes map[string]pages.Document // URL path -> Page, only for output pages
 
 	config           config.Config
@@ -27,7 +27,8 @@ type Site struct {
 	pipeline         *pipelines.Pipeline
 	docs             []pages.Document // all documents, whether or not they are output
 	preparedToRender bool
-	drop             map[string]interface{}
+	drop             map[string]interface{}  // cached drop value
+	sync.Mutex
 }
 
 // SourceDir returns the site source directory.

@@ -87,10 +87,12 @@ func (s *Server) reloadSite() {
 
 	start := time.Now()
 	fmt.Printf("%s Reloading site...", start.Format(time.Stamp))
-	if err := s.Site.Reload(); err != nil {
+	site, err := s.Site.Reload()
+	if err != nil {
 		fmt.Println()
 		fmt.Println(err.Error())
 	}
+	s.Site = site
 	s.Site.SetAbsoluteURL("")
 	fmt.Printf("reloaded in %.2fs\n", time.Since(start).Seconds())
 }
