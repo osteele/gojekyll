@@ -3,7 +3,7 @@
 Here's some ways to help:
 
 * Try it on your site. Use this as fodder for test cases.
-* Pick an un-checked item from [Status](https://github.com/osteele/gojekyll#feature-status). Let me know you want to work on it – I have ideas for some of these.
+* Pick an un-checked item from one of the [project boards](https://github.com/osteele/gojekyll/projects).
 * Search the source for FIXME and TODO.
 * Improve the [code coverage](https://coveralls.io/github/osteele/gojekyll?branch=master).
 
