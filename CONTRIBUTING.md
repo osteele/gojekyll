@@ -7,7 +7,7 @@ Here's some ways to help:
 * Search the source for FIXME and TODO.
 * Improve the [code coverage](https://coveralls.io/github/osteele/gojekyll?branch=master).
 
-If you choose to contribute code, please review the [pull request template](https://github.com/osteele/liquid/blob/master/.github/PULL_REQUEST_TEMPLATE.md) before you get too far along.
+If you choose to contribute code, please review the [pull request template](https://github.com/osteele/gojekyll/blob/master/.github/PULL_REQUEST_TEMPLATE.md) before you get too far along.
 
 ## Developer Cookbook
 
