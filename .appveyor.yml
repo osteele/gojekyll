@@ -6,8 +6,7 @@ environment:
   GOPATH: c:\GOPATH
 
 init:
-  - copy c:\MinGW\bin\mingw32-make.exe c:\MinGW\bin\make.exe
-  - set PATH=%GOPATH%\bin;c:\MinGW\bin;c:\go\bin;%PATH%
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
   - echo %PATH%
   - go version
   - go env
@@ -17,11 +16,4 @@ install:
   - pip install Pygments
 
 build_script:
-  - make test
-
-# Because:
-# github.com/jeffjen/datefmt
-# cc1.exe: sorry, unimplemented: 64-bit mode not compiled in
-# github.com/wellington/go-libsass/libs
-# cc1.exe: sorry, unimplemented: 64-bit mode not compiled in
-platform: x64
+  - got test ./...
