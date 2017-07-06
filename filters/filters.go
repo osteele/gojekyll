@@ -22,7 +22,7 @@ import (
 func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	// array filters
 	e.RegisterFilter("array_to_sentence_string", arrayToSentenceStringFilter)
-	// TODO neither Liquid nor Jekyll docs this, but it appears to be present
+	// TODO doc neither Liquid nor Jekyll docs this, but it appears to be present
 	e.RegisterFilter("filter", func(values []map[string]interface{}, key string) []interface{} {
 		out := []interface{}{}
 		for _, value := range values {
@@ -45,12 +45,21 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	e.RegisterFilter("where", whereFilter) // TODO test case
 	e.RegisterFilter("where_exp", whereExpFilter)
 	e.RegisterFilter("xml_escape", xml.Marshal)
-
 	e.RegisterFilter("push", func(array []interface{}, item interface{}) interface{} {
 		return append(array, evaluator.MustConvertItem(item, array))
 	})
-	e.RegisterFilter("pop", unimplementedFilter("pop"))
-	e.RegisterFilter("shift", unimplementedFilter("shift"))
+	e.RegisterFilter("pop", func(array []interface{}) interface{} {
+		if len(array) == 0 {
+			return nil
+		}
+		return array[0]
+	})
+	e.RegisterFilter("shift", func(array []interface{}) interface{} {
+		if len(array) == 0 {
+			return nil
+		}
+		return array[len(array)-1]
+	})
 	e.RegisterFilter("unshift", func(array []interface{}, item interface{}) interface{} {
 		return append([]interface{}{evaluator.MustConvertItem(item, array)}, array...)
 	})

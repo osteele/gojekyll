@@ -14,15 +14,13 @@ import (
 
 var filterTests = []struct{ in, expected string }{
 	// dates
-	// TODO date_to_xmlschema should use local timezone?
+	// FIXME date_to_xmlschema should use local timezone?
 	{`{{ time | date_to_xmlschema }}`, "2008-11-07T13:07:54+00:00"},
 	{`{{ time | date_to_rfc822 }}`, "07 Nov 08 13:07 UTC"},
 	{`{{ time | date_to_string }}`, "07 Nov 2008"},
 	{`{{ time | date_to_long_string }}`, "07 November 2008"},
 
 	// arrays
-	// TODO group_by group_by_exp sample pop shift
-	// pop and shift are challenging because they require lvalues
 	{`{{ array | array_to_sentence_string }}`, "first, second, and third"},
 	{`{{ array | sample }}`, "third"},
 
@@ -40,12 +38,11 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ site.members | where_exp: "item", "item.name contains 'Al'" | map: "name" | join }}`, "Alonzo, Alan"},
 
 	{`{{ page.tags | push: 'Spokane' | join }}`, "Seattle, Tacoma, Spokane"},
-	// {`{{ page.tags | pop }}`, "Seattle"},
-	// {`{{ page.tags | shift }}`, "Tacoma"},
+	{`{{ page.tags | pop }}`, "Seattle"},
+	{`{{ page.tags | shift }}`, "Tacoma"},
 	{`{{ page.tags | unshift: "Olympia" | join }}`, "Olympia, Seattle, Tacoma"},
 
 	// strings
-	// TODO cgi_escape uri_escape scssify smartify slugify normalize_whitespace
 	{`{{ "/assets/style.css" | relative_url }}`, "/my-baseurl/assets/style.css"},
 	{`{{ "/assets/style.css" | absolute_url }}`, "http://example.com/my-baseurl/assets/style.css"},
 	{`{{ "Markdown with _emphasis_ and *bold*." | markdownify }}`, "<p>Markdown with <em>emphasis</em> and <em>bold</em>.</p>"},
