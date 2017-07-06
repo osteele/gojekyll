@@ -11,6 +11,7 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
+	"github.com/montanaflynn/stats"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/server"
@@ -40,8 +41,8 @@ func cleanCommand(site *site.Site) error {
 
 func benchmarkCommand() (err error) {
 	startTime := time.Now()
-	times := []float64{}
-	for i := 0; time.Since(startTime) < 1*time.Second; i++ {
+	trials := []float64{}
+	for i := 0; time.Since(startTime) < 10*time.Second; i++ {
 		site, err := loadSite(*source, configFlags)
 		if err != nil {
 			return err
@@ -51,10 +52,12 @@ func benchmarkCommand() (err error) {
 			return err
 		}
 		dur := time.Since(startTime).Seconds()
-		times = append(times, dur)
+		trials = append(trials, dur)
 		logger.label("", "Run #%d; %.1fs elapsed", i+1, time.Since(commandStartTime).Seconds())
 	}
-	fmt.Printf("%d runs; %.1fs total\n", len(times), time.Since(startTime).Seconds())
+	median, _ := stats.Median(trials)
+	stddev, _ := stats.StandardDeviationSample(trials)
+	fmt.Printf("%d trials @ %.1f±%.1fs \n", len(trials), median, stddev)
 	return nil
 }
 
