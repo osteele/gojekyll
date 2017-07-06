@@ -11,7 +11,7 @@ import (
 )
 
 func highlightTag(ctx render.Context) (string, error) {
-	args, err := ctx.ParseTagArgs()
+	args, err := ctx.ExpandTagArg()
 	if err != nil {
 		return "", err
 	}

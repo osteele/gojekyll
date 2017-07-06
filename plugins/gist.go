@@ -15,7 +15,7 @@ func init() {
 }
 
 func gistTag(ctx render.Context) (string, error) {
-	argsline, err := ctx.ParseTagArgs()
+	argsline, err := ctx.ExpandTagArg()
 	if err != nil {
 		return "", err
 	}

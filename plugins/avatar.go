@@ -22,7 +22,7 @@ func avatarTag(ctx render.Context) (string, error) {
 		user string
 		size interface{} = 40
 	)
-	argsline, err := ctx.ParseTagArgs()
+	argsline, err := ctx.ExpandTagArg()
 	if err != nil {
 		return "", err
 	}
