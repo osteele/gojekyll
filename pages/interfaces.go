@@ -4,6 +4,7 @@ import (
 	"io"
 	"time"
 
+	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/liquid"
 	"gopkg.in/yaml.v2"
@@ -53,6 +54,7 @@ type RenderingContext interface {
 // Container is the document container.
 // It's either the Site or Collection that immediately contains the document.
 type Container interface {
+	Config() *config.Config
 	OutputExt(pathname string) string
 	PathPrefix() string // PathPrefix is the relative prefix, "" for the site and "_coll/" for a collection
 }

@@ -33,6 +33,9 @@ type Config struct {
 	// Plugins
 	Plugins []string
 
+	// Plugins
+	ExcerptSeparator string `yaml:"excerpt_separator"`
+
 	// Serving
 	AbsoluteURL string `yaml:"url"`
 	BaseURL     string

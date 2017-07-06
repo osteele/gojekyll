@@ -19,7 +19,7 @@ func readTestSiteDrop(t *testing.T) map[string]interface{} {
 
 // TODO test cases for collections, categories, tags, data
 
-func TestSite_ToLiquid_documents(t *testing.T) {
+func TestSite_ToLiquid(t *testing.T) {
 	drop := readTestSiteDrop(t)
 	docs, isTime := drop["documents"].([]pages.Document)
 	require.True(t, isTime, fmt.Sprintf("documents has type %T", drop["documents"]))
@@ -27,6 +27,7 @@ func TestSite_ToLiquid_documents(t *testing.T) {
 }
 func TestSite_ToLiquid_time(t *testing.T) {
 	drop := readTestSiteDrop(t)
+
 	_, ok := drop["time"].(time.Time)
 	require.True(t, ok)
 

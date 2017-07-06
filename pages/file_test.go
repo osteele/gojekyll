@@ -8,14 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type containerMock struct {
-	c      config.Config
+type containerFake struct {
+	cfg    config.Config
 	prefix string
 }
 
-func (c containerMock) OutputExt(p string) string { return filepath.Ext(p) }
-
-func (c containerMock) PathPrefix() string { return c.prefix }
+func (c containerFake) Config() *config.Config    { return &c.cfg }
+func (c containerFake) PathPrefix() string        { return c.prefix }
+func (c containerFake) OutputExt(p string) string { return filepath.Ext(p) }
 
 func TestPageCategories(t *testing.T) {
 	require.Equal(t, []string{"a", "b"}, sortedStringValue("b a"))
@@ -23,7 +23,7 @@ func TestPageCategories(t *testing.T) {
 	require.Equal(t, []string{"a", "b"}, sortedStringValue([]string{"b", "a"}))
 	require.Equal(t, []string{}, sortedStringValue(3))
 
-	c := containerMock{config.Default(), ""}
+	c := containerFake{config.Default(), ""}
 	fm := map[string]interface{}{"categories": "b a"}
 	f := file{container: c, frontMatter: fm}
 	require.Equal(t, []string{"a", "b"}, f.Categories())

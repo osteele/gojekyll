@@ -44,6 +44,9 @@ strict_front_matter: false
 # Plugins
 plugins:   []
 
+# Conversion
+excerpt_separator: "\n\n"
+
 # Outputting
 permalink:     date
 paginate_path: /page:num

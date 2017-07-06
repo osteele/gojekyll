@@ -36,7 +36,7 @@ var collectionTests = []pathTest{
 
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
-		c = containerMock{config.Default(), ""}
+		c = containerFake{config.Default(), ""}
 		d = map[string]interface{}{
 			"categories": "b a",
 		}
@@ -68,7 +68,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 
 	runTests(tests)
 
-	c = containerMock{config.Default(), "_c/"}
+	c = containerFake{config.Default(), "_c/"}
 	d["collection"] = "c"
 	runTests(collectionTests)
 

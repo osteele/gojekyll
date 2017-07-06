@@ -34,14 +34,19 @@ func New(s Site, name string, metadata map[string]interface{}) *Collection {
 	}
 }
 
-// OutputExt is in the page.Container interface.
-func (c *Collection) OutputExt(pathname string) string {
-	return c.site.OutputExt(pathname)
-}
-
 // AbsDir is in the page.Container interface.
 func (c *Collection) AbsDir() string {
 	return filepath.Join(c.config.SourceDir(), c.PathPrefix())
+}
+
+// Config is in the page.Container interface.
+func (c *Collection) Config() *config.Config {
+	return c.config
+}
+
+// OutputExt is in the page.Container interface.
+func (c *Collection) OutputExt(pathname string) string {
+	return c.site.OutputExt(pathname)
 }
 
 // PathPrefix is in the page.Container interface.

@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"bytes"
+	"fmt"
 	"path"
 	"path/filepath"
 
@@ -40,11 +42,27 @@ func (p *page) ToLiquid() interface{} {
 		ext     = filepath.Ext(relpath)
 		root    = helpers.TrimExt(p.relpath)
 		base    = filepath.Base(root)
+		content = p.raw
+		excerpt string
 	)
-
+	if p.content != nil {
+		content = *p.content
+	}
+	content = bytes.TrimSpace(content)
+	if ei, ok := p.frontMatter["excerpt"]; ok {
+		excerpt = fmt.Sprint(ei)
+	} else {
+		pos := bytes.Index(content, []byte(p.container.Config().ExcerptSeparator))
+		if pos < 0 {
+			pos = len(content)
+		}
+		excerpt = string(content[:pos])
+	}
 	data := map[string]interface{}{
-		"path": relpath,
-		"url":  p.Permalink(),
+		"content": string(content),
+		"excerpt": excerpt,
+		"path":    relpath,
+		"url":     p.Permalink(),
 		// TODO output
 
 		// not documented, but present in both collection and non-collection pages
@@ -79,10 +97,6 @@ func (p *page) ToLiquid() interface{} {
 		default:
 			data[k] = v
 		}
-	}
-	if p.content != nil {
-		data["content"] = string(*p.content)
-		// TODO excerpt
 	}
 	return data
 }
