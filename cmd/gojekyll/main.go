@@ -33,7 +33,7 @@ var (
 	build = app.Command("build", "Build your site").Alias("b")
 	clean = app.Command("clean", "Clean the site (removes site output) without building.")
 
-	benchmark = app.Command("profile", "Repeat build for ten seconds. Implies --profile.")
+	benchmark = app.Command("benchmark", "Repeat build for ten seconds. Implies --profile.")
 
 	render     = app.Command("render", "Render a file or URL path to standard output")
 	renderPath = render.Arg("PATH", "Path or URL").String()
