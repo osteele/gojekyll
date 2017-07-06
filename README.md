@@ -1,8 +1,6 @@
 # Gojekyll
 
-[![Build Status](https://travis-ci.org/osteele/gojekyll.svg?branch=master)](https://travis-ci.org/osteele/gojekyll)
-[![Go Report Card](https://goreportcard.com/badge/github.com/osteele/gojekyll)](https://goreportcard.com/report/github.com/osteele/gojekyll)
-[![Coverage Status](https://coveralls.io/repos/github/osteele/gojekyll/badge.svg?branch=master)](https://coveralls.io/github/osteele/gojekyll?branch=master)
+ [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
 
 Gojekyll is a re-implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
 
@@ -24,9 +22,15 @@ Gojekyll is a re-implementation of the [Jekyll](https://jekyllrb.com) static sit
 
 ## Installation
 
+First-time install:
+
 1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier than the linked instructions.
-2. `go get -u osteele/gojekyll/cmd/gojekyll`
-3. To use the `{% highlight %}` tag, ou need Pygments. `pip install Pygments`.
+2. `go get osteele/gojekyll/cmd/gojekyll`
+3. To use the `{% highlight %}` tag, you need Pygments. `pip install Pygments`.
+
+Update to the latest version:
+
+* `go get -u github.com/osteele/liquid github.com/osteele/gojekyll/cmd/gojekyll`
 
 ## Usage
 
@@ -182,3 +186,15 @@ The gopher image in the `testdata` directory is from [Wikimedia Commons](https:/
 ## License
 
 MIT
+
+[coveralls-url]: https://coveralls.io/r/osteele/gojekyll
+[coveralls-svg]: https://img.shields.io/coveralls/osteele/gojekyll.svg?branch=master
+
+[license-url]: https://github.com/osteele/gojekyll/blob/master/LICENSE
+[license-svg]: https://img.shields.io/badge/license-MIT-blue.svg
+
+[go-report-card-url]: https://goreportcard.com/report/github.com/osteele/gojekyll
+[go-report-card-svg]:  https://goreportcard.com/badge/github.com/osteele/gojekyll
+
+[travis-url]: https://travis-ci.org/osteele/gojekyll
+[travis-svg]: https://img.shields.io/travis/osteele/gojekyll.svg?branch=master
