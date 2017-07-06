@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime/pprof"
 
 	"github.com/osteele/gojekyll"
@@ -61,6 +62,10 @@ func main() {
 }
 
 func parseAndRun(args []string) {
+	if reflect.DeepEqual(args, []string{"--version"}) {
+		printVersion()
+		return
+	}
 	cmd := kingpin.MustParse(app.Parse(args))
 	if configFlags.Destination != nil {
 		dest, err := filepath.Abs(*configFlags.Destination)
@@ -73,9 +78,6 @@ func parseAndRun(args []string) {
 	if cmd == benchmark.FullCommand() {
 		profile = true
 	}
-	if *versionFlag {
-		printVersion()
-	}
 	app.FatalIfError(run(cmd), "")
 }
 
@@ -87,8 +89,14 @@ func run(cmd string) error { // nolint: gocyclo
 	if profile {
 		setupProfiling()
 	}
+	if *versionFlag {
+		printVersion()
+	}
 
+	// These commands run *without* loading the site
 	switch cmd {
+	case benchmark.FullCommand():
+		return benchmarkCommand()
 	case versionCmd.FullCommand():
 		if !*versionFlag {
 			printVersion()
@@ -101,9 +109,8 @@ func run(cmd string) error { // nolint: gocyclo
 		return err
 	}
 
+	// These commands run after the site is loaded
 	switch cmd {
-	case benchmark.FullCommand():
-		return benchmarkCommand(site)
 	case build.FullCommand():
 		return buildCommand(site)
 	case clean.FullCommand():

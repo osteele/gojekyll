@@ -2,11 +2,10 @@
 
 - [ ] I have searched the [issue list](https://github.com/osteele/gojekyll/issues)
 - [ ] I have read the [limitations](https://github.com/osteele/gojekyll#limitations) and [feature status](https://github.com/osteele/gojekyll#feature-status) sections of the README.
-- [ ] This is an't a Go Liquid bug. (If it is, report it [here](https://github.com/osteele/liquid/issues).] Or, I'm not sure or don't know what that means -- in which case go ahead and report it here.
 
 #### System information
 
-Liquid version: `gojekyll version`
+Liquid version: `gojekyll --version`
 Commit hash: (if version = `develop`)
 
 #### Expected behavior

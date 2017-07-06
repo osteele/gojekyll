@@ -38,22 +38,23 @@ func cleanCommand(site *site.Site) error {
 	return site.Clean(buildOptions)
 }
 
-func benchmarkCommand(site *site.Site) (err error) {
-	for i := 0; time.Since(commandStartTime) < 10*time.Second; i++ {
-		// skip this the first time, since the caller has already
-		// started the profile and loaded the site once.
-		if i > 0 {
-			site, err = loadSite(*source, configFlags)
-			if err != nil {
-				return err
-			}
+func benchmarkCommand() (err error) {
+	startTime := time.Now()
+	times := []float64{}
+	for i := 0; time.Since(startTime) < 1*time.Second; i++ {
+		site, err := loadSite(*source, configFlags)
+		if err != nil {
+			return err
 		}
 		_, err = site.Build(buildOptions)
 		if err != nil {
 			return err
 		}
+		dur := time.Since(startTime).Seconds()
+		times = append(times, dur)
 		logger.label("", "Run #%d; %.1fs elapsed", i+1, time.Since(commandStartTime).Seconds())
 	}
+	fmt.Printf("%d runs; %.1fs total\n", len(times), time.Since(startTime).Seconds())
 	return nil
 }
 
