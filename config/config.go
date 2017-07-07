@@ -37,6 +37,8 @@ type Config struct {
 	ExcerptSeparator string `yaml:"excerpt_separator"`
 
 	// Serving
+	Host        string
+	Port        int
 	AbsoluteURL string `yaml:"url"`
 	BaseURL     string
 

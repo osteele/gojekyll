@@ -23,7 +23,7 @@ var (
 
 var (
 	app         = kingpin.New("gojekyll", "a (somewhat) Jekyll-compatible blog generator")
-	source      = app.Flag("source", "Source directory").Short('s').Default(".").String()
+	source      = app.Flag("source", "Source directory").Short('s').Default(".").ExistingDir()
 	_           = app.Flag("destination", "Destination directory").Short('d').Action(stringVar("destination", &configFlags.Destination)).String()
 	_           = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolVar("drafts", &configFlags.Drafts)).Bool()
 	_           = app.Flag("future", "Publishes posts with a future date").Action(boolVar("future", &configFlags.Future)).Bool()
@@ -43,6 +43,8 @@ var (
 
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
 	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
+	_     = app.Flag("host", "Host to bind to").Short('H').Action(stringVar("host", &configFlags.Host)).String()
+	_     = serve.Flag("port", "Port to listen on").Short('P').Action(intVar("port", &configFlags.Port)).Int()
 
 	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
 	variablePath = variables.Arg("PATH", "Path, URL, site, or site...").String()

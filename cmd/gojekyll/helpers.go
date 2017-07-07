@@ -1,17 +1,33 @@
 package main
 
 import (
+	"strconv"
+
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 func boolVar(name string, ptr **bool) kingpin.Action {
 	return func(pc *kingpin.ParseContext) error {
 		value := lookupKingpinValue(name, pc)
-		option := false
-		if value != nil && *value == "true" {
-			option = true
+		if value != nil {
+			arg := *value == "true"
+			*ptr = &arg
 		}
-		*ptr = &option
+		return nil
+	}
+}
+
+func intVar(name string, ptr **int) kingpin.Action {
+	return func(pc *kingpin.ParseContext) error {
+		value := lookupKingpinValue(name, pc)
+		if value != nil {
+			n, err := strconv.Atoi(*value)
+			if err != nil {
+				panic(err)
+			}
+			arg := int(n)
+			*ptr = &arg
+		}
 		return nil
 	}
 }
@@ -20,8 +36,8 @@ func stringVar(name string, ptr **string) kingpin.Action {
 	return func(pc *kingpin.ParseContext) error {
 		value := lookupKingpinValue(name, pc)
 		if value != nil {
-			copy := *value
-			*ptr = &copy
+			arg := *value
+			*ptr = &arg
 		}
 		return nil
 	}

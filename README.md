@@ -36,7 +36,7 @@ Update to the latest version:
 
 ```bash
 gojekyll build       # builds the site in the current directory into _site
-gojekyll serve       # serve the app at http://localhost:8080
+gojekyll serve       # serve the app at http://localhost:4000
 gojekyll help
 gojekyll help build
 ```

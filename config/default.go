@@ -47,6 +47,12 @@ plugins:   []
 # Conversion
 excerpt_separator: "\n\n"
 
+# Serving
+detach:  false
+port:    4000
+host:    127.0.0.1
+baseurl: "" # does not include hostname
+
 # Outputting
 permalink:     date
 paginate_path: /page:num
