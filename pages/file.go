@@ -4,13 +4,10 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"sort"
-	"strings"
 	"time"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/templates"
-	"github.com/osteele/liquid/evaluator"
 )
 
 // file is embedded in StaticFile and page
@@ -36,7 +33,7 @@ func (f *file) SiteRelPath() string { return f.relpath }
 
 // NewFile creates a Post or StaticFile.
 func NewFile(filename string, c Container, relpath string, defaults map[string]interface{}) (Document, error) {
-	magic, err := helpers.ReadFileMagic(filename)
+	fm, err := frontmatter.FileHasFrontMatter(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +51,7 @@ func NewFile(filename string, c Container, relpath string, defaults map[string]i
 		outputExt:   c.OutputExt(relpath),
 	}
 	var p Document
-	if string(magic) == "---\n" {
+	if fm {
 		p, err = newPage(filename, fields)
 		if err != nil {
 			return nil, err
@@ -71,26 +68,10 @@ func NewFile(filename string, c Container, relpath string, defaults map[string]i
 
 // Categories is in the File interface
 func (f *file) Categories() []string {
-	return sortedStringValue(f.frontMatter["categories"])
+	return frontmatter.FrontMatter(f.frontMatter).SortedStringArray("categories")
 }
 
-// Categories is in the File interface
+// Tags is in the File interface
 func (f *file) Tags() []string {
-	return sortedStringValue(f.frontMatter["tags"])
-}
-
-func sortedStringValue(field interface{}) []string {
-	out := []string{}
-	switch value := field.(type) {
-	case string:
-		out = strings.Fields(value)
-	case []interface{}:
-		if c, e := evaluator.Convert(value, reflect.TypeOf(out)); e == nil {
-			out = c.([]string)
-		}
-	case []string:
-		out = value
-	}
-	sort.Strings(out)
-	return out
+	return frontmatter.FrontMatter(f.frontMatter).SortedStringArray("tags")
 }

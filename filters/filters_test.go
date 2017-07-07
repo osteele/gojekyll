@@ -140,7 +140,7 @@ func TestWhereExpFilter(t *testing.T) {
 	requireTemplateRender(t, tmpl, data, "34")
 }
 
-func TestWhereExpFilterObjects(t *testing.T) {
+func TestWhereExpFilter_objects(t *testing.T) {
 	var tmpl = `
 	{% assign filtered = array | where_exp: "item", "item.flag == true" %}
 	{% for item in filtered %}{{item.name}}{% endfor %}

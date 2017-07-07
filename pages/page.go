@@ -45,16 +45,6 @@ func (p *page) TemplateContext(rc RenderingContext) map[string]interface{} {
 	}
 }
 
-// // Categories is part of the Page interface.
-// func (p *page) Categories() []string {
-// 	return []string{}
-// }
-
-// Tags is part of the Page interface.
-func (p *page) Tags() []string {
-	return []string{}
-}
-
 // PostDate is part of the Page interface.
 func (p *page) PostDate() time.Time {
 	switch value := p.frontMatter["date"].(type) {
