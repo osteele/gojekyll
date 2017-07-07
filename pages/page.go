@@ -11,6 +11,18 @@ import (
 	"github.com/osteele/liquid/evaluator"
 )
 
+// Page is a document with frontmatter.
+type Page interface {
+	Document
+	// Content asks a page to compute its content.
+	// This has the side effect of causing the content to subsequently appear in the drop.
+	Content(rc RenderingContext) ([]byte, error)
+	// PostDate returns the date computed from the filename or frontmatter.
+	// It is an uncaught error to call this on a page that is not a Post.
+	// TODO Should posts have their own interface?
+	PostDate() time.Time
+}
+
 type page struct {
 	file
 	raw     []byte

@@ -3,6 +3,7 @@ package site
 import (
 	"time"
 
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/liquid/evaluator"
 )
@@ -31,12 +32,12 @@ func (s *Site) initializeDrop() {
 	vars := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data":      s.data,
 		"documents": s.docs,
-		// "collections": s.computeCollections(), // generics.MustConvert(s.config.Collections, reflect.TypeOf([]interface{}{})),
 		// TODO read time from _config, if it's available
-		"time":         time.Now(),
+		"html_pages":   s.htmlPages(),
 		"pages":        s.Pages(),
 		"static_files": s.StaticFiles(),
-		// TODO pages, static_files, html_pages, html_files, documents, tags.TAG
+		"time":         time.Now(),
+		// TODO static_files, html_files, tags.TAG
 	})
 	collections := []interface{}{}
 	for _, c := range s.Collections {
@@ -56,4 +57,13 @@ func (s *Site) setPageContent() error {
 		}
 	}
 	return nil
+}
+
+func (s *Site) htmlPages() (out []pages.Page) {
+	for _, p := range s.Pages() {
+		if p.OutputExt() == ".html" {
+			out = append(out, p)
+		}
+	}
+	return
 }
