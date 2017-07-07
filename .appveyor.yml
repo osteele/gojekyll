@@ -10,6 +10,12 @@ cache:
 
 init:
   - set PATH=C:\mingw64\bin;C:\go\bin;%GOPATH%;%PATH%
+  - go version
+  - go env
+  - set CC=gcc
+  - set CXX=g++
+
+install:
   - ps: |
       # Install MinGW.
       $url = "https://bintray.com/artifact/download/drewwells/generic/x86_64-5.1.0-release-win32-seh-rt_v4-rev0.7z"
@@ -21,12 +27,6 @@ init:
         Invoke-WebRequest -UserAgent wget -Uri $url -OutFile ming32-64.7z
         &7z x -oC:\ ming32-64.7z > $null
       }
-  - set CC=gcc
-  - set CXX=g++
-  - go version
-  - go env
-
-install:
   - go get -t ./...
   - pip install Pygments
 
