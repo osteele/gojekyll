@@ -1,20 +1,22 @@
 ## Checklist
 
-- [ ] I have searched the [issue list](https://github.com/osteele/gojekyll/issues)
-- [ ] I have read the [limitations](https://github.com/osteele/gojekyll#limitations) and [feature status](https://github.com/osteele/gojekyll#feature-status) sections of the README.
+- [ ] I have searched the [issue list](https://github.com/osteele/gojekyll/issues). This issue is not listed.
+- [ ] I have reviewed the [feature parity board](https://github.com/osteele/gojekyll/projects/1). This issue is not already represented by one of those notes.
+- [ ] I have a reproducible test case.
 
-#### System information
+## System information
 
 Liquid version: `gojekyll --version`
+
 Commit hash: (if version = `develop`)
 
-#### Expected behavior
+## Expected behavior
 
 
-#### Actual behavior
+## Actual behavior
 
 
-#### Steps to reproduce the behavior
+## Steps to reproduce the behavior
 
 Provide the first of these that is practical:
 

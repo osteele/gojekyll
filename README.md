@@ -48,14 +48,16 @@ Major missing features:
 - Excerpts
 - Pagination
 - Math
-- Plugins, except `jekyll-avatar` and `jekyll-gist`
-- Site variables: `html_pages`, `html_files`, and `tags`
+- Plugins (except `jekyll-avatar` and `jekyll-gist`)
+- `site.html_pages`, `site.html_files`, and `site.tags`
 - CSV and JSON data files.
-- Jekyll filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+- These Jekyll liquid filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
 
-The [feature parity](https://github.com/osteele/gojekyll/projects/1) board gives a more complete list of differences between gojekyll and Jekyll.
+For more detailed status:
 
-Also see the [Go Liquid README](https://github.com/osteele/liquid/#status) for a current list of limitations in the Liquid engine.
+* The [feature parity board](https://github.com/osteele/gojekyll/projects/1) board gives a more complete list of differences between gojekyll and Jekyll.
+* The [plugin board](https://github.com/osteele/gojekyll/projects/2) lists the implementation status of common plugins. (Gojekyll lacks an extensible plugin mechanism. The goal is to be able to use it to build Jekyll sites that use the most popular plugins.)
+* The [Go Liquid feature parity board](https://github.com/osteele/liquid/projects/1) to see differences between  in the Liquid engine.
 
 ## Other Differences
 

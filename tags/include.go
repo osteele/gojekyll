@@ -13,7 +13,6 @@ func (tc tagContext) includeTag(ctx render.Context) (string, error) {
 }
 
 func (tc tagContext) includeRelativeTag(ctx render.Context) (string, error) {
-	fmt.Println("include relative", ctx.SourceFile())
 	// TODO Note that you cannot use the ../ syntax
 	return includeFromDir(ctx, path.Dir(ctx.SourceFile()))
 }
