@@ -9,7 +9,7 @@ Gojekyll is a re-implementation of the [Jekyll](https://jekyllrb.com) static sit
 - [Gojekyll](#gojekyll)
     - [Installation](#installation)
     - [Usage](#usage)
-    - [Limitations](#limitations)
+    - [Current Limitations](#current-limitations)
     - [Other Differences](#other-differences)
     - [Timings](#timings)
     - [Feature Status](#feature-status)
@@ -41,23 +41,23 @@ gojekyll help
 gojekyll help build
 ```
 
-## Limitations
+## Current Limitations
 
-Major missing features:
+Missing features:
 - Themes
 - Excerpts
 - Pagination
 - Math
 - Plugins (except `jekyll-avatar` and `jekyll-gist`)
-- `site.html_pages`, `site.html_files`, and `site.tags`
-- CSV and JSON data files.
-- These Jekyll liquid filters: `group_by_exp`, `pop`, `shift`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+- `site-static_files`, `site.html_files`, and `site.tags`
+- CSV and JSON data files
+- Jekyll liquid filters: `group_by_exp`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
 
 For more detailed status:
 
-* The [feature parity board](https://github.com/osteele/gojekyll/projects/1) board gives a more complete list of differences between gojekyll and Jekyll.
-* The [plugin board](https://github.com/osteele/gojekyll/projects/2) lists the implementation status of common plugins. (Gojekyll lacks an extensible plugin mechanism. The goal is to be able to use it to build Jekyll sites that use the most popular plugins.)
-* The [Go Liquid feature parity board](https://github.com/osteele/liquid/projects/1) to see differences between  in the Liquid engine.
+- The [feature parity board](https://github.com/osteele/gojekyll/projects/1) board  lists differences between Jekyll and gojekyll in more detail.
+- The [plugin board](https://github.com/osteele/gojekyll/projects/2) lists the implementation status of common plugins. (Gojekyll lacks an extensible plugin mechanism. The goal is to be able to use it to build Jekyll sites that use the most popular plugins.)
+- The [Go Liquid feature parity board](https://github.com/osteele/liquid/projects/1) to see differences between the real Liquid library and the one that is used in gojekyll.
 
 ## Other Differences
 
@@ -66,25 +66,25 @@ These will probably not change.
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
-- The server reloads the `_config.yml` (and the rest of the site) when that file changes.
-- An extensible plugin mechanism. Emulations of commonly-used plugins can be added to the repo.
+- The server reloads the `_config.yml` too.
+- An extensible plugin mechanism: support for plugins that aren't compiled into the executable.
+- Incremental build isn't planned. The emphasis is on optimizing the non-incremental case.
 
 ## Timings
 
 `[go]jekyll -s jekyll/docs build` on a late-2015 MacBook Pro, running current versions of everything as of 2017-07-01.
 
-| Executable | Options                     | Time   |
-|------------|-----------------------------|--------|
-| jekyll     |                             | 18.53s |
-| gojekyll   | single-threaded; cold cache | 6.85s  |
-| gojekyll   | single-threaded; warm cache | 0.61s  |
-| gojekyll   | multi-threaded              | 0.34s  |
+| Executable | Options                     | Time          |
+|------------|-----------------------------|---------------|
+| jekyll     |                             | 18.53s        |
+| gojekyll   | single-threaded; cold cache | 3.31s ± 0.07s |
+| gojekyll   | single-threaded; warm cache | 2.50s ± 0.04s |
+| gojekyll   | multi-threaded              | 1.51s ± 0.01s |
+| gojekyll   | multi-threaded              | 0.80s ± 0.09s |
 
-This isn't a fair comparison but Gojekyll doesn't use all the plugins that Jekyll does. In particular, `jekyll-mentions` parses each page's HTML. This could slow Gojekyll down once it's added.
+This isn't an apples-to-ranges comparison. Gojekyll doesn't use all the plugins that Jekyll does. In particular, `jekyll-mentions` parses each page's HTML. This could slow Gojekyll down once it's added.
 
-There's currently no way to disable concurrency or the cache. They were switched off by re-building the executable to produce these timings.
-
-In the multi-threaded case, whether the cache is warm or cold doesn't seem to matter.
+There's currently no way to disable the cache. It was disabled off by re-building the executable.
 
 The cache is for calls to Pygments (via the `highlight` tag). For another site, SASS is greater overhead. This is another candidate for caching, but with multi-threading it may not matter.
 

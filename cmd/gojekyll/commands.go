@@ -41,8 +41,9 @@ func cleanCommand(site *site.Site) error {
 
 func benchmarkCommand() (err error) {
 	startTime := time.Now()
-	trials := []float64{}
+	samples := []float64{}
 	for i := 0; time.Since(startTime) < 10*time.Second; i++ {
+		sampleStart := time.Now()
 		site, err := loadSite(*source, configFlags)
 		if err != nil {
 			return err
@@ -51,13 +52,14 @@ func benchmarkCommand() (err error) {
 		if err != nil {
 			return err
 		}
-		dur := time.Since(startTime).Seconds()
-		trials = append(trials, dur)
-		logger.label("", "Run #%d; %.1fs elapsed", i+1, time.Since(commandStartTime).Seconds())
+		dur := time.Since(sampleStart).Seconds()
+		samples = append(samples, dur)
+		quiet = true
+		fmt.Printf("Run #%d; %.1fs elapsed\n", i+1, time.Since(commandStartTime).Seconds())
 	}
-	median, _ := stats.Median(trials)
-	stddev, _ := stats.StandardDeviationSample(trials)
-	fmt.Printf("%d trials @ %.1f±%.1fs \n", len(trials), median, stddev)
+	median, _ := stats.Median(samples)
+	stddev, _ := stats.StandardDeviationSample(samples)
+	fmt.Printf("%d samples @ %.2fs ± %.2fs\n", len(samples), median, stddev)
 	return nil
 }
 
