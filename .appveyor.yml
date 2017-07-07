@@ -1,12 +1,13 @@
 version: 0.0.1.{build}
 
-clone_folder: c:\GOPATH\src\github.com\osteele\gojekyll
+clone_folder: C:\GOPATH\src\github.com\osteele\gojekyll
 
 environment:
-  GOPATH: c:\GOPATH
+  GOPATH: C:\GOPATH
 
 init:
-  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
+  - set PATH=C:\mingw-w64\i686-5.3.0-posix-dwarf-rt_v4-rev0\mingw32\bin;%PATH%
+  - set PATH=%GOPATH%\bin;C:\go\bin;%PATH%
   - echo %PATH%
   - go version
   - go env
@@ -16,4 +17,6 @@ install:
   - pip install Pygments
 
 build_script:
-  - got test ./...
+  - go test ./...
+
+platform: x64
