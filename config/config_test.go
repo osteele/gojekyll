@@ -1,13 +1,14 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestSourceDir(t *testing.T) {
+func TestConfig_SourceDir(t *testing.T) {
 	c := Default()
 	require.True(t, strings.HasPrefix(c.SourceDir(), "/"))
 }
@@ -18,7 +19,7 @@ func TestDefaultConfig(t *testing.T) {
 	require.Equal(t, "_layouts", c.LayoutsDir)
 }
 
-func TestPlugins(t *testing.T) {
+func TestConfig_Plugins(t *testing.T) {
 	c := Default()
 	require.NoError(t, Unmarshal([]byte(`plugins: ['a']`), &c))
 	require.Equal(t, []string{"a"}, c.Plugins)
@@ -30,13 +31,16 @@ func TestPlugins(t *testing.T) {
 
 func TestUnmarshal(t *testing.T) {
 	c := Default()
-	err := Unmarshal([]byte(`source: x`), &c)
-	require.NoError(t, err)
+	require.NoError(t, Unmarshal([]byte(`source: x`), &c))
 	require.Equal(t, "x", c.Source)
 	require.Equal(t, "./_site", c.Destination)
+
+	c = Default()
+	require.NoError(t, Unmarshal([]byte(`collections: \n- x\n-y`), &c))
+	fmt.Println(c.Collections)
 }
 
-func TestIsMarkdown(t *testing.T) {
+func TestConfig_IsMarkdown(t *testing.T) {
 	c := Default()
 	require.True(t, c.IsMarkdown("name.md"))
 	require.True(t, c.IsMarkdown("name.markdown"))

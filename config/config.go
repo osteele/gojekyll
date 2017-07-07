@@ -14,10 +14,10 @@ type Config struct {
 	// Where things are:
 	Source      string
 	Destination string
-	LayoutsDir  string `yaml:"layouts_dir"`
-	DataDir     string `yaml:"data_dir"`
-	IncludesDir string `yaml:"includes_dir"`
-	Collections map[string]map[string]interface{}
+	LayoutsDir  string                            `yaml:"layouts_dir"`
+	DataDir     string                            `yaml:"data_dir"`
+	IncludesDir string                            `yaml:"includes_dir"`
+	Collections map[string]map[string]interface{} `yaml:"-"`
 
 	// Handling Reading
 	Include     []string
@@ -58,6 +58,14 @@ type configCompat struct {
 	Gems []string
 }
 
+type collectionsList struct {
+	Collections []string
+}
+
+type collectionsMap struct {
+	Collections map[string]map[string]interface{}
+}
+
 // SourceDir returns the source directory as an absolute path.
 func (c *Config) SourceDir() string {
 	return helpers.MustAbs(c.Source)
@@ -78,12 +86,28 @@ func (c *Config) GetFrontMatterDefaults(typename, relpath string) (m map[string]
 
 // Unmarshal updates site from a YAML configuration file.
 func Unmarshal(bytes []byte, c *Config) error {
-	compat := configCompat{}
+	var (
+		compat configCompat
+		cList  collectionsList
+		// cMap   collectionsMap
+	)
 	if err := yaml.Unmarshal(bytes, &c); err != nil {
 		return err
 	}
 	if err := yaml.Unmarshal(bytes, &c.Variables); err != nil {
 		return err
+	}
+	if err := yaml.Unmarshal(bytes, &cList); err == nil {
+		if len(c.Collections) == 0 {
+			c.Collections = make(map[string]map[string]interface{})
+		}
+		for _, name := range cList.Collections {
+			c.Collections[name] = map[string]interface{}{}
+		}
+	}
+	cMap := collectionsMap{c.Collections}
+	if err := yaml.Unmarshal(bytes, &cMap); err == nil {
+		c.Collections = cMap.Collections
 	}
 	if err := yaml.Unmarshal(bytes, &compat); err != nil {
 		return err
