@@ -75,26 +75,25 @@ func (p *page) PostDate() time.Time {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *page) Write(w io.Writer, rc RenderingContext) error {
-	rp := rc.RenderingPipeline()
-	b, err := rp.Render(w, p.raw, p.filename, p.TemplateContext(rc))
+	content, err := p.Content(rc)
 	if err != nil {
 		return err
 	}
 	layout, ok := p.frontMatter["layout"].(string)
 	if ok && layout != "" {
-		b, err = rp.ApplyLayout(layout, b, p.TemplateContext(rc))
+		rp := rc.RenderingPipeline()
+		content, err = rp.ApplyLayout(layout, content, p.TemplateContext(rc))
 		if err != nil {
 			return err
 		}
 	}
-	_, err = w.Write(b)
+	_, err = w.Write(content)
 	return err
 }
 
 // Content computes the page content.
 func (p *page) Content(rc RenderingContext) ([]byte, error) {
 	if p.content == nil {
-		// TODO DRY w/ Page.Write
 		rp := rc.RenderingPipeline()
 		buf := new(bytes.Buffer)
 		b, err := rp.Render(buf, p.raw, p.filename, p.TemplateContext(rc))
