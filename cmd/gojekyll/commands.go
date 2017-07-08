@@ -78,7 +78,7 @@ func routesCommand(site *site.Site) error {
 	}
 	sort.Strings(urls)
 	for _, u := range urls {
-		filename := site.Routes[u].SiteRelPath()
+		filename := site.Routes[u].SourcePath()
 		fmt.Printf("  %s -> %s\n", u, filename)
 	}
 	return nil
@@ -89,7 +89,7 @@ func renderCommand(site *site.Site) error {
 	if err != nil {
 		return err
 	}
-	logger.path("Render:", filepath.Join(site.SourceDir(), p.SiteRelPath()))
+	logger.path("Render:", filepath.Join(site.SourceDir(), p.SourcePath()))
 	logger.label("URL:", p.Permalink())
 	logger.label("Content:", "")
 	return site.WriteDocument(p, os.Stdout)

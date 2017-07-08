@@ -114,7 +114,7 @@ func (s *Site) SetAbsoluteURL(url string) {
 func (s *Site) FilenameURLs() map[string]string {
 	urls := map[string]string{}
 	for _, page := range s.Pages() {
-		urls[page.SiteRelPath()] = page.Permalink()
+		urls[page.SourcePath()] = page.Permalink()
 	}
 	return urls
 }
@@ -127,7 +127,7 @@ func (s *Site) KeepFile(filename string) bool {
 // FilePathPage returns a Page, give a file path relative to site source directory.
 func (s *Site) FilePathPage(relpath string) (pages.Document, bool) {
 	for _, p := range s.Routes {
-		if p.SiteRelPath() == relpath {
+		if p.SourcePath() == relpath {
 			return p, true
 		}
 	}

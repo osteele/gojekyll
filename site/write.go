@@ -54,13 +54,13 @@ func (s *Site) WritePages(options BuildOptions) (count int, err error) {
 // WritePage writes a page to the destination directory.
 // It attends to options.dry_run.
 func (s *Site) WritePage(p pages.Document, options BuildOptions) error {
-	from := filepath.Join(s.SourceDir(), filepath.ToSlash(p.SiteRelPath()))
+	from := filepath.Join(s.SourceDir(), filepath.ToSlash(p.SourcePath()))
 	to := filepath.Join(s.DestDir(), p.Permalink())
 	if !p.Static() && filepath.Ext(to) == "" {
 		to = filepath.Join(to, "index.html")
 	}
 	if options.Verbose {
-		fmt.Println("create", to, "from", p.SiteRelPath())
+		fmt.Println("create", to, "from", p.SourcePath())
 	}
 	if options.DryRun {
 		// FIXME render the page, just don't write it

@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	registerPlugin("jekyll-gist", func(_ PluginContext, h pluginHelper) error {
+	register("jekyll-gist", func(_ PluginContext, h pluginHelper) error {
 		h.tag("gist", gistTag)
 		return nil
 	})

@@ -17,6 +17,8 @@ type Page interface {
 	// Content asks a page to compute its content.
 	// This has the side effect of causing the content to subsequently appear in the drop.
 	Content(rc RenderingContext) ([]byte, error)
+	SetContent(content []byte)
+	FrontMatter() map[string]interface{}
 	// PostDate returns the date computed from the filename or frontmatter.
 	// It is an uncaught error to call this on a page that is not a Post.
 	// TODO Should posts have their own interface?
@@ -32,7 +34,7 @@ type page struct {
 // Static is in the File interface.
 func (p *page) Static() bool { return false }
 
-func newPage(filename string, f file) (*page, error) {
+func makePage(filename string, f file) (*page, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
@@ -43,10 +45,14 @@ func newPage(filename string, f file) (*page, error) {
 		return nil, err
 	}
 	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
-	return &page{
+	p := page{
 		file: f,
 		raw:  b,
-	}, nil
+	}
+	if err = p.setPermalink(); err != nil {
+		return nil, err
+	}
+	return &p, nil
 }
 
 // TemplateContext returns the local variables for template evaluation
@@ -55,6 +61,10 @@ func (p *page) TemplateContext(rc RenderingContext) map[string]interface{} {
 		"page": p,
 		"site": rc.Site(),
 	}
+}
+
+func (p *page) FrontMatter() map[string]interface{} {
+	return p.frontMatter
 }
 
 // PostDate is part of the Page interface.
@@ -103,4 +113,9 @@ func (p *page) Content(rc RenderingContext) ([]byte, error) {
 		p.content = &b
 	}
 	return *p.content, nil
+}
+
+// retains content
+func (p *page) SetContent(content []byte) {
+	p.content = &content
 }

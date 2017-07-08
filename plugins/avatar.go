@@ -9,7 +9,7 @@ import (
 )
 
 func init() {
-	registerPlugin("jekyll-avatar", func(_ PluginContext, h pluginHelper) error {
+	register("jekyll-avatar", func(_ PluginContext, h pluginHelper) error {
 		h.tag("avatar", avatarTag)
 		return nil
 	})

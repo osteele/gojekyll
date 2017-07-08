@@ -9,6 +9,7 @@ import (
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/plugins"
 )
 
 // FromDirectory reads the configuration file, if it exists.
@@ -33,12 +34,23 @@ func FromDirectory(source string, flags config.Flags) (*Site, error) {
 	return s, nil
 }
 
-// Load loads the site data and files. It doesn't load the configuration file; NewSiteFromDirectory did that.
-func (s *Site) Load() error {
+// Read loads the site data and files. It doesn't load the configuration file; NewSiteFromDirectory did that.
+func (s *Site) Read() error {
+	if err := s.readDataFiles(); err != nil {
+		return err
+	}
 	if err := s.readFiles(); err != nil {
 		return err
 	}
-	return s.readDataFiles()
+	for _, name := range s.config.Plugins {
+		plugin, ok := plugins.Find(name)
+		if ok {
+			if err := plugin.PostRead(s); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // Reload reloads the config file and pages.
@@ -49,7 +61,7 @@ func (s *Site) Reload() (*Site, error) {
 	if err != nil {
 		return nil, err
 	}
-	return copy, copy.Load()
+	return copy, copy.Read()
 }
 
 // readFiles scans the source directory and creates pages and collection.

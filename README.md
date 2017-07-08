@@ -2,7 +2,7 @@
 
  [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
 
-Gojekyll is a re-implementation of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
+Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
 
 <!-- TOC -->
 
@@ -174,6 +174,8 @@ Gojekyll uses these libraries:
 In addition to being totally and obviously inspired by Jekyll, Jekyll's *documentation* was solid and indispensible. Many of the filter test cases are taken directly from the Jekyll documentation, and during development the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
 
 The text for `gojekyll help` was taken from the output of `jekyll help`.
+
+The template for page redirections was adapted from the template in <https://github.com/jekyll/jekyll-redirect-from>.
 
 The gopher image in the `testdata` directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 

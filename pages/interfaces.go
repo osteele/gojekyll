@@ -5,18 +5,13 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pipelines"
-	"github.com/osteele/liquid"
-	"gopkg.in/yaml.v2"
 )
 
-// Document is a Jekyll page or file.
+// A Document is a Jekyll post, page, or file.
 type Document interface {
-	liquid.Drop
-	yaml.Marshaler
-
 	// Paths
-	SiteRelPath() string // relative to the site source directory
-	Permalink() string   // relative URL path
+	Permalink() string  // relative URL path
+	SourcePath() string // relative to the site source directory
 	OutputExt() string
 
 	// Output
@@ -26,9 +21,6 @@ type Document interface {
 
 	Categories() []string
 	Tags() []string
-
-	// Document initialization
-	setPermalink() error
 }
 
 // RenderingContext provides context information for rendering.

@@ -144,7 +144,7 @@ func loadSite(source string, flags config.Flags) (*site.Site, error) {
 		logger.label(configurationFileLabel, "none")
 	}
 	logger.label("Source:", site.SourceDir())
-	err = site.Load()
+	err = site.Read()
 	return site, err
 }
 

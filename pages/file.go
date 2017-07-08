@@ -25,11 +25,11 @@ func (f *file) String() string {
 	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(f).Name(), f.relpath, f.permalink)
 }
 
-func (f *file) OutputExt() string   { return f.outputExt }
-func (f *file) Path() string        { return f.relpath }
-func (f *file) Permalink() string   { return f.permalink }
-func (f *file) Published() bool     { return templates.VariableMap(f.frontMatter).Bool("published", true) }
-func (f *file) SiteRelPath() string { return f.relpath }
+func (f *file) OutputExt() string  { return f.outputExt }
+func (f *file) Path() string       { return f.relpath }
+func (f *file) Permalink() string  { return f.permalink }
+func (f *file) Published() bool    { return templates.VariableMap(f.frontMatter).Bool("published", true) }
+func (f *file) SourcePath() string { return f.relpath }
 
 // NewFile creates a Post or StaticFile.
 func NewFile(filename string, c Container, relpath string, defaults map[string]interface{}) (Document, error) {
@@ -50,16 +50,10 @@ func NewFile(filename string, c Container, relpath string, defaults map[string]i
 		relpath:     relpath,
 		outputExt:   c.OutputExt(relpath),
 	}
-	var p Document
 	if fm {
-		p, err = newPage(filename, fields)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		p = &StaticFile{fields}
+		return makePage(filename, fields)
 	}
-	// Compute this after creating the page, in order to pick up the front matter.
+	p := &StaticFile{fields}
 	if err = p.setPermalink(); err != nil {
 		return nil, err
 	}
