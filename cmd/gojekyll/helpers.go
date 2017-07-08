@@ -25,8 +25,7 @@ func intVar(name string, ptr **int) kingpin.Action {
 			if err != nil {
 				panic(err)
 			}
-			arg := int(n)
-			*ptr = &arg
+			*ptr = &n
 		}
 		return nil
 	}

@@ -156,11 +156,8 @@ func unimplementedFilter(name string) func(value interface{}) interface{} {
 	}
 }
 
-func arrayToSentenceStringFilter(array []string, conjunction interface{}) string {
-	conj, ok := conjunction.(string)
-	if !ok {
-		conj = "and "
-	}
+func arrayToSentenceStringFilter(array []string, conjunction func(string) string) string {
+	conj := conjunction("and ")
 	switch len(array) {
 	case 1:
 		return array[0]
@@ -208,11 +205,8 @@ func groupByFilter(array []map[string]interface{}, property string) []map[string
 	return out
 }
 
-func sortFilter(array []interface{}, key interface{}, nilFirst interface{}) []interface{} {
-	nf, ok := nilFirst.(bool)
-	if !ok {
-		nf = true
-	}
+func sortFilter(array []interface{}, key interface{}, nilFirst func(bool) bool) []interface{} {
+	nf := nilFirst(true)
 	out := make([]interface{}, len(array))
 	copy(out, array)
 	if key == nil {
