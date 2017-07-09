@@ -1,7 +1,6 @@
 package collection
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -23,11 +22,7 @@ func (c *Collection) ScanDirectory(dirname string) error {
 	}
 	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
-			// if the issue is simply that the directory doesn't exist, warn instead of error
 			if os.IsNotExist(err) {
-				if !c.IsPostsCollection() {
-					fmt.Printf("Missing collection directory: _%s\n", c.Name)
-				}
 				return nil
 			}
 			return err
