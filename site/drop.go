@@ -10,14 +10,13 @@ import (
 
 // ToLiquid returns the site variable for template evaluation.
 func (s *Site) ToLiquid() interface{} {
-	// double-checked lock is okay here, since it's okay if this is
-	// computed and set twice
+	if len(s.drop) > 0 {
+		return s.drop
+	}
+	s.Lock()
+	defer s.Unlock()
 	if len(s.drop) == 0 {
-		s.Lock()
-		defer s.Unlock()
-		if len(s.drop) == 0 {
-			s.initializeDrop()
-		}
+		s.initializeDrop()
 	}
 	return s.drop
 }

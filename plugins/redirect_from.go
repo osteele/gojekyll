@@ -23,7 +23,6 @@ func init() {
 	redirectTemplate = tmpl
 }
 
-
 func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
 	redirections := []pages.Document{}
 	for _, p := range site.Pages() {

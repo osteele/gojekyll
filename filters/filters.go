@@ -261,4 +261,3 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 	}
 	return out
 }
-

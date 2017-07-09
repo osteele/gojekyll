@@ -106,16 +106,17 @@ func (p *page) Write(w io.Writer, rc RenderingContext) error {
 
 // Content computes the page content.
 func (p *page) Content(rc RenderingContext) ([]byte, error) {
-	if p.content == nil {
-		rp := rc.RenderingPipeline()
-		buf := new(bytes.Buffer)
-		b, err := rp.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext(rc))
-		if err != nil {
-			return nil, err
-		}
-		p.content = &b
+	if p.content != nil {
+		return *p.content, nil
 	}
-	return *p.content, nil
+	rp := rc.RenderingPipeline()
+	buf := new(bytes.Buffer)
+	b, err := rp.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext(rc))
+	if err != nil {
+		return nil, err
+	}
+	p.content = &b
+	return b, nil
 }
 
 // retains content
