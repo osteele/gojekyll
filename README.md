@@ -72,6 +72,7 @@ Missing features:
 - Template filters `group_by_exp`, `cgi_escape`, `uri_escape`, and `scssify`
 - More Liquid tags and filters, listed [here](https://github.com/osteele/liquid#differences-from-liquid).
 - Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [automatic ids](https://kramdown.gettalong.org/converter/html.html#auto-ids), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
+- `site.data` is not sorted.
 - Windows compatibility
 
 Also see the [detailed status](#feature-status) below.
@@ -183,19 +184,20 @@ Gojekyll uses these libraries:
 
 | Package                                                                        | Author(s)                                              | Description                                           | License                           |
 |--------------------------------------------------------------------------------|--------------------------------------------------------|-------------------------------------------------------|-----------------------------------|
-| [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim                                         | Live Reload server                                    | MIT                               |
-| [github.com/osteele/liquid](https://github.com/osteele/liquid)                 | yours truly                                            | Liquid processor                                      | MIT                               |
+| [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim                                         | Live Reload server                                    | MIT License                       |
+| [github.com/osteele/liquid](https://github.com/osteele/liquid)                 | yours truly                                            | Liquid processor                                      | MIT License                       |
+| [github.com/kyokomi/emoji](https://github.com/kyokomi/emoji)                   | kyokomi                                                | `jemoji` plugin emulation                             | MIT License                       |
 | [github.com/pkg/browser](https://github.com/pkg/browser)                       | [pkg](https://github.com/pkg)                          | The `serve -o` option to open the site in the browser | BSD 2-clause "Simplified" License |
 | [github.com/russross/blackfriday](https://github.com/russross/blackfriday)     | Russ Ross                                              | Markdown processor                                    | Simplified BSD License            |
-| [github.com/sass/libsass](https://github.com/sass/libsass)                     | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler                      | MIT                               |
+| [github.com/sass/libsass](https://github.com/sass/libsass)                     | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler                      | MIT License                       |
 | [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass)   | Drew Wells                                             | Go bindings for **libsass**                           | ???                               |
-| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command line and flag parser                          | MIT                               |
+| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command line and flag parser                          | MIT License                       |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                                          | Apache License 2.0                |
 
 In addition, the following pieces of text were taken from Jekyll and its plugins.
 They are used under the terms of the MIT License.
 
-| Source                                                                          | Used                 | Description            |
+| Source                                                                          | Use                  | Description            |
 |---------------------------------------------------------------------------------|----------------------|------------------------|
 | `jekyll help` command                                                           | `gojekyll help` text | help text              |
 | [Jekyll template documentation](https://jekyllrb.com/docs/templates/)           | test cases           | filter examples        |

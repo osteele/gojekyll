@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/kyokomi/emoji"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
@@ -66,6 +67,7 @@ func register(name string, p Plugin) {
 }
 
 func init() {
+	register("jemoji", jekyllJemojiPlugin{})
 	register("jekyll-mentions", jekyllMentionsPlugin{})
 	register("jekyll-seo-tag", jekyllSEOTagPlugin{})
 
@@ -74,6 +76,21 @@ func init() {
 	register("jekyll-live-reload", plugin{})
 	register("jekyll-sass-converter", plugin{})
 }
+
+// Some small plugins are below. More involved plugins are in separate files.
+
+// jekyll-jemoji
+
+type jekyllJemojiPlugin struct{ plugin }
+
+func (p jekyllJemojiPlugin) PostRender(b []byte) []byte {
+	return helpers.ApplyToHTMLText(b, func(s string) string {
+		s = emoji.Sprint(s)
+		return s
+	})
+}
+
+// jekyll-mentions
 
 type jekyllMentionsPlugin struct{ plugin }
 
@@ -85,6 +102,8 @@ func (p jekyllMentionsPlugin) PostRender(b []byte) []byte {
 	})
 }
 
+// jekyll-seo
+
 type jekyllSEOTagPlugin struct{ plugin }
 
 func (p jekyllSEOTagPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
@@ -92,6 +111,8 @@ func (p jekyllSEOTagPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
 	e.RegisterTag("seo", p.makeUnimplementedTag("jekyll-seo-tag"))
 	return nil
 }
+
+// helpers
 
 func (p plugin) stubbed(name string) {
 	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", name)
