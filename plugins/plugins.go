@@ -11,8 +11,8 @@ import (
 
 	"github.com/kyokomi/emoji"
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
@@ -84,7 +84,7 @@ func init() {
 type jekyllJemojiPlugin struct{ plugin }
 
 func (p jekyllJemojiPlugin) PostRender(b []byte) []byte {
-	return helpers.ApplyToHTMLText(b, func(s string) string {
+	return utils.ApplyToHTMLText(b, func(s string) string {
 		s = emoji.Sprint(s)
 		return s
 	})
@@ -97,7 +97,7 @@ type jekyllMentionsPlugin struct{ plugin }
 var mentionPattern = regexp.MustCompile(`@(\w+)`)
 
 func (p jekyllMentionsPlugin) PostRender(b []byte) []byte {
-	return helpers.ApplyToHTMLText(b, func(s string) string {
+	return utils.ApplyToHTMLText(b, func(s string) string {
 		return mentionPattern.ReplaceAllString(s, `<a href="https://github.com/$1" class="user-mention">@$1</a>`)
 	})
 }

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // DefaultPermalinkPattern is the default permalink pattern for pages that aren't in a collection
@@ -42,16 +42,16 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 func (f *file) permalinkVariables() map[string]string {
 	var (
 		relpath  = strings.TrimPrefix(f.relpath, f.container.PathPrefix())
-		root     = helpers.TrimExt(relpath)
+		root     = utils.TrimExt(relpath)
 		name     = filepath.Base(root)
 		fm       = f.frontMatter
 		bindings = templates.VariableMap(fm)
-		slug     = bindings.String("slug", helpers.Slugify(name))
+		slug     = bindings.String("slug", utils.Slugify(name))
 	)
 	vars := map[string]string{
 		"categories": strings.Join(f.Categories(), "/"),
 		"collection": bindings.String("collection", ""),
-		"name":       helpers.Slugify(name),
+		"name":       utils.Slugify(name),
 		"path":       "/" + root, // TODO are we removing and then adding this?
 		"slug":       slug,
 		"title":      slug,
@@ -71,7 +71,7 @@ func (f *file) computePermalink(vars map[string]string) (src string, err error) 
 		pattern = p
 	}
 	templateVariables := f.permalinkVariables()
-	s, err := helpers.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
+	s, err := utils.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
 		varname := m[1:]
 		value, found := templateVariables[varname]
 		if !found {
@@ -82,7 +82,7 @@ func (f *file) computePermalink(vars map[string]string) (src string, err error) 
 	if err != nil {
 		return "", err
 	}
-	return helpers.URLPathClean("/" + s), nil
+	return utils.URLPathClean("/" + s), nil
 }
 
 func (f *file) setPermalink() (err error) {

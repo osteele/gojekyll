@@ -8,10 +8,10 @@ import (
 
 	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/plugins"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // Site is a Jekyll site.
@@ -122,7 +122,7 @@ func (s *Site) FilenameURLs() map[string]string {
 
 // KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
 func (s *Site) KeepFile(filename string) bool {
-	return helpers.SearchStrings(s.config.KeepFiles, filename)
+	return utils.SearchStrings(s.config.KeepFiles, filename)
 }
 
 // FilePathPage returns a Page, give a file path relative to site source directory.
@@ -186,8 +186,8 @@ func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 // Exclude returns a boolean indicating that the site excludes a file.
 func (s *Site) Exclude(path string) bool {
 	// TODO exclude based on glob, not exact match
-	inclusionMap := helpers.StringArrayToMap(s.config.Include)
-	exclusionMap := helpers.StringArrayToMap(s.config.Exclude)
+	inclusionMap := utils.StringArrayToMap(s.config.Include)
+	exclusionMap := utils.StringArrayToMap(s.config.Exclude)
 	base := filepath.Base(path)
 	switch {
 	case inclusionMap[path]:

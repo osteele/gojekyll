@@ -7,9 +7,9 @@ import (
 
 	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/plugins"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // FromDirectory reads the configuration file, if it exists.
@@ -66,7 +66,7 @@ func (s *Site) readFiles() error {
 			return err
 		}
 
-		relname := helpers.MustRel(s.SourceDir(), filename)
+		relname := utils.MustRel(s.SourceDir(), filename)
 		switch {
 		case info.IsDir() && s.Exclude(relname):
 			return filepath.SkipDir
@@ -76,7 +76,7 @@ func (s *Site) readFiles() error {
 		defaultFrontmatter := s.config.GetFrontMatterDefaults("", relname)
 		p, err := pages.NewFile(filename, s, filepath.ToSlash(relname), defaultFrontmatter)
 		if err != nil {
-			return helpers.PathError(err, "read", filename)
+			return utils.PathError(err, "read", filename)
 		}
 		s.AddDocument(p, true)
 		return nil

@@ -3,7 +3,7 @@ package collection
 import (
 	"time"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // A collectionStrategy encapsulates behavior differences between the _post
@@ -31,18 +31,18 @@ func (s defaultStrategy) future(filename string) bool                { return fa
 type postsStrategy struct{}
 
 func (s postsStrategy) addDate(filename string, fm map[string]interface{}) {
-	if t, found := helpers.FilenameDate(filename); found {
+	if t, found := utils.FilenameDate(filename); found {
 		fm["date"] = t
 	}
 }
 
 func (s postsStrategy) collectible(filename string) bool {
-	_, ok := helpers.FilenameDate(filename)
+	_, ok := utils.FilenameDate(filename)
 	return ok
 }
 
 func (s postsStrategy) future(filename string) bool {
-	t, ok := helpers.FilenameDate(filename)
+	t, ok := utils.FilenameDate(filename)
 	return ok && t.After(time.Now())
 }
 

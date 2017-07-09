@@ -6,9 +6,9 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/russross/blackfriday"
 )
@@ -81,12 +81,12 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e 
 func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename string, lineNo int) ([]byte, error) {
 	tpl, err := p.liquidEngine.ParseTemplate(src)
 	if err != nil {
-		return nil, helpers.PathError(err, "Liquid Error", filename)
+		return nil, utils.PathError(err, "Liquid Error", filename)
 	}
 	tpl.SetSourceLocation(filename, lineNo)
 	out, err := tpl.Render(b)
 	if err != nil {
-		return nil, helpers.PathError(err, "Liquid Error", filename)
+		return nil, utils.PathError(err, "Liquid Error", filename)
 	}
 	return out, err
 }
@@ -99,13 +99,13 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{
 		if err != nil {
 			return nil, err
 		}
-		b := helpers.MergeStringMaps(e, map[string]interface{}{
+		b := utils.MergeStringMaps(e, map[string]interface{}{
 			"content": string(data),
 			"layout":  lfm,
 		})
 		data, err = tpl.Render(b)
 		if err != nil {
-			return nil, helpers.PathError(err, "render template", name)
+			return nil, utils.PathError(err, "render template", name)
 		}
 		name = templates.VariableMap(lfm).String("layout", "")
 	}

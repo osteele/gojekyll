@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // BuildOptions holds options for Build and Clean
@@ -29,7 +29,7 @@ func (s *Site) Clean(options BuildOptions) error {
 			return err
 		case info.IsDir():
 			return nil
-		case s.KeepFile(helpers.MustRel(s.DestDir(), filename)):
+		case s.KeepFile(utils.MustRel(s.DestDir(), filename)):
 			return nil
 		case options.DryRun:
 			return nil
@@ -40,7 +40,7 @@ func (s *Site) Clean(options BuildOptions) error {
 	if err := filepath.Walk(s.DestDir(), removeFiles); err != nil {
 		return err
 	}
-	return helpers.RemoveEmptyDirectories(s.DestDir())
+	return utils.RemoveEmptyDirectories(s.DestDir())
 }
 
 // Build cleans the destination and create files in it.

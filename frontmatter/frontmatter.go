@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid/evaluator"
 )
 
@@ -18,7 +18,7 @@ const fmMagic = "---\n"
 // FileHasFrontMatter returns a bool indicating whether the
 // file looks like it has frontmatter.
 func FileHasFrontMatter(filename string) (bool, error) {
-	magic, err := helpers.ReadFileMagic(filename)
+	magic, err := utils.ReadFileMagic(filename)
 	if err != nil {
 		return false, err
 	}

@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 )
 
 func (s *Site) readDataFiles() error {
@@ -33,11 +33,11 @@ func (s *Site) readDataFiles() error {
 				return err
 			}
 			var d interface{} // map or slice
-			err = helpers.UnmarshalYAMLInterface(b, &d)
+			err = utils.UnmarshalYAMLInterface(b, &d)
 			if err != nil {
-				return helpers.PathError(err, "read YAML", filename)
+				return utils.PathError(err, "read YAML", filename)
 			}
-			basename := helpers.TrimExt(filepath.Base(f.Name()))
+			basename := utils.TrimExt(filepath.Base(f.Name()))
 			s.data[basename] = d
 		}
 	}

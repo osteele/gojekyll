@@ -1,4 +1,4 @@
-package helpers
+package utils
 
 // MergeStringMaps creates a new variable map that merges its arguments,
 // from first to last.

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 )
 
 type bannerLogger struct{ labelWidth int }
@@ -19,10 +19,10 @@ func (l *bannerLogger) label(label string, msg string, a ...interface{}) {
 		l.labelWidth = len(label)
 	}
 	if !quiet {
-		fmt.Printf("%s %s\n", helpers.LeftPad(label, l.labelWidth), fmt.Sprintf(msg, a...))
+		fmt.Printf("%s %s\n", utils.LeftPad(label, l.labelWidth), fmt.Sprintf(msg, a...))
 	}
 }
 
 func (l *bannerLogger) path(label string, filename string) {
-	l.label(label, helpers.MustAbs(filename))
+	l.label(label, utils.MustAbs(filename))
 }

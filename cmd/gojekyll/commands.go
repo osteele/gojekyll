@@ -12,10 +12,10 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/montanaflynn/stats"
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/server"
 	"github.com/osteele/gojekyll/site"
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 )
 
@@ -105,13 +105,13 @@ func pageFromPathOrRoute(s *site.Site, path string) (pages.Document, error) {
 	case strings.HasPrefix(path, "/"):
 		page, found := s.URLPage(path)
 		if !found {
-			return nil, helpers.NewPathError("render", path, "the site does not include a file with this URL path")
+			return nil, utils.NewPathError("render", path, "the site does not include a file with this URL path")
 		}
 		return page, nil
 	default:
 		page, found := s.FilePathPage(path)
 		if !found {
-			return nil, helpers.NewPathError("render", path, "no such file")
+			return nil, utils.NewPathError("render", path, "no such file")
 		}
 		return page, nil
 	}

@@ -6,8 +6,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // ToLiquid is part of the liquid.Drop interface.
@@ -30,7 +30,7 @@ func (f *file) ToLiquid() interface{} {
 		"path":          relpath,
 		"modified_time": f.fileModTime,
 		"name":          base,
-		"basename":      helpers.TrimExt(base),
+		"basename":      utils.TrimExt(base),
 		"extname":       ext,
 	})
 }
@@ -40,7 +40,7 @@ func (p *page) ToLiquid() interface{} {
 	var (
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
-		root    = helpers.TrimExt(p.relpath)
+		root    = utils.TrimExt(p.relpath)
 		base    = filepath.Base(root)
 		content = p.raw
 		excerpt string

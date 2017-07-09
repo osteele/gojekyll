@@ -1,4 +1,4 @@
-package helpers
+package utils
 
 // SearchStrings returns a bool indicating whether array contains the string.
 // Unlike sort.SearchStrings, it does not require a sorted array.

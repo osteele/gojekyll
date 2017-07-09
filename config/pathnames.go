@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // IsMarkdown returns a boolean indicating whether the file is a Markdown file, according to the current project.
@@ -21,7 +21,7 @@ func (c *Config) IsSASSPath(name string) bool {
 // markdownExtensions returns a set of markdown extensions, without the initial dots.
 func (c *Config) markdownExtensions() map[string]bool {
 	exts := strings.SplitN(c.MarkdownExt, `,`, -1)
-	return helpers.StringArrayToMap(exts)
+	return utils.StringArrayToMap(exts)
 }
 
 // MarkdownExtensions returns a list of markdown extensions, with dotsa.

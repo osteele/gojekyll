@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 )
 
 func (s *Server) watchAndReload() error {
@@ -54,7 +54,7 @@ func (s *Server) watchFiles(fn func([]string)) error {
 			filenames := <-debounced
 			relpaths := make([]string, 0, len(filenames))
 			for _, filename := range filenames {
-				relpath := helpers.MustRel(sourceDir, filename)
+				relpath := utils.MustRel(sourceDir, filename)
 				if relpath == "_config.yml" || !site.Exclude(relpath) {
 					relpaths = append(relpaths, relpath)
 				}

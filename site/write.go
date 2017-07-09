@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/plugins"
+	"github.com/osteele/gojekyll/utils"
 )
 
 func (s *Site) prepareRendering() error {
@@ -89,7 +89,7 @@ func (s *Site) SavePage(p pages.Document, options BuildOptions) error {
 	case p.Static() && options.UseHardLinks:
 		return os.Link(from, to)
 	case p.Static():
-		return helpers.CopyFileContents(to, from, 0644)
+		return utils.CopyFileContents(to, from, 0644)
 	default:
 		return s.SaveDocumentToFile(p, to)
 	}
@@ -97,7 +97,7 @@ func (s *Site) SavePage(p pages.Document, options BuildOptions) error {
 
 // SaveDocumentToFile writes a page to filename.
 func (s *Site) SaveDocumentToFile(d pages.Document, filename string) error {
-	return helpers.VisitCreatedFile(filename, func(w io.Writer) error {
+	return utils.VisitCreatedFile(filename, func(w io.Writer) error {
 		return s.WriteDocument(w, d)
 	})
 }

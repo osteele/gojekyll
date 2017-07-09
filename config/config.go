@@ -3,8 +3,8 @@ package config
 import (
 	"strings"
 
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/utils"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -70,7 +70,7 @@ type collectionsMap struct {
 
 // SourceDir returns the source directory as an absolute path.
 func (c *Config) SourceDir() string {
-	return helpers.MustAbs(c.Source)
+	return utils.MustAbs(c.Source)
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults

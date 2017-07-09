@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/dchest/cssmin"
-	"github.com/osteele/gojekyll/helpers"
+	"github.com/osteele/gojekyll/utils"
 
 	libsass "github.com/wellington/go-libsass"
 )
@@ -34,9 +34,9 @@ func (p *Pipeline) CopySassFileIncludes() error {
 		if err != nil || info.IsDir() {
 			return err
 		}
-		rel := helpers.MustRel(src, from)
+		rel := utils.MustRel(src, from)
 		to := filepath.Join(dst, strings.TrimPrefix(rel, "_"))
-		return helpers.CopyFileContents(to, from, 0644)
+		return utils.CopyFileContents(to, from, 0644)
 	})
 	if os.IsNotExist(err) {
 		return nil

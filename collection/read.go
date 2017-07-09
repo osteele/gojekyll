@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/utils"
 )
 
 const draftsPath = "_drafts"
@@ -32,7 +32,7 @@ func (c *Collection) ScanDirectory(dirname string) error {
 			}
 			return err
 		}
-		relname := helpers.MustRel(sitePath, filename)
+		relname := utils.MustRel(sitePath, filename)
 		switch {
 		case strings.HasPrefix(filepath.Base(relname), "."):
 			return nil
