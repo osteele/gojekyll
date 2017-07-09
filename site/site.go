@@ -158,7 +158,7 @@ func (s *Site) initializeRenderingPipeline() (err error) {
 	}
 	s.pipeline, err = pipelines.NewPipeline(s.config, options)
 	if err != nil {
-		return nil
+		return err
 	}
 	engine := s.pipeline.TemplateEngine()
 	return s.runHooks(func(p plugins.Plugin) error {

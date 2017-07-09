@@ -1,4 +1,4 @@
-package tags
+package cache
 
 import (
 	"crypto/md5" // nolint: gas
@@ -18,14 +18,14 @@ func init() {
 	}
 }
 
-// withFileCache looks (header, content) up in a user-specific file cache.
+// WithFile looks (header, content) up in a user-specific file cache.
 // If found, it writes the file contents. Else it calls fn to write to
 // both the writer and the file system.
 //
 // header and content are distinct parameters to relieve the caller from
 // having to concatenate them.
-func withFileCache(header string, content string, fn func() (string, error)) (string, error) {
-	h := md5.New()             // nolint: gas
+func WithFile(header string, content string, fn func() (string, error)) (string, error) {
+	h := md5.New()             // nolint: gas, noncrypto
 	io.WriteString(h, content) // nolint: errcheck, gas
 	io.WriteString(h, "\n")    // nolint: errcheck, gas
 	io.WriteString(h, header)  // nolint: errcheck, gas

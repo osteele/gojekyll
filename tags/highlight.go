@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/osteele/gojekyll/cache"
 	"github.com/osteele/liquid/render"
 )
 
@@ -23,7 +24,7 @@ func highlightTag(ctx render.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return withFileCache(fmt.Sprintf("pygments %s", args), s, func() (string, error) {
+	return cache.WithFile(fmt.Sprintf("pygments %s", args), s, func() (string, error) {
 		buf := new(bytes.Buffer)
 		cmd := exec.Command("pygmentize", cargs...) // nolint: gas
 		cmd.Stdin = strings.NewReader(s)

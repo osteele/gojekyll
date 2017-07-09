@@ -105,7 +105,7 @@ These will probably not change:
 Disable the cache by setting the environment variable `GOJEKYLL_DISABLE_CACHE=1`.
 Disable threading by setting `GOMAXPROCS=1`.
 
-The cache is for calls to Pygments (via the `highlight` tag). For sites, SASS (which is currently not cached) might have more overhead.
+SASS conversion and Pygments (`highlight`) are cached.
 
 ### Feature Status
 

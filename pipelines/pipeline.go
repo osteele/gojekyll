@@ -26,6 +26,7 @@ type Pipeline struct {
 	config       config.Config
 	liquidEngine liquid.Engine
 	sassTempDir  string
+	sassHash     string
 }
 
 // PipelineOptions configures a pipeline.
