@@ -48,18 +48,12 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	e.RegisterFilter("push", func(array []interface{}, item interface{}) interface{} {
 		return append(array, evaluator.MustConvertItem(item, array))
 	})
-	e.RegisterFilter("pop", func(array []interface{}) interface{} {
-		if len(array) == 0 {
-			return nil
-		}
+	e.RegisterFilter("pop", requireNonEmptyArray(func(array []interface{}) interface{} {
 		return array[0]
-	})
-	e.RegisterFilter("shift", func(array []interface{}) interface{} {
-		if len(array) == 0 {
-			return nil
-		}
+	}))
+	e.RegisterFilter("shift", requireNonEmptyArray(func(array []interface{}) interface{} {
 		return array[len(array)-1]
-	})
+	}))
 	e.RegisterFilter("unshift", func(array []interface{}, item interface{}) interface{} {
 		return append([]interface{}{evaluator.MustConvertItem(item, array)}, array...)
 	})
@@ -132,7 +126,7 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	e.RegisterFilter("cgi_escape", unimplementedFilter("cgi_escape"))
 	e.RegisterFilter("uri_escape", unimplementedFilter("uri_escape"))
 	e.RegisterFilter("scssify", unimplementedFilter("scssify"))
-	e.RegisterFilter("smartify", unimplementedFilter("smartify"))
+	e.RegisterFilter("smartify", smartifyFilter)
 	e.RegisterFilter("xml_escape", func(s string) string {
 		// TODO can't handle maps
 		// eval https://github.com/clbanning/mxj
@@ -145,6 +139,17 @@ func AddJekyllFilters(e liquid.Engine, c config.Config) {
 	})
 }
 
+// helpers
+
+func requireNonEmptyArray(fn func([]interface{}) interface{}) func([]interface{}) interface{} {
+	return func(array []interface{}) interface{} {
+		if len(array) == 0 {
+			return nil
+		}
+		return fn(array)
+	}
+}
+
 func unimplementedFilter(name string) func(value interface{}) interface{} {
 	warned := false
 	return func(value interface{}) interface{} {
@@ -155,6 +160,8 @@ func unimplementedFilter(name string) func(value interface{}) interface{} {
 		return value
 	}
 }
+
+// array filters
 
 func arrayToSentenceStringFilter(array []string, conjunction func(string) string) string {
 	conj := conjunction("and ")
@@ -254,3 +261,4 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 	}
 	return out
 }
+

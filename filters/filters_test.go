@@ -61,6 +61,12 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ "The _config.yml file" | slugify: 'default' }}`, "the-config-yml-file"},
 	{`{{ "The _config.yml file" | slugify: 'pretty' }}`, "the-_config.yml-file"},
 
+	{`{{ "smartify single 'quotes' here" | smartify }}`, "smartify single ‘quotes’ here"},
+	{`{{ 'smartify double "quotes" here' | smartify }}`, "smartify double “quotes” here"},
+	{"{{ \"smartify ``backticks''\" | smartify }}", "smartify “backticks”"},
+	{`{{ "smartify it's they're" | smartify }}`, "smartify it’s they’re"},
+	{`{{ "smartify ... (c) (r) (tm) -- ---" | smartify }}`, "smartify … © ® ™ – —"},
+
 	{`{{ "1 < 2 & 3" | xml_escape }}`, "1 &lt; 2 &amp; 3"},
 	// {`{{ "http://foo.com/?q=foo, \bar?" | uri_escape }}`, "http://foo.com/?q=foo,%20%5Cbar?"},
 }
