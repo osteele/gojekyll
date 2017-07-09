@@ -16,37 +16,13 @@ var redirectTemplate *template.Template
 
 func init() {
 	register("jekyll-redirect-from", jekyllRedirectFromPlugin{})
-	tmpl, err := template.New("redirect_from").Parse(redirectFromText)
+	tmpl, err := template.New("redirect_from").Parse(redirectFromTemplateSource)
 	if err != nil {
 		panic(err)
 	}
 	redirectTemplate = tmpl
 }
 
-type redirector struct {
-	From string
-	To   string
-}
-
-func (p *redirector) Permalink() string    { return p.From }
-func (p *redirector) SourcePath() string   { return "" } // FIXME bad design
-func (p *redirector) OutputExt() string    { return ".html" }
-func (p *redirector) Published() bool      { return true }
-func (p *redirector) Static() bool         { return false } // FIXME means different things to different callers
-func (p *redirector) Categories() []string { return []string{} }
-func (p *redirector) Tags() []string       { return []string{} }
-
-func (p *redirector) Content() []byte {
-	buf := new(bytes.Buffer)
-	if err := redirectTemplate.Execute(buf, p); err != nil {
-		panic(err)
-	}
-	return buf.Bytes()
-}
-
-func (p *redirector) Write(w io.Writer, c pages.RenderingContext) error {
-	return redirectTemplate.Execute(w, p)
-}
 
 func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
 	redirections := []pages.Document{}
@@ -57,7 +33,7 @@ func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
 			case string:
 				siteurl := site.Config().AbsoluteURL
 				baseurl := site.Config().BaseURL
-				var p = redirector{From: rd, To: strings.Join([]string{siteurl, baseurl, p.Permalink()}, "")}
+				var p = redirectionDoc{From: rd, To: strings.Join([]string{siteurl, baseurl, p.Permalink()}, "")}
 				redirections = append(redirections, &p)
 			default:
 				fmt.Printf("unimplemented redirect_from type: %T\n", rd)
@@ -67,7 +43,7 @@ func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
 		if ok {
 			switch rd := rd.(type) {
 			case string:
-				r := redirector{From: rd, To: p.Permalink()}
+				r := redirectionDoc{From: rd, To: p.Permalink()}
 				p.SetContent(r.Content())
 			default:
 				fmt.Printf("unimplemented redirect_from type: %T\n", rd)
@@ -80,8 +56,33 @@ func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
 	return nil
 }
 
+type redirectionDoc struct {
+	From string
+	To   string
+}
+
+func (d *redirectionDoc) Permalink() string    { return d.From }
+func (d *redirectionDoc) SourcePath() string   { return "" } // FIXME bad design
+func (d *redirectionDoc) OutputExt() string    { return ".html" }
+func (d *redirectionDoc) Published() bool      { return true }
+func (d *redirectionDoc) Static() bool         { return false } // FIXME means different things to different callers
+func (d *redirectionDoc) Categories() []string { return []string{} }
+func (d *redirectionDoc) Tags() []string       { return []string{} }
+
+func (d *redirectionDoc) Content() []byte {
+	buf := new(bytes.Buffer)
+	if err := redirectTemplate.Execute(buf, d); err != nil {
+		panic(err)
+	}
+	return buf.Bytes()
+}
+
+func (d *redirectionDoc) Write(w io.Writer, c pages.RenderingContext) error {
+	return redirectTemplate.Execute(w, d)
+}
+
 // Adapted from https://github.com/jekyll/jekyll-redirect-from
-var redirectFromText = `<!DOCTYPE html>
+const redirectFromTemplateSource = `<!DOCTYPE html>
 <html lang="en-US">
   <meta charset="utf-8">
   <title>Redirecting…</title>

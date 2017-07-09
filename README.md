@@ -114,7 +114,7 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
 - [ ] Customization
   - [x] Templates
     - [ ] Jekyll filters
-      - [ ] `group_by_exp` `pop` `shift` `cgi_escape` `uri_escape` `scssify` `smartify`
+      - [ ] `group_by_exp`, `cgi_escape`, `uri_escape`, `scssify`, `smartify`
       - [x] everything else
     - [x] Jekyll tags
       - [x] `include`
@@ -140,19 +140,16 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
 - [ ] Commands
   - [x] `build`
     - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`
-    - [ ] `--config`, `--baseurl`, `--lsi`, `--watch`, etc.
+    - [ ] `--config`, `--baseurl`, `--lsi`, `--no-watch`
     - [ ] not planned: `--force-polling`, `--limit-posts`, `--incremental`, `JEKYLL_ENV=production`
   - [x] `clean`
-  - [ ] `doctor`
   - [x] `help`
-  - [ ] `import`
-  - [ ] `new`
-  - [ ] `new-theme`
   - [x] `serve`
-    - [x] `--open-uri`
-    - [ ] `--detach`, `--host`, `--port`, `--baseurl`
+    - [x] `--open-uri`, `--host`, `--port`
+    - [ ] `--detach`, `--baseurl`
     - [ ] not planned: `--incremental`, `--ssl`-*
-- [ ] Windows
+  - [ ] not planned: `doctor`, `import`, `new`, `new-theme`
+- [ ] Windows - not planned
 
 ## Contributing
 
@@ -178,7 +175,11 @@ The text for `gojekyll help` was taken from the output of `jekyll help`, and is 
 
 Many of the filter test cases are taken directly from the Jekyll documentation, and are used under the terms of the MIT license.
 
-The template for `jekyll-redirect-from` page redirects was adapted from the template in <https://github.com/jekyll/jekyll-redirect-from>, and is used under the terms of the MIT license.
+The template for `jekyll-redirect-from` emulation was adapted from the template in <https://github.com/jekyll/jekyll-redirect-from>, and is used under the terms of the MIT license.
+
+The template for `jekyll-feed` emulation was taken verbatim from <https://github.com/jekyll/jekyll-feed>, and is used under the terms of the MIT license
+
+https://github.com/jekyll/jekyll-feed/
 
 The gopher image in the `testdata` directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 

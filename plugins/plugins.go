@@ -66,7 +66,6 @@ func register(name string, p Plugin) {
 }
 
 func init() {
-	register("jekyll-feed", jekyllFeedPlugin{})
 	register("jekyll-mentions", jekyllMentionsPlugin{})
 	register("jekyll-seo-tag", jekyllSEOTagPlugin{})
 
@@ -74,14 +73,6 @@ func init() {
 	// no warning but effect; the server runs in this mode anyway
 	register("jekyll-live-reload", plugin{})
 	register("jekyll-sass-converter", plugin{})
-}
-
-type jekyllFeedPlugin struct{ plugin }
-
-func (p jekyllFeedPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
-	p.stubbed("jekyll-feed")
-	e.RegisterTag("feed_meta", p.makeUnimplementedTag("jekyll-feed"))
-	return nil
 }
 
 type jekyllMentionsPlugin struct{ plugin }
