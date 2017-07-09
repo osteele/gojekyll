@@ -42,7 +42,8 @@ func (s *Site) WriteDocument(w io.Writer, p pages.Document) error {
 	if err != nil {
 		return err
 	}
-	return p.Write(w, s)
+	_, err = w.Write(c)
+	return err
 }
 
 // WritePages writes output files.

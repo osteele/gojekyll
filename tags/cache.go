@@ -9,6 +9,15 @@ import (
 	"path/filepath"
 )
 
+var disableCache = false
+
+func init() {
+	s := os.Getenv("GOJEKYLL_DISABLE_CACHE")
+	if s != "" && s != "0" && s != "false" {
+		disableCache = true
+	}
+}
+
 // withFileCache looks (header, content) up in a user-specific file cache.
 // If found, it writes the file contents. Else it calls fn to write to
 // both the writer and the file system.
@@ -32,7 +41,7 @@ func withFileCache(header string, content string, fn func() (string, error)) (st
 	// WriteFile truncates the file before writing it, so ignore empty files.
 	// If the writer actually wrote an empty file, we'll end up gratuitously
 	// re-running it, which is okay.
-	if b, err := ioutil.ReadFile(cachefile); err == nil && len(b) > 0 {
+	if b, err := ioutil.ReadFile(cachefile); err == nil && len(b) > 0 && !disableCache {
 		return string(b), err
 	}
 	s, err := fn()

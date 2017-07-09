@@ -1,11 +1,7 @@
 package helpers
 
 import (
-	"bytes"
-	"io"
 	"regexp"
-
-	"golang.org/x/net/html"
 )
 
 // LeftPad left-pads s with spaces to n wide. It's an alternative to http://left-pad.io.
@@ -59,41 +55,4 @@ func StringArrayToMap(strings []string) map[string]bool {
 		stringMap[s] = true
 	}
 	return stringMap
-}
-
-// ApplyToHTMLText applies a filter only to the text within an HTML document.
-func ApplyToHTMLText(doc []byte, fn func(string) string) []byte {
-	z := html.NewTokenizer(bytes.NewReader(doc))
-	buf := new(bytes.Buffer)
-	body := false
-outer:
-	for {
-		tt := z.Next()
-		switch tt {
-		case html.ErrorToken:
-			if z.Err() == io.EOF {
-				break outer
-			}
-			panic(z.Err())
-		case html.StartTagToken, html.EndTagToken:
-			tn, _ := z.TagName()
-			if string(tn) == "body" {
-				body = tt == html.StartTagToken
-			}
-		case html.TextToken:
-			if body {
-				s := (string(z.Text()))
-				_, err := buf.WriteString((fn(s)))
-				if err != nil {
-					panic(err)
-				}
-				continue outer
-			}
-		}
-		_, err := buf.Write(z.Raw())
-		if err != nil {
-			panic(err)
-		}
-	}
-	return buf.Bytes()
 }

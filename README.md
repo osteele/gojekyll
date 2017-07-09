@@ -80,12 +80,10 @@ These will probably not change.
 | Executable | Options                     | Time          |
 |------------|-----------------------------|---------------|
 | jekyll     |                             | 18.53s        |
-| gojekyll   | single-threaded; cold cache | 3.31s ± 0.07s |
-| gojekyll   | single-threaded; warm cache | 2.50s ± 0.04s |
-| gojekyll   | multi-threaded              | 1.51s ± 0.01s |
-| gojekyll   | multi-threaded              | 0.80s ± 0.09s |
-
-This isn't an apples-to-ranges comparison. Gojekyll doesn't use all the plugins that Jekyll does. In particular, `jekyll-mentions` parses each page's HTML. This could slow Gojekyll down once it's added.
+| gojekyll   | single-threaded; cold cache | 2.96s ± 0.09s |
+| gojekyll   | single-threaded; warm cache | 2.51s ± 0.04s |
+| gojekyll   | multi-threaded; cold cache  | 1.37s ± 0.03s |
+| gojekyll   | multi-threaded; warm cache  | 0.80s ± 0.06s |
 
 There's currently no way to disable the cache. It was disabled off by re-building the executable.
 
