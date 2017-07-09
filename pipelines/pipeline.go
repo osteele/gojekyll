@@ -1,6 +1,7 @@
 package pipelines
 
 import (
+	"bytes"
 	"io"
 
 	"github.com/osteele/gojekyll/config"
@@ -61,7 +62,11 @@ func (p *Pipeline) OutputExt(pathname string) string {
 // Render returns nil iff it wrote to the writer
 func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e map[string]interface{}) ([]byte, error) {
 	if p.config.IsSASSPath(filename) {
-		return nil, p.WriteSass(w, b)
+		buf := new(bytes.Buffer)
+		if err := p.WriteSass(buf, b); err != nil {
+			return nil, err
+		}
+		return buf.Bytes(), nil
 	}
 	b, err := p.renderTemplate(b, e, filename, lineNo)
 	if err != nil {

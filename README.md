@@ -2,7 +2,7 @@
 
  [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
 
-Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, in the [Go](https://golang.org) programming language.
+Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language.
 
 <!-- TOC -->
 
@@ -51,7 +51,7 @@ I also wanted a faster way to preview changes to my sites that use GitHub Pages.
 
 ## Status
 
-This is early-stage software.
+This project is at an early stage of development.
 
 It works on the Google Pages sites that I care about, and it looks credible on a spot-check of other Jekyll sites.
 
