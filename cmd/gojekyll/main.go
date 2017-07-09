@@ -77,9 +77,6 @@ func parseAndRun(args []string) {
 	if buildOptions.DryRun {
 		buildOptions.Verbose = true
 	}
-	if cmd == benchmark.FullCommand() {
-		profile = true
-	}
 	app.FatalIfError(run(cmd), "")
 }
 
@@ -88,8 +85,8 @@ func printVersion() {
 }
 
 func run(cmd string) error { // nolint: gocyclo
-	if profile {
-		setupProfiling()
+	if profile || cmd == benchmark.FullCommand() {
+		defer setupProfiling()()
 	}
 	if *versionFlag {
 		printVersion()
@@ -148,17 +145,17 @@ func loadSite(source string, flags config.Flags) (*site.Site, error) {
 	return site, err
 }
 
-func setupProfiling() {
+func setupProfiling() func() {
 	profilePath := "gojekyll.prof"
 	logger.label("Profiling...", "")
 	f, err := os.Create(profilePath)
 	app.FatalIfError(err, "")
 	err = pprof.StartCPUProfile(f)
 	app.FatalIfError(err, "")
-	defer func() {
+	return func() {
 		pprof.StopCPUProfile()
 		err = f.Close()
 		app.FatalIfError(err, "")
 		logger.Info("Wrote", profilePath)
-	}()
+	}
 }

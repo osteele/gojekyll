@@ -53,5 +53,6 @@ gojekyll -s path/to/site variables site.twitter.name  # print a specific site va
 ### Profiling
 
 ```bash
-gojekyll -s path/to/site benchmark && go tool pprof gojekyll gojekyll.prof
+gojekyll -s path/to/site benchmark
+go tool pprof --web gojekyll gojekyll.prof
 ```
