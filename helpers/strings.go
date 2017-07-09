@@ -83,11 +83,17 @@ outer:
 		case html.TextToken:
 			if body {
 				s := (string(z.Text()))
-				buf.WriteString((fn(s)))
+				_, err := buf.WriteString((fn(s)))
+				if err != nil {
+					panic(err)
+				}
 				continue outer
 			}
 		}
-		buf.Write(z.Raw())
+		_, err := buf.Write(z.Raw())
+		if err != nil {
+			panic(err)
+		}
 	}
 	return buf.Bytes()
 }

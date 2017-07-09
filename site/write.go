@@ -25,9 +25,21 @@ func (s *Site) prepareRendering() error {
 	return nil
 }
 
-// WriteDocument writes the document to w.
-func (s *Site) WriteDocument(p pages.Document, w io.Writer) error {
+// WriteDocument writes the document to a writer.
+func (s *Site) WriteDocument(w io.Writer, p pages.Document) error {
 	if err := s.prepareRendering(); err != nil {
+		return err
+	}
+	buf := new(bytes.Buffer)
+	if err := p.Write(buf, s); err != nil {
+		return err
+	}
+	c := buf.Bytes()
+	err := s.runHooks(func(p plugins.Plugin) error {
+		c = p.PostRender(c)
+		return nil
+	})
+	if err != nil {
 		return err
 	}
 	return p.Write(w, s)
@@ -40,7 +52,7 @@ func (s *Site) WritePages(options BuildOptions) (count int, err error) {
 	for _, p := range s.OutputPages() {
 		count++
 		go func(p pages.Document) {
-			errs <- s.WritePage(p, options)
+			errs <- s.SavePage(p, options)
 		}(p)
 	}
 	for i := 0; i < count; i++ {
@@ -53,9 +65,9 @@ func (s *Site) WritePages(options BuildOptions) (count int, err error) {
 	return count, err
 }
 
-// WriteDocument writes a document to the destination directory.
+// SavePage writes a document to the destination directory.
 // It attends to options.dry_run.
-func (s *Site) WritePage(p pages.Document, options BuildOptions) error {
+func (s *Site) SavePage(p pages.Document, options BuildOptions) error {
 	from := filepath.Join(s.SourceDir(), filepath.ToSlash(p.SourcePath()))
 	to := filepath.Join(s.DestDir(), p.Permalink())
 	if !p.Static() && filepath.Ext(to) == "" {
@@ -78,25 +90,13 @@ func (s *Site) WritePage(p pages.Document, options BuildOptions) error {
 	case p.Static():
 		return helpers.CopyFileContents(to, from, 0644)
 	default:
-		buf := new(bytes.Buffer)
-		if err := p.Write(buf, s); err != nil {
-			return err
-		}
-		c := buf.Bytes()
-		err := s.runHooks(func(p plugins.Plugin) error {
-			c = p.PostRender(c)
-			return nil
-		})
-		if err != nil {
-			return err
-		}
-		return helpers.VisitCreatedFile(to, func(w io.Writer) error {
-			_, err := w.Write(c)
-			return err
-		})
+		return s.SaveDocumentToFile(p, to)
 	}
 }
 
-// // WritePage writes a page to the destination directory.
-// func (s *Site) WritePage(p pages.Page) error {
-// }
+// SaveDocumentToFile writes a page to filename.
+func (s *Site) SaveDocumentToFile(d pages.Document, filename string) error {
+	return helpers.VisitCreatedFile(filename, func(w io.Writer) error {
+		return s.WriteDocument(w, d)
+	})
+}

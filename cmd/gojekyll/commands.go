@@ -92,7 +92,7 @@ func renderCommand(site *site.Site) error {
 	logger.path("Render:", filepath.Join(site.SourceDir(), p.SourcePath()))
 	logger.label("URL:", p.Permalink())
 	logger.label("Content:", "")
-	return site.WriteDocument(p, os.Stdout)
+	return site.WriteDocument(os.Stdout, p)
 }
 
 // If path starts with /, it's a URL path. Else it's a file path relative

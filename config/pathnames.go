@@ -13,8 +13,8 @@ func (c *Config) IsMarkdown(name string) bool {
 	return c.markdownExtensions()[strings.TrimLeft(ext, ".")]
 }
 
-// IsSassPath returns a boolean indicating whether the file is a Sass (".sass" or ".scss") file.
-func (c *Config) IsSassPath(name string) bool {
+// IsSASSPath returns a boolean indicating whether the file is a Sass (".sass" or ".scss") file.
+func (c *Config) IsSASSPath(name string) bool {
 	return strings.HasSuffix(name, ".sass") || strings.HasSuffix(name, ".scss")
 }
 
@@ -39,7 +39,7 @@ func (c *Config) OutputExt(pathname string) string {
 	switch {
 	case c.IsMarkdown(pathname):
 		return ".html"
-	case c.IsSassPath(pathname):
+	case c.IsSASSPath(pathname):
 		return ".css"
 	default:
 		return filepath.Ext(pathname)

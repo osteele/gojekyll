@@ -8,18 +8,37 @@ import (
 	"github.com/osteele/gojekyll/helpers"
 )
 
-func (s *Server) watchFiles() error {
+func (s *Server) watchAndReload() error {
+	site := s.Site
+	return s.watchFiles(func(filenames []string) {
+		// Resolve to URLS *before* reloading the site, in case the latter
+		// remaps permalinks.
+		urls := map[string]bool{}
+		for _, relpath := range filenames {
+			url, ok := site.FilenameURLPath(relpath)
+			if ok {
+				urls[url] = true
+			}
+		}
+		s.reloadSite()
+		for url := range urls {
+			s.lr.Reload(url)
+		}
+	})
+}
+
+// calls fn repeatedly in a goroutine
+func (s *Server) watchFiles(fn func([]string)) error {
 	var (
 		site      = s.Site
+		sourceDir = site.SourceDir()
 		events    = make(chan string)
 		debounced = debounce(time.Second, events)
 	)
-
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
 	}
-
 	go func() {
 		for {
 			select {
@@ -30,30 +49,20 @@ func (s *Server) watchFiles() error {
 			}
 		}
 	}()
-
 	go func() {
 		for {
 			filenames := <-debounced
-			// Resolve to URLS *before* reloading the site, in case the latter
-			// remaps permalinks.
-			urls := map[string]bool{}
+			relpaths := make([]string, 0, len(filenames))
 			for _, filename := range filenames {
-				relpath := helpers.MustRel(site.SourceDir(), filename)
-				url, found := site.FilenameURLPath(relpath)
-				if !found {
-					// TODO don't warn re config and excluded files
-					log.Println("error:", filename, "does not match a site URL")
+				relpath := helpers.MustRel(sourceDir, filename)
+				if relpath == "_config.yml" || !site.Exclude(relpath) {
+					relpaths = append(relpaths, relpath)
 				}
-				urls[url] = true
 			}
-			s.reloadSite()
-			for url := range urls {
-				s.lr.Reload(url)
-			}
+			fn(relpaths)
 		}
 	}()
-
-	return watcher.Add(site.SourceDir())
+	return watcher.Add(sourceDir)
 }
 
 // debounce relays values from input to output, merging successive values within interval

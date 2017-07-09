@@ -60,7 +60,7 @@ func (p *Pipeline) OutputExt(pathname string) string {
 
 // Render returns nil iff it wrote to the writer
 func (p *Pipeline) Render(w io.Writer, b []byte, filename string, e map[string]interface{}) ([]byte, error) {
-	if p.config.IsSassPath(filename) {
+	if p.config.IsSASSPath(filename) {
 		return nil, p.WriteSass(w, b)
 	}
 	b, err := p.renderTemplate(b, e, filename)

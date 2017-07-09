@@ -31,7 +31,7 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 	if err := s.StartLiveReloader(); err != nil {
 		return err
 	}
-	if err := s.watchFiles(); err != nil {
+	if err := s.watchAndReload(); err != nil {
 		return err
 	}
 	http.HandleFunc("/", s.handler)
@@ -76,7 +76,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	if strings.HasPrefix(mimeType, "text/html;") {
 		w = NewLiveReloadInjector(w)
 	}
-	err := site.WriteDocument(p, w)
+	err := site.WriteDocument(w, p)
 	if err != nil {
 		fmt.Printf("Error rendering %s: %s", urlpath, err)
 	}
