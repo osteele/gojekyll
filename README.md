@@ -48,10 +48,11 @@ Missing features:
 - Excerpts
 - Pagination
 - Math
-- Plugins (except `jekyll-avatar` and `jekyll-gist`)
-- `site-static_files`, `site.html_files`, and `site.tags`
 - CSV and JSON data files
+- Plugins (except `jekyll-avatar`, `jekyll-gist`, and `jekyll-redirect-from`, which are simulated)
+- `site-static_files`, `site.html_files`, and `site.tags`
 - Jekyll liquid filters: `group_by_exp`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+- Windows compatibility
 
 For more detailed status:
 
@@ -63,6 +64,8 @@ For more detailed status:
 
 These will probably not change.
 
+- `uniq` doesn't work the same way as in Jekyll / Shopify Liquid. See the [Go Liquid differences](https://github.com/osteele/liquid#differences) for more on this.
+- Real Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
@@ -171,13 +174,15 @@ Gojekyll uses these libraries:
 | [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command line and flag parser                          | MIT                               |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                                          | Apache License 2.0                |
 
-In addition to being totally and obviously inspired by Jekyll, Jekyll's *documentation* was solid and indispensible. Many of the filter test cases are taken directly from the Jekyll documentation, and during development the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
+The text for `gojekyll help` was taken from the output of `jekyll help`, and is used under the terms of the MIT license.
 
-The text for `gojekyll help` was taken from the output of `jekyll help`.
+Many of the filter test cases are taken directly from the Jekyll documentation, and are used under the terms of the MIT license.
 
-The template for page redirections was adapted from the template in <https://github.com/jekyll/jekyll-redirect-from>.
+The template for `jekyll-redirect-from` page redirects was adapted from the template in <https://github.com/jekyll/jekyll-redirect-from>, and is used under the terms of the MIT license.
 
 The gopher image in the `testdata` directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
+
+In addition to being totally and obviously inspired by Jekyll and its plugins, Jekyll's *documentation* was solid and indispensible. During development the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
 
 ## Related
 

@@ -8,6 +8,8 @@ package plugins
 import (
 	"fmt"
 
+	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
@@ -16,6 +18,32 @@ import (
 // Currently, the only thing a plugin can do is add filters and tags.
 type PluginContext interface {
 	TemplateEngine() liquid.Engine
+}
+
+// Site is the site interface that is available to a plugin.
+type Site interface {
+	AddDocument(pages.Document, bool)
+	Config() *config.Config
+	Pages() []pages.Page
+}
+
+// Plugin describes the hooks that a plugin can override.
+type Plugin interface {
+	PostRead(site Site) error
+}
+
+type plugin struct{}
+
+func (p plugin) PostRead(site Site) error { return nil }
+
+// Find looks up a plugin by name
+func Find(name string) (Plugin, bool) {
+	switch name {
+	case "jekyll-redirect-from":
+		return jekyllFeedPlugin{}, true
+	default:
+		return nil, false
+	}
 }
 
 // Install installs a plugin from the plugin directory.
@@ -79,6 +107,6 @@ func (h pluginHelper) makeUnimplementedTag() liquid.Renderer {
 			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), h.name)
 			warned = true
 		}
-		return "", nil
+		return fmt.Sprintf(`<!-- unimplemented tag: %q -->`, ctx.TagName()), nil
 	}
 }

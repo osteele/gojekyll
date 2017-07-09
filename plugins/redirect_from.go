@@ -3,35 +3,14 @@ package plugins
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"io"
+	"strings"
+	"text/template"
 
 	"github.com/osteele/gojekyll/pages"
 )
 
-type Site interface {
-	AddDocument(pages.Document, bool)
-	Pages() []pages.Page
-}
-
-type Plugin interface {
-	PostRead(site Site) error
-}
-
-type plugin struct{}
-
-func (p plugin) PostRead(site Site) error { return nil }
-
-type jekyllFeedPlugin struct{}
-
-func Find(name string) (Plugin, bool) {
-	switch name {
-	case "jekyll-redirect-from":
-		return jekyllFeedPlugin{}, true
-	default:
-		return nil, false
-	}
-}
+type jekyllFeedPlugin struct{ plugin }
 
 var redirectTemplate *template.Template
 
@@ -78,7 +57,9 @@ func (p jekyllFeedPlugin) PostRead(site Site) error {
 		if ok {
 			switch rd := rd.(type) {
 			case string:
-				var p = redirector{From: rd, To: p.Permalink()}
+				siteurl := site.Config().AbsoluteURL
+				baseurl := site.Config().BaseURL
+				var p = redirector{From: rd, To: strings.Join([]string{siteurl, baseurl, p.Permalink()}, "")}
 				redirections = append(redirections, &p)
 			default:
 				fmt.Printf("unimplemented redirect_from type: %T\n", rd)
@@ -102,15 +83,14 @@ func (p jekyllFeedPlugin) PostRead(site Site) error {
 }
 
 // Adapted from https://github.com/jekyll/jekyll-redirect-from
-var redirectFromText = `
-<!DOCTYPE html>
+var redirectFromText = `<!DOCTYPE html>
 <html lang="en-US">
   <meta charset="utf-8">
-  <title>Redirecting&hellip;</title>
+  <title>Redirecting…</title>
   <link rel="canonical" href="{{ .To }}">
   <meta http-equiv="refresh" content="0; url={{ .To }}">
   <meta name="robots" content="noindex">
-  <h1>Redirecting&hellip;</h1>
+  <h1>Redirecting…</h1>
   <a href="{{ .To }}">Click here if you are not redirected.</a>
   <script>location="{{ .To }}"</script>
 </html>`
