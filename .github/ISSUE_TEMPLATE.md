@@ -1,8 +1,8 @@
 ## Checklist
 
-- [ ] I have searched the [issue list](https://github.com/osteele/gojekyll/issues). This issue is not listed.
-- [ ] I have reviewed the [feature parity board](https://github.com/osteele/gojekyll/projects/1). This issue is not already represented by one of those notes.
-- [ ] I have a reproducible test case.
+- [ ] I have search the [issue list](https://github.com/osteele/gojekyll/issues) for my issue.
+- [ ] I have verified the behavior with `jekyll`.
+- [ ] I tried hard to create a reproducible test case.
 
 ## System information
 

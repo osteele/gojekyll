@@ -5,13 +5,13 @@
 Disable the cache by setting the environment variable `GOJEKYLL_DISABLE_CACHE=1`.
 Disable threading by setting `GOMAXPROCS=1`.
 
-SASS conversion and Pygments (`highlight`) are cached.
+SASS conversion and Pygments (`{% highlight %}`) are cached.
 
 ## Jekyll Docs
 
 This site contains only one SASS file.
-It contains a few instances of {% highlight %}.
-This causes calls to Pygment, which dominate the un-cached times.
+It contains a few instances of `{% highlight %}`.
+Each of these results in a call to Pygment. This dominates the un-cached times.
 
 | Executable | Options                     | Time          |
 |------------|-----------------------------|---------------|

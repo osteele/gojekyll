@@ -3,7 +3,7 @@
 Here's some ways to help:
 
 * Try using gojekyll on your site. Use this as fodder for test cases.
-* Choose an item to work on from one of the [project boards](https://github.com/osteele/gojekyll/projects). Convert it to an Issue and assign it to yourself, so we know you're working on it.
+* Choose an item to work on from the [issues list](https://github.com/osteele/gojekyll/issues).
 * Search the sources for FIXME and TODO comments.
 * Improve the [code coverage](https://coveralls.io/github/osteele/gojekyll?branch=master).
 
