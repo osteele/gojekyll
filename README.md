@@ -9,10 +9,12 @@ Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator,
 - [Gojekyll](#gojekyll)
     - [Installation](#installation)
     - [Usage](#usage)
-    - [Current Limitations](#current-limitations)
-    - [Other Differences](#other-differences)
-    - [Timings](#timings)
-    - [Feature Status](#feature-status)
+    - [Motivation](#motivation)
+    - [Status](#status)
+        - [Current Limitations](#current-limitations)
+        - [Other Differences](#other-differences)
+        - [Timings](#timings)
+        - [Feature Status](#feature-status)
     - [Contributing](#contributing)
     - [Credits](#credits)
     - [Related](#related)
@@ -41,7 +43,23 @@ gojekyll help
 gojekyll help build
 ```
 
-## Current Limitations
+## Motivation
+
+I wanted to learn Go.
+
+I also wanted a faster way to preview changes to my sites that use GitHub Pages.
+
+## Status
+
+This is early-stage software.
+
+It works on the Google Pages sites that I care about, and it looks credible on a spot-check of other Jekyll sites.
+
+It doesn't run on Windows, and it may not work for you.
+
+In addition to the limitations listed below, this software isn't robust. Jekyll, Hugo, and other mature projects have lots of test coverage, and have had lots of testing by lots of people. I've only this in limited ways, in the month since I started writing it.
+
+### Current Limitations
 
 Missing features:
 - Themes
@@ -49,33 +67,31 @@ Missing features:
 - Pagination
 - Math
 - CSV and JSON data files
-- Plugins (except `jekyll-avatar`, `jekyll-gist`, and `jekyll-redirect-from`, which are simulated)
+- Plugins. (Some plugins are emulated. See the [plugin board](https://github.com/osteele/gojekyll/projects/2) for their status.)
 - `site-static_files`, `site.html_files`, and `site.tags`
-- Jekyll liquid filters: `group_by_exp`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+- These Liquid filters: `group_by_exp`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+- More Liquid tags and filters, listed [here](https://github.com/osteele/liquid#differences-from-liquid).
 - Windows compatibility
+- Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [automatic ids](https://kramdown.gettalong.org/converter/html.html#auto-ids), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
 
-For more detailed status:
+Also see the [detailed status](#feature-status) below.
 
-- The [feature parity board](https://github.com/osteele/gojekyll/projects/1) board  lists differences between Jekyll and gojekyll in more detail.
-- The [plugin board](https://github.com/osteele/gojekyll/projects/2) lists the implementation status of common plugins. (Gojekyll lacks an extensible plugin mechanism. The goal is to be able to use it to build Jekyll sites that use the most popular plugins.)
-- The [Go Liquid feature parity board](https://github.com/osteele/liquid/projects/1) to see differences between the real Liquid library and the one that is used in gojekyll.
+### Other Differences
 
-## Other Differences
+These will probably not change:
 
-These will probably not change.
-
-- `uniq` doesn't work the same way as in Jekyll / Shopify Liquid. See the [Go Liquid differences](https://github.com/osteele/liquid#differences) for more on this.
-- Real Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
+- `uniq` on objects (things that aren't strings or numbers) doesn't work the way it does in Jekyll / Shopify Liquid. See the [Go Liquid differences](https://github.com/osteele/liquid#differences) for more on this.
+- Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
-- The server reloads the `_config.yml` too.
-- An extensible plugin mechanism: support for plugins that aren't compiled into the executable.
-- Incremental build isn't planned. The emphasis is on optimizing the non-incremental case.
+- `serve --watch` (the default) reloads `_config.yml` too.
+- An extensible plugin mechanism – support for plugins that aren't compiled into the executable.
+- Incremental build. The emphasis is on optimizing the non-incremental case.
 
-## Timings
+### Timings
 
-`[go]jekyll -s jekyll/docs build` on a late-2015 MacBook Pro, running current versions of everything as of 2017-07-01.
+`[go]jekyll -s jekyll/docs build` on a late-2015 MacBook Pro, running current versions of everything as of 2017-07-09.
 
 | Executable | Options                     | Time          |
 |------------|-----------------------------|---------------|
@@ -85,11 +101,12 @@ These will probably not change.
 | gojekyll   | multi-threaded; cold cache  | 1.37s ± 0.03s |
 | gojekyll   | multi-threaded; warm cache  | 0.80s ± 0.06s |
 
-There's currently no way to disable the cache. It was disabled off by re-building the executable.
+Disable the cache by setting the environment variable `GOJEKYLL_DISABLE_CACHE=1`.
+Disable threading by setting `GOMAXPROCS=1`.
 
-The cache is for calls to Pygments (via the `highlight` tag). For another site, SASS is greater overhead. This is another candidate for caching, but with multi-threading it may not matter.
+The cache is for calls to Pygments (via the `highlight` tag). For sites, SASS (which is currently not cached) might have more overhead.
 
-## Feature Status
+### Feature Status
 
 - [ ] Content
   - [x] Front Matter
@@ -149,6 +166,12 @@ The cache is for calls to Pygments (via the `highlight` tag). For another site, 
   - [ ] not planned: `doctor`, `import`, `new`, `new-theme`
 - [ ] Windows - not planned
 
+Also see:
+
+- The [feature parity board](https://github.com/osteele/gojekyll/projects/1) board  lists differences between Jekyll and gojekyll in more detail.
+- The [plugin board](https://github.com/osteele/gojekyll/projects/2) lists the implementation status of common plugins. (Gojekyll lacks an extensible plugin mechanism. The goal is to be able to use it to build Jekyll sites that use the most popular plugins.)
+- The [Go Liquid feature parity board](https://github.com/osteele/liquid/projects/1) to see differences between the real Liquid library and the one that is used in gojekyll.
+
 ## Contributing
 
 Bug reports, test cases, and code contributions are more than welcome.
@@ -169,25 +192,27 @@ Gojekyll uses these libraries:
 | [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command line and flag parser                          | MIT                               |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                                          | Apache License 2.0                |
 
-The text for `gojekyll help` was taken from the output of `jekyll help`, and is used under the terms of the MIT license.
+In addition, the following pieces of text were taken from Jekyll and its plugins.
+They are used under the terms of the MIT License.
 
-Many of the filter test cases are taken directly from the Jekyll documentation, and are used under the terms of the MIT license.
-
-The template for `jekyll-redirect-from` emulation was adapted from the template in <https://github.com/jekyll/jekyll-redirect-from>, and is used under the terms of the MIT license.
-
-The template for `jekyll-feed` emulation was taken verbatim from <https://github.com/jekyll/jekyll-feed>, and is used under the terms of the MIT license
-
-https://github.com/jekyll/jekyll-feed/
+| Source                                                                          | Used                 | Description            |
+|---------------------------------------------------------------------------------|----------------------|------------------------|
+| `jekyll help` command                                                           | `gojekyll help` text | help text              |
+| [Jekyll template documentation](https://jekyllrb.com/docs/templates/)           | test cases           | filter examples        |
+| [`jekyll-feed` plugin](https://github.com/jekyll/jekyll-feed)                   | plugin emulation     | `feed.xml` template    |
+| [`jekyll-redirect-from` plugin](https://github.com/jekyll/jekyll-redirect-from) | plugin emulation     | redirect page template |
 
 The gopher image in the `testdata` directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
-In addition to being totally and obviously inspired by Jekyll and its plugins, Jekyll's *documentation* was solid and indispensible. During development the [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab.
+In addition to being totally and obviously inspired by Jekyll and its plugins, Jekyll's  solid *documentation* was indispensible --- especially since I wanted to implement Jekyll as documented, not port its source code. The [Jekyll docs](https://jekyllrb.com/docs/home/) were always open in at least one tab during development.
 
 ## Related
 
-[Hugo](https://gohugo.io) is *the* pre-eminent Go static site generator. It isn't Jekyll-compatible (-), but it's extraordinarily polished, performant, and productized (+++).
+[Hugo](https://gohugo.io) is the pre-eminent Go static site generator. It isn't Jekyll-compatible (-), but it's extraordinarily polished, performant, and productized (+++).
 
-[Liquid](https://github.com/osteele/liquid) is a Go implementation of Liquid templates. I wrote it for gojekyll, but it's implemented as a standalone library.
+[jkl](https://github.com/drone/jkl) is another Go clone of Jekyll. If I'd found it sooner I might have started this project by forking that one. It's got a better name, too.
+
+[Liquid](https://github.com/osteele/liquid) is a pure Go implementation of Liquid templates, that I finally caved and wrote in order to use in this project.
 
 [Jekyll](https://jekyllrb.com), of course.
 
