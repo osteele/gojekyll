@@ -1,23 +1,32 @@
 package plugins
 
 import (
+	"fmt"
+	"html"
 	"io"
 
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/liquid"
+	"github.com/osteele/liquid/render"
 )
 
 type jekyllFeedPlugin struct {
 	plugin
-	tpl liquid.Template
+	site Site
+	tpl  liquid.Template
 }
 
 func init() {
 	register("jekyll-feed", &jekyllFeedPlugin{})
 }
 
+func (p *jekyllFeedPlugin) Initialize(s Site) error {
+	p.site = s
+	return nil
+}
+
 func (p *jekyllFeedPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
-	e.RegisterTag("feed_meta", p.makeUnimplementedTag("jekyll-feed"))
+	e.RegisterTag("feed_meta", p.feedMetaTag)
 	tmpl, err := e.ParseTemplate([]byte(feedTemplateSource))
 	if err != nil {
 		panic(err)
@@ -26,18 +35,34 @@ func (p *jekyllFeedPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
 	return nil
 }
 
-func (p *jekyllFeedPlugin) PostRead(site Site) error {
-	d := feedDoc{site, p}
-	site.AddDocument(&d, true)
+func (p *jekyllFeedPlugin) PostRead(s Site) error {
+	path := "/feed.xml"
+	if cfg, ok := s.Config().Variables["feed"].(map[string]interface{}); ok {
+		if pp, ok := cfg["path"].(string); ok {
+			path = "/" + pp
+		}
+	}
+
+	d := feedDoc{s, p, path}
+	s.AddDocument(&d, true)
 	return nil
 }
 
-type feedDoc struct {
-	s Site
-	p *jekyllFeedPlugin
+func (p *jekyllFeedPlugin) feedMetaTag(ctx render.Context) (string, error) {
+	cfg := p.site.Config()
+	name, _ := cfg.Variables["name"].(string)
+	tag := fmt.Sprintf(`<link type="application/atom+xml" rel="alternate" href="%s/feed.xml" title="%s">`,
+		html.EscapeString(cfg.AbsoluteURL), html.EscapeString(name))
+	return tag, nil
 }
 
-func (d *feedDoc) Permalink() string    { return "/feed.xml" }
+type feedDoc struct {
+	site   Site
+	plugin *jekyllFeedPlugin
+	path   string
+}
+
+func (d *feedDoc) Permalink() string    { return d.path }
 func (d *feedDoc) SourcePath() string   { return "" }
 func (d *feedDoc) OutputExt() string    { return ".xml" }
 func (d *feedDoc) Published() bool      { return true }
@@ -46,8 +71,8 @@ func (d *feedDoc) Categories() []string { return []string{} }
 func (d *feedDoc) Tags() []string       { return []string{} }
 
 func (d *feedDoc) Content() []byte {
-	bindings := map[string]interface{}{"site": d.s}
-	b, err := d.p.tpl.Render(bindings)
+	bindings := map[string]interface{}{"site": d.site}
+	b, err := d.plugin.tpl.Render(bindings)
 	if err != nil {
 		panic(err)
 	}
