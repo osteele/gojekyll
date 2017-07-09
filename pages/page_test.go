@@ -17,14 +17,14 @@ type renderingContextFake struct {
 
 func (c renderingContextFake) RenderingPipeline() pipelines.PipelineInterface { return c }
 func (c renderingContextFake) Config() config.Config                          { return c.cfg }
-func (c renderingContextFake) PathPrefix() string                       { return "." }
+func (c renderingContextFake) PathPrefix() string                             { return "." }
 func (c renderingContextFake) OutputExt(string) string                        { return ".html" }
 func (c renderingContextFake) Site() interface{}                              { return nil }
 func (c renderingContextFake) ApplyLayout(layout string, src []byte, vars map[string]interface{}) ([]byte, error) {
 	require.Equal(c.t, "layout1", layout)
 	return nil, nil
 }
-func (c renderingContextFake) Render(w io.Writer, src []byte, filename string, vars map[string]interface{}) ([]byte, error) {
+func (c renderingContextFake) Render(w io.Writer, src []byte, filename string, lineNo int, vars map[string]interface{}) ([]byte, error) {
 	require.Equal(c.t, "testdata/page_with_layout.md", filename)
 	return nil, nil
 }

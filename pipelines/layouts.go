@@ -7,12 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/liquid"
 )
 
 // FindLayout returns a template for the named layout.
-func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (t liquid.Template, err error) {
+func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl liquid.Template, err error) {
 	exts := []string{"", ".html"}
 	for _, ext := range strings.SplitN(p.config.MarkdownExt, `,`, -1) {
 		exts = append(exts, "."+ext)
@@ -37,15 +37,16 @@ func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (t liquid
 	if !found {
 		return nil, fmt.Errorf("no template for %s", base)
 	}
-	*fm, err = templates.ReadFrontMatter(&content)
+	lineNo := 1
+	*fm, err = frontmatter.Read(&content, &lineNo)
 	if err != nil {
 		return
 	}
-	t, err = p.liquidEngine.ParseTemplate(content)
+	tpl, err = p.liquidEngine.ParseTemplate(content)
 	if err != nil {
 		return nil, err
 	}
-	t.SetSourcePath(filename)
+	tpl.SetSourceLocation(filename, lineNo)
 	return
 }
 

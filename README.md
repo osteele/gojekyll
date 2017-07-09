@@ -24,7 +24,7 @@ Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator,
 
 First-time install:
 
-1. [Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier than the linked instructions.
+1. [Install go](https://golang.org/doc/install#install). (On macOS running [Homebrew](https://brew.sh), `brew install go` is easier than the Install instructions on the Go site.)
 2. `go get osteele/gojekyll/cmd/gojekyll`
 3. To use the `{% highlight %}` tag, you need Pygments. `pip install Pygments`.
 
@@ -36,7 +36,7 @@ Update to the latest version:
 
 ```bash
 gojekyll build       # builds the site in the current directory into _site
-gojekyll serve       # serve the app at http://localhost:4000
+gojekyll serve       # serve the app at http://localhost:4000; reload on changes
 gojekyll help
 gojekyll help build
 ```

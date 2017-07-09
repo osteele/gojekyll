@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"time"
 
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/liquid/evaluator"
 )
@@ -27,8 +28,9 @@ type Page interface {
 
 type page struct {
 	file
-	raw     []byte
-	content *[]byte
+	firstLine int
+	raw       []byte
+	content   *[]byte
 }
 
 // Static is in the File interface.
@@ -39,15 +41,16 @@ func makePage(filename string, f file) (*page, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	frontMatter, err := templates.ReadFrontMatter(&b)
+	lineNo := 1
+	frontMatter, err := frontmatter.Read(&b, &lineNo)
 	if err != nil {
 		return nil, err
 	}
 	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
 	p := page{
-		file: f,
-		raw:  b,
+		file:      f,
+		firstLine: lineNo,
+		raw:       b,
 	}
 	if err = p.setPermalink(); err != nil {
 		return nil, err
@@ -106,7 +109,7 @@ func (p *page) Content(rc RenderingContext) ([]byte, error) {
 	if p.content == nil {
 		rp := rc.RenderingPipeline()
 		buf := new(bytes.Buffer)
-		b, err := rp.Render(buf, p.raw, p.filename, p.TemplateContext(rc))
+		b, err := rp.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext(rc))
 		if err != nil {
 			return nil, err
 		}

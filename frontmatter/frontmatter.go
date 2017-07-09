@@ -12,6 +12,7 @@ import (
 // FrontMatter wraps a map to provide interface functions
 type FrontMatter map[string]interface{}
 
+// The first four bytes of a file with front matter.
 const fmMagic = "---\n"
 
 // FileHasFrontMatter returns a bool indicating whether the
