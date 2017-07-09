@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dchest/cssmin"
 	"github.com/osteele/gojekyll/helpers"
 
 	libsass "github.com/wellington/go-libsass"
@@ -49,8 +50,9 @@ func (p *Pipeline) SassIncludePaths() []string {
 }
 
 // WriteSass converts a SASS file and writes it to w.
-func (p *Pipeline) WriteSass(w io.Writer, b []byte) error {
-	comp, err := libsass.New(w, bytes.NewBuffer(b))
+func (p *Pipeline) WriteSass(w io.Writer, b []byte) (err error) {
+	buf := new(bytes.Buffer)
+	comp, err := libsass.New(buf, bytes.NewBuffer(b))
 	if err != nil {
 		return err
 	}
@@ -58,5 +60,10 @@ func (p *Pipeline) WriteSass(w io.Writer, b []byte) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return comp.Run()
+	if err = comp.Run(); err != nil {
+		return err
+	}
+	b = cssmin.Minify(buf.Bytes())
+	_, err = w.Write(b)
+	return err
 }

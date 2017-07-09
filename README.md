@@ -16,7 +16,7 @@ Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator,
         - [Timings](#timings)
         - [Feature Status](#feature-status)
     - [Contributing](#contributing)
-    - [Credits](#credits)
+    - [Attribution](#attribution)
     - [Related](#related)
     - [License](#license)
 
@@ -178,21 +178,22 @@ Also see:
 Bug reports, test cases, and code contributions are more than welcome.
 Please refer to the [contribution guidelines](./CONTRIBUTING.md).
 
-## Credits
+## Attribution
 
 Gojekyll uses these libraries:
 
-| Package                                                                        | Author(s)                                              | Description                                           | License                           |
-|--------------------------------------------------------------------------------|--------------------------------------------------------|-------------------------------------------------------|-----------------------------------|
-| [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim                                         | Live Reload server                                    | MIT License                       |
-| [github.com/osteele/liquid](https://github.com/osteele/liquid)                 | yours truly                                            | Liquid processor                                      | MIT License                       |
-| [github.com/kyokomi/emoji](https://github.com/kyokomi/emoji)                   | kyokomi                                                | `jemoji` plugin emulation                             | MIT License                       |
-| [github.com/pkg/browser](https://github.com/pkg/browser)                       | [pkg](https://github.com/pkg)                          | The `serve -o` option to open the site in the browser | BSD 2-clause "Simplified" License |
-| [github.com/russross/blackfriday](https://github.com/russross/blackfriday)     | Russ Ross                                              | Markdown processor                                    | Simplified BSD License            |
-| [github.com/sass/libsass](https://github.com/sass/libsass)                     | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler                      | MIT License                       |
-| [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass)   | Drew Wells                                             | Go bindings for **libsass**                           | ???                               |
-| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command line and flag parser                          | MIT License                       |
-| [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                                          | Apache License 2.0                |
+| Package                                                                        | Author(s)                                              | Usage                            | License                                 |
+|--------------------------------------------------------------------------------|--------------------------------------------------------|----------------------------------|-----------------------------------------|
+| [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim                                         | Live Reload                      | MIT License                             |
+| [github.com/dchest/cssmin](https://github.com/dchest/cssmin)                   | Dmitry Chestnykh                                       | CSS minimization                 | BSD 3-clause "New" or "Revised" License |
+| [github.com/kyokomi/emoji](https://github.com/kyokomi/emoji)                   | kyokomi                                                | `jemoji` plugin emulation        | MIT License                             |
+| [github.com/osteele/liquid](https://github.com/osteele/liquid)                 | yours truly                                            | Liquid processor                 | MIT License                             |
+| [github.com/pkg/browser](https://github.com/pkg/browser)                       | [pkg](https://github.com/pkg)                          | `serve --open-url` option        | BSD 2-clause "Simplified" License       |
+| [github.com/russross/blackfriday](https://github.com/russross/blackfriday)     | Russ Ross                                              | Markdown processing              | Simplified BSD License                  |
+| [github.com/sass/libsass](https://github.com/sass/libsass)                     | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler | MIT License                             |
+| [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass)   | Drew Wells                                             | Go bindings for **libsass**      | ???                                     |
+| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command-line arguments           | MIT License                             |
+| [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                     | Apache License 2.0                      |
 
 In addition, the following pieces of text were taken from Jekyll and its plugins.
 They are used under the terms of the MIT License.
