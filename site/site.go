@@ -12,7 +12,6 @@ import (
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/plugins"
-	"github.com/osteele/liquid"
 )
 
 // Site is a Jekyll site.
@@ -85,6 +84,18 @@ func (s *Site) Config() *config.Config {
 	return &s.config
 }
 
+func (s *Site) runHooks(h func(plugins.Plugin) error) error {
+	for _, name := range s.config.Plugins {
+		p, ok := plugins.Lookup(name)
+		if ok {
+			if err := h(p); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // Site is in the pages.RenderingContext interface.
 func (s *Site) Site() interface{} {
 	return s
@@ -150,26 +161,19 @@ func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
 	return s.pipeline
 }
 
-type pluginContext struct {
-	engine liquid.Engine
-}
-
-// Engine is in the PluginContext interface.
-func (c pluginContext) TemplateEngine() liquid.Engine { return c.engine }
-
 // initializeRenderingPipeline initializes the rendering pipeline
 func (s *Site) initializeRenderingPipeline() (err error) {
 	options := pipelines.PipelineOptions{
 		RelativeFilenameToURL: s.FilenameURLPath,
 	}
 	s.pipeline, err = pipelines.NewPipeline(s.config, options)
-	ctx := pluginContext{s.pipeline.TemplateEngine()}
-	for _, name := range s.config.Plugins {
-		if !plugins.Install(name, ctx) {
-			fmt.Printf("warning: gojekyll does not emulate the %s plugin.\n", name)
-		}
+	if err != nil {
+		return nil
 	}
-	return
+	engine := s.pipeline.TemplateEngine()
+	return s.runHooks(func(p plugins.Plugin) error {
+		return p.ConfigureTemplateEngine(engine)
+	})
 }
 
 // OutputExt is in the page.Container interface.

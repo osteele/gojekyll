@@ -10,14 +10,12 @@ import (
 	"github.com/osteele/gojekyll/pages"
 )
 
-type jekyllFeedPlugin struct{ plugin }
+type jekyllRedirectFromPlugin struct{ plugin }
 
 var redirectTemplate *template.Template
 
 func init() {
-	register("jekyll-redirect-from", func(ctx PluginContext, h pluginHelper) error {
-		return nil
-	})
+	register("jekyll-redirect-from", jekyllRedirectFromPlugin{})
 	tmpl, err := template.New("redirect_from").Parse(redirectFromText)
 	if err != nil {
 		panic(err)
@@ -50,7 +48,7 @@ func (p *redirector) Write(w io.Writer, c pages.RenderingContext) error {
 	return redirectTemplate.Execute(w, p)
 }
 
-func (p jekyllFeedPlugin) PostRead(site Site) error {
+func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
 	redirections := []pages.Document{}
 	for _, p := range site.Pages() {
 		rd, ok := p.FrontMatter()["redirect_from"]

@@ -36,21 +36,14 @@ func FromDirectory(source string, flags config.Flags) (*Site, error) {
 
 // Read loads the site data and files. It doesn't load the configuration file; NewSiteFromDirectory did that.
 func (s *Site) Read() error {
+	plugins.Install(s.config.Plugins, s)
 	if err := s.readDataFiles(); err != nil {
 		return err
 	}
 	if err := s.readFiles(); err != nil {
 		return err
 	}
-	for _, name := range s.config.Plugins {
-		plugin, ok := plugins.Find(name)
-		if ok {
-			if err := plugin.PostRead(s); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
+	return s.runHooks(func(p plugins.Plugin) error { return p.PostRead(s) })
 }
 
 // Reload reloads the config file and pages.

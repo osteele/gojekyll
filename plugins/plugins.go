@@ -14,12 +14,6 @@ import (
 	"github.com/osteele/liquid/render"
 )
 
-// PluginContext is the context for plugin initialization.
-// Currently, the only thing a plugin can do is add filters and tags.
-type PluginContext interface {
-	TemplateEngine() liquid.Engine
-}
-
 // Site is the site interface that is available to a plugin.
 type Site interface {
 	AddDocument(pages.Document, bool)
@@ -29,82 +23,79 @@ type Site interface {
 
 // Plugin describes the hooks that a plugin can override.
 type Plugin interface {
+	ConfigureTemplateEngine(liquid.Engine) error
+	Initialize(Site) error
 	PostRead(site Site) error
 }
 
 type plugin struct{}
 
-func (p plugin) PostRead(site Site) error { return nil }
+func (p plugin) ConfigureTemplateEngine(liquid.Engine) error { return nil }
+func (p plugin) Initialize(Site) error                       { return nil }
+func (p plugin) PostRead(Site) error                         { return nil }
 
-// Find looks up a plugin by name
-func Find(name string) (Plugin, bool) {
-	switch name {
-	case "jekyll-redirect-from":
-		return jekyllFeedPlugin{}, true
-	default:
-		return nil, false
-	}
+// Lookup returns a plugin if it has been registered.
+func Lookup(name string) (Plugin, bool) {
+	p, found := directory[name]
+	return p, found
 }
 
 // Install installs a plugin from the plugin directory.
-func Install(name string, ctx PluginContext) bool {
-	p, found := directory[name]
-	if p != nil {
-		if err := p(ctx, pluginHelper{ctx, name}); err != nil {
-			panic(err)
+func Install(names []string, site Site) {
+	for _, name := range names {
+		p, found := directory[name]
+		if found {
+			if err := p.Initialize(site); err != nil {
+				panic(err)
+			}
+		} else {
+			fmt.Printf("warning: gojekyll does not emulate the %s plugin.\n", name)
 		}
 	}
-	return found
 }
 
-var directory = map[string]func(PluginContext, pluginHelper) error{}
+var directory = map[string]Plugin{}
 
 // register installs a plugin in the plugin directory.
-func register(name string, fn func(PluginContext, pluginHelper) error) {
-	directory[name] = fn
+func register(name string, p Plugin) {
+	directory[name] = p
 }
 
 func init() {
-	register("jekyll-feed", func(ctx PluginContext, h pluginHelper) error {
-		h.stubbed()
-		h.tag("feed_meta", h.makeUnimplementedTag())
-		return nil
-	})
-
-	register("jekyll-seo-tag", func(ctx PluginContext, h pluginHelper) error {
-		h.stubbed()
-		h.tag("seo", h.makeUnimplementedTag())
-		return nil
-	})
+	register("jekyll-feed", jekyllFeedPlugin{})
+	register("jekyll-seo-tag", jekyllSEOTagPlugin{})
 
 	// the following plugins are always active
 	// no warning but effect; the server runs in this mode anyway
-	register("jekyll-live-reload", func(ctx PluginContext, h pluginHelper) error {
-		return nil
-	})
-	register("jekyll-sass-converter", func(ctx PluginContext, h pluginHelper) error {
-		return nil
-	})
+	register("jekyll-live-reload", plugin{})
+	register("jekyll-sass-converter", plugin{})
 }
 
-type pluginHelper struct {
-	PluginContext
-	name string
+type jekyllFeedPlugin struct{ plugin }
+
+func (p jekyllFeedPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+	p.stubbed("jekyll-feed")
+	e.RegisterTag("feed_meta", p.makeUnimplementedTag("jekyll-feed"))
+	return nil
 }
 
-func (h pluginHelper) stubbed() {
-	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", h.name)
+type jekyllSEOTagPlugin struct{ plugin }
+
+func (p jekyllSEOTagPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+	p.stubbed("jekyll-seo-tag")
+	e.RegisterTag("seo", p.makeUnimplementedTag("jekyll-seo-tag"))
+	return nil
 }
 
-func (h pluginHelper) tag(name string, r liquid.Renderer) {
-	h.TemplateEngine().RegisterTag(name, r)
+func (p plugin) stubbed(name string) {
+	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", name)
 }
 
-func (h pluginHelper) makeUnimplementedTag() liquid.Renderer {
+func (p plugin) makeUnimplementedTag(pluginName string) liquid.Renderer {
 	warned := false
 	return func(ctx render.Context) (string, error) {
 		if !warned {
-			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), h.name)
+			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), pluginName)
 			warned = true
 		}
 		return fmt.Sprintf(`<!-- unimplemented tag: %q -->`, ctx.TagName()), nil

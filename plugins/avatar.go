@@ -5,14 +5,19 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/tags"
+	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
 
 func init() {
-	register("jekyll-avatar", func(_ PluginContext, h pluginHelper) error {
-		h.tag("avatar", avatarTag)
-		return nil
-	})
+	register("jekyll-avatar", jekyllAvatarPlugin{})
+}
+
+type jekyllAvatarPlugin struct{ plugin }
+
+func (p jekyllAvatarPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+	e.RegisterTag("avatar", avatarTag)
+	return nil
 }
 
 const avatarTemplate = `<img class="avatar avatar-small" src="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40" alt="{user}" srcset="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40 1x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=80 2x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=120 3x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=160 4x" width="40" height="40" data-proofer-ignore="true" />`

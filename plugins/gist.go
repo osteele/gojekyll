@@ -4,14 +4,19 @@ import (
 	"fmt"
 
 	"github.com/osteele/gojekyll/tags"
+	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
 
 func init() {
-	register("jekyll-gist", func(_ PluginContext, h pluginHelper) error {
-		h.tag("gist", gistTag)
-		return nil
-	})
+	register("jekyll-gist", jekyllGistPlugin{})
+}
+
+type jekyllGistPlugin struct{ plugin }
+
+func (p jekyllGistPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+	e.RegisterTag("gist", gistTag)
+	return nil
 }
 
 func gistTag(ctx render.Context) (string, error) {
