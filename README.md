@@ -62,17 +62,17 @@ In addition to the limitations listed below, this software isn't robust. Jekyll,
 ### Current Limitations
 
 Missing features:
+
 - Themes
 - Excerpts
 - Pagination
 - Math
 - CSV and JSON data files
 - Plugins. (Some plugins are emulated. See the [plugin board](https://github.com/osteele/gojekyll/projects/2) for their status.)
-- `site-static_files`, `site.html_files`, and `site.tags`
-- These Liquid filters: `group_by_exp`, `cgi_escape`, `uri_escape`, `scssify`, and `smartify`
+- Template filters `group_by_exp`, `cgi_escape`, `uri_escape`, and `scssify`
 - More Liquid tags and filters, listed [here](https://github.com/osteele/liquid#differences-from-liquid).
-- Windows compatibility
 - Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [automatic ids](https://kramdown.gettalong.org/converter/html.html#auto-ids), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
+- Windows compatibility
 
 Also see the [detailed status](#feature-status) below.
 

@@ -50,16 +50,6 @@ func (s *Site) OutputPages() []pages.Document {
 	return out
 }
 
-// StaticFiles returns a list of static files.
-func (s *Site) StaticFiles() (out []*pages.StaticFile) {
-	for _, d := range s.docs {
-		if sd, ok := d.(*pages.StaticFile); ok {
-			out = append(out, sd)
-		}
-	}
-	return
-}
-
 // Pages returns all the pages, output or not.
 func (s *Site) Pages() (out []pages.Page) {
 	for _, d := range s.docs {

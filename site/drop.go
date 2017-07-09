@@ -10,8 +10,8 @@ import (
 
 // ToLiquid returns the site variable for template evaluation.
 func (s *Site) ToLiquid() interface{} {
-	// double-checked lock is okay here, since it's okay if this gets
-	// written twice
+	// double-checked lock is okay here, since it's okay if this is
+	// computed and set twice
 	if len(s.drop) == 0 {
 		s.Lock()
 		defer s.Unlock()
@@ -32,12 +32,12 @@ func (s *Site) initializeDrop() {
 	vars := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data":         s.data,
 		"documents":    s.docs,
+		"html_files":   s.htmlFiles(),
 		"html_pages":   s.htmlPages(),
 		"pages":        s.Pages(),
-		"static_files": s.StaticFiles(),
+		"static_files": s.staticFiles(),
 		// TODO read time from _config, if it's available
 		"time": time.Now(),
-		// TODO static_files, html_files, tags.TAG
 	})
 	collections := []interface{}{}
 	for _, c := range s.Collections {
@@ -59,10 +59,33 @@ func (s *Site) setPageContent() error {
 	return nil
 }
 
+// The following functions are only used in the drop, therefore they're
+// non-public and they're listed here.
+//
+// Since the drop is cached, there's no effort to cache these too.
+
+func (s *Site) htmlFiles() (out []*pages.StaticFile) {
+	for _, p := range s.staticFiles() {
+		if p.OutputExt() == ".html" {
+			out = append(out, p)
+		}
+	}
+	return
+}
+
 func (s *Site) htmlPages() (out []pages.Page) {
 	for _, p := range s.Pages() {
 		if p.OutputExt() == ".html" {
 			out = append(out, p)
+		}
+	}
+	return
+}
+
+func (s *Site) staticFiles() (out []*pages.StaticFile) {
+	for _, d := range s.docs {
+		if sd, ok := d.(*pages.StaticFile); ok {
+			out = append(out, sd)
 		}
 	}
 	return
