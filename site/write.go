@@ -1,6 +1,7 @@
 package site
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/plugins"
 )
 
 func (s *Site) prepareRendering() error {
@@ -51,7 +53,7 @@ func (s *Site) WritePages(options BuildOptions) (count int, err error) {
 	return count, err
 }
 
-// WritePage writes a page to the destination directory.
+// WriteDocument writes a document to the destination directory.
 // It attends to options.dry_run.
 func (s *Site) WritePage(p pages.Document, options BuildOptions) error {
 	from := filepath.Join(s.SourceDir(), filepath.ToSlash(p.SourcePath()))
@@ -76,8 +78,25 @@ func (s *Site) WritePage(p pages.Document, options BuildOptions) error {
 	case p.Static():
 		return helpers.CopyFileContents(to, from, 0644)
 	default:
+		buf := new(bytes.Buffer)
+		if err := p.Write(buf, s); err != nil {
+			return err
+		}
+		c := buf.Bytes()
+		err := s.runHooks(func(p plugins.Plugin) error {
+			c = p.PostRender(c)
+			return nil
+		})
+		if err != nil {
+			return err
+		}
 		return helpers.VisitCreatedFile(to, func(w io.Writer) error {
-			return p.Write(w, s)
+			_, err := w.Write(c)
+			return err
 		})
 	}
 }
+
+// // WritePage writes a page to the destination directory.
+// func (s *Site) WritePage(p pages.Page) error {
+// }

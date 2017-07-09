@@ -7,8 +7,10 @@ package plugins
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/helpers"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
@@ -24,6 +26,7 @@ type Site interface {
 // Plugin describes the hooks that a plugin can override.
 type Plugin interface {
 	ConfigureTemplateEngine(liquid.Engine) error
+	PostRender([]byte) []byte
 	Initialize(Site) error
 	PostRead(site Site) error
 }
@@ -31,6 +34,7 @@ type Plugin interface {
 type plugin struct{}
 
 func (p plugin) ConfigureTemplateEngine(liquid.Engine) error { return nil }
+func (p plugin) PostRender(b []byte) []byte                  { return b }
 func (p plugin) Initialize(Site) error                       { return nil }
 func (p plugin) PostRead(Site) error                         { return nil }
 
@@ -63,6 +67,7 @@ func register(name string, p Plugin) {
 
 func init() {
 	register("jekyll-feed", jekyllFeedPlugin{})
+	register("jekyll-mentions", jekyllMentionsPlugin{})
 	register("jekyll-seo-tag", jekyllSEOTagPlugin{})
 
 	// the following plugins are always active
@@ -77,6 +82,16 @@ func (p jekyllFeedPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
 	p.stubbed("jekyll-feed")
 	e.RegisterTag("feed_meta", p.makeUnimplementedTag("jekyll-feed"))
 	return nil
+}
+
+type jekyllMentionsPlugin struct{ plugin }
+
+var mentionPattern = regexp.MustCompile(`@(\w+)`)
+
+func (p jekyllMentionsPlugin) PostRender(b []byte) []byte {
+	return helpers.ApplyToHTMLText(b, func(s string) string {
+		return mentionPattern.ReplaceAllString(s, `<a href="https://github.com/$1" class="user-mention">@$1</a>`)
+	})
 }
 
 type jekyllSEOTagPlugin struct{ plugin }
