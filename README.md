@@ -2,19 +2,23 @@
 
  [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
 
-Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language.
+Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It supports the `build` and `serve` commands, with directory watch and live reload.
+
+I wrote this in order to learn Go.
+I was also hoping for faster preview of changes to GitHub Pages.
+
+Gojekyll is [incomplete](#current-limitations), minimally tested, and doesn't run on Windows.
+It appears to be about [twenty times](./benchmarks.md) faster than Jekyll, so that's something.
 
 <!-- TOC -->
 
 - [Gojekyll](#gojekyll)
     - [Installation](#installation)
     - [Usage](#usage)
-    - [Motivation](#motivation)
     - [Status](#status)
         - [Current Limitations](#current-limitations)
         - [Other Differences](#other-differences)
-        - [Timings](#timings)
-        - [Feature Status](#feature-status)
+        - [Feature Checklist](#feature-checklist)
     - [Contributing](#contributing)
     - [Attribution](#attribution)
     - [Related](#related)
@@ -28,7 +32,7 @@ First-time install:
 
 1. [Install go](https://golang.org/doc/install#install). (On macOS running [Homebrew](https://brew.sh), `brew install go` is easier than the Install instructions on the Go site.)
 2. `go get osteele/gojekyll/cmd/gojekyll`
-3. To use the `{% highlight %}` tag, you need Pygments. `pip install Pygments`.
+3. To use the `{% highlight %}` tag, you also need [Pygments](http://pygments.org). `pip install Pygments`.
 
 Update to the latest version:
 
@@ -43,12 +47,6 @@ gojekyll help
 gojekyll help build
 ```
 
-## Motivation
-
-I wanted to learn Go.
-
-I also wanted a faster way to preview changes to my sites that use GitHub Pages.
-
 ## Status
 
 This project is at an early stage of development.
@@ -57,7 +55,7 @@ It works on the Google Pages sites that I care about, and it looks credible on a
 
 It doesn't run on Windows, and it may not work for you.
 
-In addition to the limitations listed below, this software isn't robust. Jekyll, Hugo, and other mature projects have lots of test coverage, and have had lots of testing by lots of people. I've only this in limited ways, in the month since I started writing it.
+In addition to the limitations listed below, this software isn't robust. Jekyll, Hugo, and other mature projects have lots of test coverage, and have had lots of testing by lots of people. I've this used only in limited ways, in the month since I started writing it.
 
 ### Current Limitations
 
@@ -81,39 +79,27 @@ Also see the [detailed status](#feature-status) below.
 
 These will probably not change:
 
-- `uniq` on objects (things that aren't strings or numbers) doesn't work the way it does in Jekyll / Shopify Liquid. See the [Go Liquid differences](https://github.com/osteele/liquid#differences) for more on this.
-- Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
+By design:
+
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Server live reload is always on.
 - `serve --watch` (the default) reloads `_config.yml` too.
+- Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
+- Incremental build. The emphasis is on optimizing the non-incremental case. This is easier with fewer code paths.
+
+Muzukashii:
+
+- `uniq` on objects (things that aren't strings or numbers) doesn't work the way it does in Jekyll / Shopify Liquid. See the [Go Liquid differences](https://github.com/osteele/liquid#differences) for more on this.
 - An extensible plugin mechanism – support for plugins that aren't compiled into the executable.
-- Incremental build. The emphasis is on optimizing the non-incremental case.
 
-### Timings
-
-`[go]jekyll -s jekyll/docs build` on a late-2015 MacBook Pro, running current versions of everything as of 2017-07-09.
-
-| Executable | Options                     | Time          |
-|------------|-----------------------------|---------------|
-| jekyll     |                             | 18.53s        |
-| gojekyll   | single-threaded; cold cache | 2.96s ± 0.09s |
-| gojekyll   | single-threaded; warm cache | 2.51s ± 0.04s |
-| gojekyll   | multi-threaded; cold cache  | 1.37s ± 0.03s |
-| gojekyll   | multi-threaded; warm cache  | 0.80s ± 0.06s |
-
-Disable the cache by setting the environment variable `GOJEKYLL_DISABLE_CACHE=1`.
-Disable threading by setting `GOMAXPROCS=1`.
-
-SASS conversion and Pygments (`highlight`) are cached.
-
-### Feature Status
+### Feature Checklist
 
 - [ ] Content
   - [x] Front Matter
-  - [ ] Posts
+  - [x] Posts
     - [x] Categories
-    - [ ] Tags
+    - [x] Tags
     - [x] Drafts
     - [x] Future
     - [x] Related
@@ -165,7 +151,7 @@ SASS conversion and Pygments (`highlight`) are cached.
     - [ ] `--detach`, `--baseurl`
     - [ ] not planned: `--incremental`, `--ssl`-*
   - [ ] not planned: `doctor`, `import`, `new`, `new-theme`
-- [ ] Windows - not planned
+- [ ] Windows
 
 Also see:
 
