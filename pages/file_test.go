@@ -1,25 +1,39 @@
 package pages
 
 import (
+	"io"
 	"path/filepath"
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/pipelines"
 	"github.com/stretchr/testify/require"
 )
 
-type containerFake struct {
-	cfg    config.Config
-	prefix string
+type siteFake struct {
+	t   *testing.T
+	cfg config.Config
 }
 
-func (c containerFake) Config() *config.Config    { return &c.cfg }
-func (c containerFake) PathPrefix() string        { return c.prefix }
-func (c containerFake) OutputExt(p string) string { return filepath.Ext(p) }
+func (s siteFake) Config() *config.Config                         { return &s.cfg }
+func (s siteFake) RenderingPipeline() pipelines.PipelineInterface { return &pipelineFake{s.t} }
+func (s siteFake) OutputExt(p string) string                      { return filepath.Ext(p) }
 
-func TestPageCategories(t *testing.T) {
-	c := containerFake{config.Default(), ""}
+type pipelineFake struct{ t *testing.T }
+
+func (p pipelineFake) OutputExt(string) string { return ".html" }
+func (p pipelineFake) ApplyLayout(layout string, src []byte, vars map[string]interface{}) ([]byte, error) {
+	require.Equal(p.t, "layout1", layout)
+	return nil, nil
+}
+func (p pipelineFake) Render(w io.Writer, src []byte, filename string, lineNo int, vars map[string]interface{}) ([]byte, error) {
+	require.Equal(p.t, "testdata/page_with_layout.md", filename)
+	return nil, nil
+}
+
+func TestFile_Categories(t *testing.T) {
+	s := siteFake{t, config.Default()}
 	fm := map[string]interface{}{"categories": "b a"}
-	f := file{container: c, frontMatter: fm}
+	f := file{site: s, frontMatter: fm}
 	require.Equal(t, []string{"a", "b"}, f.Categories())
 }

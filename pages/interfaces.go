@@ -17,23 +17,15 @@ type Document interface {
 	// Output
 	Published() bool
 	Static() bool
-	Write(io.Writer, RenderingContext) error
+	Write(io.Writer) error
 
 	Categories() []string
 	Tags() []string
 }
 
-// RenderingContext provides context information for rendering.
-type RenderingContext interface {
-	RenderingPipeline() pipelines.PipelineInterface
-	// Site is the value of the "site" template variable.
-	Site() interface{} // used as a drop in the rendering context
-}
-
-// Container is the document container.
-// It's either the Site or Collection that immediately contains the document.
-type Container interface {
+// Site is the interface that the site provides to a page.
+type Site interface {
 	Config() *config.Config
+	RenderingPipeline() pipelines.PipelineInterface
 	OutputExt(pathname string) string
-	PathPrefix() string // PathPrefix is the relative prefix, "" for the site and "_coll/" for a collection
 }

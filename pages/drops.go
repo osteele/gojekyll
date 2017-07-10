@@ -43,24 +43,13 @@ func (p *page) ToLiquid() interface{} {
 		root    = utils.TrimExt(p.relpath)
 		base    = filepath.Base(root)
 		content = p.raw
-		excerpt string
 	)
 	if p.content != nil {
 		content = *p.content
 	}
-	content = bytes.TrimSpace(content)
-	if ei, ok := p.frontMatter["excerpt"]; ok {
-		excerpt = fmt.Sprint(ei)
-	} else {
-		pos := bytes.Index(content, []byte(p.container.Config().ExcerptSeparator))
-		if pos < 0 {
-			pos = len(content)
-		}
-		excerpt = string(content[:pos])
-	}
 	data := map[string]interface{}{
 		"content": string(content),
-		"excerpt": excerpt,
+		"excerpt": p.excerpt(),
 		"path":    relpath,
 		"url":     p.Permalink(),
 		// TODO output
@@ -99,6 +88,21 @@ func (p *page) ToLiquid() interface{} {
 		}
 	}
 	return data
+}
+
+func (p *page) excerpt() string {
+	if ei, ok := p.frontMatter["excerpt"]; ok {
+		return fmt.Sprint(ei)
+	}
+	content := p.raw
+	if p.content != nil {
+		content = *p.content
+	}
+	pos := bytes.Index(content, []byte(p.site.Config().ExcerptSeparator))
+	if pos >= 0 {
+		return string(content[:pos])
+	}
+	return string(content)
 }
 
 // MarshalYAML is part of the yaml.Marshaler interface

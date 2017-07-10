@@ -5,7 +5,6 @@ import (
 	"html"
 	"io"
 
-	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
@@ -79,7 +78,7 @@ func (d *feedDoc) Content() []byte {
 	return b
 }
 
-func (d *feedDoc) Write(w io.Writer, c pages.RenderingContext) error {
+func (d *feedDoc) Write(w io.Writer) error {
 	_, err := w.Write(d.Content())
 	return err
 }

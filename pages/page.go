@@ -17,7 +17,7 @@ type Page interface {
 	Document
 	// Content asks a page to compute its content.
 	// This has the side effect of causing the content to subsequently appear in the drop.
-	Content(rc RenderingContext) ([]byte, error)
+	Content() ([]byte, error)
 	SetContent(content []byte)
 	FrontMatter() map[string]interface{}
 	// PostDate returns the date computed from the filename or frontmatter.
@@ -59,10 +59,10 @@ func makePage(filename string, f file) (*page, error) {
 }
 
 // TemplateContext returns the local variables for template evaluation
-func (p *page) TemplateContext(rc RenderingContext) map[string]interface{} {
+func (p *page) TemplateContext() map[string]interface{} {
 	return map[string]interface{}{
 		"page": p,
-		"site": rc.Site(),
+		"site": p.site,
 	}
 }
 
@@ -87,15 +87,15 @@ func (p *page) PostDate() time.Time {
 }
 
 // Write applies Liquid and Markdown, as appropriate.
-func (p *page) Write(w io.Writer, rc RenderingContext) error {
-	content, err := p.Content(rc)
+func (p *page) Write(w io.Writer) error {
+	content, err := p.Content()
 	if err != nil {
 		return err
 	}
 	layout, ok := p.frontMatter["layout"].(string)
 	if ok && layout != "" {
-		rp := rc.RenderingPipeline()
-		content, err = rp.ApplyLayout(layout, content, p.TemplateContext(rc))
+		rp := p.site.RenderingPipeline()
+		content, err = rp.ApplyLayout(layout, content, p.TemplateContext())
 		if err != nil {
 			return err
 		}
@@ -105,13 +105,13 @@ func (p *page) Write(w io.Writer, rc RenderingContext) error {
 }
 
 // Content computes the page content.
-func (p *page) Content(rc RenderingContext) ([]byte, error) {
+func (p *page) Content() ([]byte, error) {
 	if p.content != nil {
 		return *p.content, nil
 	}
-	rp := rc.RenderingPipeline()
+	pipe := p.site.RenderingPipeline()
 	buf := new(bytes.Buffer)
-	b, err := rp.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext(rc))
+	b, err := pipe.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext())
 	if err != nil {
 		return nil, err
 	}

@@ -31,7 +31,7 @@ func (s *Site) WriteDocument(w io.Writer, p pages.Document) error {
 		return err
 	}
 	buf := new(bytes.Buffer)
-	if err := p.Write(buf, s); err != nil {
+	if err := p.Write(buf); err != nil {
 		return err
 	}
 	c := buf.Bytes()

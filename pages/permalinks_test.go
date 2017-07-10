@@ -30,13 +30,13 @@ var tests = []pathTest{
 }
 
 var collectionTests = []pathTest{
-	{"_c/a/b/c.d", "/prefix/:collection/post", "/prefix/c/post"},
-	{"_c/a/b/c.d", "/prefix:path/post", "/prefix/a/b/c/post"},
+	{"/a/b/c.d", "/prefix/:collection/post", "/prefix/c/post"},
+	{"/a/b/c.d", "/prefix:path/post", "/prefix/a/b/c/post"},
 }
 
 func TestExpandPermalinkPattern(t *testing.T) {
 	var (
-		c = containerFake{config.Default(), ""}
+		s = siteFake{t, config.Default()}
 		d = map[string]interface{}{
 			"categories": "b a",
 		}
@@ -49,7 +49,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		case ".md", ".markdown":
 			ext = ".html"
 		}
-		p := file{container: c, relpath: path, frontMatter: fm, outputExt: ext}
+		p := file{site: s, relpath: path, frontMatter: fm, outputExt: ext}
 		t0, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
 		require.NoError(t, err)
 		p.fileModTime = t0
@@ -68,7 +68,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 
 	runTests(tests)
 
-	c = containerFake{config.Default(), "_c/"}
+	s = siteFake{t, config.Default()}
 	d["collection"] = "c"
 	runTests(collectionTests)
 

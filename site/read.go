@@ -74,7 +74,7 @@ func (s *Site) readFiles() error {
 			return nil
 		}
 		defaultFrontmatter := s.config.GetFrontMatterDefaults("", relname)
-		p, err := pages.NewFile(filename, s, filepath.ToSlash(relname), defaultFrontmatter)
+		p, err := pages.NewFile(s, filename, filepath.ToSlash(relname), defaultFrontmatter)
 		if err != nil {
 			return utils.PathError(err, "read", filename)
 		}

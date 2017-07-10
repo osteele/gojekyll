@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	frontMatterMatcher     = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n`)
-	emptyFontMatterMatcher = regexp.MustCompile(`(?s)^---\n+---\n`)
+	frontMatterMatcher     = regexp.MustCompile(`(?s)^---\n(.+?\n)---\n+`)
+	emptyFontMatterMatcher = regexp.MustCompile(`(?s)^---\n+---\n+`)
 )
 
 // Read reads the frontmatter from a document. It modifies srcPtr to point to the

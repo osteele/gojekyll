@@ -3,7 +3,6 @@ package pages
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"time"
 
 	"github.com/osteele/gojekyll/frontmatter"
@@ -12,7 +11,7 @@ import (
 
 // file is embedded in StaticFile and page
 type file struct {
-	container   Container
+	site        Site
 	filename    string // target os filepath
 	relpath     string // slash-separated path relative to site or container source
 	outputExt   string
@@ -22,7 +21,7 @@ type file struct {
 }
 
 func (f *file) String() string {
-	return fmt.Sprintf("%s{Path=%v, Permalink=%v}", reflect.TypeOf(f).Name(), f.relpath, f.permalink)
+	return fmt.Sprintf("%T{Path=%v, Permalink=%v}", f.relpath, f.permalink)
 }
 
 func (f *file) OutputExt() string  { return f.outputExt }
@@ -31,8 +30,10 @@ func (f *file) Permalink() string  { return f.permalink }
 func (f *file) Published() bool    { return templates.VariableMap(f.frontMatter).Bool("published", true) }
 func (f *file) SourcePath() string { return f.relpath }
 
-// NewFile creates a Post or StaticFile.
-func NewFile(filename string, c Container, relpath string, defaults map[string]interface{}) (Document, error) {
+// NewFile creates a Page or StaticFile.
+//
+// filename is the absolute filename. relpath is the path relative to the site or collection directory.
+func NewFile(s Site, filename string, relpath string, defaults map[string]interface{}) (Document, error) {
 	fm, err := frontmatter.FileHasFrontMatter(filename)
 	if err != nil {
 		return nil, err
@@ -43,12 +44,12 @@ func NewFile(filename string, c Container, relpath string, defaults map[string]i
 	}
 
 	fields := file{
-		container:   c,
+		site:        s,
 		filename:    filename,
 		frontMatter: defaults,
 		fileModTime: info.ModTime(),
 		relpath:     relpath,
-		outputExt:   c.OutputExt(relpath),
+		outputExt:   s.OutputExt(relpath),
 	}
 	if fm {
 		return makePage(filename, fields)

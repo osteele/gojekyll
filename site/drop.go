@@ -51,7 +51,7 @@ func (s *Site) initializeDrop() {
 
 func (s *Site) setPageContent() error {
 	for _, c := range s.Collections {
-		if err := c.SetPageContent(s); err != nil {
+		if err := c.SetPageContent(); err != nil {
 			return err
 		}
 	}

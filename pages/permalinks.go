@@ -41,7 +41,7 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 // See https://jekyllrb.com/docs/permalinks/#template-variables
 func (f *file) permalinkVariables() map[string]string {
 	var (
-		relpath  = strings.TrimPrefix(f.relpath, f.container.PathPrefix())
+		relpath  = f.relpath
 		root     = utils.TrimExt(relpath)
 		name     = filepath.Base(root)
 		fm       = f.frontMatter

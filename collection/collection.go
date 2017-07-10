@@ -5,6 +5,7 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/templates"
 )
 
@@ -21,6 +22,7 @@ type Collection struct {
 // Site is the interface a site provides to collections it contains.
 type Site interface {
 	Config() *config.Config
+	RenderingPipeline() pipelines.PipelineInterface
 	OutputExt(pathname string) string
 }
 
@@ -65,9 +67,9 @@ func (c *Collection) Pages() []pages.Page {
 }
 
 // SetPageContent sets up the collection's pages' "content".
-func (c *Collection) SetPageContent(ctx pages.RenderingContext) error {
+func (c *Collection) SetPageContent() error {
 	for _, p := range c.Pages() {
-		_, err := p.Content(ctx)
+		_, err := p.Content()
 		if err != nil {
 			return err
 		}

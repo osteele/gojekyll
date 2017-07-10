@@ -76,7 +76,7 @@ func (d *redirectionDoc) Content() []byte {
 	return buf.Bytes()
 }
 
-func (d *redirectionDoc) Write(w io.Writer, c pages.RenderingContext) error {
+func (d *redirectionDoc) Write(w io.Writer) error {
 	return redirectTemplate.Execute(w, d)
 }
 

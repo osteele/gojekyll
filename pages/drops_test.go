@@ -10,7 +10,7 @@ import (
 
 func TestPage_ToLiquid(t *testing.T) {
 	cfg := config.Default()
-	page, err := NewFile("testdata/excerpt.md", containerFake{cfg, ""}, "excerpt.md", map[string]interface{}{})
+	page, err := NewFile(siteFake{t, cfg}, "testdata/excerpt.md", "excerpt.md", map[string]interface{}{})
 	require.NoError(t, err)
 	drop := page.(liquid.Drop).ToLiquid()
 	excerpt := drop.(map[string]interface{})["excerpt"]

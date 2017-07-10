@@ -69,7 +69,7 @@ func (c *Collection) readFile(abs string, rel string, fm map[string]interface{})
 	default:
 		strategy.addDate(rel, fm)
 	}
-	f, err := pages.NewFile(abs, c, filepath.ToSlash(rel), fm)
+	f, err := pages.NewFile(c.site, abs, filepath.ToSlash(rel), fm)
 	switch {
 	case err != nil:
 		return err

@@ -4,14 +4,15 @@ import (
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/pipelines"
 	"github.com/stretchr/testify/require"
 )
 
 type siteMock struct{ c config.Config }
 
-func (c siteMock) Config() *config.Config    { return &c.c }
-func (c siteMock) OutputExt(s string) string { return "" }
-func (c siteMock) Site() interface{}         { return c }
+func (c siteMock) Config() *config.Config                         { return &c.c }
+func (c siteMock) OutputExt(s string) string                      { return "" }
+func (c siteMock) RenderingPipeline() pipelines.PipelineInterface { panic("unimplemented") }
 
 func TestNewCollection(t *testing.T) {
 	site := siteMock{config.Default()}
