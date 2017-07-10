@@ -48,7 +48,6 @@ func (s *Site) Read() error {
 
 // Reload reloads the config file and pages.
 // It returns a copy.
-// If there's an error loading the config file, it has no effect.
 func (s *Site) Reload() (*Site, error) {
 	copy, err := FromDirectory(s.SourceDir(), s.flags)
 	if err != nil {
@@ -60,12 +59,10 @@ func (s *Site) Reload() (*Site, error) {
 // readFiles scans the source directory and creates pages and collection.
 func (s *Site) readFiles() error {
 	s.Routes = make(map[string]pages.Document)
-
 	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
 		relname := utils.MustRel(s.SourceDir(), filename)
 		switch {
 		case info.IsDir() && s.Exclude(relname):
@@ -76,24 +73,24 @@ func (s *Site) readFiles() error {
 		defaultFrontmatter := s.config.GetFrontMatterDefaults("", relname)
 		p, err := pages.NewFile(s, filename, filepath.ToSlash(relname), defaultFrontmatter)
 		if err != nil {
-			return utils.PathError(err, "read", filename)
+			return utils.WrapPathError(err, "read", filename)
 		}
 		s.AddDocument(p, true)
 		return nil
 	}
-
 	if err := filepath.Walk(s.SourceDir(), walkFn); err != nil {
 		return err
 	}
 	return s.ReadCollections()
 }
 
-// AddDocument adds a page to the site structures.
-func (s *Site) AddDocument(p pages.Document, output bool) {
-	if p.Published() || s.config.Unpublished {
-		s.docs = append(s.docs, p)
+// AddDocument adds a document to the site structures.
+// It ignores unpublished documents unless config.Unpublished is true.
+func (s *Site) AddDocument(d pages.Document, output bool) {
+	if d.Published() || s.config.Unpublished {
+		s.docs = append(s.docs, d)
 		if output {
-			s.Routes[p.Permalink()] = p
+			s.Routes[d.Permalink()] = d
 		}
 	}
 }

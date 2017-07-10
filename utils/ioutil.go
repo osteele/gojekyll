@@ -81,10 +81,10 @@ func NewPathError(op, name, text string) *os.PathError {
 	return &os.PathError{Op: op, Path: name, Err: errors.New(text)}
 }
 
-// PathError returns an instance of *os.PathError, by wrapping its argument
+// WrapPathError returns an instance of *os.WrapPathError, by wrapping its argument
 // if it is not already an instance.
-// PathError returns nil for a nil argument.
-func PathError(err error, op, name string) *os.PathError {
+// WrapPathError returns nil for a nil argument.
+func WrapPathError(err error, op, name string) *os.PathError {
 	if err == nil {
 		return nil
 	}
