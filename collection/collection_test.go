@@ -11,6 +11,7 @@ import (
 type siteMock struct{ c config.Config }
 
 func (c siteMock) Config() *config.Config                         { return &c.c }
+func (c siteMock) Exclude(string) bool                            { return false }
 func (c siteMock) OutputExt(s string) string                      { return "" }
 func (c siteMock) RenderingPipeline() pipelines.PipelineInterface { panic("unimplemented") }
 

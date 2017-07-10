@@ -21,7 +21,7 @@ type file struct {
 }
 
 func (f *file) String() string {
-	return fmt.Sprintf("%T{Path=%v, Permalink=%v}", f.relpath, f.permalink)
+	return fmt.Sprintf("%T{Path=%v, Permalink=%v}", f, f.relpath, f.permalink)
 }
 
 func (f *file) OutputExt() string  { return f.outputExt }
@@ -54,10 +54,8 @@ func NewFile(s Site, filename string, relpath string, defaults map[string]interf
 	if fm {
 		return makePage(filename, fields)
 	}
+	fields.permalink = "/" + relpath
 	p := &StaticFile{fields}
-	if err = p.setPermalink(); err != nil {
-		return nil, err
-	}
 	return p, nil
 }
 

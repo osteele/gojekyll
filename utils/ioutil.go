@@ -125,20 +125,16 @@ func RemoveEmptyDirectories(root string) error {
 }
 
 // VisitCreatedFile calls os.Create to create a file, and applies w to it.
-func VisitCreatedFile(filename string, w func(io.Writer) error) error {
+func VisitCreatedFile(filename string, w func(io.Writer) error) (err error) {
 	f, err := os.Create(filename)
 	if err != nil {
-		return err
+		return
 	}
-	close := true
 	defer func() {
-		if close {
-			_ = f.Close() // nolint: gas
+		if e := f.Close(); e != nil && err == nil {
+			err = e
 		}
 	}()
-	if err := w(f); err != nil {
-		return err
-	}
-	close = false
-	return f.Close()
+	err = w(f)
+	return
 }
