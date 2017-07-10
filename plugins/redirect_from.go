@@ -28,7 +28,9 @@ func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
 	if err != nil {
 		return err
 	}
-	p.processRedirectTo(site, ps)
+	if err := p.processRedirectTo(site, ps); err != nil {
+		return err
+	}
 	for _, r := range newPages {
 		site.AddDocument(r, true)
 	}
