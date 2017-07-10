@@ -14,7 +14,7 @@ func TestIncludeTag(t *testing.T) {
 	engine := liquid.NewEngine()
 	cfg := config.Default()
 	cfg.Source = "testdata"
-	AddJekyllTags(engine, cfg, func(s string) (string, bool) {
+	AddJekyllTags(engine, &cfg, func(s string) (string, bool) {
 		fmt.Println("ok")
 		if s == "_posts/2017-07-04-test.md" {
 			return "post.html", true
@@ -34,7 +34,7 @@ func TestIncludeTag(t *testing.T) {
 func TestIncludeRelativeTag(t *testing.T) {
 	engine := liquid.NewEngine()
 	cfg := config.Default()
-	AddJekyllTags(engine, cfg, func(s string) (string, bool) { return "", false })
+	AddJekyllTags(engine, &cfg, func(s string) (string, bool) { return "", false })
 	bindings := map[string]interface{}{}
 
 	tpl, err := engine.ParseTemplate([]byte(`{% include_relative subdir/include_relative.html %}`))

@@ -13,7 +13,7 @@ import (
 type jekyllFeedPlugin struct {
 	plugin
 	site Site
-	tpl  liquid.Template
+	tpl  *liquid.Template
 }
 
 func init() {
@@ -25,7 +25,7 @@ func (p *jekyllFeedPlugin) Initialize(s Site) error {
 	return nil
 }
 
-func (p *jekyllFeedPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+func (p *jekyllFeedPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	e.RegisterTag("feed_meta", p.feedMetaTag)
 	tmpl, err := e.ParseTemplate([]byte(feedTemplateSource))
 	if err != nil {

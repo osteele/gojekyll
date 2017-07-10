@@ -19,7 +19,7 @@ import (
 )
 
 // AddJekyllFilters adds the Jekyll filters to the Liquid engine.
-func AddJekyllFilters(e liquid.Engine, c config.Config) {
+func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 	// array filters
 	e.RegisterFilter("array_to_sentence_string", arrayToSentenceStringFilter)
 	// TODO doc neither Liquid nor Jekyll docs this, but it appears to be present

@@ -26,7 +26,7 @@ type Site interface {
 
 // Plugin describes the hooks that a plugin can override.
 type Plugin interface {
-	ConfigureTemplateEngine(liquid.Engine) error
+	ConfigureTemplateEngine(*liquid.Engine) error
 	PostRender([]byte) []byte
 	Initialize(Site) error
 	PostRead(site Site) error
@@ -34,10 +34,10 @@ type Plugin interface {
 
 type plugin struct{}
 
-func (p plugin) ConfigureTemplateEngine(liquid.Engine) error { return nil }
-func (p plugin) PostRender(b []byte) []byte                  { return b }
-func (p plugin) Initialize(Site) error                       { return nil }
-func (p plugin) PostRead(Site) error                         { return nil }
+func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error { return nil }
+func (p plugin) PostRender(b []byte) []byte                   { return b }
+func (p plugin) Initialize(Site) error                        { return nil }
+func (p plugin) PostRead(Site) error                          { return nil }
 
 // Lookup returns a plugin if it has been registered.
 func Lookup(name string) (Plugin, bool) {
@@ -106,7 +106,7 @@ func (p jekyllMentionsPlugin) PostRender(b []byte) []byte {
 
 type jekyllSEOTagPlugin struct{ plugin }
 
-func (p jekyllSEOTagPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+func (p jekyllSEOTagPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	p.stubbed("jekyll-seo-tag")
 	e.RegisterTag("seo", p.makeUnimplementedTag("jekyll-seo-tag"))
 	return nil

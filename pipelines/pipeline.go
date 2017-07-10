@@ -24,7 +24,7 @@ type PipelineInterface interface {
 type Pipeline struct {
 	PipelineOptions
 	config       config.Config
-	liquidEngine liquid.Engine
+	liquidEngine *liquid.Engine
 	sassTempDir  string
 	sassHash     string
 }
@@ -51,7 +51,7 @@ func (p *Pipeline) SourceDir() string {
 }
 
 // TemplateEngine returns the Liquid engine.
-func (p *Pipeline) TemplateEngine() liquid.Engine {
+func (p *Pipeline) TemplateEngine() *liquid.Engine {
 	return p.liquidEngine
 }
 
@@ -113,9 +113,9 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{
 	return data, nil
 }
 
-func (p *Pipeline) makeLiquidEngine() liquid.Engine {
+func (p *Pipeline) makeLiquidEngine() *liquid.Engine {
 	engine := liquid.NewEngine()
-	filters.AddJekyllFilters(engine, p.config)
-	tags.AddJekyllTags(engine, p.config, p.RelativeFilenameToURL)
+	filters.AddJekyllFilters(engine, &p.config)
+	tags.AddJekyllTags(engine, &p.config, p.RelativeFilenameToURL)
 	return engine
 }

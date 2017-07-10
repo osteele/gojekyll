@@ -12,7 +12,7 @@ import (
 )
 
 // FindLayout returns a template for the named layout.
-func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl liquid.Template, err error) {
+func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl *liquid.Template, err error) {
 	exts := []string{"", ".html"}
 	for _, ext := range strings.SplitN(p.config.MarkdownExt, `,`, -1) {
 		exts = append(exts, "."+ext)

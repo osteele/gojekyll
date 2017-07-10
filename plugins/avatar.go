@@ -15,7 +15,7 @@ func init() {
 
 type jekyllAvatarPlugin struct{ plugin }
 
-func (p jekyllAvatarPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+func (p jekyllAvatarPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	e.RegisterTag("avatar", avatarTag)
 	return nil
 }

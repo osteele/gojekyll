@@ -14,7 +14,7 @@ func init() {
 
 type jekyllGistPlugin struct{ plugin }
 
-func (p jekyllGistPlugin) ConfigureTemplateEngine(e liquid.Engine) error {
+func (p jekyllGistPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	e.RegisterTag("gist", gistTag)
 	return nil
 }

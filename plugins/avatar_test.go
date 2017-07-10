@@ -12,7 +12,7 @@ import (
 
 type siteFake struct {
 	c config.Config
-	e liquid.Engine
+	e *liquid.Engine
 }
 
 func (s siteFake) AddDocument(pages.Document, bool) {}
