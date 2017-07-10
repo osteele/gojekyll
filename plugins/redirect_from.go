@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"strings"
 	"text/template"
 
 	"github.com/osteele/gojekyll/pages"
@@ -24,35 +23,73 @@ func init() {
 }
 
 func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
-	redirections := []pages.Document{}
-	for _, p := range site.Pages() {
-		rd, ok := p.FrontMatter()["redirect_from"]
-		if ok {
-			switch rd := rd.(type) {
-			case string:
-				siteurl := site.Config().AbsoluteURL
-				baseurl := site.Config().BaseURL
-				var p = redirectionDoc{From: rd, To: strings.Join([]string{siteurl, baseurl, p.Permalink()}, "")}
-				redirections = append(redirections, &p)
-			default:
-				fmt.Printf("unimplemented redirect_from type: %T\n", rd)
-			}
-		}
-		rd, ok = p.FrontMatter()["redirect_to"]
-		if ok {
-			switch rd := rd.(type) {
-			case string:
-				r := redirectionDoc{From: rd, To: p.Permalink()}
-				p.SetContent(r.Content())
-			default:
-				fmt.Printf("unimplemented redirect_from type: %T\n", rd)
-			}
-		}
+	ps := site.Pages()
+	newPages, err := p.processRedirectFrom(site, ps)
+	if err != nil {
+		return err
 	}
-	for _, p := range redirections {
-		site.AddDocument(p, true)
+	p.processRedirectTo(site, ps)
+	for _, r := range newPages {
+		site.AddDocument(r, true)
 	}
 	return nil
+}
+
+func (p jekyllRedirectFromPlugin) processRedirectFrom(site Site, ps []pages.Page) ([]pages.Document, error) {
+	var (
+		cfg          = site.Config()
+		siteurl      = cfg.AbsoluteURL
+		baseurl      = cfg.BaseURL
+		prefix       = siteurl + baseurl
+		redirections = []pages.Document{}
+	)
+	addRedirectFrom := func(from string, to pages.Page) {
+		r := redirectionDoc{From: from, To: prefix + to.Permalink()}
+		redirections = append(redirections, &r)
+	}
+	for _, p := range ps {
+		sources, err := getStringArray(p, "redirect_from")
+		if err != nil {
+			return nil, err
+		}
+		for _, from := range sources {
+			addRedirectFrom(from, p)
+		}
+	}
+	return redirections, nil
+}
+
+func (p jekyllRedirectFromPlugin) processRedirectTo(site Site, ps []pages.Page) error {
+	for _, p := range ps {
+		sources, err := getStringArray(p, "redirect_to")
+		if err != nil {
+			return err
+		}
+		if len(sources) > 0 {
+			r := redirectionDoc{From: p.Permalink(), To: sources[0]}
+			p.SetContent(r.Content())
+		}
+	}
+	return nil
+}
+
+func getStringArray(p pages.Page, fieldName string) (out []string, err error) {
+	if value, ok := p.FrontMatter()[fieldName]; ok {
+		switch value := value.(type) {
+		case []string:
+			out = value
+		case []interface{}:
+			out = make([]string, len(value))
+			for i, item := range value {
+				out[i] = fmt.Sprintf("%s", item)
+			}
+		case string:
+			out = []string{value}
+		default:
+			err = fmt.Errorf("unimplemented redirect_from type %T", value)
+		}
+	}
+	return
 }
 
 type redirectionDoc struct {
