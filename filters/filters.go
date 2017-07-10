@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"math/rand"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strings"
@@ -115,18 +116,15 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 	})
 
 	// string escapes
-	// engine.RegisterFilter("uri_escape", func(s string) string {
-	// 	parts := strings.SplitN(s, "?", 2)
-	// 	if len(parts) > 0 {
-	// TODO PathEscape is the wrong function
-	// 		parts[len(parts)-1] = url.PathEscape(parts[len(parts)-1])
-	// 	}
-	// 	return strings.Join(parts, "?")
-	// })
-	e.RegisterFilter("cgi_escape", unimplementedFilter("cgi_escape"))
-	e.RegisterFilter("uri_escape", unimplementedFilter("uri_escape"))
+	e.RegisterFilter("cgi_escape", url.QueryEscape)
 	e.RegisterFilter("scssify", unimplementedFilter("scssify"))
 	e.RegisterFilter("smartify", smartifyFilter)
+	e.RegisterFilter("uri_escape", func(s string) string {
+		return regexp.MustCompile(`\?(.+?)=([^&]*)(?:\&(.+?)=([^&]*))*`).ReplaceAllStringFunc(s, func(m string) string {
+			pair := strings.SplitN(m, "=", 2)
+			return pair[0] + "=" + url.QueryEscape(pair[1])
+		})
+	})
 	e.RegisterFilter("xml_escape", func(s string) string {
 		// TODO can't handle maps
 		// eval https://github.com/clbanning/mxj

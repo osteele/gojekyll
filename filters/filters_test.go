@@ -67,8 +67,12 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ "smartify it's they're" | smartify }}`, "smartify it’s they’re"},
 	{`{{ "smartify ... (c) (r) (tm) -- ---" | smartify }}`, "smartify … © ® ™ – —"},
 
+	{`{{ "foo, bar; baz?" | cgi_escape }}`, "foo%2C+bar%3B+baz%3F"},
 	{`{{ "1 < 2 & 3" | xml_escape }}`, "1 &lt; 2 &amp; 3"},
+
+	// Jekyll produces the first. I believe the second is acceptable.
 	// {`{{ "http://foo.com/?q=foo, \bar?" | uri_escape }}`, "http://foo.com/?q=foo,%20%5Cbar?"},
+	{`{{ "http://foo.com/?q=foo, \bar?" | uri_escape }}`, "http://foo.com/?q=foo%2C+%5Cbar%3F"},
 }
 
 var filterTestScope = map[string]interface{}{

@@ -67,7 +67,7 @@ Missing features:
 - Math
 - CSV and JSON data files
 - Plugins. (Some plugins are emulated. See the [plugin board](https://github.com/osteele/gojekyll/projects/2) for their status.)
-- Template filters `group_by_exp`, `cgi_escape`, `uri_escape`, and `scssify`
+- Template filters `group_by_exp` and `scssify`
 - More Liquid tags and filters, listed [here](https://github.com/osteele/liquid#differences-from-liquid).
 - Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [automatic ids](https://kramdown.gettalong.org/converter/html.html#auto-ids), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
 - `site.data` is not sorted.
@@ -118,7 +118,7 @@ Muzukashii:
 - [ ] Customization
   - [x] Templates
     - [ ] Jekyll filters
-      - [ ] `group_by_exp`, `cgi_escape`, `uri_escape`, `scssify`, `smartify`
+      - [ ] `group_by_exp` and `scssify`
       - [x] everything else
     - [x] Jekyll tags
       - [x] `include`
