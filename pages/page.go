@@ -71,12 +71,13 @@ func (p *page) FrontMatter() map[string]interface{} {
 }
 
 // PostDate is part of the Page interface.
-func (p *page) PostDate() time.Time {
-	switch value := p.frontMatter["date"].(type) {
+// FIXME move this back to Page interface, or re-work this entirely.
+func (f *file) PostDate() time.Time {
+	switch value := f.frontMatter["date"].(type) {
 	case time.Time:
 		return value
 	case string:
-		t, err := evaluator.ParseTime(value)
+		t, err := evaluator.ParseDate(value)
 		if err == nil {
 			return t
 		}

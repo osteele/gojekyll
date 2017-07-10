@@ -22,6 +22,7 @@ type Collection struct {
 // Site is the interface a site provides to collections it contains.
 type Site interface {
 	Config() *config.Config
+	Exclude(string) bool
 	RenderingPipeline() pipelines.PipelineInterface
 	OutputExt(pathname string) string
 }
@@ -36,22 +37,11 @@ func New(s Site, name string, metadata map[string]interface{}) *Collection {
 	}
 }
 
-// AbsDir is in the page.Container interface.
+// AbsDir returns the absolute path to the collection directory.
 func (c *Collection) AbsDir() string {
 	return filepath.Join(c.config.SourceDir(), c.PathPrefix())
 }
 
-// Config is in the page.Container interface.
-func (c *Collection) Config() *config.Config {
-	return c.config
-}
-
-// OutputExt is in the page.Container interface.
-func (c *Collection) OutputExt(pathname string) string {
-	return c.site.OutputExt(pathname)
-}
-
-// PathPrefix is in the page.Container interface.
 // PathPrefix returns the collection's directory prefix, e.g. "_posts/"
 func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Name + "/") }
 

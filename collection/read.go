@@ -4,7 +4,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/templates"
@@ -13,8 +12,26 @@ import (
 
 const draftsPath = "_drafts"
 
-// ScanDirectory scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ScanDirectory(dirname string) error {
+// ReadPages scans the file system for collection pages, and adds them to c.Pages.
+func (c *Collection) ReadPages() error {
+	if c.IsPostsCollection() && c.config.Drafts {
+		if err := c.scanDirectory(draftsPath); err != nil {
+			return err
+		}
+	}
+	if err := c.scanDirectory(c.PathPrefix()); err != nil {
+		return err
+	}
+	if c.IsPostsCollection() {
+		sort.Sort(pagesByDate{c.pages})
+	}
+	return nil
+}
+
+// scanDirectory scans the file system for collection pages, and adds them to c.Pages.
+//
+// This function is distinct from ReadPages so that the posts collection can call it twice.
+func (c *Collection) scanDirectory(dirname string) error {
 	sitePath := c.config.Source
 	pageDefaults := map[string]interface{}{
 		"collection": c.Name,
@@ -29,33 +46,16 @@ func (c *Collection) ScanDirectory(dirname string) error {
 		}
 		relname := utils.MustRel(sitePath, filename)
 		switch {
-		case strings.HasPrefix(filepath.Base(relname), "."):
-			return nil
-		case err != nil:
-			return err
 		case info.IsDir():
 			return nil
+		case c.site.Exclude(relname):
+			return nil
+		default:
+			fm := templates.MergeVariableMaps(pageDefaults, c.config.GetFrontMatterDefaults(c.Name, relname))
+			return c.readFile(filename, relname, fm)
 		}
-		fm := templates.MergeVariableMaps(pageDefaults, c.config.GetFrontMatterDefaults(c.Name, relname))
-		return c.readFile(filename, relname, fm)
 	}
 	return filepath.Walk(filepath.Join(sitePath, dirname), walkFn)
-}
-
-// ReadPages scans the file system for collection pages, and adds them to c.Pages.
-func (c *Collection) ReadPages() error {
-	if c.IsPostsCollection() && c.config.Drafts {
-		if err := c.ScanDirectory(draftsPath); err != nil {
-			return err
-		}
-	}
-	if err := c.ScanDirectory(c.PathPrefix()); err != nil {
-		return err
-	}
-	if c.IsPostsCollection() {
-		sort.Sort(pagesByDate{c.pages})
-	}
-	return nil
 }
 
 // readFile mutates fm.

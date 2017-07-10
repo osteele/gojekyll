@@ -190,9 +190,9 @@ func (s *Site) Exclude(path string) bool {
 	exclusionMap := utils.StringArrayToMap(s.config.Exclude)
 	base := filepath.Base(path)
 	switch {
-	case inclusionMap[path]:
-		return false
 	case path == ".":
+		return false
+	case inclusionMap[path]:
 		return false
 	case exclusionMap[path]:
 		return true
