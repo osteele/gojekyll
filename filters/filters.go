@@ -181,25 +181,21 @@ func arrayToSentenceStringFilter(array []string, conjunction func(string) string
 
 func groupByFilter(array []map[string]interface{}, property string) []map[string]interface{} {
 	rt := reflect.ValueOf(array)
-	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
+	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
 		return nil
 	}
 	groups := map[interface{}][]interface{}{}
 	for i := 0; i < rt.Len(); i++ {
-		item := rt.Index(i)
-		if item.Kind() == reflect.Map && item.Type().Key().Kind() == reflect.String {
-			attr := item.MapIndex(reflect.ValueOf(property))
-			// fmt.Println("invalid", item)
-			if attr.IsValid() {
-				key := attr.Interface()
-				group, found := groups[key]
-				// fmt.Println("found", attr)
-				if found {
-					group = append(group, groups[key])
+		irt := rt.Index(i)
+		if irt.Kind() == reflect.Map && irt.Type().Key().Kind() == reflect.String {
+			krt := irt.MapIndex(reflect.ValueOf(property))
+			if krt.IsValid() && krt.CanInterface() {
+				key := krt.Interface()
+				if group, found := groups[key]; found {
+					groups[key] = append(group, irt.Interface())
 				} else {
-					group = []interface{}{item}
+					groups[key] = []interface{}{irt.Interface()}
 				}
-				groups[key] = group
 			}
 		}
 	}
