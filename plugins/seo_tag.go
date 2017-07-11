@@ -34,7 +34,7 @@ func (p *jekyllSEOTagPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	return nil
 }
 
-var seoSiteFields = []string{"description", "url", "twitter", "facebook", "logo", "social", "google_site_verification", "lang"}
+var seoSiteFields = []string{"url", "twitter", "facebook", "logo", "social", "google_site_verification", "lang"}
 var seoPageOrSiteFields = []string{"author", "description", "image", "author", "lang"}
 var seoTagMultipleLinesPattern = regexp.MustCompile(`( *\n)+`)
 
@@ -46,7 +46,7 @@ func (p *jekyllSEOTagPlugin) seoTag(ctx render.Context) (string, error) {
 		siteTitle    = site["title"]
 		canonicalURL = fmt.Sprintf("%s%s", site["url"], page["url"])
 	)
-	if siteTitle == nil && site["name"] != nil {
+	if siteTitle == nil {
 		siteTitle = site["name"]
 	}
 	seoTag := map[string]interface{}{
@@ -57,9 +57,11 @@ func (p *jekyllSEOTagPlugin) seoTag(ctx render.Context) (string, error) {
 		"canonical_url": canonicalURL,
 		"page_lang":     "en_US",
 		"page_title":    pageTitle,
+		"site_title":    siteTitle,
 	}
 	copyFields(seoTag, site, append(seoSiteFields, seoPageOrSiteFields...))
 	copyFields(seoTag, page, seoPageOrSiteFields)
+	// seoTag["description"] = page["excerpt"] FIXME appears to behave something like following, but excerpt should not be processed
 	if pageTitle != nil && siteTitle != nil && pageTitle != siteTitle {
 		seoTag["title"] = fmt.Sprintf("%s | %s", pageTitle, siteTitle)
 	}
@@ -90,25 +92,24 @@ func copyFields(to, from map[string]interface{}, fields []string) {
 }
 
 func makeJSONLD(seoTag map[string]interface{}) interface{} {
-	var authorRecord interface{}
-	if author := seoTag["author"]; author != nil {
-		if m, ok := author.(map[string]interface{}); ok {
-			author = m["name"]
-		}
-		authorRecord = map[string]interface{}{
-			"@type": "Person",
-			"name":  author,
-		}
-	}
-	return map[string]interface{}{
-		// TODO publisher
+	jsonLD := map[string]interface{}{
+		// TODO dateModified, datePublished, publisher, mainEntityOfPage
 		"@context":    "http://schema.org",
-		"@type":       "WebPage",
-		"author":      authorRecord,
+		"@type":       "WebPage", // FIXME this is BlogPosting for a blog page
 		"headline":    seoTag["page_title"],
 		"description": seoTag["description"],
 		"url":         seoTag["canonical_url"],
 	}
+	if author := seoTag["author"]; author != nil {
+		if m, ok := author.(map[string]interface{}); ok {
+			author = m["name"]
+		}
+		jsonLD["author"] = map[string]interface{}{
+			"@type": "Person",
+			"name":  author,
+		}
+	}
+	return jsonLD
 }
 
 // Taken verbatim from https://github.com/jekyll/jekyll-seo-tag/
