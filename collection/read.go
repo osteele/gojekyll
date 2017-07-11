@@ -32,11 +32,10 @@ func (c *Collection) ReadPages() error {
 //
 // This function is distinct from ReadPages so that the posts collection can call it twice.
 func (c *Collection) scanDirectory(dirname string) error {
-	sitePath := c.config.Source
-	pageDefaults := map[string]interface{}{
-		"collection": c.Name,
-		"permalink":  c.PermalinkPattern(),
-	}
+	var (
+		sitePath = c.config.Source
+		dir      = filepath.Join(sitePath, dirname)
+	)
 	walkFn := func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -44,31 +43,34 @@ func (c *Collection) scanDirectory(dirname string) error {
 			}
 			return err
 		}
-		relname := utils.MustRel(sitePath, filename)
+		siteRel := utils.MustRel(sitePath, filename)
 		switch {
 		case info.IsDir():
 			return nil
-		case c.site.Exclude(relname):
+		case c.site.Exclude(siteRel):
 			return nil
 		default:
-			fm := templates.MergeVariableMaps(pageDefaults, c.config.GetFrontMatterDefaults(c.Name, relname))
-			return c.readFile(filename, relname, fm)
+			return c.readFile(filename, utils.MustRel(dir, filename))
 		}
 	}
-	return filepath.Walk(filepath.Join(sitePath, dirname), walkFn)
+	return filepath.Walk(dir, walkFn)
 }
 
-// readFile mutates fm.
-func (c *Collection) readFile(abs string, rel string, fm map[string]interface{}) error {
+func (c *Collection) readFile(abs string, rel string) error {
+	siteRel := utils.MustRel(c.config.Source, abs)
 	strategy := c.strategy()
 	switch {
 	case !strategy.collectible(rel):
 		return nil
 	case strategy.future(rel) && !c.config.Future:
 		return nil
-	default:
-		strategy.addDate(rel, fm)
 	}
+	pageDefaults := map[string]interface{}{
+		"collection": c.Name,
+		"permalink":  c.PermalinkPattern(),
+	}
+	fm := templates.MergeVariableMaps(pageDefaults, c.config.GetFrontMatterDefaults(c.Name, siteRel))
+	strategy.addDate(rel, fm)
 	f, err := pages.NewFile(c.site, abs, filepath.ToSlash(rel), fm)
 	switch {
 	case err != nil:

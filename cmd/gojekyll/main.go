@@ -60,13 +60,17 @@ func init() {
 }
 
 func main() {
-	parseAndRun(os.Args[1:])
+	err := parseAndRun(os.Args[1:])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
-func parseAndRun(args []string) {
+func parseAndRun(args []string) error {
 	if reflect.DeepEqual(args, []string{"--version"}) {
 		printVersion()
-		return
+		return nil
 	}
 	cmd := kingpin.MustParse(app.Parse(args))
 	if configFlags.Destination != nil {
@@ -77,7 +81,7 @@ func parseAndRun(args []string) {
 	if buildOptions.DryRun {
 		buildOptions.Verbose = true
 	}
-	app.FatalIfError(run(cmd), "")
+	return run(cmd)
 }
 
 func printVersion() {

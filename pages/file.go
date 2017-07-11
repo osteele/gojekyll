@@ -7,6 +7,7 @@ import (
 
 	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // file is embedded in StaticFile and page
@@ -25,10 +26,10 @@ func (f *file) String() string {
 }
 
 func (f *file) OutputExt() string  { return f.outputExt }
-func (f *file) Path() string       { return f.relpath }
+func (f *file) Path() string       { return utils.MustRel(f.site.Config().Source, f.filename) }
 func (f *file) Permalink() string  { return f.permalink }
 func (f *file) Published() bool    { return templates.VariableMap(f.frontMatter).Bool("published", true) }
-func (f *file) SourcePath() string { return f.relpath }
+func (f *file) SourcePath() string { return f.filename }
 
 // NewFile creates a Page or StaticFile.
 //

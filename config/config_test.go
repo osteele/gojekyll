@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -37,7 +36,7 @@ func TestUnmarshal(t *testing.T) {
 
 	c = Default()
 	require.NoError(t, Unmarshal([]byte(`collections: \n- x\n-y`), &c))
-	fmt.Println(c.Collections)
+	// fmt.Println(c.Collections)
 }
 
 func TestConfig_IsMarkdown(t *testing.T) {

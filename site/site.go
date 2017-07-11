@@ -111,11 +111,11 @@ func (s *Site) SetAbsoluteURL(url string) {
 	}
 }
 
-// FilenameURLs returns a map of relative filenames to URL paths
+// FilenameURLs returns a map of site-relative pathnames to URL paths
 func (s *Site) FilenameURLs() map[string]string {
 	urls := map[string]string{}
 	for _, page := range s.Pages() {
-		urls[page.SourcePath()] = page.Permalink()
+		urls[utils.MustRel(s.SourceDir(), page.SourcePath())] = page.Permalink()
 	}
 	return urls
 }
@@ -126,9 +126,10 @@ func (s *Site) KeepFile(filename string) bool {
 }
 
 // FilePathPage returns a Page, give a file path relative to site source directory.
-func (s *Site) FilePathPage(relpath string) (pages.Document, bool) {
+func (s *Site) FilePathPage(rel string) (pages.Document, bool) {
+	// This looks wasteful. If it shows up as a hotspot, you know what to do.
 	for _, p := range s.Routes {
-		if p.SourcePath() == relpath {
+		if p.SourcePath() != "" && rel == utils.MustRel(s.SourceDir(), p.SourcePath()) {
 			return p, true
 		}
 	}

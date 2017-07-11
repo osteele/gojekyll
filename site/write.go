@@ -35,7 +35,7 @@ func (s *Site) WritePages(options BuildOptions) (count int, err error) {
 // SavePage writes a document to the destination directory.
 // It attends to options.dry_run.
 func (s *Site) SavePage(p pages.Document, options BuildOptions) error {
-	from := filepath.Join(s.SourceDir(), filepath.ToSlash(p.SourcePath()))
+	from := p.SourcePath()
 	to := filepath.Join(s.DestDir(), p.Permalink())
 	if !p.Static() && filepath.Ext(to) == "" {
 		to = filepath.Join(to, "index.html")

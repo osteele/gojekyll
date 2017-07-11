@@ -10,8 +10,8 @@ import (
 // A Document is a Jekyll post, page, or file.
 type Document interface {
 	// Paths
-	Permalink() string  // relative URL path
-	SourcePath() string // relative to the site source directory
+	Permalink() string // relative URL path
+	SourcePath() string
 	OutputExt() string
 
 	// Output
