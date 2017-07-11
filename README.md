@@ -2,13 +2,26 @@
 
  [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
 
+> “It is easier to write an incorrect program than understand a correct one.” - Alan Perlis
+
 Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It supports the `build` and `serve` commands, with directory watch and live reload.
 
-I wrote this in order to learn Go.
-I was also hoping for faster preview of changes to GitHub Pages.
+| &nbsp;                  | Gojekyll                                                            | Jekyll | Hugo |
+|-------------------------|---------------------------------------------------------------------|--------|------|
+| Implementation language | Go                                                                  | Ruby   | Go   |
+| Build                   | ✓                                                                   | ✓      | ✓    |
+| Serve                   | ✓                                                                   | ✓      | ✓    |
+| Directory watch         | ✓                                                                   | ✓      | ✓    |
+| Live reload             | ✓                                                                   | ✓      | ✓    |
+| Liquid templates        | [mostly](https://github.com/osteele/liquid#differences-from-liquid) | ✓      |      |
+| Compatible with Jekyll  | [mostly](#current-limitations)                                      | ✓      |      |
+| Fast                    | [✓ 20x](./docs/benchmarks.md)                                       |        | ✓    |
+| Core Plugins            | some                                                                | yes    | ?    |
+| Extensible plugins      |                                                                     | ✓      | ?    |
 
-Gojekyll is [incomplete](#current-limitations), minimally tested, and doesn't run on Windows.
-It appears to be about [twenty times](./benchmarks.md) faster than Jekyll, so that's something.
+
+Gojekyll is [incomplete, minimally tested, and doesn't run on Windows.
+It appears to be about [twenty times faster than Jekyll, so that's something.
 
 <!-- TOC -->
 
