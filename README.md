@@ -4,16 +4,17 @@
 
 > “It is easier to write an incorrect program than understand a correct one.” - Alan Perlis
 
-Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It supports the `build` and `serve` commands, with directory watch and live reload.
+Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload for the latter.
 
-| &nbsp;                 | Gojekyll                                                            | Jekyll | Hugo |
-|------------------------|---------------------------------------------------------------------|--------|------|
-| Templates              | [Liquid](https://github.com/osteele/liquid#differences-from-liquid) | Liquid | Go   |
-| Compatible with Jekyll | [mostly](#current-limitations)                                      | ✓      |      |
-| Fast                   | [✓ 20x](./docs/benchmarks.md)                                       |        | ✓    |
-| Plugins                | [some compiled in](./docs/plugins.md)                               | yes    | ?    |
-| Windows                |                                                                     | ✓      | ✓    |
-| Implementation         | Go                                                                  | Ruby   | Go   |
+| &nbsp;                 | Gojekyll                       | Jekyll | Hugo         |
+|------------------------|--------------------------------|--------|--------------|
+| Fast                   | [✓ 20x](./docs/benchmarks.md)  |        | ✓            |
+| Stable                 |                                | ✓      | ✓            |
+| Template language      | Liquid                         | Liquid | Go templates |
+| Compatible with Jekyll | [partly](#current-limitations) | ✓      |              |
+| Plugins                | [some](./docs/plugins.md)      | yes    | ?            |
+| Windows                |                                | ✓      | ✓            |
+| Implementation         | Go                             | Ruby   | Go           |
 
 
 
@@ -73,7 +74,7 @@ Missing features:
 - Pagination
 - Math
 - CSV and JSON data files
-- Plugins. (Some plugins are emulated. See the [plugin board](https://github.com/osteele/gojekyll/projects/2) for their status.)
+- Plugins. (Some plugins are [emulated](./docs/plugins.md).)
 - Template filters `group_by_exp` and `scssify`
 - More Liquid tags and filters, listed [here](https://github.com/osteele/liquid#differences-from-liquid).
 - Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [automatic ids](https://kramdown.gettalong.org/converter/html.html#auto-ids), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
@@ -99,7 +100,6 @@ By design:
 
 Muzukashii:
 
-- `uniq` on objects (things that aren't strings or numbers) doesn't work the way it does in Jekyll / Shopify Liquid. See the [Go Liquid differences](https://github.com/osteele/liquid#differences) for more on this.
 - An extensible plugin mechanism – support for plugins that aren't compiled into the executable.
 
 ### Feature Checklist
