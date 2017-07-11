@@ -14,7 +14,6 @@ import (
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
-	"github.com/osteele/liquid/render"
 )
 
 // Site is the site interface that is available to a plugin.
@@ -69,7 +68,6 @@ func register(name string, p Plugin) {
 func init() {
 	register("jemoji", jekyllJemojiPlugin{})
 	register("jekyll-mentions", jekyllMentionsPlugin{})
-	register("jekyll-seo-tag", jekyllSEOTagPlugin{})
 
 	// the following plugins are always active
 	// no warning but effect; the server runs in this mode anyway
@@ -102,29 +100,19 @@ func (p jekyllMentionsPlugin) PostRender(b []byte) []byte {
 	})
 }
 
-// jekyll-seo
-
-type jekyllSEOTagPlugin struct{ plugin }
-
-func (p jekyllSEOTagPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
-	p.stubbed("jekyll-seo-tag")
-	e.RegisterTag("seo", p.makeUnimplementedTag("jekyll-seo-tag"))
-	return nil
-}
-
 // helpers
 
-func (p plugin) stubbed(name string) {
-	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", name)
-}
+// func (p plugin) stubbed(name string) {
+// 	fmt.Printf("warning: gojekyll does not emulate the %s plugin. Some tags have been stubbed to prevent errors.\n", name)
+// }
 
-func (p plugin) makeUnimplementedTag(pluginName string) liquid.Renderer {
-	warned := false
-	return func(ctx render.Context) (string, error) {
-		if !warned {
-			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), pluginName)
-			warned = true
-		}
-		return fmt.Sprintf(`<!-- unimplemented tag: %q -->`, ctx.TagName()), nil
-	}
-}
+// func (p plugin) makeUnimplementedTag(pluginName string) liquid.Renderer {
+// 	warned := false
+// 	return func(ctx render.Context) (string, error) {
+// 		if !warned {
+// 			fmt.Printf("The %q tag in the %q plugin has not been implemented.\n", ctx.TagName(), pluginName)
+// 			warned = true
+// 		}
+// 		return fmt.Sprintf(`<!-- unimplemented tag: %q -->`, ctx.TagName()), nil
+// 	}
+// }

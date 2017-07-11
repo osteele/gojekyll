@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strings"
 	"time"
@@ -121,7 +120,7 @@ func varsCommand(site *site.Site) (err error) {
 	var data interface{}
 	switch {
 	case strings.HasPrefix(*variablePath, "site"):
-		data, err = followDots(site, strings.Split(*variablePath, ".")[1:])
+		data, err = utils.FollowDots(site, strings.Split(*variablePath, ".")[1:])
 		if err != nil {
 			return
 		}
@@ -133,37 +132,11 @@ func varsCommand(site *site.Site) (err error) {
 	default:
 		data = site
 	}
-	b, err := yaml.Marshal(toLiquid(data))
+	b, err := yaml.Marshal(liquid.FromDrop(data))
 	if err != nil {
 		return err
 	}
 	logger.label("Variables:", "")
 	fmt.Println(string(b))
 	return nil
-}
-
-func followDots(data interface{}, props []string) (interface{}, error) {
-	for _, name := range props {
-		if drop, ok := data.(liquid.Drop); ok {
-			data = drop.ToLiquid()
-		}
-		if reflect.TypeOf(data).Kind() == reflect.Map {
-			item := reflect.ValueOf(data).MapIndex(reflect.ValueOf(name))
-			if item.CanInterface() && !item.IsNil() {
-				data = item.Interface()
-				continue
-			}
-		}
-		return nil, fmt.Errorf("no such property: %q", name)
-	}
-	return data, nil
-}
-
-func toLiquid(value interface{}) interface{} {
-	switch value := value.(type) {
-	case liquid.Drop:
-		return value.ToLiquid()
-	default:
-		return value
-	}
 }

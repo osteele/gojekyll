@@ -26,11 +26,11 @@ func (p *jekyllFeedPlugin) Initialize(s Site) error {
 
 func (p *jekyllFeedPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	e.RegisterTag("feed_meta", p.feedMetaTag)
-	tmpl, err := e.ParseTemplate([]byte(feedTemplateSource))
+	tpl, err := e.ParseTemplate([]byte(feedTemplateSource))
 	if err != nil {
 		panic(err)
 	}
-	p.tpl = tmpl
+	p.tpl = tpl
 	return nil
 }
 
@@ -41,7 +41,6 @@ func (p *jekyllFeedPlugin) PostRead(s Site) error {
 			path = "/" + pp
 		}
 	}
-
 	d := feedDoc{s, p, path}
 	s.AddDocument(&d, true)
 	return nil
