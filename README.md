@@ -6,22 +6,16 @@
 
 Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It supports the `build` and `serve` commands, with directory watch and live reload.
 
-| &nbsp;                  | Gojekyll                                                            | Jekyll | Hugo |
-|-------------------------|---------------------------------------------------------------------|--------|------|
-| Implementation language | Go                                                                  | Ruby   | Go   |
-| Build                   | ✓                                                                   | ✓      | ✓    |
-| Serve                   | ✓                                                                   | ✓      | ✓    |
-| Directory watch         | ✓                                                                   | ✓      | ✓    |
-| Live reload             | ✓                                                                   | ✓      | ✓    |
-| Liquid templates        | [mostly](https://github.com/osteele/liquid#differences-from-liquid) | ✓      |      |
-| Compatible with Jekyll  | [mostly](#current-limitations)                                      | ✓      |      |
-| Fast                    | [✓ 20x](./docs/benchmarks.md)                                       |        | ✓    |
-| Core Plugins            | some                                                                | yes    | ?    |
-| Extensible plugins      |                                                                     | ✓      | ?    |
+| &nbsp;                 | Gojekyll                                                            | Jekyll | Hugo |
+|------------------------|---------------------------------------------------------------------|--------|------|
+| Templates              | [Liquid](https://github.com/osteele/liquid#differences-from-liquid) | Liquid | Go   |
+| Compatible with Jekyll | [mostly](#current-limitations)                                      | ✓      |      |
+| Fast                   | [✓ 20x](./docs/benchmarks.md)                                       |        | ✓    |
+| Plugins                | [some compiled in](./docs/plugins.md)                               | yes    | ?    |
+| Windows                |                                                                     | ✓      | ✓    |
+| Implementation         | Go                                                                  | Ruby   | Go   |
 
 
-Gojekyll is [incomplete, minimally tested, and doesn't run on Windows.
-It appears to be about [twenty times faster than Jekyll, so that's something.
 
 <!-- TOC -->
 
