@@ -12,6 +12,7 @@ import (
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/utils"
+	"github.com/osteele/liquid"
 )
 
 // Site is a Jekyll site.
@@ -152,6 +153,11 @@ func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
 	return s.pipeline
 }
 
+// TemplateEngine is part of the plugins.Site interface.
+func (s *Site) TemplateEngine() *liquid.Engine {
+	return s.pipeline.TemplateEngine()
+}
+
 // initializeRenderingPipeline initializes the rendering pipeline
 func (s *Site) initializeRenderingPipeline() (err error) {
 	options := pipelines.PipelineOptions{
@@ -193,9 +199,9 @@ func (s *Site) Exclude(path string) bool {
 	switch {
 	case path == ".":
 		return false
-	case inclusionMap[path]:
+	case inclusionMap[base]:
 		return false
-	case exclusionMap[path]:
+	case exclusionMap[base]:
 		return true
 	case strings.HasPrefix(base, "."), strings.HasPrefix(base, "_"):
 		return true

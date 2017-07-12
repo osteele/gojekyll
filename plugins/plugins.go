@@ -20,6 +20,7 @@ import (
 type Site interface {
 	AddDocument(pages.Document, bool)
 	Config() *config.Config
+	TemplateEngine() *liquid.Engine
 	Pages() []pages.Page
 }
 
