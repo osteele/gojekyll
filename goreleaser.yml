@@ -1,16 +1,16 @@
-builds:
-  - binary: gojekyll
-    main: ./cmd/gojekyll
-    ldflags: -s -w -X github.com/osteele/gojekyll.Version={{.Version}}
-    goos:
-      - darwin
-      - linux
-    goarch:
-      - amd64
-      - 386
-    ignore:
-      - goos: darwin
-        goarch: 386
+build:
+  main: ./cmd/gojekyll
+  binary: gojekyll
+  ldflags: -s -w -X gojekyll.Version={{.Version}}
+  goos:
+    - darwin
+    - linux
+  goarch:
+    - amd64
+    - 386
+  ignore:
+    - goos: darwin
+      goarch: 386
 
 archive:
   replacements:
