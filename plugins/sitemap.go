@@ -1,9 +1,7 @@
 package plugins
 
 import (
-	"io"
-
-	"github.com/osteele/liquid"
+	"github.com/osteele/gojekyll/pages"
 )
 
 type sitemapPlugin struct{ plugin }
@@ -18,50 +16,17 @@ func init() {
 // }
 
 func (p *sitemapPlugin) PostRead(s Site) error {
-	tpl, err := s.TemplateEngine().ParseTemplate([]byte(sitemapTemplateSource))
-	if err != nil {
-		panic(err)
-	}
-	d := sitemapDoc{s, tpl}
-	s.AddDocument(&d, true)
+	s.AddDocument(newTemplateDoc(s, "sitemap.xml", sitemapTemplateSource), true)
+	s.AddDocument(newTemplateDoc(s, "robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`), true)
 	return nil
 }
 
-// func (p *sitemapPlugin) feedMetaTag(ctx render.Context) (string, error) {
-// 	cfg := p.site.Config()
-// 	name, _ := cfg.Variables["name"].(string)
-// 	tag := fmt.Sprintf(`<link type="application/atom+xml" rel="alternate" href="%s/feed.xml" title="%s">`,
-// 		html.EscapeString(cfg.AbsoluteURL), html.EscapeString(name))
-// 	return tag, nil
-// }
-
-type sitemapDoc struct {
-	site Site
-	tpl  *liquid.Template
-	// plugin *sitemapPlugin
-	// path   string
-}
-
-func (d *sitemapDoc) Permalink() string    { return "/sitemap.xml" }
-func (d *sitemapDoc) SourcePath() string   { return "" }
-func (d *sitemapDoc) OutputExt() string    { return ".xml" }
-func (d *sitemapDoc) Published() bool      { return true }
-func (d *sitemapDoc) Static() bool         { return false } // FIXME means different things to different callers
-func (d *sitemapDoc) Categories() []string { return []string{} }
-func (d *sitemapDoc) Tags() []string       { return []string{} }
-
-func (d *sitemapDoc) Content() []byte {
-	bindings := map[string]interface{}{"site": d.site}
-	b, err := d.tpl.Render(bindings)
+func newTemplateDoc(s Site, path, src string) pages.Document {
+	tpl, err := s.TemplateEngine().ParseTemplate([]byte(src))
 	if err != nil {
 		panic(err)
 	}
-	return b
-}
-
-func (d *sitemapDoc) Write(w io.Writer) error {
-	_, err := w.Write(d.Content())
-	return err
+	return &templateDoc{s, path, tpl}
 }
 
 // Taken verbatim from https://github.com/jekyll/jekyll-sitemap-plugin/

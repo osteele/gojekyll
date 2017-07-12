@@ -6,15 +6,15 @@
 
 Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload for the latter.
 
-| &nbsp;                 | Gojekyll                       | Jekyll | Hugo         |
-|------------------------|--------------------------------|--------|--------------|
-| Fast                   | [✓ 20x](./docs/benchmarks.md)  |        | ✓            |
-| Stable                 |                                | ✓      | ✓            |
-| Template language      | Liquid                         | Liquid | Go templates |
-| Compatible with Jekyll | [partly](#current-limitations) | ✓      |              |
-| Plugins                | [some](./docs/plugins.md)      | yes    | ?            |
-| Windows                |                                | ✓      | ✓            |
-| Implementation         | Go                             | Ruby   | Go           |
+| &nbsp;               | Gojekyll                             | Jekyll | Hugo         |
+|----------------------|--------------------------------------|--------|--------------|
+| Fast                 | ✓ [~20×Jekyll](./docs/benchmarks.md) |        | ✓            |
+| Stable               |                                      | ✓      | ✓            |
+| Template language    | Liquid                               | Liquid | Go templates |
+| Jekyll compatibility | [partial](#current-limitations)      | ✓      |              |
+| Plugins              | [some](./docs/plugins.md)            | yes    | ?            |
+| Windows              |                                      | ✓      | ✓            |
+| Implementation       | Go                                   | Ruby   | Go           |
 
 
 

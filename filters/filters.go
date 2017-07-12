@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expression"
@@ -79,7 +80,7 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 
 	// strings
 	e.RegisterFilter("absolute_url", func(s string) string {
-		return c.AbsoluteURL + c.BaseURL + s
+		return utils.URLJoin(c.AbsoluteURL, c.BaseURL, s)
 	})
 	e.RegisterFilter("relative_url", func(s string) string {
 		return c.BaseURL + s

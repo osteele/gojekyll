@@ -21,7 +21,7 @@ The functionality of some plugins is built into the core program:
 | jekyll-relative-links        | GitHub Pages  |                     |                                                                         |
 | jekyll-sass-converter        | core          | ✓ (always enabled)  |                                                                         |
 | jekyll-seo_tag               | GitHub Pages  | ✓                   | SEO and JSON LD are not fully populated; site? and other tag parameters |
-| jekyll-sitemap               | GitHub Pages  |                     |                                                                         |
+| jekyll-sitemap               | GitHub Pages  | ✓                   | file modified dates⁴                                                    |
 | jemoji                       | GitHub Pages  | ✓                   | image tag fallback                                                      |
 
 ¹ (1) The code and internal APIs are too immature for this; and (2) The [natural way](https://golang.org/pkg/plugin/) of implementing this only works on Linux.
@@ -30,3 +30,5 @@ The functionality of some plugins is built into the core program:
 
 ³ “Core” plugins are referenced in the main [Jekyll documentation](https://jekyllrb.com/docs/home/).
 The Jekyll documentation [Official Plugins](https://jekyllrb.com/docs/plugins/#available-plugins) / #Official tag of [Awesome Jekyll Plugins](https://github.com/planetjekyll/awesome-jekyll-plugins) look dated; I didn't use those.
+
+⁴ These don't seem that useful with source control and CI. (Post dates are included.)
