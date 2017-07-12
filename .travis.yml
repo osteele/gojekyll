@@ -21,3 +21,8 @@ script:
 
 after_success:
   - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
+
+notifications:
+  email:
+    on_success: change
+    on_failure: change
