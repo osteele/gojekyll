@@ -6,15 +6,15 @@
 
 Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload for the latter.
 
-| &nbsp;               | Gojekyll                             | Jekyll | Hugo         |
-|----------------------|--------------------------------------|--------|--------------|
-| Fast                 | ✓ [~20×Jekyll](./docs/benchmarks.md) |        | ✓            |
-| Stable               |                                      | ✓      | ✓            |
-| Template language    | Liquid                               | Liquid | Go templates |
-| Jekyll compatibility | [partial](#current-limitations)      | ✓      |              |
-| Plugins              | [some](./docs/plugins.md)            | yes    | ?            |
-| Windows              |                                      | ✓      | ✓            |
-| Implementation       | Go                                   | Ruby   | Go           |
+| &nbsp;                  | Gojekyll                                  | Jekyll | Hugo         |
+|-------------------------|-------------------------------------------|--------|--------------|
+| Stable                  |                                           | ✓      | ✓            |
+| Fast                    | ✓<br>[[~20×Jekyll](./docs/benchmarks.md)] |        | ✓            |
+| Template language       | Liquid                                    | Liquid | Go templates |
+| Jekyll compatibility    | [partial](#current-limitations)           | ✓      |              |
+| Plugins                 | [some](./docs/plugins.md)                 | yes    | ?            |
+| Runs on Windows         |                                           | ✓      | ✓            |
+| Implementation language | Go                                        | Ruby   | Go           |
 
 
 
@@ -199,6 +199,8 @@ They are used under the terms of the MIT License.
 | [Jekyll template documentation](https://jekyllrb.com/docs/templates/)           | test cases           | filter examples        |
 | [`jekyll-feed` plugin](https://github.com/jekyll/jekyll-feed)                   | plugin emulation     | `feed.xml` template    |
 | [`jekyll-redirect-from` plugin](https://github.com/jekyll/jekyll-redirect-from) | plugin emulation     | redirect page template |
+| [`jekyll-sitemap` plugin](https://github.com/jekyll/jekyll-redirect-from)       | plugin emulation     | sitemap template       |
+| [`jekyll-seo-tag` plugin](https://github.com/jekyll/jekyll-redirect-from)       | plugin emulation     | feed template          |
 
 The gopher image in the `testdata` directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
