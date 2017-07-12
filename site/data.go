@@ -35,7 +35,7 @@ func (s *Site) readDataFiles() error {
 			var d interface{} // map or slice
 			err = utils.UnmarshalYAMLInterface(b, &d)
 			if err != nil {
-				return utils.WrapPathError(err, "read YAML", filename)
+				return utils.WrapPathError(err, filename)
 			}
 			basename := utils.TrimExt(filepath.Base(f.Name()))
 			s.data[basename] = d

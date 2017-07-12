@@ -82,12 +82,12 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e 
 func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename string, lineNo int) ([]byte, error) {
 	tpl, err := p.liquidEngine.ParseTemplate(src)
 	if err != nil {
-		return nil, utils.WrapPathError(err, "Liquid Error", filename)
+		return nil, utils.WrapPathError(err, filename)
 	}
 	tpl.SetSourceLocation(filename, lineNo)
 	out, err := tpl.Render(b)
 	if err != nil {
-		return nil, utils.WrapPathError(err, "Liquid Error", filename)
+		return nil, utils.WrapPathError(err, filename)
 	}
 	return out, err
 }
@@ -106,7 +106,7 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{
 		})
 		data, err = tpl.Render(b)
 		if err != nil {
-			return nil, utils.WrapPathError(err, "render template", name)
+			return nil, utils.WrapPathError(err, name)
 		}
 		name = templates.VariableMap(lfm).String("layout", "")
 	}

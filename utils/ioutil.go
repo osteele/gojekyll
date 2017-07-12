@@ -81,21 +81,6 @@ func NewPathError(op, name, text string) *os.PathError {
 	return &os.PathError{Op: op, Path: name, Err: errors.New(text)}
 }
 
-// WrapPathError returns an instance of *os.WrapPathError, by wrapping its argument
-// if it is not already an instance.
-// WrapPathError returns nil for a nil argument.
-func WrapPathError(err error, op, name string) *os.PathError {
-	if err == nil {
-		return nil
-	}
-	switch err := err.(type) {
-	case *os.PathError:
-		return err
-	default:
-		return &os.PathError{Op: op, Path: name, Err: err}
-	}
-}
-
 // RemoveEmptyDirectories recursively removes empty directories.
 func RemoveEmptyDirectories(root string) error {
 	walkFn := func(name string, info os.FileInfo, err error) error {
