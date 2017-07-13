@@ -7,9 +7,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 var disableCache = false
+var cacheMx sync.Mutex
 
 func init() {
 	s := os.Getenv("GOJEKYLL_DISABLE_CACHE")
@@ -51,6 +53,8 @@ func WithFile(header string, content string, fn func() (string, error)) (string,
 	if err := os.MkdirAll(filepath.Dir(cachefile), 0700); err != nil {
 		return "", err
 	}
+	defer cacheMx.Unlock()
+	cacheMx.Lock()
 	if err := ioutil.WriteFile(cachefile, []byte(s), 0600); err != nil {
 		return "", err
 	}
