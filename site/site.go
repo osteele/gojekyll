@@ -42,8 +42,8 @@ func (s *Site) DestDir() string {
 	return filepath.Join(s.config.Source, s.config.Destination)
 }
 
-// OutputPages returns a list of output pages.
-func (s *Site) OutputPages() []pages.Document {
+// OutputDocs returns a list of output pages.
+func (s *Site) OutputDocs() []pages.Document {
 	out := make([]pages.Document, 0, len(s.Routes))
 	for _, p := range s.Routes {
 		out = append(out, p)

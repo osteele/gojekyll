@@ -13,14 +13,14 @@ import (
 	"github.com/osteele/gojekyll/utils"
 )
 
-// WritePages writes output files.
+// WriteFiles writes output files.
 // It attends to options.dry_run.
-func (s *Site) WritePages(options BuildOptions) (count int, err error) {
+func (s *Site) WriteFiles(options BuildOptions) (count int, err error) {
 	errs := make(chan error)
-	for _, p := range s.OutputPages() {
+	for _, p := range s.OutputDocs() {
 		count++
-		go func(p pages.Document) {
-			errs <- s.SavePage(p, options)
+		go func(d pages.Document) {
+			errs <- s.WriteDoc(d, options)
 		}(p)
 	}
 	var errList []error
@@ -32,16 +32,16 @@ func (s *Site) WritePages(options BuildOptions) (count int, err error) {
 	return count, combineErrors(errList)
 }
 
-// SavePage writes a document to the destination directory.
+// WriteDoc writes a document to the destination directory.
 // It attends to options.dry_run.
-func (s *Site) SavePage(p pages.Document, options BuildOptions) error {
-	from := p.SourcePath()
-	to := filepath.Join(s.DestDir(), p.Permalink())
-	if !p.Static() && filepath.Ext(to) == "" {
+func (s *Site) WriteDoc(d pages.Document, options BuildOptions) error {
+	from := d.SourcePath()
+	to := filepath.Join(s.DestDir(), d.Permalink())
+	if !d.Static() && filepath.Ext(to) == "" {
 		to = filepath.Join(to, "index.html")
 	}
 	if options.Verbose {
-		fmt.Println("create", to, "from", p.SourcePath())
+		fmt.Println("create", to, "from", d.SourcePath())
 	}
 	if options.DryRun {
 		// FIXME render the page, just don't write it
@@ -52,29 +52,34 @@ func (s *Site) SavePage(p pages.Document, options BuildOptions) error {
 		return err
 	}
 	switch {
-	case p.Static() && options.UseHardLinks:
+	case d.Static() && options.UseHardLinks:
 		return os.Link(from, to)
-	case p.Static():
+	case d.Static():
 		return utils.CopyFileContents(to, from, 0644)
 	default:
-		return s.SaveDocumentToFile(p, to)
+		return utils.VisitCreatedFile(to, func(w io.Writer) error {
+			return s.WriteDocument(w, d)
+		})
 	}
-}
-
-// SaveDocumentToFile writes a page to filename.
-func (s *Site) SaveDocumentToFile(d pages.Document, filename string) error {
-	return utils.VisitCreatedFile(filename, func(w io.Writer) error {
-		return s.WriteDocument(w, d)
-	})
 }
 
 // WriteDocument writes the document to a writer.
 func (s *Site) WriteDocument(w io.Writer, d pages.Document) error {
+	switch p := d.(type) {
+	case pages.Page:
+		return s.WritePage(w, p)
+	default:
+		return d.Write(w)
+	}
+}
+
+// WritePage writes the page to a writer.
+func (s *Site) WritePage(w io.Writer, p pages.Page) error {
 	if err := s.prepareRendering(); err != nil {
 		return err
 	}
 	buf := new(bytes.Buffer)
-	if err := d.Write(buf); err != nil {
+	if err := p.Write(buf); err != nil {
 		return err
 	}
 	b := buf.Bytes()

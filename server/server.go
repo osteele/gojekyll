@@ -51,13 +51,11 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-
 	var (
-		site    = s.Site
-		urlpath = r.URL.Path
+		site     = s.Site
+		urlpath  = r.URL.Path
+		p, found = site.URLPage(urlpath)
 	)
-	p, found := site.URLPage(urlpath)
-
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
 		log.Println("Not found:", urlpath)
@@ -67,7 +65,6 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(rw, "404 page not found: %s", urlpath) // nolint: gas
 		return
 	}
-
 	mimeType := mime.TypeByExtension(p.OutputExt())
 	if mimeType != "" {
 		rw.Header().Set("Content-Type", mimeType)

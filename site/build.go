@@ -52,5 +52,5 @@ func (s *Site) Build(options BuildOptions) (int, error) {
 	if err := s.Clean(options); err != nil {
 		return 0, err
 	}
-	return s.WritePages(options)
+	return s.WriteFiles(options)
 }
