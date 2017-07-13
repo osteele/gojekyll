@@ -1,4 +1,5 @@
 build:
+  main: main.go
   binary: gojekyll
   ldflags: -s -w -X gojekyll.commands.Version={{.Version}} -X gojekyll.commands.BuildDate={{.Date}}
   goos:
@@ -7,16 +8,14 @@ build:
   goarch:
     - amd64
     - 386
-  ignore:
-    - goos: darwin
-      goarch: 386
-
+  # ignore:
+  #   - goos: darwin
+  #     goarch: 386
 archive:
   replacements:
     amd64: 64bit
     386: 32bit
     darwin: macOS
     linux: Linux
-
 release:
   draft: true
