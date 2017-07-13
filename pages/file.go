@@ -59,13 +59,3 @@ func NewFile(s Site, filename string, relpath string, defaults map[string]interf
 	p := &StaticFile{fields}
 	return p, nil
 }
-
-// Categories is in the File interface
-func (f *file) Categories() []string {
-	return frontmatter.FrontMatter(f.frontMatter).SortedStringArray("categories")
-}
-
-// Tags is in the File interface
-func (f *file) Tags() []string {
-	return frontmatter.FrontMatter(f.frontMatter).SortedStringArray("tags")
-}

@@ -60,13 +60,11 @@ type feedDoc struct {
 	path   string
 }
 
-func (d *feedDoc) Permalink() string    { return d.path }
-func (d *feedDoc) SourcePath() string   { return "" }
-func (d *feedDoc) OutputExt() string    { return ".xml" }
-func (d *feedDoc) Published() bool      { return true }
-func (d *feedDoc) Static() bool         { return false } // FIXME means different things to different callers
-func (d *feedDoc) Categories() []string { return []string{} }
-func (d *feedDoc) Tags() []string       { return []string{} }
+func (d *feedDoc) Permalink() string  { return d.path }
+func (d *feedDoc) SourcePath() string { return "" }
+func (d *feedDoc) OutputExt() string  { return ".xml" }
+func (d *feedDoc) Published() bool    { return true }
+func (d *feedDoc) Static() bool       { return false } // FIXME means different things to different callers
 
 func (d *feedDoc) Content() []byte {
 	bindings := map[string]interface{}{"site": d.site}

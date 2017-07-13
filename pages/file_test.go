@@ -30,10 +30,3 @@ func (p pipelineFake) Render(w io.Writer, src []byte, filename string, lineNo in
 	require.Equal(p.t, "testdata/page_with_layout.md", filename)
 	return nil, nil
 }
-
-func TestFile_Categories(t *testing.T) {
-	s := siteFake{t, config.Default()}
-	fm := map[string]interface{}{"categories": "b a"}
-	f := file{site: s, frontMatter: fm}
-	require.Equal(t, []string{"a", "b"}, f.Categories())
-}

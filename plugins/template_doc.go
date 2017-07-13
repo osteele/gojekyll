@@ -13,13 +13,11 @@ type templateDoc struct {
 	tpl  *liquid.Template
 }
 
-func (d *templateDoc) Permalink() string    { return "/" + d.path }
-func (d *templateDoc) SourcePath() string   { return "" }
-func (d *templateDoc) OutputExt() string    { return path.Ext(d.path) }
-func (d *templateDoc) Published() bool      { return true }
-func (d *templateDoc) Static() bool         { return false } // FIXME means different things to different callers
-func (d *templateDoc) Categories() []string { return []string{} }
-func (d *templateDoc) Tags() []string       { return []string{} }
+func (d *templateDoc) Permalink() string  { return "/" + d.path }
+func (d *templateDoc) SourcePath() string { return "" }
+func (d *templateDoc) OutputExt() string  { return path.Ext(d.path) }
+func (d *templateDoc) Published() bool    { return true }
+func (d *templateDoc) Static() bool       { return false } // FIXME means different things to different callers
 
 func (d *templateDoc) Content() []byte {
 	bindings := map[string]interface{}{"site": d.site}

@@ -8,12 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// func (c pipelineFake) RenderingPipeline() pipelines.PipelineInterface { return c }
-// func (c pipelineFake) Config() config.Config                          { return c.cfg }
-// func (c pipelineFake) PathPrefix() string                             { return "." }
-// func (c pipelineFake) Site() interface{}                              { return nil }
+func TestPage_Categories(t *testing.T) {
+	s := siteFake{t, config.Default()}
+	fm := map[string]interface{}{"categories": "b a"}
+	f := file{site: s, frontMatter: fm}
+	p := page{file: f}
+	require.Equal(t, []string{"a", "b"}, p.Categories())
+}
 
-func TestPageWrite(t *testing.T) {
+func TestPage_Write(t *testing.T) {
 	cfg := config.Default()
 	p, err := NewFile(siteFake{t, cfg}, "testdata/page_with_layout.md", "page_with_layout.md", map[string]interface{}{})
 	require.NoError(t, err)

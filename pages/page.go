@@ -24,6 +24,9 @@ type Page interface {
 	// It is an uncaught error to call this on a page that is not a Post.
 	// TODO Should posts have their own interface?
 	PostDate() time.Time
+
+	Categories() []string
+	Tags() []string
 }
 
 type page struct {
@@ -58,16 +61,26 @@ func makePage(filename string, f file) (*page, error) {
 	return &p, nil
 }
 
+func (p *page) FrontMatter() map[string]interface{} {
+	return p.frontMatter
+}
+
+// Categories is in the Page interface
+func (p *page) Categories() []string {
+	return frontmatter.FrontMatter(p.frontMatter).SortedStringArray("categories")
+}
+
+// Tags is in the Page interface
+func (p *page) Tags() []string {
+	return frontmatter.FrontMatter(p.frontMatter).SortedStringArray("tags")
+}
+
 // TemplateContext returns the local variables for template evaluation
 func (p *page) TemplateContext() map[string]interface{} {
 	return map[string]interface{}{
 		"page": p,
 		"site": p.site,
 	}
-}
-
-func (p *page) FrontMatter() map[string]interface{} {
-	return p.frontMatter
 }
 
 // PostDate is part of the Page interface.

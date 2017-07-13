@@ -18,9 +18,6 @@ type Document interface {
 	Published() bool
 	Static() bool
 	Write(io.Writer) error
-
-	Categories() []string
-	Tags() []string
 }
 
 // Site is the interface that the site provides to a page.
