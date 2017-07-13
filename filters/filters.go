@@ -26,16 +26,16 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 	e.RegisterFilter("array_to_sentence_string", arrayToSentenceStringFilter)
 	// TODO doc neither Liquid nor Jekyll docs this, but it appears to be present
 	e.RegisterFilter("filter", func(values []map[string]interface{}, key string) []interface{} {
-		out := []interface{}{}
+		result := []interface{}{}
 		for _, value := range values {
 			if _, ok := value[key]; ok {
-				out = append(out, value)
+				result = append(result, value)
 			}
 		}
-		return out
+		return result
 	})
 	e.RegisterFilter("group_by", groupByFilter)
-	e.RegisterFilter("group_by_exp", unimplementedFilter("group_by_exp"))
+	e.RegisterFilter("group_by_exp", groupByExpFilter)
 	e.RegisterFilter("sample", func(array []interface{}) interface{} {
 		if len(array) == 0 {
 			return nil
@@ -180,6 +180,31 @@ func arrayToSentenceStringFilter(array []string, conjunction func(string) string
 	}
 }
 
+func groupByExpFilter(array []map[string]interface{}, name string, expr expression.Closure) ([]map[string]interface{}, error) {
+	rt := reflect.ValueOf(array)
+	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
+		return nil, nil
+	}
+	groups := map[interface{}][]interface{}{}
+	for i := 0; i < rt.Len(); i++ {
+		item := rt.Index(i).Interface()
+		key, err := expr.Bind(name, item).Evaluate()
+		if err != nil {
+			return nil, err
+		}
+		if group, found := groups[key]; found {
+			groups[key] = append(group, item)
+		} else {
+			groups[key] = []interface{}{item}
+		}
+	}
+	result := []map[string]interface{}{}
+	for k, v := range groups {
+		result = append(result, map[string]interface{}{"name": k, "items": v})
+	}
+	return result, nil
+}
+
 func groupByFilter(array []map[string]interface{}, property string) []map[string]interface{} {
 	rt := reflect.ValueOf(array)
 	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
@@ -200,24 +225,24 @@ func groupByFilter(array []map[string]interface{}, property string) []map[string
 			}
 		}
 	}
-	out := []map[string]interface{}{}
+	result := []map[string]interface{}{}
 	for k, v := range groups {
-		out = append(out, map[string]interface{}{"name": k, "items": v})
+		result = append(result, map[string]interface{}{"name": k, "items": v})
 	}
-	return out
+	return result
 }
 
 func sortFilter(array []interface{}, key interface{}, nilFirst func(bool) bool) []interface{} {
 	nf := nilFirst(true)
-	out := make([]interface{}, len(array))
-	copy(out, array)
+	result := make([]interface{}, len(array))
+	copy(result, array)
 	if key == nil {
-		evaluator.Sort(out)
+		evaluator.Sort(result)
 	} else {
 		// TODO error if key is not a string
-		evaluator.SortByProperty(out, key.(string), nf)
+		evaluator.SortByProperty(result, key.(string), nf)
 	}
-	return out
+	return result
 }
 
 func whereExpFilter(array []interface{}, name string, expr expression.Closure) ([]interface{}, error) {
@@ -225,7 +250,7 @@ func whereExpFilter(array []interface{}, name string, expr expression.Closure) (
 	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
 		return nil, nil
 	}
-	out := []interface{}{}
+	result := []interface{}{}
 	for i := 0; i < rt.Len(); i++ {
 		item := rt.Index(i).Interface()
 		value, err := expr.Bind(name, item).Evaluate()
@@ -233,10 +258,10 @@ func whereExpFilter(array []interface{}, name string, expr expression.Closure) (
 			return nil, err
 		}
 		if value != nil && value != false {
-			out = append(out, item)
+			result = append(result, item)
 		}
 	}
-	return out, nil
+	return result, nil
 }
 
 func whereFilter(array []map[string]interface{}, key string, value interface{}) []interface{} {
@@ -244,15 +269,15 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
 		return nil
 	}
-	out := []interface{}{}
+	result := []interface{}{}
 	for i := 0; i < rt.Len(); i++ {
 		item := rt.Index(i)
 		if item.Kind() == reflect.Map && item.Type().Key().Kind() == reflect.String {
 			attr := item.MapIndex(reflect.ValueOf(key))
 			if attr.IsValid() && fmt.Sprint(attr) == value {
-				out = append(out, item.Interface())
+				result = append(result, item.Interface())
 			}
 		}
 	}
-	return out
+	return result
 }

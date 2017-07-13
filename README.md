@@ -61,10 +61,6 @@ This project is at an early stage of development.
 
 It works on the Google Pages sites that I care about, and it looks credible on a spot-check of other Jekyll sites.
 
-It doesn't run on Windows, and it may not work for you.
-
-In addition to the limitations listed below, this software isn't robust. Jekyll, Hugo, and other mature projects have lots of test coverage, and have had lots of testing by lots of people. I've this used only in limited ways, in the month since I started writing it.
-
 ### Current Limitations
 
 Missing features:
@@ -74,11 +70,12 @@ Missing features:
 - Pagination
 - Math
 - CSV and JSON data files
-- Plugins. (Some plugins are [emulated](./docs/plugins.md).)
-- Template filters `group_by_exp` and `scssify`
-- More Liquid tags and filters, listed [here](https://github.com/osteele/liquid#differences-from-liquid).
+- Most plugins. (Some plugins are [emulated](./docs/plugins.md).)
+- Liquid tag `tablerow`.
+- Liquid filter `scssify`
 - Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [automatic ids](https://kramdown.gettalong.org/converter/html.html#auto-ids), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
 - `site.data` is not sorted.
+- Undefined Liquid tags and filters are errors, not warnings.
 - Windows compatibility
 
 Also see the [detailed status](#feature-status) below.

@@ -25,6 +25,7 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ array | sample }}`, "third"},
 
 	{`{{ site.members | group_by: "graduation_year" | map: "name" | sort | join }}`, "2013, 2014, 2015"},
+	{`{{ site.members | group_by_exp: "item", "item.graduation_year" | size }}`, "4"},
 
 	// TODO what is the default for nil first?
 	{`{{ animals | sort | join: ", " }}`, "Sally Snake, giraffe, octopus, zebra"},
