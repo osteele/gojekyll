@@ -1,4 +1,4 @@
-package commands
+package cmd
 
 // Version is the build version.
 //
