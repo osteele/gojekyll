@@ -12,15 +12,19 @@ LDFLAGS=-ldflags "-X ${PACKAGE}.commands.Version=${COMMIT_HASH}"
 
 $(BINARY): $(SOURCES)
 	go build ${LDFLAGS} -o ${BINARY} ${PACKAGE}
+
 build: $(BINARY) ## compile the package
 
 clean: ## remove binary files
 	rm -fI ${BINARY}
 
-deps: ## list dependencies
-	go list -f '{{join .Imports "\n"}}' ./... | grep -v ${PACKAGE} | grep '\.' | sort | uniq
+imports: ## list imports
+	go list -f '{{join .Imports "\n"}}' ./... | grep -v `go list -f '{{.ImportPath}}'` | grep '\.' | sort | uniq
 
-race:
+deps: ## list dependencies
+	go list -f '{{join .Deps "\n"}}' ./... | grep -v `go list -f '{{.ImportPath}}'` | grep '\.' | sort | uniq
+
+race: ## build a binary with race detection
 	go build -race ${LDFLAGS} -o ${BINARY}-race ${PACKAGE}
 
 setup: ## install dependencies and development tools
