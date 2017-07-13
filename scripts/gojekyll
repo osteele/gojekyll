@@ -1,4 +1,3 @@
 #!/bin/bash
 
-# go run `find . -maxdepth 1 -name \*.go ! -name \*_test.go` $@
-go run `find cmd/gojekyll -maxdepth 1 -name \*.go ! -name \*_test.go` $@
+go run `find . -maxdepth 1 -name \*.go ! -name \*_test.go` $@

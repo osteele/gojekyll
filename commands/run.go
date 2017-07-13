@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -7,10 +7,9 @@ import (
 	"reflect"
 	"runtime/pprof"
 
-	"github.com/osteele/gojekyll"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/site"
-	"gopkg.in/alecthomas/kingpin.v2"
+	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Command-line options
@@ -59,15 +58,8 @@ func init() {
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
 }
 
-func main() {
-	err := parseAndRun(os.Args[1:])
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
-func parseAndRun(args []string) error {
+// ParseAndRun parses and executes the command-line arguments.
+func ParseAndRun(args []string) error {
 	if reflect.DeepEqual(args, []string{"--version"}) {
 		printVersion()
 		return nil
@@ -85,15 +77,12 @@ func parseAndRun(args []string) error {
 }
 
 func printVersion() {
-	fmt.Printf("gojekyll %s\n", gojekyll.Version)
+	fmt.Printf("gojekyll %s\n", Version)
 }
 
 func run(cmd string) error { // nolint: gocyclo
 	if profile || cmd == benchmark.FullCommand() {
 		defer setupProfiling()()
-	}
-	if *versionFlag {
-		printVersion()
 	}
 
 	// These commands run *without* loading the site
@@ -101,13 +90,14 @@ func run(cmd string) error { // nolint: gocyclo
 	case benchmark.FullCommand():
 		return benchmarkCommand()
 	case versionCmd.FullCommand():
-		if !*versionFlag {
-			printVersion()
-		}
+		printVersion()
 		return nil
 	}
 
 	site, err := loadSite(*source, configFlags)
+	if *versionFlag {
+		logger.label("Version:", Version)
+	}
 	if err != nil {
 		return err
 	}

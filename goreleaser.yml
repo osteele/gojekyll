@@ -1,7 +1,6 @@
 build:
-  main: ./cmd/gojekyll
   binary: gojekyll
-  ldflags: -s -w -X gojekyll.Version={{.Version}}
+  ldflags: -s -w -X gojekyll.commands.Version={{.Version}} -X gojekyll.commands.BuildDate={{.Date}}
   goos:
     - darwin
     - linux

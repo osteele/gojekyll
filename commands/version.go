@@ -1,4 +1,4 @@
-package gojekyll
+package commands
 
 // Version is the build version.
 //

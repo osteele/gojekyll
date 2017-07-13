@@ -5,7 +5,7 @@ BINARY = gojekyll
 PACKAGE = github.com/osteele/gojekyll
 COMMIT_HASH = `git rev-parse --short HEAD 2>/dev/null`
 
-LDFLAGS=-ldflags "-X ${PACKAGE}.Version=${COMMIT_HASH}"
+LDFLAGS=-ldflags "-X ${PACKAGE}.commands.Version=${COMMIT_HASH}"
 
 .DEFAULT_GOAL: build
 .PHONY: build clean deps setup install lint test help
