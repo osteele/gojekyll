@@ -20,7 +20,7 @@ Fork and clone the repo.
 Install package dependencies and development tools:
 
 ```bash
-make install_dev_tools
+make setup
 go get -t ./...
 ```
 

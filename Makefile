@@ -7,8 +7,8 @@ COMMIT_HASH = `git rev-parse --short HEAD 2>/dev/null`
 
 LDFLAGS=-ldflags "-X ${PACKAGE}.Version=${COMMIT_HASH}"
 
-.DEFAULT_GOAL: $(BINARY)
-.PHONY: build clean dependencies setup install lint test help
+.DEFAULT_GOAL: build
+.PHONY: build clean deps setup install lint test help
 
 $(BINARY): $(SOURCES)
 	go build ${LDFLAGS} -o ${BINARY} ${PACKAGE}/cmd/gojekyll
@@ -21,14 +21,14 @@ clean: ## remove binary files
 deps: ## list dependencies
 	go list -f '{{join .Imports "\n"}}' ./... | grep -v ${PACKAGE} | grep '\.' | sort | uniq
 
-install_dev_tools: ## install dependencies and development tools
+setup: ## install dependencies and development tools
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
 
 install: ## compile and install the executable
 	go install ${LDFLAGS} ${PACKAGE}/cmd/gojekyll
 
-lint: ## lint the package
+lint: ## Run all the linters
 	gometalinter ./... --disable=gotype
 
 test: ## test the package

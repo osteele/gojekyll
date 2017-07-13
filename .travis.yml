@@ -10,7 +10,7 @@ before_install:
   - go get github.com/mattn/goveralls
 
 install:
-  - make install_dev_tools
+  - make setup
   - go get -t ./...
   - pip install --user Pygments
   - export PATH=$HOME/.local/bin:$PATH
