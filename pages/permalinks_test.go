@@ -49,7 +49,8 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		case ".md", ".markdown":
 			ext = ".html"
 		}
-		p := file{site: s, relpath: path, frontMatter: fm, outputExt: ext}
+		f := file{site: s, relpath: path, frontMatter: fm, outputExt: ext}
+		p := page{file: f}
 		t0, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
 		require.NoError(t, err)
 		p.fileModTime = t0

@@ -39,30 +39,30 @@ var permalinkDateVariables = map[string]string{
 var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 
 // See https://jekyllrb.com/docs/permalinks/#template-variables
-func (f *file) permalinkVariables() map[string]string {
+func (p *page) permalinkVariables() map[string]string {
 	var (
-		relpath   = f.relpath
+		relpath   = p.relpath
 		root      = utils.TrimExt(relpath)
 		name      = filepath.Base(root)
-		fm        = f.frontMatter
+		fm        = p.frontMatter
 		bindings  = templates.VariableMap(fm)
 		slug      = bindings.String("slug", utils.Slugify(name))
-		date      = f.fileModTime
+		date      = p.fileModTime
 		dateField = bindings.String("date", "")
 	)
 	if dateField != "" {
-		date = f.PostDate()
+		date = p.PostDate()
 	}
 	vars := map[string]string{
-		"categories": strings.Join(f.Categories(), "/"),
+		"categories": strings.Join(p.Categories(), "/"),
 		"collection": bindings.String("collection", ""),
 		"name":       utils.Slugify(name),
 		"path":       "/" + root, // TODO are we removing and then adding this?
 		"slug":       slug,
 		"title":      slug,
 		// The following aren't documented, but are evident
-		"output_ext": f.OutputExt(),
-		"y_day":      strconv.Itoa(f.fileModTime.YearDay()),
+		"output_ext": p.OutputExt(),
+		"y_day":      strconv.Itoa(p.fileModTime.YearDay()),
 	}
 	for k, v := range permalinkDateVariables {
 		vars[k] = date.Format(v)
@@ -70,12 +70,12 @@ func (f *file) permalinkVariables() map[string]string {
 	return vars
 }
 
-func (f *file) computePermalink(vars map[string]string) (src string, err error) {
-	pattern := templates.VariableMap(f.frontMatter).String("permalink", DefaultPermalinkPattern)
+func (p *page) computePermalink(vars map[string]string) (src string, err error) {
+	pattern := templates.VariableMap(p.frontMatter).String("permalink", DefaultPermalinkPattern)
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}
-	templateVariables := f.permalinkVariables()
+	templateVariables := p.permalinkVariables()
 	s, err := utils.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
 		varname := m[1:]
 		value, found := templateVariables[varname]
@@ -90,7 +90,7 @@ func (f *file) computePermalink(vars map[string]string) (src string, err error) 
 	return utils.URLPathClean("/" + s), nil
 }
 
-func (f *file) setPermalink() (err error) {
-	f.permalink, err = f.computePermalink(f.permalinkVariables())
+func (p *page) setPermalink() (err error) {
+	p.permalink, err = p.computePermalink(p.permalinkVariables())
 	return
 }
