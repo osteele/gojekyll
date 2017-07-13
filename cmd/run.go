@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -12,57 +11,10 @@ import (
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
-// Command-line options
-var (
-	buildOptions site.BuildOptions
-	configFlags  = config.Flags{}
-	profile      = false
-	quiet        = false
-)
-
-var (
-	app         = kingpin.New("gojekyll", "a (somewhat) Jekyll-compatible blog generator")
-	source      = app.Flag("source", "Source directory").Short('s').Default(".").ExistingDir()
-	_           = app.Flag("destination", "Destination directory").Short('d').Action(stringVar("destination", &configFlags.Destination)).String()
-	_           = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolVar("drafts", &configFlags.Drafts)).Bool()
-	_           = app.Flag("future", "Publishes posts with a future date").Action(boolVar("future", &configFlags.Future)).Bool()
-	_           = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolVar("unpublished", &configFlags.Unpublished)).Bool()
-	versionFlag = app.Flag("version", "Print the name and version").Short('v').Bool()
-
-	build = app.Command("build", "Build your site").Alias("b")
-	clean = app.Command("clean", "Clean the site (removes site output) without building.")
-
-	benchmark = app.Command("benchmark", "Repeat build for ten seconds. Implies --profile.")
-
-	render     = app.Command("render", "Render a file or URL path to standard output")
-	renderPath = render.Arg("PATH", "Path or URL").String()
-
-	routes        = app.Command("routes", "Display site permalinks and associated files")
-	dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files").Bool()
-
-	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
-	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
-	_     = app.Flag("host", "Host to bind to").Short('H').Action(stringVar("host", &configFlags.Host)).String()
-	_     = serve.Flag("port", "Port to listen on").Short('P').Action(intVar("port", &configFlags.Port)).Int()
-
-	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
-	variablePath = variables.Arg("PATH", "Path, URL, site, or site...").String()
-
-	versionCmd = app.Command("version", "Print the name and version")
-)
-
-func init() {
-	app.HelpFlag.Short('h')
-	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
-	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
-	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
-}
-
 // ParseAndRun parses and executes the command-line arguments.
 func ParseAndRun(args []string) error {
 	if reflect.DeepEqual(args, []string{"--version"}) {
-		printVersion()
-		return nil
+		return versionCommand()
 	}
 	cmd := kingpin.MustParse(app.Parse(args))
 	if configFlags.Destination != nil {
@@ -76,25 +28,23 @@ func ParseAndRun(args []string) error {
 	return run(cmd)
 }
 
-func printVersion() {
-	fmt.Printf("gojekyll %s\n", Version)
-}
-
 func run(cmd string) error { // nolint: gocyclo
+	// dispatcher gets to ignore cyclo threshold ^
 	if profile || cmd == benchmark.FullCommand() {
 		defer setupProfiling()()
 	}
-
 	// These commands run *without* loading the site
 	switch cmd {
 	case benchmark.FullCommand():
 		return benchmarkCommand()
 	case versionCmd.FullCommand():
-		printVersion()
-		return nil
+		return versionCommand()
 	}
 
 	site, err := loadSite(*source, configFlags)
+	// Print the version at an awkward place, so its
+	// labels will line up. And print it even if
+	// loading the site produced an error.
 	if *versionFlag {
 		logger.label("Version:", Version)
 	}
@@ -102,7 +52,7 @@ func run(cmd string) error { // nolint: gocyclo
 		return err
 	}
 
-	// These commands run after the site is loaded
+	// These commands run *after* the site is loaded
 	switch cmd {
 	case build.FullCommand():
 		return buildCommand(site)
@@ -115,10 +65,10 @@ func run(cmd string) error { // nolint: gocyclo
 	case serve.FullCommand():
 		return serveCommand(site)
 	case variables.FullCommand():
-		return varsCommand(site)
+		return variablesCommand(site)
 	default:
 		// kingpin should have provided help and exited before here
-		panic("unknown command")
+		panic("exhaustive switch")
 	}
 }
 

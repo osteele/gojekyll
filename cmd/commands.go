@@ -116,7 +116,7 @@ func pageFromPathOrRoute(s *site.Site, path string) (pages.Document, error) {
 	}
 }
 
-func varsCommand(site *site.Site) (err error) {
+func variablesCommand(site *site.Site) (err error) {
 	var data interface{}
 	switch {
 	case strings.HasPrefix(*variablePath, "site"):
@@ -138,5 +138,10 @@ func varsCommand(site *site.Site) (err error) {
 	}
 	logger.label("Variables:", "")
 	fmt.Println(string(b))
+	return nil
+}
+
+func versionCommand() error {
+	fmt.Printf("gojekyll %s\n", Version)
 	return nil
 }
