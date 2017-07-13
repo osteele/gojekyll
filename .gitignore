@@ -3,3 +3,4 @@ _site
 *.prof
 coverage.out
 /dist
+gojekyll-race

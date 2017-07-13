@@ -11,8 +11,7 @@ LDFLAGS=-ldflags "-X ${PACKAGE}.commands.Version=${COMMIT_HASH}"
 .PHONY: build clean deps setup install lint test help
 
 $(BINARY): $(SOURCES)
-	go build ${LDFLAGS} -o ${BINARY} ${PACKAGE}/cmd/gojekyll
-
+	go build ${LDFLAGS} -o ${BINARY} ${PACKAGE}
 build: $(BINARY) ## compile the package
 
 clean: ## remove binary files
@@ -20,6 +19,9 @@ clean: ## remove binary files
 
 deps: ## list dependencies
 	go list -f '{{join .Imports "\n"}}' ./... | grep -v ${PACKAGE} | grep '\.' | sort | uniq
+
+race:
+	go build -race ${LDFLAGS} -o ${BINARY}-race ${PACKAGE}
 
 setup: ## install dependencies and development tools
 	go get -u github.com/alecthomas/gometalinter
