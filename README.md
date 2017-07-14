@@ -4,12 +4,12 @@
 
 > “It is easier to write an incorrect program than understand a correct one.” - Alan Perlis
 
-Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload for the latter.
+Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload.
 
 | &nbsp;                  | Gojekyll                                  | Jekyll | Hugo         |
 |-------------------------|-------------------------------------------|--------|--------------|
 | Stable                  |                                           | ✓      | ✓            |
-| Fast                    | ✓<br>[[~20×Jekyll](./docs/benchmarks.md)] |        | ✓            |
+| Fast                    | ✓<br>([~20×Jekyll](./docs/benchmarks.md)) |        | ✓            |
 | Template language       | Liquid                                    | Liquid | Go templates |
 | Jekyll compatibility    | [partial](#current-limitations)           | ✓      |              |
 | Plugins                 | [some](./docs/plugins.md)                 | yes    | ?            |
@@ -21,8 +21,8 @@ Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator,
 <!-- TOC -->
 
 - [Gojekyll](#gojekyll)
-    - [Installation](#installation)
     - [Usage](#usage)
+    - [Installation](#installation)
     - [Status](#status)
         - [Current Limitations](#current-limitations)
         - [Other Differences](#other-differences)
@@ -34,17 +34,34 @@ Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator,
 
 <!-- /TOC -->
 
+## Usage
+
+```bash
+gojekyll build       # builds the site in the current directory into _site
+gojekyll serve       # serve the app at http://localhost:4000; reload on changes
+gojekyll help
+gojekyll help build
+```
+
 ## Installation
+
+Pre-requisites:
+
+1. **Install go** (1) via [Homebrew](https://brew.sh): `brew install go`; or (2) [download](https://golang.org/doc/install#tarball).
+2. [Optional] To use the `{% highlight %}` tag, you also need [Pygments](http://pygments.org): `pip install Pygments`.
+
 
 First-time install:
 
-1. [Install go](https://golang.org/doc/install#install). (On macOS running [Homebrew](https://brew.sh), `brew install go` is easier than the Install instructions on the Go site.)
-2. `go get osteele/gojekyll`
-3. [Optional] To use the `{% highlight %}` tag, you also need [Pygments](http://pygments.org). `pip install Pygments`.
+```bash
+go get github.com/osteele/gojekyll
+```
 
-Update to the latest version:
+[Later] Update to the latest version:
 
-* `go get -u github.com/osteele/liquid github.com/osteele/gojekyll/cmd/gojekyll`
+```bash
+go get -u github.com/osteele/liquid github.com/osteele/gojekyll
+```
 
 [Optional] Install command-line autocompletion:
 
@@ -53,15 +70,6 @@ Update to the latest version:
 eval "$(gojekyll --completion-script-bash)"
 # Zsh:
 eval "$(gojekyll --completion-script-zsh)"
-```
-
-## Usage
-
-```bash
-gojekyll build       # builds the site in the current directory into _site
-gojekyll serve       # serve the app at http://localhost:4000; reload on changes
-gojekyll help
-gojekyll help build
 ```
 
 ## Status
@@ -75,14 +83,12 @@ It works on the GitHub Pages sites that I care about, and it looks credible on a
 Missing features:
 
 - Themes
-- Excerpts
 - Pagination
 - Math
-- CSV and JSON data files
-- Most plugins. (Some plugins are [emulated](./docs/plugins.md).)
+- Plugin system. ([Some plugins](./docs/plugins.md) are emulated.)
 - Liquid tag `tablerow`.
 - Liquid filter `scssify`
-- Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [automatic ids](https://kramdown.gettalong.org/converter/html.html#auto-ids), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
+- Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
 - `site.data` is not sorted.
 - Undefined Liquid tags and filters are errors, not warnings.
 - Windows compatibility
@@ -99,10 +105,9 @@ By design:
 - Plugins must be listed in the config file, not a Gemfile.
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
-- Live reload are enabled by default.
-- Server watch reload the `_config.yml` and data files too.
+- Server live reload is always on.
+- `serve --watch` (the default) reloads the `_config.yml` and data files too.
 - Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
-- Incremental build. The emphasis is on optimizing the non-incremental case. This is easier with fewer code paths.
 
 Muzukashii:
 
@@ -113,18 +118,10 @@ Muzukashii:
 - [ ] Content
   - [x] Front Matter
   - [x] Posts
-    - [x] Categories
-    - [x] Tags
-    - [x] Drafts
-    - [x] Future
-    - [x] Related
   - [x] Static Files
   - [x] Variables
   - [x] Collections
-  - [ ] Data Files
-    - [x] CSV
-    - [x] JSON
-    - [x] YAML
+  - [x] Data Files
   - [ ] Assets
     - [ ] Coffeescript
     - [x] Sass/SCSS
@@ -134,22 +131,10 @@ Muzukashii:
       - [ ] `group_by_exp` and `scssify`
       - [x] everything else
     - [x] Jekyll tags
-      - [x] `include`
-      - [x] `include_relative`
-      - [x] `link`
-      - [x] `post_url`
-      - [x] `highlight`
   - [x] Includes
-      - [x] `include` parameters
-      - [x] `include` variables (e.g. `{% include {{ expr }} %}`)
   - [x] Permalinks
   - [ ] Pagination
-  - [ ] Plugins
-    - [x] `jekyll-avatar`
-    - [ ] `jekyll-coffeescript`
-    - [x] `jekyll-gist` (ignores `noscript: false`)
-    - [x] `jekyll-live-reload` (always on)
-    - [ ] `jekyll-paginate`
+  - [ ] Plugins – partial; see [here](./docs/plugins.md)
   - [ ] Themes
   - [x] Layouts
 - [x] Server
@@ -157,27 +142,20 @@ Muzukashii:
 - [ ] Commands
   - [x] `build`
     - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`
-    - [ ] `--config`, `--baseurl`, `--lsi`, `--no-watch`
-    - [ ] not planned: `--force-polling`, `--limit-posts`, `--incremental`, `JEKYLL_ENV=production`
+    - [ ] `--baseurl`, `--config`, `--incremental`, `--lsi`, `--watch`
+    - [ ] `--force-polling`, `--limit-posts`, `JEKYLL_ENV=production` – not planned
   - [x] `clean`
   - [x] `help`
   - [x] `serve`
     - [x] `--open-uri`, `--host`, `--port`
-    - [ ] `--detach`, `--baseurl`
-    - [ ] not planned: `--incremental`, `--ssl`-*
-  - [ ] not planned: `doctor`, `import`, `new`, `new-theme`
+    - [ ] `--baseurl`, `--config`, `--incremental`, `--[no-]watch` (`–watch` is always enabled)
+    - [ ] `--detach`, `--ssl`-* – not planned
+  - [ ] `doctor`, `import`, `new`, `new-theme` – not planned
 - [ ] Windows
-
-Also see:
-
-- The [feature parity board](https://github.com/osteele/gojekyll/projects/1) board  lists differences between Jekyll and gojekyll in more detail.
-- The [plugin board](https://github.com/osteele/gojekyll/projects/2) lists the implementation status of common plugins. (Gojekyll lacks an extensible plugin mechanism. The goal is to be able to use it to build Jekyll sites that use the most popular plugins.)
-- The [Go Liquid feature parity board](https://github.com/osteele/liquid/projects/1) to see differences between the real Liquid library and the one that is used in gojekyll.
 
 ## Contributing
 
-Bug reports, test cases, and code contributions are more than welcome.
-Please refer to the [contribution guidelines](./CONTRIBUTING.md).
+Bug reports, test cases, and code contributions are [more than welcome](./CONTRIBUTING.md).
 
 ## Attribution
 
@@ -214,9 +192,9 @@ In addition to being totally and obviously inspired by Jekyll and its plugins, J
 
 ## Related
 
-[Hugo](https://gohugo.io) is the pre-eminent Go static site generator. It isn't Jekyll-compatible (-), but it's extraordinarily polished, performant, and productized (+++).
+[Hugo](https://gohugo.io) is the pre-eminent Go static site generator. It isn't Jekyll-compatible (-), but it's highly polished, performant, and productized (+++).
 
-[jkl](https://github.com/drone/jkl) is another Go clone of Jekyll. If I'd found it sooner I might have started this project by forking that one. It's got a better name, too.
+[jkl](https://github.com/drone/jkl) is another Go clone of Jekyll. If I'd found it sooner I might have started this project by forking that one. It's got a better name.
 
 [Liquid](https://github.com/osteele/liquid) is a pure Go implementation of Liquid templates, that I finally caved and wrote in order to use in this project.
 
