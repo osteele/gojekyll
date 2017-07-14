@@ -42,11 +42,8 @@ func (p *page) ToLiquid() interface{} {
 		ext     = filepath.Ext(relpath)
 		root    = utils.TrimExt(p.relpath)
 		base    = filepath.Base(root)
-		content = p.raw
+		content = p.maybeContent(true)
 	)
-	if p.content != nil {
-		content = *p.content
-	}
 	data := map[string]interface{}{
 		"content": string(content),
 		"excerpt": p.excerpt(),
@@ -90,14 +87,23 @@ func (p *page) ToLiquid() interface{} {
 	return data
 }
 
+func (p *page) maybeContent(fallback bool) []byte {
+	p.Lock()
+	defer p.Unlock()
+	if p.content != nil {
+		return *p.content
+	}
+	if fallback {
+		return p.raw
+	}
+	return nil
+}
+
 func (p *page) excerpt() string {
 	if ei, ok := p.frontMatter["excerpt"]; ok {
 		return fmt.Sprint(ei)
 	}
-	content := p.raw
-	if p.content != nil {
-		content = *p.content
-	}
+	content := p.maybeContent(true)
 	pos := bytes.Index(content, []byte(p.site.Config().ExcerptSeparator))
 	if pos >= 0 {
 		return string(content[:pos])

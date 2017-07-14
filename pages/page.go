@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"sync"
 	"time"
 
 	"github.com/osteele/gojekyll/frontmatter"
@@ -31,6 +32,7 @@ type Page interface {
 
 type page struct {
 	file
+	sync.Mutex
 	firstLine int
 	raw       []byte
 	content   *[]byte
@@ -120,8 +122,9 @@ func (p *page) Write(w io.Writer) error {
 
 // Content computes the page content.
 func (p *page) Content() ([]byte, error) {
-	if p.content != nil {
-		return *p.content, nil
+	content := p.maybeContent(false)
+	if content != nil {
+		return content, nil
 	}
 	pipe := p.site.RenderingPipeline()
 	buf := new(bytes.Buffer)
@@ -129,11 +132,13 @@ func (p *page) Content() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	p.content = &b
+	p.SetContent(b)
 	return b, nil
 }
 
-// retains content
+// retains its argument
 func (p *page) SetContent(content []byte) {
+	p.Lock()
+	defer p.Unlock()
 	p.content = &content
 }
