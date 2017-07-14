@@ -39,12 +39,21 @@ Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator,
 First-time install:
 
 1. [Install go](https://golang.org/doc/install#install). (On macOS running [Homebrew](https://brew.sh), `brew install go` is easier than the Install instructions on the Go site.)
-2. `go get osteele/gojekyll/cmd/gojekyll`
-3. To use the `{% highlight %}` tag, you also need [Pygments](http://pygments.org). `pip install Pygments`.
+2. `go get osteele/gojekyll`
+3. [Optional] To use the `{% highlight %}` tag, you also need [Pygments](http://pygments.org). `pip install Pygments`.
 
 Update to the latest version:
 
 * `go get -u github.com/osteele/liquid github.com/osteele/gojekyll/cmd/gojekyll`
+
+[Optional] Install command-line autocompletion:
+
+```bash
+# Bash:
+eval "$(gojekyll --completion-script-bash)"
+# Zsh:
+eval "$(gojekyll --completion-script-zsh)"
+```
 
 ## Usage
 
