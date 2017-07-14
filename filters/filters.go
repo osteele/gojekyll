@@ -16,7 +16,7 @@ import (
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
-	"github.com/osteele/liquid/expression"
+	"github.com/osteele/liquid/expressions"
 	"github.com/russross/blackfriday"
 )
 
@@ -180,7 +180,7 @@ func arrayToSentenceStringFilter(array []string, conjunction func(string) string
 	}
 }
 
-func groupByExpFilter(array []map[string]interface{}, name string, expr expression.Closure) ([]map[string]interface{}, error) {
+func groupByExpFilter(array []map[string]interface{}, name string, expr expressions.Closure) ([]map[string]interface{}, error) {
 	rt := reflect.ValueOf(array)
 	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
 		return nil, nil
@@ -245,7 +245,7 @@ func sortFilter(array []interface{}, key interface{}, nilFirst func(bool) bool) 
 	return result
 }
 
-func whereExpFilter(array []interface{}, name string, expr expression.Closure) ([]interface{}, error) {
+func whereExpFilter(array []interface{}, name string, expr expressions.Closure) ([]interface{}, error) {
 	rt := reflect.ValueOf(array)
 	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
 		return nil, nil
