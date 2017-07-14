@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -21,7 +20,6 @@ func (s *Server) watchAndReload() error {
 				urls[url] = true
 			}
 		}
-		fmt.Println(filenames)
 		s.reloadSite(len(filenames))
 		for url := range urls {
 			s.lr.Reload(url)

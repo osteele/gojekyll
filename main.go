@@ -10,7 +10,7 @@ import (
 func main() {
 	err := cmd.ParseAndRun(os.Args[1:])
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err) // nolint: gas
 		os.Exit(1)
 	}
 }
