@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 func (s *Server) watchAndReload() error {
 	site := s.Site
 	return s.watchFiles(func(filenames []string) {
-		// Resolve to URLS *before* reloading the site, in case the latter
+		// This resolves filenames to URLS *before* reloading the site, in case the latter
 		// remaps permalinks.
 		urls := map[string]bool{}
 		for _, relpath := range filenames {
@@ -20,7 +21,8 @@ func (s *Server) watchAndReload() error {
 				urls[url] = true
 			}
 		}
-		s.reloadSite()
+		fmt.Println(filenames)
+		s.reloadSite(len(filenames))
 		for url := range urls {
 			s.lr.Reload(url)
 		}
@@ -53,10 +55,14 @@ func (s *Server) watchFiles(fn func([]string)) error {
 		for {
 			filenames := <-debounced
 			relpaths := make([]string, 0, len(filenames))
+			seen := map[string]bool{}
 			for _, filename := range filenames {
 				relpath := utils.MustRel(sourceDir, filename)
 				if relpath == "_config.yml" || !site.Exclude(relpath) {
-					relpaths = append(relpaths, relpath)
+					if !seen[relpath] {
+						seen[relpath] = true
+						relpaths = append(relpaths, relpath)
+					}
 				}
 			}
 			fn(relpaths)

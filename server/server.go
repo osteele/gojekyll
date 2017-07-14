@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 	"io"
-	"log"
 	"mime"
 	"net/http"
 	"strings"
@@ -17,8 +16,8 @@ import (
 
 // Server serves the site on HTTP.
 type Server struct {
+	sync.Mutex
 	Site *site.Site
-	mu   sync.Mutex
 	lr   *lrserver.Server
 }
 
@@ -49,8 +48,9 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 }
 
 func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.Lock()
+	defer s.Unlock()
+
 	var (
 		site     = s.Site
 		urlpath  = r.URL.Path
@@ -58,8 +58,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	)
 	if !found {
 		rw.WriteHeader(http.StatusNotFound)
-		log.Println("Not found:", urlpath)
-		p, found = site.Routes["404.html"]
+		p, found = site.Routes["/404.html"]
 	}
 	if !found {
 		fmt.Fprintf(rw, "404 page not found: %s", urlpath) // nolint: gas
@@ -79,12 +78,13 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) reloadSite() {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *Server) reloadSite(count int) {
+	s.Lock()
+	defer s.Unlock()
 
 	start := time.Now()
-	fmt.Printf("%s Reloading site...", start.Format(time.Stamp))
+	inflect := map[bool]string{true: "", false: "s"}[count == 1]
+	fmt.Printf("Regenerating: %d file%s changed at %s...", count, inflect, start.Format(time.Stamp))
 	site, err := s.Site.Reload()
 	if err != nil {
 		fmt.Println()
@@ -92,5 +92,5 @@ func (s *Server) reloadSite() {
 	}
 	s.Site = site
 	s.Site.SetAbsoluteURL("")
-	fmt.Printf("reloaded in %.2fs\n", time.Since(start).Seconds())
+	fmt.Printf("done (%.2fs)\n", time.Since(start).Seconds())
 }

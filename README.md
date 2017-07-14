@@ -99,8 +99,8 @@ By design:
 - Plugins must be listed in the config file, not a Gemfile.
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
-- Server live reload is always on.
-- `serve --watch` (the default) reloads `_config.yml` too.
+- Live reload are enabled by default.
+- Server watch reload the `_config.yml` and data files too.
 - Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
 - Incremental build. The emphasis is on optimizing the non-incremental case. This is easier with fewer code paths.
 
