@@ -122,8 +122,8 @@ Muzukashii:
   - [x] Variables
   - [x] Collections
   - [ ] Data Files
-    - [ ] CSV
-    - [ ] JSON
+    - [x] CSV
+    - [x] JSON
     - [x] YAML
   - [ ] Assets
     - [ ] Coffeescript

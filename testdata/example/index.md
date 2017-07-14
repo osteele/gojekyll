@@ -15,4 +15,4 @@ variable: page variable
 * [Variables]({% link variables.md %})
 * {{ page.variable }}
 * {{ site.variable }}
-* {{ site.data.filedata.key }}
+* {{ site.data.file_data.key }}
