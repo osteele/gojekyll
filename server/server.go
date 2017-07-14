@@ -27,11 +27,13 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 	s.Site.SetAbsoluteURL("")
 	address := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	logger("Server address:", "http://"+address+"/")
-	if err := s.StartLiveReloader(); err != nil {
-		return err
-	}
-	if err := s.watchAndReload(); err != nil {
-		return err
+	if cfg.Watch {
+		if err := s.StartLiveReloader(); err != nil {
+			return err
+		}
+		if err := s.watchAndReload(); err != nil {
+			return err
+		}
 	}
 	http.HandleFunc("/", s.handler)
 	c := make(chan error)

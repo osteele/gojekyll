@@ -9,7 +9,8 @@ import (
 // Command-line options
 var (
 	buildOptions site.BuildOptions
-	configFlags  = config.Flags{}
+	watch        = true
+	configFlags  = config.Flags{Watch: &watch}
 	profile      = false
 	quiet        = false
 )
@@ -36,7 +37,7 @@ var (
 
 	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
 	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
-	_     = app.Flag("host", "Host to bind to").Short('H').Action(stringVar("host", &configFlags.Host)).String()
+	_     = serve.Flag("host", "Host to bind to").Short('H').Action(stringVar("host", &configFlags.Host)).String()
 	_     = serve.Flag("port", "Port to listen on").Short('P').Action(intVar("port", &configFlags.Port)).Int()
 
 	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
@@ -50,4 +51,5 @@ func init() {
 	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
 	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
+	serve.Flag("watch", "Watch for changes and rebuild").Short('w').Default("true").BoolVar(&watch)
 }

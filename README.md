@@ -147,8 +147,8 @@ Muzukashii:
   - [x] `clean`
   - [x] `help`
   - [x] `serve`
-    - [x] `--open-uri`, `--host`, `--port`
-    - [ ] `--baseurl`, `--config`, `--incremental`, `--[no-]watch` (`–watch` is always enabled)
+    - [x] `--open-uri`, `--host`, `--port`, `–watch` (enabled by default)
+    - [ ] `--baseurl`, `--config`, `--incremental`
     - [ ] `--detach`, `--ssl`-* – not planned
   - [ ] `doctor`, `import`, `new`, `new-theme` – not planned
 - [ ] Windows

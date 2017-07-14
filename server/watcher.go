@@ -51,22 +51,33 @@ func (s *Server) watchFiles(fn func([]string)) error {
 	}()
 	go func() {
 		for {
-			filenames := <-debounced
-			relpaths := make([]string, 0, len(filenames))
-			seen := map[string]bool{}
-			for _, filename := range filenames {
-				relpath := utils.MustRel(sourceDir, filename)
-				if relpath == "_config.yml" || !site.Exclude(relpath) {
-					if !seen[relpath] {
-						seen[relpath] = true
-						relpaths = append(relpaths, relpath)
-					}
-				}
+			paths := s.sitePaths(<-debounced)
+			if len(paths) > 0 {
+				fn(paths)
 			}
-			fn(relpaths)
 		}
 	}()
 	return watcher.Add(sourceDir)
+}
+
+// relativize and de-dup paths and filter to those the site source
+func (s *Server) sitePaths(filenames []string) []string {
+	var (
+		site  = s.Site
+		dir   = site.SourceDir()
+		paths = make([]string, 0, len(filenames))
+		seen  = map[string]bool{}
+	)
+	for _, filename := range filenames {
+		path := utils.MustRel(dir, filename)
+		if path == "_config.yml" || !site.Exclude(path) {
+			if !seen[path] {
+				seen[path] = true
+				paths = append(paths, path)
+			}
+		}
+	}
+	return paths
 }
 
 // debounce relays values from input to output, merging successive values within interval

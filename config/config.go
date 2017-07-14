@@ -45,6 +45,9 @@ type Config struct {
 	// Outputting
 	Permalink string
 
+	// CLI-only
+	Watch bool `yaml:"-"`
+
 	Defaults []struct {
 		Scope struct {
 			Path string
