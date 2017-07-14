@@ -15,6 +15,21 @@ func FilenameDate(s string) (time.Time, bool) {
 	return t, err == nil
 }
 
+// MatchList reports whether any glob pattern matches the path.
+// It panics with ErrBadPattern if any pattern is malformed.
+func MatchList(patterns []string, name string) bool {
+	for _, p := range patterns {
+		match, err := filepath.Match(p, name)
+		if err != nil {
+			panic(err)
+		}
+		if match {
+			return true
+		}
+	}
+	return false
+}
+
 // MustAbs is like filepath.Abs, but panics instead of returning an error.
 func MustAbs(path string) string {
 	abs, err := filepath.Abs(path)

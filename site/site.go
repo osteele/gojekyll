@@ -192,16 +192,13 @@ func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 
 // Exclude returns a boolean indicating that the site excludes a file.
 func (s *Site) Exclude(path string) bool {
-	// TODO exclude based on glob, not exact match
-	inclusionMap := utils.StringArrayToMap(s.config.Include)
-	exclusionMap := utils.StringArrayToMap(s.config.Exclude)
 	base := filepath.Base(path)
 	switch {
 	case path == ".":
 		return false
-	case inclusionMap[base]:
+	case utils.MatchList(s.config.Include, base):
 		return false
-	case exclusionMap[base]:
+	case utils.MatchList(s.config.Exclude, base):
 		return true
 	case strings.HasPrefix(base, "."), strings.HasPrefix(base, "_"):
 		return true
