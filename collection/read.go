@@ -50,13 +50,13 @@ func (c *Collection) scanDirectory(dirname string) error {
 		case c.site.Exclude(siteRel):
 			return nil
 		default:
-			return c.readFile(filename, utils.MustRel(dir, filename))
+			return c.readPost(filename, utils.MustRel(dir, filename))
 		}
 	}
 	return filepath.Walk(dir, walkFn)
 }
 
-func (c *Collection) readFile(abs string, rel string) error {
+func (c *Collection) readPost(abs string, rel string) error {
 	siteRel := utils.MustRel(c.config.Source, abs)
 	strategy := c.strategy()
 	switch {
@@ -78,7 +78,7 @@ func (c *Collection) readFile(abs string, rel string) error {
 	case f.Static():
 		return nil
 	case f.Published() || c.config.Unpublished:
-		p := f.(pages.Page)
+		p := f.(pages.Page) // f.Static() guarantees this
 		c.pages = append(c.pages, p)
 	}
 	return nil
