@@ -10,7 +10,6 @@ import (
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
-	"github.com/russross/blackfriday"
 )
 
 // PipelineInterface applies transformations to a document.
@@ -74,7 +73,7 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e 
 		return nil, err
 	}
 	if p.config.IsMarkdown(filename) {
-		b = blackfriday.MarkdownCommon(b)
+		b = markdownRenderer(b)
 	}
 	return b, nil
 }

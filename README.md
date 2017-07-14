@@ -68,7 +68,7 @@ gojekyll help build
 
 This project is at an early stage of development.
 
-It works on the Google Pages sites that I care about, and it looks credible on a spot-check of other Jekyll sites.
+It works on the GitHub Pages sites that I care about, and it looks credible on a spot-check of other Jekyll sites.
 
 ### Current Limitations
 
