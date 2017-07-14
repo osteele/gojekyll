@@ -80,11 +80,10 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e 
 }
 
 func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename string, lineNo int) ([]byte, error) {
-	tpl, err := p.liquidEngine.ParseTemplate(src)
+	tpl, err := p.liquidEngine.ParseTemplateLocation(src, filename, lineNo)
 	if err != nil {
 		return nil, utils.WrapPathError(err, filename)
 	}
-	tpl.SetSourceLocation(filename, lineNo)
 	out, err := tpl.Render(b)
 	if err != nil {
 		return nil, utils.WrapPathError(err, filename)

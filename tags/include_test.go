@@ -37,9 +37,9 @@ func TestIncludeRelativeTag(t *testing.T) {
 	AddJekyllTags(engine, &cfg, func(s string) (string, bool) { return "", false })
 	bindings := map[string]interface{}{}
 
-	tpl, err := engine.ParseTemplate([]byte(`{% include_relative subdir/include_relative.html %}`))
+	path := "testdata/dir/include_relative_source.md"
+	tpl, err := engine.ParseTemplateLocation([]byte(`{% include_relative subdir/include_relative.html %}`), path, 1)
 	require.NoError(t, err)
-	tpl.SetSourcePath("testdata/dir/include_relative_source.md")
 	s, err := tpl.Render(bindings)
 	require.NoError(t, err)
 	require.Equal(t, "include_relative target", strings.TrimSpace(string(s)))

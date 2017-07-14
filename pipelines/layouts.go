@@ -42,11 +42,10 @@ func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl *liq
 	if err != nil {
 		return
 	}
-	tpl, err = p.liquidEngine.ParseTemplate(content)
+	tpl, err = p.liquidEngine.ParseTemplateLocation(content, filename, lineNo)
 	if err != nil {
 		return nil, err
 	}
-	tpl.SetSourceLocation(filename, lineNo)
 	return
 }
 
