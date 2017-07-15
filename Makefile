@@ -28,11 +28,12 @@ race: ## build a binary with race detection
 	go build -race ${LDFLAGS} -o ${BINARY}-race ${PACKAGE}
 
 setup: ## install dependencies and development tools
+	go get -t ./...
 	go get -u github.com/alecthomas/gometalinter
 	gometalinter --install
 
 install: ## compile and install the executable
-	go install ${LDFLAGS} ${PACKAGE}/cmd/gojekyll
+	go install ${LDFLAGS} ${PACKAGE}
 
 lint: ## Run all the linters
 	gometalinter ./... --disable=gotype --disable=aligncheck
