@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	yaml "gopkg.in/yaml.v2"
@@ -38,53 +37,16 @@ func buildCommand(site *site.Site) error {
 
 	// server watch is implemented inside Server.Run, in contrast to this command
 	if watch {
-		// never returns unless error
-		return watchRebuild(site)
+		events, err := site.WatchRebuild(buildOptions)
+		if err != nil {
+			return err
+		}
+		logger.label("Auto-regeneration", "enabled for %q\n", site.SourceDir())
+		for event := range events {
+			fmt.Print(event)
+		}
 	}
 	return nil
-}
-
-// never returns
-func watchRebuild(site *site.Site) error {
-	var mu sync.Mutex
-	messages := make(chan string)
-	errors := make(chan error)
-	err := site.WatchFiles(func(filenames []string) {
-		mu.Lock()
-		defer mu.Unlock()
-		// DRY w/ occurrence in server.reloadSite
-		count := len(filenames)
-		start := time.Now()
-		inflect := map[bool]string{true: "", false: "s"}[count == 1]
-		messages <- fmt.Sprintf("Regenerating: %d file%s changed at %s...", count, inflect, start.Format(time.Stamp))
-		// replace the previous value of the global site variable
-		s, err := site.Reload()
-		if err == nil {
-			count, e := s.Build(buildOptions)
-			if e == nil {
-				site = s
-				elapsed := time.Since(start)
-				messages <- fmt.Sprintf("wrote %d files in %.2fs.\n", count, elapsed.Seconds())
-			}
-			err = e
-		}
-		if err != nil {
-			errors <- err
-			return
-		}
-	})
-	if err != nil {
-		return err
-	}
-	for {
-		select {
-		case err := <-errors:
-			fmt.Println()
-			fmt.Fprintln(os.Stderr, err.Error())
-		case msg := <-messages:
-			fmt.Print(msg)
-		}
-	}
 }
 
 func cleanCommand(site *site.Site) error {

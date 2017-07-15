@@ -13,7 +13,7 @@ func (tc tagContext) includeTag(ctx render.Context) (string, error) {
 }
 
 func (tc tagContext) includeRelativeTag(ctx render.Context) (string, error) {
-	// TODO Note that you cannot use the ../ syntax
+	// TODO "Note that you cannot use the ../ syntax"
 	return includeFromDir(ctx, path.Dir(ctx.SourceFile()))
 }
 

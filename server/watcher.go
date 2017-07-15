@@ -12,7 +12,7 @@ func (s *Server) watchAndReload() error {
 				urls[url] = true
 			}
 		}
-		s.reloadSite(len(filenames))
+		s.reload(len(filenames))
 		for url := range urls {
 			s.lr.Reload(url)
 		}

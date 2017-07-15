@@ -43,13 +43,15 @@ func (s *Site) Read() error {
 	if err := s.readFiles(); err != nil {
 		return err
 	}
-	if err:=s.initializeRenderingPipeline(); err!=nil{return err}
+	if err := s.initializeRenderingPipeline(); err != nil {
+		return err
+	}
 	return s.runHooks(func(p plugins.Plugin) error { return p.PostRead(s) })
 }
 
-// Reload reloads the config file and pages.
-// It returns a copy.
-func (s *Site) Reload() (*Site, error) {
+// Reloaded returns a new site read the same source directory, configuration file, and load flags.
+// It does not read the site files.
+func (s *Site) Reloaded() (*Site, error) {
 	copy, err := FromDirectory(s.SourceDir(), s.flags)
 	if err != nil {
 		return nil, err

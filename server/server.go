@@ -82,7 +82,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) reloadSite(count int) {
+func (s *Server) reload(count int) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -90,7 +90,7 @@ func (s *Server) reloadSite(count int) {
 	start := time.Now()
 	inflect := map[bool]string{true: "", false: "s"}[count == 1]
 	fmt.Printf("Regenerating: %d file%s changed at %s...", count, inflect, start.Format(time.Stamp))
-	site, err := s.Site.Reload()
+	site, err := s.Site.Reloaded()
 	if err != nil {
 		fmt.Println()
 		fmt.Fprintln(os.Stderr, err.Error())
