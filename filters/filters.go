@@ -18,6 +18,7 @@ import (
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
 	"github.com/russross/blackfriday"
+	libsass "github.com/wellington/go-libsass"
 )
 
 // AddJekyllFilters adds the Jekyll filters to the Liquid engine.
@@ -118,7 +119,8 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 
 	// string escapes
 	e.RegisterFilter("cgi_escape", url.QueryEscape)
-	e.RegisterFilter("scssify", unimplementedFilter("scssify"))
+	e.RegisterFilter("sassify", unimplementedFilter("sassify"))
+	e.RegisterFilter("scssify", scssifyFilter)
 	e.RegisterFilter("smartify", smartifyFilter)
 	e.RegisterFilter("uri_escape", func(s string) string {
 		return regexp.MustCompile(`\?(.+?)=([^&]*)(?:\&(.+?)=([^&]*))*`).ReplaceAllStringFunc(s, func(m string) string {
@@ -280,4 +282,22 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 		}
 	}
 	return result
+}
+
+// string filters
+
+func scssifyFilter(s string) (string, error) {
+	// this doesn't try to share context or setup with the rendering pipeline,
+	// and it doesn't minify
+	buf := new(bytes.Buffer)
+	comp, err := libsass.New(buf, bytes.NewBufferString(s))
+	if err != nil {
+		return "", err
+	}
+	// err = comp.Option(libsass.WithSyntax(libsass.SassSyntax))
+	if err != nil {
+		return "", err
+	}
+	err = comp.Run()
+	return buf.String(), err
 }

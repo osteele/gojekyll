@@ -6,6 +6,8 @@
 
 Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload.
 
+Gojekyll is intended as an homage to Jekyll, and as a possible alternative in situations (such as iterative development of sites that don't use unsupported features) where speed is more important than total compatibility.
+
 | &nbsp;                  | Gojekyll                                  | Jekyll | Hugo         |
 |-------------------------|-------------------------------------------|--------|--------------|
 | Stable                  |                                           | ✓      | ✓            |
@@ -86,8 +88,7 @@ Missing features:
 - Pagination
 - Math
 - Plugin system. ([Some plugins](./docs/plugins.md) are emulated.)
-- Liquid tag `tablerow`.
-- Liquid filter `scssify`
+- Liquid filter `sassify`
 - Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
 - `site.data` is not sorted.
 - Undefined Liquid tags and filters are errors, not warnings.
