@@ -35,7 +35,7 @@ install: ## compile and install the executable
 	go install ${LDFLAGS} ${PACKAGE}/cmd/gojekyll
 
 lint: ## Run all the linters
-	gometalinter ./... --disable=gotype
+	gometalinter ./... --disable=gotype --disable aligncheck
 
 test: ## test the package
 	go test ./...

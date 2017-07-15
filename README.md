@@ -141,8 +141,8 @@ Muzukashii:
   - [x] Directory watch
 - [ ] Commands
   - [x] `build`
-    - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`
-    - [ ] `--baseurl`, `--config`, `--incremental`, `--lsi`, `--watch`
+    - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`, `--watch`
+    - [ ] `--baseurl`, `--config`, `--incremental`, `--lsi`
     - [ ] `--force-polling`, `--limit-posts`, `JEKYLL_ENV=production` – not planned
   - [x] `clean`
   - [x] `help`

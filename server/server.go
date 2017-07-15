@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -85,13 +86,15 @@ func (s *Server) reloadSite(count int) {
 	s.Lock()
 	defer s.Unlock()
 
+	// DRY w/ occurrence in buildCommand
 	start := time.Now()
 	inflect := map[bool]string{true: "", false: "s"}[count == 1]
 	fmt.Printf("Regenerating: %d file%s changed at %s...", count, inflect, start.Format(time.Stamp))
 	site, err := s.Site.Reload()
 	if err != nil {
 		fmt.Println()
-		fmt.Println(err.Error())
+		fmt.Fprintln(os.Stderr, err.Error())
+		return
 	}
 	s.Site = site
 	s.Site.SetAbsoluteURL("")

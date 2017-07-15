@@ -9,7 +9,7 @@ import (
 // Command-line options
 var (
 	buildOptions site.BuildOptions
-	watch        = true
+	watch        bool
 	configFlags  = config.Flags{Watch: &watch}
 	profile      = false
 	quiet        = false
@@ -51,5 +51,8 @@ func init() {
 	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
 	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&buildOptions.DryRun)
-	serve.Flag("watch", "Watch for changes and rebuild").Short('w').Default("true").BoolVar(&watch)
+
+	watchText := "Watch for changes and rebuild"
+	build.Flag("watch", watchText).Short('w').BoolVar(&watch)
+	serve.Flag("watch", watchText).Short('w').Default("true").BoolVar(&watch)
 }
