@@ -34,7 +34,7 @@ func FromDirectory(source string, flags config.Flags) (*Site, error) {
 	return s, nil
 }
 
-// Read loads the site data and files. It doesn't load the configuration file; NewSiteFromDirectory did that.
+// Read loads the site data and files.
 func (s *Site) Read() error {
 	plugins.Install(s.config.Plugins, s)
 	if err := s.readDataFiles(); err != nil {
@@ -50,7 +50,6 @@ func (s *Site) Read() error {
 }
 
 // Reloaded returns a new site read the same source directory, configuration file, and load flags.
-// It does not read the site files.
 func (s *Site) Reloaded() (*Site, error) {
 	copy, err := FromDirectory(s.SourceDir(), s.flags)
 	if err != nil {

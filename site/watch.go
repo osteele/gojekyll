@@ -10,17 +10,30 @@ import (
 	"github.com/osteele/gojekyll/utils"
 )
 
-// WatchFiles calls fn repeatedly in a goroutine when
-// files change
-func (s *Site) WatchFiles(fn func([]string)) error {
+// FilesEvent is a list of changed or added site source files, with a single
+// timestamp that approximates when they were changed.
+type FilesEvent struct {
+	Time  time.Time // A single time is used for all the changes
+	Paths []string  // relative to site source
+}
+
+func (e FilesEvent) String() string {
+	count := len(e.Paths)
+	inflect := map[bool]string{true: "", false: "s"}[count == 1]
+	return fmt.Sprintf("%d file%s changed at %s", count, inflect, e.Time.Format("3:04:05PM"))
+}
+
+// WatchFiles sends FilesEvent on changes within the site directory.
+func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 	var (
 		sourceDir = s.SourceDir()
 		events    = make(chan string)
 		debounced = debounce(time.Second, events)
+		results   = make(chan FilesEvent)
 	)
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	go func() {
 		for {
@@ -36,14 +49,62 @@ func (s *Site) WatchFiles(fn func([]string)) error {
 		for {
 			paths := s.sitePaths(<-debounced)
 			if len(paths) > 0 {
-				fn(paths)
+				// Make up a new timestamp. Except under pathological
+				// circumstances, it will be close enough.
+				results <- FilesEvent{time.Now(), paths}
 			}
 		}
 	}()
-	return watcher.Add(sourceDir)
+	return results, watcher.Add(sourceDir)
 }
 
-// relativize and de-dup paths and filter to those the site source
+// WatchRebuild watches the directory. Each time a file changes, it
+// rebuilds the site. It sends status messages and error to its output
+// channel.
+func (s *Site) WatchRebuild(o BuildOptions) (<-chan interface{}, error) {
+	var (
+		mu           sync.Mutex
+		events       = make(chan interface{})
+		changes, err = s.WatchFiles()
+	)
+	if err != nil {
+		return nil, err
+	}
+	go func(rebuild func(FilesEvent)) {
+		for change := range changes {
+			rebuild(change)
+		}
+	}(func(change FilesEvent) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		events <- fmt.Sprintf("Regenerating: %s...", change)
+		start := time.Now()
+		r, count, err := s.rebuild(o)
+		if err != nil {
+			fmt.Println()
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+		// use the new site value the next time
+		s = r
+		elapsed := time.Since(start)
+		events <- fmt.Sprintf("wrote %d files in %.2fs.\n", count, elapsed.Seconds())
+	})
+	return events, nil
+}
+
+// reloads and rebuilds the site; returns a copy and count
+func (s *Site) rebuild(o BuildOptions) (r *Site, n int, err error) {
+	r, err = s.Reloaded()
+	if err != nil {
+		return
+	}
+	n, err = r.Build(o)
+	return
+}
+
+// relativize and de-dup filenames, and filter to those that affect the build
 func (s *Site) sitePaths(filenames []string) []string {
 	var (
 		dir   = s.SourceDir()
@@ -60,42 +121,6 @@ func (s *Site) sitePaths(filenames []string) []string {
 		}
 	}
 	return paths
-}
-
-// WatchRebuild watches the directory. Each time a file changes, it
-// rebuilds the site. It sends status messages and error to its output
-// channel.
-//
-// WatchRebuild never returns, unless there was an error creating the file watcher.
-func (s *Site) WatchRebuild(o BuildOptions) (<-chan interface{}, error) {
-	var mu sync.Mutex
-	events := make(chan interface{})
-	return events, s.WatchFiles(func(filenames []string) {
-		mu.Lock()
-		defer mu.Unlock()
-
-		// DRY w/ similar logic, messages in server.reload
-		count := len(filenames)
-		start := time.Now()
-		inflect := map[bool]string{true: "", false: "s"}[count == 1]
-		events <- fmt.Sprintf("Regenerating: %d file%s changed at %s...", count, inflect, start.Format(time.Stamp))
-		r, err := s.Reloaded()
-		if err == nil {
-			count, e := r.Build(o)
-			if e == nil {
-				// use the new site value the next time
-				s = r
-				elapsed := time.Since(start)
-				events <- fmt.Sprintf("wrote %d files in %.2fs.\n", count, elapsed.Seconds())
-			}
-			err = e
-		}
-		if err != nil {
-			fmt.Println()
-			fmt.Fprintln(os.Stderr, err)
-			return
-		}
-	})
 }
 
 // debounce relays values from input to output, merging successive values within interval

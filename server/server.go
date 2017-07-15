@@ -5,10 +5,8 @@ import (
 	"io"
 	"mime"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/jaschaephraim/lrserver"
 	"github.com/osteele/gojekyll/site"
@@ -80,23 +78,4 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "<div>%s</div>", err)
 		fmt.Printf("Error rendering %s: %s\n", urlpath, err)
 	}
-}
-
-func (s *Server) reload(count int) {
-	s.Lock()
-	defer s.Unlock()
-
-	// DRY w/ occurrence in buildCommand
-	start := time.Now()
-	inflect := map[bool]string{true: "", false: "s"}[count == 1]
-	fmt.Printf("Regenerating: %d file%s changed at %s...", count, inflect, start.Format(time.Stamp))
-	site, err := s.Site.Reloaded()
-	if err != nil {
-		fmt.Println()
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
-	}
-	s.Site = site
-	s.Site.SetAbsoluteURL("")
-	fmt.Printf("done (%.2fs)\n", time.Since(start).Seconds())
 }

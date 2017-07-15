@@ -35,6 +35,8 @@ func buildCommand(site *site.Site) error {
 		return err
 	}
 
+	// FIXME the watch will miss files that changed during the first build
+
 	// server watch is implemented inside Server.Run, in contrast to this command
 	if watch {
 		events, err := site.WatchRebuild(buildOptions)
