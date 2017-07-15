@@ -1,6 +1,6 @@
 _site
-/gojekyll
 *.prof
-coverage.out
 /dist
-gojekyll-race
+/gojekyll
+/gojekyll-race
+coverage.out

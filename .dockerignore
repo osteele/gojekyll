@@ -1,0 +1,9 @@
+_site
+.git
+.github
+.vscode
+*.prof
+/dist
+gojekyll
+gojekyll-race
+coverage.out
