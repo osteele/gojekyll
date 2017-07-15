@@ -17,7 +17,7 @@ install:
 
 script:
   - $HOME/gopath/bin/goveralls -service=travis-ci
-  - gometalinter --deadline=5m ./...
+  - gometalinter --deadline=5m --disable=aligncheck ./...
 
 after_success:
   - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
