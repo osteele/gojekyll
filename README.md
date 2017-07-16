@@ -2,9 +2,9 @@
 
  [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
 
-> “It is easier to write an incorrect program than understand a correct one.” - Alan Perlis
-
 Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload.
+
+> “It is easier to write an incorrect program than understand a correct one.” - Alan Perlis
 
 Gojekyll is intended as an homage to Jekyll, and as a possible alternative in situations (such as iterative development of sites that don't use unsupported features) where speed is more important than total compatibility.
 
@@ -101,12 +101,13 @@ These will probably not change:
 
 By design:
 
-- Having the wrong type in a `_config.yml` is an error.
 - Plugins must be listed in the config file, not a Gemfile.
-- `serve` generates pages on the fly; it doesn't write to the file system.
-- Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
+- Liquid is run in strict mode.
+- The wrong type in a `_config.yml` is an error.
 - Server live reload is always on.
 - `serve --watch` (the default) reloads the `_config.yml` and data files too.
+- `serve` generates pages on the fly; it doesn't write to the file system.
+- Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
 
 Muzukashii:
