@@ -56,7 +56,7 @@ func TestVisitCreatedFile(t *testing.T) {
 	err = f.Close()
 	require.NoError(t, err)
 	err = VisitCreatedFile(f.Name(), func(w io.Writer) error {
-		_, e := w.Write([]byte("test"))
+		_, e := io.WriteString(w, "test")
 		return e
 	})
 	require.NoError(t, err)

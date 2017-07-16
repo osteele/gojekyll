@@ -28,7 +28,7 @@ outer:
 			}
 		case html.TextToken:
 			if body {
-				s := (string(z.Text()))
+				s := string(z.Text())
 				_, err := buf.WriteString(fn(s))
 				if err != nil {
 					panic(err)

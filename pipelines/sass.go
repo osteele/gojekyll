@@ -83,6 +83,6 @@ func (p *Pipeline) WriteSass(w io.Writer, b []byte) error {
 	if err != nil {
 		return err
 	}
-	_, err = w.Write([]byte(s))
+	_, err = io.WriteString(w, s)
 	return err
 }
