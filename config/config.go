@@ -44,6 +44,7 @@ type Config struct {
 
 	// Outputting
 	Permalink string
+	Timezone string
 
 	// CLI-only
 	DryRun  bool `yaml:"-"`
