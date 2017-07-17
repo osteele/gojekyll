@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
@@ -51,7 +52,7 @@ func (p *page) permalinkVariables() map[string]string {
 		dateField = bindings.String("date", "")
 	)
 	if dateField != "" {
-		date = p.PostDate()
+		date = p.PostDate().In(time.Local)
 	}
 	vars := map[string]string{
 		"categories": strings.Join(p.Categories(), "/"),
