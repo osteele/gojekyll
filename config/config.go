@@ -97,7 +97,6 @@ func Unmarshal(bytes []byte, c *Config) error {
 	var (
 		compat configCompat
 		cList  collectionsList
-		// cMap   collectionsMap
 	)
 	if err := yaml.Unmarshal(bytes, &c); err != nil {
 		return err

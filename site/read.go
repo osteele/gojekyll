@@ -25,7 +25,7 @@ func FromDirectory(source string, flags config.Flags) (*Site, error) {
 	default:
 		err = config.Unmarshal(bytes, &s.config)
 		if err != nil {
-			return nil, err
+			return nil, utils.WrapPathError(err, configPath)
 		}
 		s.ConfigFile = &configPath
 	}
