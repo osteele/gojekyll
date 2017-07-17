@@ -90,7 +90,6 @@ Missing features:
 - Liquid filter `sassify`
 - Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
 - `site.data` is not sorted.
-- Undefined Liquid tags and filters are errors, not warnings.
 - Windows compatibility
 
 Also see the [detailed status](#feature-status) below.
@@ -102,12 +101,12 @@ These will probably not change:
 By design:
 
 - Plugins must be listed in the config file, not a Gemfile.
-- Liquid is run in strict mode.
+- Liquid is run in strict mode; undefined filters are errors.a
 - The wrong type in a `_config.yml` is an error.
 - Server live reload is always on.
 - `serve --watch` (the default) reloads the `_config.yml` and data files too.
 - `serve` generates pages on the fly; it doesn't write to the file system.
-- Files are cached to `/tmp/gojekyll-${USER}`, not `./.sass-cache`
+- Files are cached in `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
 
 Muzukashii:
@@ -144,7 +143,7 @@ Muzukashii:
   - [x] `build`
     - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`, `--watch`
     - [ ] `--baseurl`, `--config`, `--incremental`, `--lsi`
-    - [ ] `--force-polling`, `--limit-posts`, `JEKYLL_ENV=production` – not planned
+    - [ ] `--force_polling`, `--limit-posts`, `JEKYLL_ENV=production` – not planned
   - [x] `clean`
   - [x] `help`
   - [x] `serve`
@@ -186,6 +185,8 @@ They are used under the terms of the MIT License.
 | [`jekyll-redirect-from` plugin](https://github.com/jekyll/jekyll-redirect-from) | plugin emulation     | redirect page template |
 | [`jekyll-sitemap` plugin](https://github.com/jekyll/jekyll-redirect-from)       | plugin emulation     | sitemap template       |
 | [`jekyll-seo-tag` plugin](https://github.com/jekyll/jekyll-redirect-from)       | plugin emulation     | feed template          |
+
+The theme for in-browser error reporting was adapted from facebookincubator/create-react-app.
 
 The gopher image in the `testdata` directory is from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Gophercolor.jpg). It is used under the [Creative Commons Attribution-Share Alike 3.0 Unported license](https://creativecommons.org/licenses/by-sa/3.0/deed.en).
 
