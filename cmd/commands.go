@@ -22,9 +22,11 @@ import (
 var commandStartTime = time.Now()
 
 func buildCommand(site *site.Site) error {
+	watch := site.Config().Watch
+
 	logger.path("Destination:", site.DestDir())
 	logger.label("Generating...", "")
-	count, err := site.Build(buildOptions)
+	count, err := site.Build()
 	switch {
 	case err == nil:
 		elapsed := time.Since(commandStartTime)
@@ -39,7 +41,7 @@ func buildCommand(site *site.Site) error {
 
 	// server watch is implemented inside Server.Run, in contrast to this command
 	if watch {
-		events, err := site.WatchRebuild(buildOptions)
+		events, err := site.WatchRebuild()
 		if err != nil {
 			return err
 		}
@@ -53,7 +55,7 @@ func buildCommand(site *site.Site) error {
 
 func cleanCommand(site *site.Site) error {
 	logger.label("Cleaner:", "Removing %s...", site.DestDir())
-	return site.Clean(buildOptions)
+	return site.Clean()
 }
 
 func benchmarkCommand() (err error) {
@@ -61,11 +63,11 @@ func benchmarkCommand() (err error) {
 	samples := []float64{}
 	for i := 0; time.Since(startTime) < 10*time.Second; i++ {
 		sampleStart := time.Now()
-		site, err := loadSite(*source, configFlags)
+		site, err := loadSite(*source, options)
 		if err != nil {
 			return err
 		}
-		_, err = site.Build(buildOptions)
+		_, err = site.Build()
 		if err != nil {
 			return err
 		}

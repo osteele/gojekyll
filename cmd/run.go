@@ -17,13 +17,13 @@ func ParseAndRun(args []string) error {
 		return versionCommand()
 	}
 	cmd := kingpin.MustParse(app.Parse(args))
-	if configFlags.Destination != nil {
-		dest, err := filepath.Abs(*configFlags.Destination)
+	if options.Destination != nil {
+		dest, err := filepath.Abs(*options.Destination)
 		app.FatalIfError(err, "")
-		configFlags.Destination = &dest
+		options.Destination = &dest
 	}
-	if buildOptions.DryRun {
-		buildOptions.Verbose = true
+	if options.DryRun {
+		options.Verbose = true
 	}
 	return run(cmd)
 }
@@ -41,7 +41,7 @@ func run(cmd string) error { // nolint: gocyclo
 		return versionCommand()
 	}
 
-	site, err := loadSite(*source, configFlags)
+	site, err := loadSite(*source, options)
 	// Print the version at an awkward place, so its
 	// labels will line up. And print it even if
 	// loading the site produced an error.

@@ -15,12 +15,12 @@ import (
 
 // WriteFiles writes output files.
 // It attends to options.dry_run.
-func (s *Site) WriteFiles(options BuildOptions) (count int, err error) {
+func (s *Site) WriteFiles() (count int, err error) {
 	errs := make(chan error)
 	for _, p := range s.OutputDocs() {
 		count++
 		go func(d pages.Document) {
-			errs <- s.WriteDoc(d, options)
+			errs <- s.WriteDoc(d)
 		}(p)
 	}
 	var errList []error
@@ -34,16 +34,16 @@ func (s *Site) WriteFiles(options BuildOptions) (count int, err error) {
 
 // WriteDoc writes a document to the destination directory.
 // It attends to options.dry_run.
-func (s *Site) WriteDoc(d pages.Document, options BuildOptions) error {
+func (s *Site) WriteDoc(d pages.Document) error {
 	from := d.SourcePath()
 	to := filepath.Join(s.DestDir(), d.Permalink())
 	if !d.Static() && filepath.Ext(to) == "" {
 		to = filepath.Join(to, "index.html")
 	}
-	if options.Verbose {
+	if s.config.Verbose {
 		fmt.Println("create", to, "from", d.SourcePath())
 	}
-	if options.DryRun {
+	if s.config.DryRun {
 		// FIXME render the page, just don't write it
 		return nil
 	}
@@ -52,8 +52,6 @@ func (s *Site) WriteDoc(d pages.Document, options BuildOptions) error {
 		return err
 	}
 	switch {
-	case d.Static() && options.UseHardLinks:
-		return os.Link(from, to)
 	case d.Static():
 		return utils.CopyFileContents(to, from, 0644)
 	default:

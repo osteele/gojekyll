@@ -8,18 +8,11 @@ import (
 	"github.com/osteele/gojekyll/utils"
 )
 
-// BuildOptions holds options for Build and Clean
-type BuildOptions struct {
-	DryRun       bool
-	UseHardLinks bool
-	Verbose      bool
-}
-
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty diretories.
-func (s *Site) Clean(options BuildOptions) error {
+func (s *Site) Clean() error {
 	// TODO PERF when called as part of build, keep files that will be re-generated
 	removeFiles := func(filename string, info os.FileInfo, err error) error {
-		if options.Verbose {
+		if s.config.Verbose {
 			fmt.Println("rm", filename)
 		}
 		switch {
@@ -31,7 +24,7 @@ func (s *Site) Clean(options BuildOptions) error {
 			return nil
 		case s.KeepFile(utils.MustRel(s.DestDir(), filename)):
 			return nil
-		case options.DryRun:
+		case s.config.DryRun:
 			return nil
 		default:
 			return os.Remove(filename)
@@ -45,12 +38,12 @@ func (s *Site) Clean(options BuildOptions) error {
 
 // Build cleans the destination and create files in it.
 // It attends to the global options.dry_run.
-func (s *Site) Build(options BuildOptions) (int, error) {
+func (s *Site) Build() (int, error) {
 	if err := s.prepareRendering(); err != nil {
 		return 0, err
 	}
-	if err := s.Clean(options); err != nil {
+	if err := s.Clean(); err != nil {
 		return 0, err
 	}
-	return s.WriteFiles(options)
+	return s.WriteFiles()
 }

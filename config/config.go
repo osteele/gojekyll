@@ -46,7 +46,9 @@ type Config struct {
 	Permalink string
 
 	// CLI-only
-	Watch bool `yaml:"-"`
+	DryRun  bool `yaml:"-"`
+	Verbose bool `yaml:"-"`
+	Watch   bool `yaml:"-"`
 
 	Defaults []struct {
 		Scope struct {

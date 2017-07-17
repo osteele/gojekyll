@@ -61,7 +61,7 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 // WatchRebuild watches the directory. Each time a file changes, it
 // rebuilds the site. It sends status messages and error to its output
 // channel.
-func (s *Site) WatchRebuild(o BuildOptions) (<-chan interface{}, error) {
+func (s *Site) WatchRebuild() (<-chan interface{}, error) {
 	var (
 		mu           sync.Mutex
 		events       = make(chan interface{})
@@ -80,7 +80,7 @@ func (s *Site) WatchRebuild(o BuildOptions) (<-chan interface{}, error) {
 
 		events <- fmt.Sprintf("Regenerating: %s...", change)
 		start := time.Now()
-		r, count, err := s.rebuild(o)
+		r, count, err := s.rebuild()
 		if err != nil {
 			fmt.Println()
 			fmt.Fprintln(os.Stderr, err)
@@ -95,12 +95,12 @@ func (s *Site) WatchRebuild(o BuildOptions) (<-chan interface{}, error) {
 }
 
 // reloads and rebuilds the site; returns a copy and count
-func (s *Site) rebuild(o BuildOptions) (r *Site, n int, err error) {
+func (s *Site) rebuild() (r *Site, n int, err error) {
 	r, err = s.Reloaded()
 	if err != nil {
 		return
 	}
-	n, err = r.Build(o)
+	n, err = r.Build()
 	return
 }
 
