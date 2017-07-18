@@ -31,6 +31,7 @@ notifications:
 #   api_key:
 #     secure: bQXlHSSZ6XU0JvbA1GMU0VM97Yt2bAKCrtIpxmR2FwiT3o9p6TtfcJgtsIdgy27mVhp0kvknD2oE5mVetCTsb1J7i049FlcNQnb+IQKr5QnTuDP1UAUQkWj6shaRKP8op6wbLVz4UUm7s2Wfvs3HPTiHdSA8br8Pqj+Q8VjFVJqAbKT7btkPixbt4F1NnDzcGRt0AHY9UT5+cAYoyJ6IH0u71HTVtthYCA/91s7nGuT650RELYhVDlYebfGQARyEvoKYFiy0bQuWKUX6rKe+luyArucoo9D5KsBD33DTESnASfHQLRK0Qa60KWFOPS796d0q1y3vJGdruYGEsN5730Q9hZlnsYZ/EUufSPUEr0ItI3OdbttmDHU1Z5cJT4Mdg0aCG2iEd0KDhv+yb+jXAkwIUyrhnIj+FUfC2ootWcoXqT3dmeVl5yX4WVKJQFqI19m9pEsvFBvUChllH1/prth8ygFvRke9CDNSDfG1Tabs1O5ZiuWbCJb4RsjpGoPgUv6qr0vrapSz4sS4r7y2oUTN3LHSyRLD8hKiMkza8MkqiCt5/LqlNWtT69csnv5d5wLz1FnMg9VgwPMg4OqWIZi/2Z5XNUe/uxSYCXA/FcyaTHZ2FBUb5DPXEiRG4leZaAQizkyk/w+yPQwzo0dDWZywNq4C+PuczM04KBcWPPI=
 #   file: dist/*
+#   file_glob: true
 #   skip_cleanup: true
 #   on:
 #     tags: true
