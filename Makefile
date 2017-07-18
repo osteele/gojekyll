@@ -1,11 +1,13 @@
-SOURCEDIR=.
-SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
-
 BINARY = gojekyll
 PACKAGE = github.com/osteele/gojekyll
-COMMIT_HASH = `git rev-parse --short HEAD 2>/dev/null`
 
-LDFLAGS=-ldflags "-X ${PACKAGE}.commands.Version=${COMMIT_HASH}"
+SOURCEDIR = .
+SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
+
+COMMIT_HASH = `git rev-parse --short HEAD 2>/dev/null`
+BUILD_DATE = `date +%FT%T%z`
+
+LDFLAGS=-ldflags "-X ${PACKAGE}/cmd.Version=${COMMIT_HASH} -X ${PACKAGE}/cmd.BuildDate=${BUILD_DATE} "
 
 .DEFAULT_GOAL: build
 .PHONY: build clean deps setup install lint test help
@@ -16,7 +18,7 @@ $(BINARY): $(SOURCES)
 build: $(BINARY) ## compile the package
 
 clean: ## remove binary files
-	rm -fI ${BINARY}
+	rm -f ${BINARY}
 
 imports: ## list imports
 	go list -f '{{join .Imports "\n"}}' ./... | grep -v `go list -f '{{.ImportPath}}'` | grep '\.' | sort | uniq

@@ -164,6 +164,10 @@ func variablesCommand(site *site.Site) (err error) {
 }
 
 func versionCommand() error {
-	fmt.Printf("gojekyll %s\n", Version)
+	var d string
+	if !BuildTime.IsZero() {
+		d = BuildTime.Format(" (Build time: 2006-01-02T15:04)")
+	}
+	fmt.Printf("gojekyll version %s%s\n", Version, d)
 	return nil
 }
