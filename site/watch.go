@@ -27,8 +27,8 @@ func (e FilesEvent) String() string {
 func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 	var (
 		sourceDir = s.SourceDir()
-		events    = make(chan string)
-		debounced = debounce(time.Second, events)
+		filenames = make(chan string, 100)
+		debounced = debounce(time.Second, filenames)
 		results   = make(chan FilesEvent)
 	)
 	watcher, err := fsnotify.NewWatcher()
@@ -39,7 +39,7 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 		for {
 			select {
 			case event := <-watcher.Events:
-				events <- event.Name
+				filenames <- event.Name
 			case err := <-watcher.Errors:
 				fmt.Fprintln(os.Stderr, "error:", err)
 			}
