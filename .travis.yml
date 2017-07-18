@@ -5,7 +5,8 @@ go:
 
 python:
   - "3.4"
-
+env:
+  - CGO_ENABLED=1
 before_install:
   - go get github.com/mattn/goveralls
 
