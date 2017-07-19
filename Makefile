@@ -33,7 +33,7 @@ race: ## build a binary with race detection
 
 release: build
 	mkdir -p dist
-	tar -cvzf dist/$(BINARY)_$(VERSION)_$(OS:GNU/%=%)_$(shell uname -m).tar.gz $(BINARY)
+	tar -cvzf dist/$(BINARY)_$(VERSION)_$(OS:GNU/%=%)_$(shell uname -m).tar.gz $(BINARY) LICENSE README.md
 
 setup: ## install dependencies and development tools
 	go get -t -u ./...
