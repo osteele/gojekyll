@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/osteele/gojekyll/cmd"
+	"github.com/osteele/gojekyll/commands"
 )
 
 func main() {
-	err := cmd.ParseAndRun(os.Args[1:])
+	err := commands.ParseAndRun(os.Args[1:])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err) // nolint: gas
 		os.Exit(1)
