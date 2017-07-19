@@ -36,8 +36,8 @@ release: build
 	tar -cvzf dist/$(BINARY)_$(VERSION)_$(OS:GNU/%=%)_$(shell uname -m).tar.gz $(BINARY)
 
 setup: ## install dependencies and development tools
-	go get -t ./...
-	go get -u github.com/alecthomas/gometalinter
+	go get -t -u ./...
+	go get github.com/alecthomas/gometalinter
 	gometalinter --install
 
 install: ## compile and install the executable

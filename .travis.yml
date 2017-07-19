@@ -5,6 +5,16 @@ go:
 
 python:
   - "3.4"
+
+cache:
+  pip: true
+  directories:
+    - $GOPATH/src
+    - $GOPATH/pkg
+
+before_cache:
+  - rm -rf $GOPATH/src/github.com/osteele/gojekyll
+
 before_install:
   - go get github.com/mattn/goveralls
 
