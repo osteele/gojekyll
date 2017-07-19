@@ -1,7 +1,7 @@
 build:
   main: main.go
   binary: gojekyll
-  ldflags: -s -w -X gojekyll.cmd.Version={{.Version}} -X gojekyll.cmd.BuildDate={{.Date}}
+  ldflags: -s -w -X gojekyll/cmd.Version={{.Version}} -X gojekyll/cmd.BuildDate={{.Date}}
   goos:
     - linux
   goarch:
