@@ -8,12 +8,12 @@ python:
 
 cache:
   pip: true
-  directories:
-    - $GOPATH/src
-    - $GOPATH/pkg
+#   directories:
+#     - $GOPATH/src
+#     - $GOPATH/pkg
 
-before_cache:
-  - rm -rf $GOPATH/src/github.com/osteele/gojekyll
+# before_cache:
+#   - rm -rf $GOPATH/src/github.com/osteele/gojekyll
 
 before_install:
   - go get github.com/mattn/goveralls
