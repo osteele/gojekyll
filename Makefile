@@ -6,11 +6,13 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 
 COMMIT_HASH = `git rev-parse --short HEAD 2>/dev/null`
 BUILD_DATE = `date +%FT%T%z`
+VERSION := $(COMMIT_HASH)
+OS := $(shell uname -o)
 
-LDFLAGS=-ldflags "-X ${PACKAGE}/cmd.Version=${COMMIT_HASH} -X ${PACKAGE}/cmd.BuildDate=${BUILD_DATE} "
+LDFLAGS=-ldflags "-X ${PACKAGE}/cmd.Version=${VERSION} -X ${PACKAGE}/cmd.BuildDate=${BUILD_DATE}"
 
 .DEFAULT_GOAL: build
-.PHONY: build clean deps setup install lint test help
+.PHONY: build clean deps setup install lint release test help
 
 $(BINARY): $(SOURCES)
 	go build ${LDFLAGS} -o ${BINARY} ${PACKAGE}
@@ -28,6 +30,10 @@ deps: ## list dependencies
 
 race: ## build a binary with race detection
 	go build -race ${LDFLAGS} -o ${BINARY}-race ${PACKAGE}
+
+release: build
+	mkdir -p dist
+	tar -cvzf dist/$(BINARY)_$(VERSION)_$(OS:GNU/%=%)_$(shell uname -m).tar.gz $(BINARY)
 
 setup: ## install dependencies and development tools
 	go get -t ./...
