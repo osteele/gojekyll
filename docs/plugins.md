@@ -6,7 +6,7 @@ The functionality of some plugins is built into the core program:
 
 | Plugin                       | Motivation    | Basic Functionality | Missing Features                                                        |
 |------------------------------|---------------|---------------------|-------------------------------------------------------------------------|
-| jekyll-avatar                | GitHub Pages² | ✓                   | randomized hostname                                                     |
+| jekyll-avatar                | GitHub Pages² | ✓                   |                                                                         |
 | jekyll-coffeescript          | GitHub Pages  |                     |                                                                         |
 | jekyll-default-layout        | GitHub Pages  |                     |                                                                         |
 | jekyll-feed                  | GitHub Pages  | ✓                   |                                                                         |

@@ -1,8 +1,11 @@
 package plugins
 
 import (
+	"bytes"
 	"fmt"
+	"hash/crc32"
 	"strings"
+	"text/template"
 
 	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/liquid"
@@ -20,7 +23,9 @@ func (p jekyllAvatarPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	return nil
 }
 
-const avatarTemplate = `<img class="avatar avatar-small" src="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40" alt="{user}" srcset="https://avatars3.githubusercontent.com/{user}?v=3&amp;s=40 1x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=80 2x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=120 3x, https://avatars3.githubusercontent.com/{user}?v=3&amp;s=160 4x" width="40" height="40" data-proofer-ignore="true" />`
+var avatarTemplate = template.Must(template.New("avatar").Parse(strings.TrimSpace(`
+<img class="avatar avatar-small" src="https://{{.Subdomain}}.githubusercontent.com/{{.User}}?v=3&amp;s={{.Size}}" alt="{{.User}}" srcset="https://{{.Subdomain}}.githubusercontent.com/{{.User}}?v=3&amp;s={{.Size}} 1x, https://{{.Subdomain}}.githubusercontent.com/{{.User}}?v=3&amp;s=80 2x, https://{{.Subdomain}}.githubusercontent.com/{{.User}}?v=3&amp;s=120 3x, https://{{.Subdomain}}.githubusercontent.com/{{.User}}?v=3&amp;s=160 4x" width="{{.Size}}" height="{{.Size}}" data-proofer-ignore="true" />
+`)))
 
 func avatarTag(ctx render.Context) (string, error) {
 	var (
@@ -55,6 +60,12 @@ func avatarTag(ctx render.Context) (string, error) {
 	if user == "" {
 		return "", fmt.Errorf("parse error in avatar tag parameters %s", argsline)
 	}
-	s := strings.Replace(avatarTemplate, "40", fmt.Sprint(size), -1)
-	return strings.Replace(s, "{user}", user, -1), nil
+	n := crc32.Checksum([]byte(fmt.Sprintf("%s:%d", user, size)), crc32.IEEETable) % 4
+	s := struct {
+		User, Subdomain string
+		Size            interface{}
+	}{user, fmt.Sprintf("avatar%d", n), size}
+	buf := new(bytes.Buffer)
+	err = avatarTemplate.Execute(buf, s)
+	return buf.String(), err
 }
