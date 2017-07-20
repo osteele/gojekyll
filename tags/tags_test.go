@@ -17,9 +17,8 @@ func TestTags(t *testing.T) {
 		}
 		return "", false
 	})
-	bindings := map[string]interface{}{}
 
-	s, err := engine.ParseAndRenderString(`{% post_url 2017-07-04-test.md %}`, bindings)
+	s, err := engine.ParseAndRenderString(`{% post_url 2017-07-04-test.md %}`, liquid.Bindings{})
 	require.NoError(t, err)
 	require.Equal(t, "post.html", s)
 }

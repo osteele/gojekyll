@@ -6,6 +6,7 @@ import (
 	"html"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/osteele/gojekyll/cache"
@@ -16,15 +17,21 @@ const pygmentizeCmd = "pygmentize"
 
 // warn once per execution, even on watch/rebuilds
 var warnedMissingPygmentize = false
+var highlightArgsRE = regexp.MustCompile(`^\s*(\S+)(\s+linenos)?\s*$`)
 
 func highlightTag(ctx render.Context) (string, error) {
-	args, err := ctx.ExpandTagArg()
+	argStr, err := ctx.ExpandTagArg()
 	if err != nil {
 		return "", err
 	}
+	args := highlightArgsRE.FindStringSubmatch(argStr)
+	if args == nil {
+		return "", fmt.Errorf("syntax error")
+	}
 	cmdArgs := []string{"-f", "html"}
-	if args != "" {
-		cmdArgs = append(cmdArgs, "-l"+args)
+	cmdArgs = append(cmdArgs, "-l"+args[1])
+	if args[2] != "" {
+		cmdArgs = append(cmdArgs, "-O", "linenos=1")
 	}
 	s, err := ctx.InnerString()
 	if err != nil {
