@@ -20,6 +20,14 @@ func init() {
 	}
 }
 
+func cacheDir() string {
+	return filepath.Join(os.TempDir(), os.ExpandEnv("gojekyll-$USER"))
+}
+
+func resetCache() error {
+	return os.RemoveAll(cacheDir())
+}
+
 // WithFile looks (header, content) up in a user-specific file cache.
 // If found, it writes the file contents. Else it calls fn to write to
 // both the writer and the file system.
@@ -34,8 +42,7 @@ func WithFile(header string, content string, fn func() (string, error)) (string,
 	sum := h.Sum(nil)
 
 	// don't use ioutil.TempDir, because we want this to last across invocations
-	// cachedir := filepath.Join("/tmp", os.ExpandEnv("gojekyll-$USER"))
-	cachedir := filepath.Join(os.TempDir(), os.ExpandEnv("gojekyll-$USER"))
+	cachedir := cacheDir()
 	cachefile := filepath.Join(cachedir, fmt.Sprintf("%x%c%x", sum[:1], filepath.Separator, sum[1:]))
 
 	// ignore errors; if there's a missing file we don't care, and if it's

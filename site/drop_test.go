@@ -65,10 +65,8 @@ func TestSite_ToLiquid_static_files(t *testing.T) {
 	require.True(t, ok, fmt.Sprintf("static_files has type %T", drop["static_files"]))
 	require.Len(t, files, 1)
 
-	// TODO move this test to pages package
 	f := files[0].ToLiquid().(map[string]interface{})
-	require.Equal(t, "static.html", f["path"])
-	_, isTime := f["modified_time"].(time.Time)
-	require.True(t, isTime)
+	require.IsType(t, "", f["path"])
+	require.IsType(t, time.Now(), f["modified_time"])
 	require.Equal(t, ".html", f["extname"])
 }
