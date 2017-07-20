@@ -13,7 +13,9 @@ import (
 // ToLiquid is part of the liquid.Drop interface.
 func (d *StaticFile) ToLiquid() interface{} {
 	return map[string]interface{}{
-		"path":          d.Path(), // TODO is this the absolute or relative path?
+		"name":          d.relpath,
+		"basename":      utils.TrimExt(d.relpath),
+		"path":          d.Permalink(),
 		"modified_time": d.fileModTime,
 		"extname":       d.OutputExt(),
 	}
