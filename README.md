@@ -2,9 +2,7 @@
 
  [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
 
-Gojekyll is a clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload.
-
-Gojekyll is intended as an homage to Jekyll, and as a possible alternative in situations (such as iterative development of sites that don't use unsupported features) where speed is more important than total compatibility.
+Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload.
 
 | &nbsp;                  | Gojekyll                                  | Jekyll | Hugo         |
 |-------------------------|-------------------------------------------|--------|--------------|
@@ -23,6 +21,8 @@ Gojekyll is intended as an homage to Jekyll, and as a possible alternative in si
 - [Gojekyll](#gojekyll)
     - [Usage](#usage)
     - [Installation](#installation)
+        - [Binary Downloads](#binary-downloads)
+        - [From Source](#from-source)
     - [Status](#status)
         - [Current Limitations](#current-limitations)
         - [Other Differences](#other-differences)
@@ -44,6 +44,13 @@ gojekyll help build
 ```
 
 ## Installation
+
+### Binary Downloads
+
+1. Ubuntu (64-bit) and macOS binaries are available from the [releases page](https://github.com/osteele/gojekyll/releases).
+2. [Optional] To use the `{% highlight %}` tag, you also need [Pygments](http://pygments.org): `pip install Pygments`.
+
+### From Source
 
 Pre-requisites:
 
