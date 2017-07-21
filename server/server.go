@@ -35,7 +35,7 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 		if err := s.StartLiveReloader(); err != nil {
 			return err
 		}
-		if err := s.watchAndReload(); err != nil {
+		if err := s.watchReload(); err != nil {
 			return err
 		}
 	}

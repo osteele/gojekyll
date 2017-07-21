@@ -8,9 +8,10 @@ import (
 	"github.com/osteele/gojekyll/site"
 )
 
-// Create a goroutine that rebuilds the site when files change
-func (s *Server) watchAndReload() error {
+// Create a goroutine that rebuilds the site when files change.
+func (s *Server) watchReload() error {
 	site := s.Site
+	// FIXME reload swaps in a new site but we're still watching the old one
 	changes, err := site.WatchFiles()
 	if err != nil {
 		return err
@@ -26,7 +27,9 @@ func (s *Server) watchAndReload() error {
 					urls[url] = true
 				}
 			}
+			// reload the site
 			s.reload(change)
+			// tell the pages their files (may have) changed
 			for url := range urls {
 				s.lr.Reload(url)
 			}
@@ -39,10 +42,10 @@ func (s *Server) reload(change site.FilesEvent) {
 	s.Lock()
 	defer s.Unlock()
 
-	// DRY w/ site.WatchRebuild
-	start := time.Now()
+	// similar code to site.WatchRebuild
 	fmt.Printf("Re-reading: %v...", change)
-	site, err := s.Site.Reloaded()
+	start := time.Now()
+	site, err := s.Site.Reloaded(change.Paths)
 	if err != nil {
 		fmt.Println()
 		fmt.Fprintln(os.Stderr, err.Error())

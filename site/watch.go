@@ -78,9 +78,10 @@ func (s *Site) WatchRebuild() (<-chan interface{}, error) {
 		mu.Lock()
 		defer mu.Unlock()
 
+		// similar code to server.reload
 		events <- fmt.Sprintf("Regenerating: %s...", change)
 		start := time.Now()
-		r, count, err := s.rebuild()
+		r, count, err := s.rebuild(change.Paths)
 		if err != nil {
 			fmt.Println()
 			fmt.Fprintln(os.Stderr, err)
@@ -95,8 +96,8 @@ func (s *Site) WatchRebuild() (<-chan interface{}, error) {
 }
 
 // reloads and rebuilds the site; returns a copy and count
-func (s *Site) rebuild() (r *Site, n int, err error) {
-	r, err = s.Reloaded()
+func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
+	r, err = s.Reloaded(paths)
 	if err != nil {
 		return
 	}
