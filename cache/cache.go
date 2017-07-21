@@ -10,13 +10,13 @@ import (
 	"sync"
 )
 
-var disableCache = false
+var enabled = true
 var cacheMx sync.Mutex
 
 func init() {
 	s := os.Getenv("GOJEKYLL_DISABLE_CACHE")
 	if s != "" && s != "0" && s != "false" {
-		disableCache = true
+		enabled = false
 	}
 }
 
@@ -24,8 +24,19 @@ func cacheDir() string {
 	return filepath.Join(os.TempDir(), os.ExpandEnv("gojekyll-$USER"))
 }
 
-func resetCache() error {
+// Clear clears the cache. It's used for testing.
+func Clear() error {
 	return os.RemoveAll(cacheDir())
+}
+
+// Enable enables the cache; for testing.
+func Enable() {
+	enabled = true
+}
+
+// Disable disables the cache; for testing.
+func Disable() {
+	enabled = false
 }
 
 // WithFile looks (header, content) up in a user-specific file cache.
@@ -46,11 +57,15 @@ func WithFile(header string, content string, fn func() (string, error)) (string,
 	cachefile := filepath.Join(cachedir, fmt.Sprintf("%x%c%x", sum[:1], filepath.Separator, sum[1:]))
 
 	// ignore errors; if there's a missing file we don't care, and if it's
-	// another error we'll pick it up during write
+	// another error we'll pick it up during write.
+	//
 	// WriteFile truncates the file before writing it, so ignore empty files.
 	// If the writer actually wrote an empty file, we'll end up gratuitously
 	// re-running it, which is okay.
-	if b, err := ioutil.ReadFile(cachefile); err == nil && len(b) > 0 && !disableCache {
+	//
+	// Do as much work as possible before checking if the cache is enabled, to
+	// minimize code paths and timing differences.
+	if b, err := ioutil.ReadFile(cachefile); err == nil && len(b) > 0 && enabled {
 		return string(b), err
 	}
 	s, err := fn()

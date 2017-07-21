@@ -8,7 +8,8 @@ import (
 )
 
 func TestWithFile(t *testing.T) {
-	require.NoError(t, resetCache())
+	Enable()
+	require.NoError(t, Clear())
 	callCount := 0
 
 	stringMaker := func() (string, error) {
