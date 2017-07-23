@@ -47,7 +47,8 @@ func init() {
 	app.HelpFlag.Short('h')
 	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
 	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
-	app.Flag("verbose", "Print verbose output.").Short('V').BoolVar(&options.Verbose)
+	_ = app.Flag("verbose", "Print verbose output.").Short('V').Action(boolVar("verbose", &options.Verbose)).Bool()
+	app.Flag("force_polling", "Force watch to use polling").BoolVar(&options.ForcePolling)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&options.DryRun)
 
 	// --watch has different defaults for build and serve

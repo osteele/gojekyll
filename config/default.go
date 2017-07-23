@@ -46,6 +46,7 @@ plugins:   []
 
 # Conversion
 excerpt_separator: "\n\n"
+incremental: false
 
 # Serving
 detach:  false
@@ -57,4 +58,6 @@ baseurl: "" # does not include hostname
 permalink:     date
 paginate_path: /page:num
 timezone:      null
+
+verbose:  false
 `

@@ -36,6 +36,9 @@ type Config struct {
 	// Plugins
 	ExcerptSeparator string `yaml:"excerpt_separator"`
 
+	// Conversion
+	Incremental bool
+
 	// Serving
 	Host        string
 	Port        int
@@ -44,12 +47,14 @@ type Config struct {
 
 	// Outputting
 	Permalink string
-	Timezone string
+	Timezone  string
+
+	Verbose bool
 
 	// CLI-only
-	DryRun  bool `yaml:"-"`
-	Verbose bool `yaml:"-"`
-	Watch   bool `yaml:"-"`
+	DryRun       bool `yaml:"-"`
+	ForcePolling bool `yaml:"-"`
+	Watch        bool `yaml:"-"`
 
 	Defaults []struct {
 		Scope struct {

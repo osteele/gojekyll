@@ -23,7 +23,8 @@ func ParseAndRun(args []string) error {
 		options.Destination = &dest
 	}
 	if options.DryRun {
-		options.Verbose = true
+		verbose := true
+		options.Verbose = &verbose
 	}
 	return run(cmd)
 }

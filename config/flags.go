@@ -9,11 +9,11 @@ import (
 type Flags struct {
 	// these are pointers so we can tell whether they've been set, and override
 	// the config file only if
-	Destination, Host           *string
-	Drafts, Future, Unpublished *bool
-	Port                        *int
+	Destination, Host                    *string
+	Drafts, Future, Unpublished, Verbose *bool
+	Port                                 *int
 	// these aren't in the config file, so they can be treated more conventionally
-	DryRun, Verbose, Watch bool
+	DryRun, ForcePolling, Watch bool
 }
 
 // ApplyFlags overwrites the configuration with values from flags.

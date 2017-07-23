@@ -146,13 +146,13 @@ Muzukashii:
   - [x] Directory watch
 - [ ] Commands
   - [x] `build`
-    - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`, `--watch`
+    - [x] `--source`, `--destination`, `--drafts`, `--future`, `--unpublished`, `--watch`, `--force_polling`
     - [ ] `--baseurl`, `--config`, `--incremental`, `--lsi`
-    - [ ] `--force_polling`, `--limit-posts`, `JEKYLL_ENV=production` – not planned
+    - [ ] `--limit-posts`, `JEKYLL_ENV=production` – not planned
   - [x] `clean`
   - [x] `help`
   - [x] `serve`
-    - [x] `--open-uri`, `--host`, `--port`, `–watch` (enabled by default)
+    - [x] `--open-uri`, `--host`, `--port`, `–watch`, `--force_polling`
     - [ ] `--baseurl`, `--config`, `--incremental`
     - [ ] `--detach`, `--ssl`-* – not planned
   - [ ] `doctor`, `import`, `new`, `new-theme` – not planned

@@ -1,7 +1,6 @@
 package site
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -54,7 +53,6 @@ func (s *Site) Read() error {
 // Reloaded returns a new site read the same source directory, configuration file, and load flags.
 func (s *Site) Reloaded(paths []string) (*Site, error) {
 	if s.requiresFullReload(paths) {
-		fmt.Println("reload everything")
 		copy, err := FromDirectory(s.SourceDir(), s.flags)
 		if err != nil {
 			return nil, err
