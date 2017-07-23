@@ -23,39 +23,49 @@ func (e FilesEvent) String() string {
 	return fmt.Sprintf("%d file%s changed at %s", count, inflect, e.Time.Format("3:04:05PM"))
 }
 
-// WatchFiles sends FilesEvent on changes within the site directory.
-func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
+func (s *Site) makeEventWatcher() (<-chan string, error) {
 	var (
 		sourceDir = s.SourceDir()
 		filenames = make(chan string, 100)
-		debounced = debounce(time.Second, filenames)
-		results   = make(chan FilesEvent)
+		w, err    = fsnotify.NewWatcher()
 	)
-	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 	go func() {
 		for {
 			select {
-			case event := <-watcher.Events:
-				filenames <- event.Name
-			case err := <-watcher.Errors:
+			case event := <-w.Events:
+				filenames <- utils.MustRel(sourceDir, event.Name)
+			case err := <-w.Errors:
 				fmt.Fprintln(os.Stderr, "error:", err)
 			}
 		}
 	}()
+	return filenames, w.Add(sourceDir)
+}
+
+// WatchFiles sends FilesEvent on changes within the site directory.
+func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
+	filenames, err := s.makeEventWatcher()
+	if err != nil {
+		return nil, err
+	}
+	var (
+		debounced = debounce(time.Second/2, filenames)
+		filesets  = make(chan FilesEvent)
+	)
 	go func() {
 		for {
 			paths := s.sitePaths(<-debounced)
 			if len(paths) > 0 {
 				// Make up a new timestamp. Except under pathological
 				// circumstances, it will be close enough.
-				results <- FilesEvent{time.Now(), paths}
+				filesets <- FilesEvent{time.Now(), paths}
 			}
 		}
 	}()
-	return results, watcher.Add(sourceDir)
+	return filesets, nil
 }
 
 // WatchRebuild watches the directory. Each time a file changes, it
@@ -108,12 +118,10 @@ func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
 // relativize and de-dup filenames, and filter to those that affect the build
 func (s *Site) sitePaths(filenames []string) []string {
 	var (
-		dir   = s.SourceDir()
 		paths = make([]string, 0, len(filenames))
 		seen  = map[string]bool{}
 	)
-	for _, filename := range filenames {
-		path := utils.MustRel(dir, filename)
+	for _, path := range filenames {
 		if path == "_config.yml" || !s.Exclude(path) {
 			if !seen[path] {
 				seen[path] = true
@@ -124,20 +132,23 @@ func (s *Site) sitePaths(filenames []string) []string {
 	return paths
 }
 
-// debounce relays values from input to output, merging successive values within interval
+// debounce relays values from input to output, merging successive values so long as they keep changing
+// faster than interval
 // TODO consider https://github.com/ReactiveX/RxGo
 func debounce(interval time.Duration, input <-chan string) <-chan []string {
 	output := make(chan []string)
 	var (
 		pending = []string{}
-		ticker  = time.Tick(interval) // nolint: staticcheck, megacheck
+		ticker  <-chan time.Time
 	)
 	go func() {
 		for {
 			select {
 			case value := <-input:
 				pending = append(pending, value)
+				ticker = time.After(interval) // replaces the previous ticker
 			case <-ticker:
+				ticker = nil
 				if len(pending) > 0 {
 					output <- pending
 					pending = []string{}
