@@ -66,7 +66,6 @@ func (s *Site) Reloaded(paths []string) (*Site, error) {
 
 func (s *Site) requiresFullReload(paths []string) bool {
 	for _, path := range paths {
-		fmt.Println("test", path)
 		switch {
 		case path == "_config.yml":
 			return true

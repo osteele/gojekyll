@@ -45,10 +45,12 @@ func buildCommand(site *site.Site) error {
 		if err != nil {
 			return err
 		}
-		logger.label("Auto-regeneration", "enabled for %q\n", site.SourceDir())
+		logger.label("Auto-regeneration:", "enabled for %q\n", site.SourceDir())
 		for event := range events {
 			fmt.Print(event)
 		}
+	} else {
+		logger.label("Auto-regeneration:", "disabled. Use --watch to enable.")
 	}
 	return nil
 }
