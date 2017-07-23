@@ -47,7 +47,7 @@ func (p *page) ToLiquid() interface{} {
 		content = p.maybeContent(true)
 	)
 	data := map[string]interface{}{
-		"content": string(content),
+		"content": content,
 		"excerpt": p.excerpt(),
 		"path":    relpath,
 		"url":     p.Permalink(),
@@ -101,16 +101,16 @@ func (p *page) maybeContent(fallback bool) []byte {
 	return nil
 }
 
-func (p *page) excerpt() string {
+func (p *page) excerpt() []byte {
 	if ei, ok := p.frontMatter["excerpt"]; ok {
-		return fmt.Sprint(ei)
+		return []byte(fmt.Sprint(ei))
 	}
 	content := p.maybeContent(true)
 	pos := bytes.Index(content, []byte(p.site.Config().ExcerptSeparator))
 	if pos >= 0 {
-		return string(content[:pos])
+		content = content[:pos]
 	}
-	return string(content)
+	return content
 }
 
 // MarshalYAML is part of the yaml.Marshaler interface

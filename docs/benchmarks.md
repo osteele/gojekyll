@@ -16,10 +16,10 @@ Each of these results in a call to Pygment. This dominates the un-cached times.
 | Executable | Options                     | Time          |
 |------------|-----------------------------|---------------|
 | jekyll     |                             | 18.53s        |
-| gojekyll   | single-threaded; cold cache | 2.96s ± 0.09s |
-| gojekyll   | single-threaded; warm cache | 2.51s ± 0.04s |
-| gojekyll   | multi-threaded; cold cache  | 1.37s ± 0.03s |
-| gojekyll   | multi-threaded; warm cache  | 0.80s ± 0.06s |
+| gojekyll   | single-threaded; cold cache | 2.35s ± 0.11s |
+| gojekyll   | single-threaded; warm cache | 1.74s ± 0.09s |
+| gojekyll   | multi-threaded; cold cache  | 1.13s ± 0.07s |
+| gojekyll   | multi-threaded; warm cache  | 0.54s ± 0.05s |
 
 ## Software Design web site
 
@@ -28,7 +28,7 @@ This site makes heavy use of SASS.
 | Executable | Options                     | Time          |
 |------------|-----------------------------|---------------|
 | jekyll     |                             | 8.07s         |
-| gojekyll   | single-threaded; cold cache | 1.28s ± 0.23s |
-| gojekyll   | single-threaded; warm cache | 0.69s ± 0.07s |
-| gojekyll   | multi-threaded; cold cache  | 1.21s ± 0.12s |
-| gojekyll   | multi-threaded; warm cache  | 0.40s ± 0.07s |
+| gojekyll   | single-threaded; cold cache | 1.46s ± 0.21s |
+| gojekyll   | single-threaded; warm cache | 0.60s ± 0.23s |
+| gojekyll   | multi-threaded; cold cache  | 1.23s ± 0.10s |
+| gojekyll   | multi-threaded; warm cache  | 0.35s ± 0.04s |

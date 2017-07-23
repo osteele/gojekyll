@@ -28,7 +28,7 @@ func TestPage_ToLiquid(t *testing.T) {
 	require.NoError(t, err)
 	drop := page.(liquid.Drop).ToLiquid()
 	excerpt := drop.(map[string]interface{})["excerpt"]
-	// FIXME the following probably isn't right
-	// TODO also test post-rendering.
-	require.Equal(t, "First line.", excerpt)
+	ex, ok := excerpt.([]byte)
+	require.True(t, ok)
+	require.Equal(t, "First line.", string(ex))
 }
