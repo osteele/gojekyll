@@ -25,6 +25,7 @@ type Site struct {
 	data             map[string]interface{}
 	flags            config.Flags
 	pipeline         *pipelines.Pipeline
+	themeDir         string
 	docs             []pages.Document // all documents, whether or not they are output
 	preparedToRender bool
 	drop             map[string]interface{} // cached drop value

@@ -37,11 +37,21 @@ func FromDirectory(source string, flags config.Flags) (*Site, error) {
 
 // Read loads the site data and files.
 func (s *Site) Read() error {
+	s.Routes = make(map[string]pages.Document)
 	plugins.Install(s.config.Plugins, s)
+	if err := s.findTheme(); err != nil {
+		return err
+	}
 	if err := s.readDataFiles(); err != nil {
 		return err
 	}
-	if err := s.readFiles(); err != nil {
+	if err := s.readThemeAssets(); err != nil {
+		return err
+	}
+	if err := s.readFiles(s.SourceDir(), s.SourceDir()); err != nil {
+		return err
+	}
+	if err := s.ReadCollections(); err != nil {
 		return err
 	}
 	if err := s.initializeRenderingPipeline(); err != nil {
@@ -77,31 +87,26 @@ func (s *Site) requiresFullReload(paths []string) bool {
 }
 
 // readFiles scans the source directory and creates pages and collection.
-func (s *Site) readFiles() error {
-	s.Routes = make(map[string]pages.Document)
-	walkFn := func(filename string, info os.FileInfo, err error) error {
+func (s *Site) readFiles(dir, base string) error {
+	return filepath.Walk(dir, func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		relname := utils.MustRel(s.SourceDir(), filename)
+		rel := utils.MustRel(base, filename)
 		switch {
-		case info.IsDir() && s.Exclude(relname):
+		case info.IsDir() && s.Exclude(rel):
 			return filepath.SkipDir
-		case info.IsDir(), s.Exclude(relname):
+		case info.IsDir(), s.Exclude(rel):
 			return nil
 		}
-		defaultFrontmatter := s.config.GetFrontMatterDefaults("", relname)
-		p, err := pages.NewFile(s, filename, filepath.ToSlash(relname), defaultFrontmatter)
+		defaultFrontmatter := s.config.GetFrontMatterDefaults("", rel)
+		d, err := pages.NewFile(s, filename, filepath.ToSlash(rel), defaultFrontmatter)
 		if err != nil {
 			return utils.WrapPathError(err, filename)
 		}
-		s.AddDocument(p, true)
+		s.AddDocument(d, true)
 		return nil
-	}
-	if err := filepath.Walk(s.SourceDir(), walkFn); err != nil {
-		return err
-	}
-	return s.ReadCollections()
+	})
 }
 
 // AddDocument adds a document to the site structures.

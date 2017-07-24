@@ -18,6 +18,7 @@ type Config struct {
 	DataDir     string                            `yaml:"data_dir"`
 	IncludesDir string                            `yaml:"includes_dir"`
 	Collections map[string]map[string]interface{} `yaml:"-"`
+	Theme       string
 
 	// Handling Reading
 	Include     []string
