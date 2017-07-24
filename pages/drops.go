@@ -57,8 +57,8 @@ func (p *page) ToLiquid() interface{} {
 		"permalink": p.Permalink(),
 
 		// TODO only in non-collection pages:
-		// TODO dir
-		// TODO name
+		"dir":  "/" + path.Dir(relpath),
+		"name": path.Base(relpath),
 		// TODO next previous
 
 		// TODO Documented as present in all pages, but de facto only defined for collection pages
