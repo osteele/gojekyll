@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/liquid/evaluator"
 )
@@ -28,7 +29,7 @@ func (s *Site) MarshalYAML() (interface{}, error) {
 }
 
 func (s *Site) initializeDrop() {
-	vars := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
+	drop := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data":         s.data,
 		"documents":    s.docs,
 		"html_files":   s.htmlFiles(),
@@ -40,13 +41,19 @@ func (s *Site) initializeDrop() {
 	})
 	collections := []interface{}{}
 	for _, c := range s.Collections {
-		vars[c.Name] = c.Pages()
+		drop[c.Name] = c.Pages()
 		collections = append(collections, c.ToLiquid())
 	}
 	evaluator.SortByProperty(collections, "label", true)
-	vars["collections"] = collections
-	s.drop = vars
+	drop["collections"] = collections
+	s.drop = drop
 	s.setPostVariables()
+	err := s.runHooks(func(h plugins.Plugin) error {
+		return h.ModifySiteDrop(s, drop)
+	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (s *Site) setPageContent() error {

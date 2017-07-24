@@ -1,6 +1,5 @@
 theme: jekyll-theme-minimal
-title: Gojekyll
-description: A Go clone of the Jekyll static site generator.
 
 gems:
+  - jekyll-github-metadata
   - jekyll-optional-front-matter

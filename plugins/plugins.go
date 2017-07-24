@@ -6,9 +6,13 @@
 package plugins
 
 import (
+	"context"
 	"fmt"
+	"os/exec"
 	"regexp"
+	"strings"
 
+	"github.com/google/go-github/github"
 	"github.com/kyokomi/emoji"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pages"
@@ -26,18 +30,20 @@ type Site interface {
 
 // Plugin describes the hooks that a plugin can override.
 type Plugin interface {
-	ConfigureTemplateEngine(*liquid.Engine) error
-	PostRender([]byte) []byte
 	Initialize(Site) error
-	PostRead(site Site) error
+	ConfigureTemplateEngine(*liquid.Engine) error
+	ModifySiteDrop(Site, map[string]interface{}) error
+	PostRead(Site) error
+	PostRender([]byte) []byte
 }
 
 type plugin struct{}
 
-func (p plugin) Initialize(Site) error                        { return nil }
-func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error { return nil }
-func (p plugin) PostRead(Site) error                          { return nil }
-func (p plugin) PostRender(b []byte) []byte                   { return b }
+func (p plugin) Initialize(Site) error                             { return nil }
+func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error      { return nil }
+func (p plugin) ModifySiteDrop(Site, map[string]interface{}) error { return nil }
+func (p plugin) PostRead(Site) error                               { return nil }
+func (p plugin) PostRender(b []byte) []byte                        { return b }
 
 // Lookup returns a plugin if it has been registered.
 func Lookup(name string) (Plugin, bool) {
@@ -67,7 +73,8 @@ func register(name string, p Plugin) {
 }
 
 func init() {
-	register("jemoji", jekyllJemojiPlugin{})
+	register("jemoji", jemojiPlugin{})
+	register("jekyll-github-metadata", jekyllGithubMetadataPlugin{})
 	register("jekyll-mentions", jekyllMentionsPlugin{})
 	register("jekyll-optional-front-matter", jekyllOptionalFrontMatterPlugin{})
 
@@ -81,13 +88,57 @@ func init() {
 
 // jekyll-jemoji
 
-type jekyllJemojiPlugin struct{ plugin }
+type jemojiPlugin struct{ plugin }
 
-func (p jekyllJemojiPlugin) PostRender(b []byte) []byte {
+func (p jemojiPlugin) PostRender(b []byte) []byte {
 	return utils.ApplyToHTMLText(b, func(s string) string {
 		s = emoji.Sprint(s)
 		return s
 	})
+}
+
+// jekyll-github-metadata
+
+type jekyllGithubMetadataPlugin struct{ plugin }
+
+func (p jekyllGithubMetadataPlugin) ModifySiteDrop(s Site, d map[string]interface{}) error {
+	cmd := exec.Command("git", "remote", "-v") // nolint: gas
+	cmd.Dir = s.Config().SourceDir()
+	out, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+	m := regexp.MustCompile(`origin\s+https://github.com/(.+?)/(.+)\.git\b`).FindStringSubmatch(string(out))
+	owner, name := m[1], m[2]
+	nwo := fmt.Sprintf("%s/%s", owner, name)
+	client := github.NewClient(nil)
+	var ctx = context.Background()
+	repo, _, err := client.Repositories.Get(ctx, owner, name)
+	userPage := *repo.Name == fmt.Sprintf("%s.github.com", strings.ToLower(*repo.Owner.Login))
+	gh := map[string]interface{}{
+		"clone_url":          repo.CloneURL,
+		"language":           repo.Language,
+		"owner_gravatar_url": repo.Owner.GravatarID,
+		"owner_name":         repo.Owner.Login,
+		"owner_url":          repo.Owner.URL,
+		"project_tagline":    repo.Description,
+		"project_title":      repo.Name, // TODO is this right?
+		"repository_name":    repo.Name,
+		"repository_nwo":     nwo,
+		"repository_url":     repo.URL,
+		"releases_url":       repo.ReleasesURL,
+		"latest_release_url": repo.URL,
+		"issues_url":         repo.IssuesURL,
+		"show_downloads?":    repo.HasDownloads,
+		"repo_clone_url":     repo.GitURL,
+		"is_project_page":    !userPage,
+		"is_user_page":       userPage,
+		// TODO
+		// contributors environment public_repositories releases releases_url
+		// show_downloads tar_url zip_url url versions wiki_url
+	}
+	d["github"] = gh
+	return err
 }
 
 // jekyll-mentions

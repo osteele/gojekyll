@@ -11,7 +11,7 @@ The functionality of some plugins is built into the core program:
 | jekyll-default-layout        | GitHub Pages  | ✓                   |                                                                         |
 | jekyll-feed                  | GitHub Pages  | ✓                   |                                                                         |
 | jekyll-gist                  | core³         | ✓                   | `noscript`                                                              |
-| jekyll-github-metadata       | GitHub Pages  |                     |                                                                         |
+| jekyll-github-metadata       | GitHub Pages  | some                |                                                                         |
 | jekyll-live-reload           | core          | ✓ (always enabled)  |                                                                         |
 | jekyll-mentions              | GitHub Pages  | ✓                   |                                                                         |
 | jekyll-optional-front-matter | GitHub Pages  |                     |                                                                         |
