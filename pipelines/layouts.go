@@ -8,8 +8,31 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/frontmatter"
+	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 )
+
+// ApplyLayout applies the named layout to the data.
+func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{}) ([]byte, error) {
+	for name != "" {
+		var lfm map[string]interface{}
+		tpl, err := p.FindLayout(name, &lfm)
+		if err != nil {
+			return nil, err
+		}
+		b := utils.MergeStringMaps(e, map[string]interface{}{
+			"content": string(data),
+			"layout":  lfm,
+		})
+		data, err = tpl.Render(b)
+		if err != nil {
+			return nil, utils.WrapPathError(err, name)
+		}
+		name = templates.VariableMap(lfm).String("layout", "")
+	}
+	return data, nil
+}
 
 // FindLayout returns a template for the named layout.
 func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl *liquid.Template, err error) {
@@ -23,16 +46,18 @@ func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl *liq
 		content  []byte
 		found    bool
 	)
-	for _, ext := range exts {
-		// TODO respect layout config
-		filename = filepath.Join(p.LayoutsDir(), base+ext)
-		content, err = ioutil.ReadFile(filename)
-		if err == nil {
-			found = true
-			break
-		}
-		if !os.IsNotExist(err) {
-			return nil, err
+loop:
+	for _, dir := range p.layoutDirs() {
+		for _, ext := range exts {
+			filename = filepath.Join(dir, base+ext)
+			content, err = ioutil.ReadFile(filename)
+			if err == nil {
+				found = true
+				break loop
+			}
+			if !os.IsNotExist(err) {
+				return nil, err
+			}
 		}
 	}
 	if !found {
@@ -51,6 +76,10 @@ func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl *liq
 }
 
 // LayoutsDir returns the path to the layouts directory.
-func (p *Pipeline) LayoutsDir() string {
-	return filepath.Join(p.SourceDir(), p.config.LayoutsDir)
+func (p *Pipeline) layoutDirs() []string {
+	dirs := []string{filepath.Join(p.SourceDir(), p.config.LayoutsDir)}
+	if p.ThemeDir != "" {
+		dirs = append(dirs, filepath.Join(p.ThemeDir, "_layouts"))
+	}
+	return dirs
 }

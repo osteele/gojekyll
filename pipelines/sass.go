@@ -19,8 +19,8 @@ import (
 
 // CopySassFileIncludes copies sass partials into a temporary directory,
 // removing initial underscores.
-// TODO delete the temp directory when done
 func (p *Pipeline) CopySassFileIncludes() error {
+	// TODO delete the temp directory when done?
 	// TODO use libsass.ImportsOption instead?
 	if p.sassTempDir == "" {
 		dir, err := ioutil.TempDir(os.TempDir(), "_sass")
@@ -29,10 +29,20 @@ func (p *Pipeline) CopySassFileIncludes() error {
 		}
 		p.sassTempDir = dir
 	}
-
 	h := md5.New() // nolint: gas, noncrypto
-	src := filepath.Join(p.SourceDir(), "_sass")
-	dst := p.sassTempDir
+	if p.ThemeDir != "" {
+		if err := copySassFiles(filepath.Join(p.ThemeDir, "_sass"), p.sassTempDir, h); err != nil {
+			return err
+		}
+	}
+	if err := copySassFiles(filepath.Join(p.SourceDir(), "_sass"), p.sassTempDir, h); err != nil {
+		return err
+	}
+	p.sassHash = fmt.Sprintf("%x", h.Sum(nil))
+	return nil
+}
+
+func copySassFiles(src, dst string, h io.Writer) error {
 	err := filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
 			return err
@@ -44,8 +54,7 @@ func (p *Pipeline) CopySassFileIncludes() error {
 			return err
 		}
 		defer in.Close() // nolint: errcheck
-		_, err = io.Copy(h, in)
-		if err != nil {
+		if _, err = io.Copy(h, in); err != nil {
 			return err
 		}
 		return utils.CopyFileContents(to, from, 0644)
@@ -53,7 +62,6 @@ func (p *Pipeline) CopySassFileIncludes() error {
 	if os.IsNotExist(err) {
 		return nil
 	}
-	p.sassHash = fmt.Sprintf("%x", h.Sum(nil))
 	return err
 }
 

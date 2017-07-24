@@ -163,6 +163,7 @@ func (s *Site) TemplateEngine() *liquid.Engine {
 func (s *Site) initializeRenderingPipeline() (err error) {
 	options := pipelines.PipelineOptions{
 		RelativeFilenameToURL: s.FilenameURLPath,
+		ThemeDir: s.themeDir,
 	}
 	s.pipeline, err = pipelines.NewPipeline(s.config, options)
 	if err != nil {

@@ -7,7 +7,6 @@ import (
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
 	"github.com/osteele/gojekyll/tags"
-	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 )
@@ -31,6 +30,7 @@ type Pipeline struct {
 // PipelineOptions configures a pipeline.
 type PipelineOptions struct {
 	RelativeFilenameToURL tags.LinkTagHandler
+	ThemeDir              string
 }
 
 // NewPipeline makes a rendering pipeline.
@@ -88,27 +88,6 @@ func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename
 		return nil, utils.WrapPathError(err, filename)
 	}
 	return out, err
-}
-
-// ApplyLayout applies the named layout to the data.
-func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{}) ([]byte, error) {
-	for name != "" {
-		var lfm map[string]interface{}
-		tpl, err := p.FindLayout(name, &lfm)
-		if err != nil {
-			return nil, err
-		}
-		b := utils.MergeStringMaps(e, map[string]interface{}{
-			"content": string(data),
-			"layout":  lfm,
-		})
-		data, err = tpl.Render(b)
-		if err != nil {
-			return nil, utils.WrapPathError(err, name)
-		}
-		name = templates.VariableMap(lfm).String("layout", "")
-	}
-	return data, nil
 }
 
 func (p *Pipeline) makeLiquidEngine() *liquid.Engine {
