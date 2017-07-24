@@ -131,8 +131,12 @@ func (s *Site) KeepFile(filename string) bool {
 func (s *Site) FilePathPage(rel string) (pages.Document, bool) {
 	// This looks wasteful. If it shows up as a hotspot, you know what to do.
 	for _, p := range s.Routes {
-		if p.SourcePath() != "" && rel == utils.MustRel(s.SourceDir(), p.SourcePath()) {
-			return p, true
+		if p.SourcePath() != "" {
+			if r, err := filepath.Rel(s.SourceDir(), p.SourcePath()); err == nil {
+				if r == rel {
+					return p, true
+				}
+			}
 		}
 	}
 	return nil, false
@@ -163,7 +167,7 @@ func (s *Site) TemplateEngine() *liquid.Engine {
 func (s *Site) initializeRenderingPipeline() (err error) {
 	options := pipelines.PipelineOptions{
 		RelativeFilenameToURL: s.FilenameURLPath,
-		ThemeDir: s.themeDir,
+		ThemeDir:              s.themeDir,
 	}
 	s.pipeline, err = pipelines.NewPipeline(s.config, options)
 	if err != nil {
@@ -175,9 +179,19 @@ func (s *Site) initializeRenderingPipeline() (err error) {
 	})
 }
 
+// RelativePath is in the page.Container interface.
+func (s *Site) RelativePath(path string) string {
+	if s.themeDir != "" {
+		if rel, err := filepath.Rel(s.themeDir, path); err == nil {
+			return rel
+		}
+	}
+	return utils.MustRel(s.config.Source, path)
+}
+
 // OutputExt is in the page.Container interface.
-func (s *Site) OutputExt(pathname string) string {
-	return s.config.OutputExt(pathname)
+func (s *Site) OutputExt(path string) string {
+	return s.config.OutputExt(path)
 }
 
 // URLPage returns the page that will be served at URL
@@ -192,7 +206,7 @@ func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 	return
 }
 
-// Exclude returns a boolean indicating that the site excludes a file.
+// Exclude returns a boolean indicating that the site excludes a file or directory.
 func (s *Site) Exclude(path string) bool {
 	base := filepath.Base(path)
 	switch {

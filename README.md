@@ -14,8 +14,6 @@ Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com) s
 | Runs on Windows         |                                           | ✓      | ✓            |
 | Implementation language | Go                                        | Ruby   | Go           |
 
-
-
 <!-- TOC -->
 
 - [Gojekyll](#gojekyll)
@@ -140,7 +138,7 @@ Muzukashii:
   - [x] Permalinks
   - [ ] Pagination
   - [ ] Plugins – partial; see [here](./docs/plugins.md)
-  - [ ] Themes
+  - [x] Themes
   - [x] Layouts
 - [x] Server
   - [x] Directory watch

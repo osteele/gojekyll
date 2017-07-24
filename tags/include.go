@@ -8,16 +8,22 @@ import (
 	"github.com/osteele/liquid/render"
 )
 
-func (tc tagContext) includeTag(rc render.Context) (string, error) {
-	return includeFromDir(rc, filepath.Join(tc.cfg.Source, tc.cfg.IncludesDir))
+func (tc tagContext) includeTag(rc render.Context) (s string, err error) {
+	for _, dir := range tc.includeDirs {
+		s, err = includeFromDir(dir, rc)
+		if err == nil {
+			return
+		}
+	}
+	return
 }
 
 func (tc tagContext) includeRelativeTag(rc render.Context) (string, error) {
 	// TODO "Note that you cannot use the ../ syntax"
-	return includeFromDir(rc, path.Dir(rc.SourceFile()))
+	return includeFromDir(path.Dir(rc.SourceFile()), rc)
 }
 
-func includeFromDir(rc render.Context, dirname string) (string, error) {
+func includeFromDir(dir string, rc render.Context) (string, error) {
 	argsline, err := rc.ExpandTagArg()
 	if err != nil {
 		return "", err
@@ -33,6 +39,6 @@ func includeFromDir(rc render.Context, dirname string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filename := filepath.Join(dirname, args.Args[0])
+	filename := filepath.Join(dir, args.Args[0])
 	return rc.RenderFile(filename, map[string]interface{}{"include": include})
 }

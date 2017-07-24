@@ -8,15 +8,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type siteMock struct{ c config.Config }
+type siteFake struct{ c config.Config }
 
-func (c siteMock) Config() *config.Config                         { return &c.c }
-func (c siteMock) Exclude(string) bool                            { return false }
-func (c siteMock) OutputExt(s string) string                      { return "" }
-func (c siteMock) RenderingPipeline() pipelines.PipelineInterface { panic("unimplemented") }
+func (s siteFake) Config() *config.Config                         { return &s.c }
+func (s siteFake) Exclude(string) bool                            { return false }
+func (s siteFake) OutputExt(string) string                        { return "" }
+func (s siteFake) RelativePath(string) string                     { panic("unimplemented") }
+func (s siteFake) RenderingPipeline() pipelines.PipelineInterface { panic("unimplemented") }
 
 func TestNewCollection(t *testing.T) {
-	site := siteMock{config.Default()}
+	site := siteFake{config.Default()}
 
 	c1 := New(site, "c", map[string]interface{}{"output": true})
 	require.Equal(t, true, c1.Output())
@@ -27,7 +28,7 @@ func TestNewCollection(t *testing.T) {
 }
 
 func TestPermalinkPattern(t *testing.T) {
-	site := siteMock{config.Default()}
+	site := siteFake{config.Default()}
 
 	c1 := New(site, "c", map[string]interface{}{})
 	require.Contains(t, c1.PermalinkPattern(), ":collection")
@@ -40,17 +41,17 @@ func TestPermalinkPattern(t *testing.T) {
 }
 
 func TestReadPosts(t *testing.T) {
-	site := siteMock{config.FromString("source: testdata")}
+	site := siteFake{config.FromString("source: testdata")}
 	c := New(site, "posts", map[string]interface{}{})
 	require.NoError(t, c.ReadPages())
 	require.Len(t, c.Pages(), 1)
 
-	site = siteMock{config.FromString("source: testdata\nunpublished: true")}
+	site = siteFake{config.FromString("source: testdata\nunpublished: true")}
 	c = New(site, "posts", map[string]interface{}{})
 	require.NoError(t, c.ReadPages())
 	require.Len(t, c.Pages(), 2)
 
-	site = siteMock{config.FromString("source: testdata\nfuture: true")}
+	site = siteFake{config.FromString("source: testdata\nfuture: true")}
 	c = New(site, "posts", map[string]interface{}{})
 	require.NoError(t, c.ReadPages())
 	require.Len(t, c.Pages(), 2)

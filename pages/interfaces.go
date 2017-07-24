@@ -23,6 +23,7 @@ type Document interface {
 // Site is the interface that the site provides to a page.
 type Site interface {
 	Config() *config.Config
+	RelativePath(string) string
 	RenderingPipeline() pipelines.PipelineInterface
 	OutputExt(pathname string) string
 }

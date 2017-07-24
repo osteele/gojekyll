@@ -23,6 +23,7 @@ type Collection struct {
 type Site interface {
 	Config() *config.Config
 	Exclude(string) bool
+	RelativePath(string) string
 	RenderingPipeline() pipelines.PipelineInterface
 	OutputExt(pathname string) string
 }

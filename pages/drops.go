@@ -70,7 +70,7 @@ func (p *page) ToLiquid() interface{} {
 		"tags":       p.Tags(),
 
 		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
-		"relative_path": p.Path(),
+		"relative_path": filepath.ToSlash(p.site.RelativePath(p.filename)),
 		// TODO collection(name)
 
 		// TODO undocumented; only present in collection pages:

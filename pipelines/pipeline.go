@@ -3,6 +3,7 @@ package pipelines
 import (
 	"bytes"
 	"io"
+	"path/filepath"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
@@ -91,8 +92,12 @@ func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename
 }
 
 func (p *Pipeline) makeLiquidEngine() *liquid.Engine {
+	dirs := []string{filepath.Join(p.cfg.Source, p.cfg.IncludesDir)}
+	if p.ThemeDir != "" {
+		dirs = append(dirs, filepath.Join(p.ThemeDir, "_includes"))
+	}
 	engine := liquid.NewEngine()
 	filters.AddJekyllFilters(engine, &p.cfg)
-	tags.AddJekyllTags(engine, &p.cfg, p.RelativeFilenameToURL)
+	tags.AddJekyllTags(engine, &p.cfg, dirs, p.RelativeFilenameToURL)
 	return engine
 }

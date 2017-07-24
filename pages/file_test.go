@@ -16,6 +16,7 @@ type siteFake struct {
 }
 
 func (s siteFake) Config() *config.Config                         { return &s.cfg }
+func (s siteFake) RelativePath(p string) string                   { return p }
 func (s siteFake) RenderingPipeline() pipelines.PipelineInterface { return &pipelineFake{s.t} }
 func (s siteFake) OutputExt(p string) string                      { return filepath.Ext(p) }
 

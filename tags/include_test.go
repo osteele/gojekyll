@@ -1,7 +1,6 @@
 package tags
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
@@ -14,8 +13,7 @@ func TestIncludeTag(t *testing.T) {
 	engine := liquid.NewEngine()
 	cfg := config.Default()
 	cfg.Source = "testdata"
-	AddJekyllTags(engine, &cfg, func(s string) (string, bool) {
-		fmt.Println("ok")
+	AddJekyllTags(engine, &cfg, []string{"testdata/_includes"}, func(s string) (string, bool) {
 		if s == "_posts/2017-07-04-test.md" {
 			return "post.html", true
 		}
@@ -34,7 +32,7 @@ func TestIncludeTag(t *testing.T) {
 func TestIncludeRelativeTag(t *testing.T) {
 	engine := liquid.NewEngine()
 	cfg := config.Default()
-	AddJekyllTags(engine, &cfg, func(s string) (string, bool) { return "", false })
+	AddJekyllTags(engine, &cfg, []string{}, func(s string) (string, bool) { return "", false })
 	bindings := map[string]interface{}{}
 
 	path := "testdata/dir/include_relative_source.md"

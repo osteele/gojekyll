@@ -11,7 +11,7 @@ import (
 func TestTags(t *testing.T) {
 	engine := liquid.NewEngine()
 	cfg := config.Default()
-	AddJekyllTags(engine, &cfg, func(s string) (string, bool) {
+	AddJekyllTags(engine, &cfg, []string{}, func(s string) (string, bool) {
 		if s == "_posts/2017-07-04-test.md" {
 			return "post.html", true
 		}

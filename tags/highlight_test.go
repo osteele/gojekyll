@@ -28,7 +28,7 @@ func TestHighlightTag(t *testing.T) {
 	cache.Disable()
 	engine := liquid.NewEngine()
 	cfg := config.Default()
-	AddJekyllTags(engine, &cfg, func(string) (string, bool) { return "", false })
+	AddJekyllTags(engine, &cfg, []string{}, func(string) (string, bool) { return "", false })
 
 	for i, test := range highlightTagTests {
 		t.Run(fmt.Sprintf("%d", i+1), func(t *testing.T) {
