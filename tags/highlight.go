@@ -19,8 +19,8 @@ const pygmentizeCmd = "pygmentize"
 var warnedMissingPygmentize = false
 var highlightArgsRE = regexp.MustCompile(`^\s*(\S+)(\s+linenos)?\s*$`)
 
-func highlightTag(ctx render.Context) (string, error) {
-	argStr, err := ctx.ExpandTagArg()
+func highlightTag(rc render.Context) (string, error) {
+	argStr, err := rc.ExpandTagArg()
 	if err != nil {
 		return "", err
 	}
@@ -33,7 +33,7 @@ func highlightTag(ctx render.Context) (string, error) {
 	if args[2] != "" {
 		cmdArgs = append(cmdArgs, "-O", "linenos=1")
 	}
-	s, err := ctx.InnerString()
+	s, err := rc.InnerString()
 	if err != nil {
 		return "", err
 	}

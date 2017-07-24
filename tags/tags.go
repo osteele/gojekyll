@@ -24,25 +24,25 @@ func AddJekyllTags(e *liquid.Engine, c *config.Config, lh LinkTagHandler) {
 
 // tagContext provides the context to a tag renderer.
 type tagContext struct {
-	config *config.Config
-	lh     LinkTagHandler
+	cfg *config.Config
+	lh  LinkTagHandler
 }
 
 // CreateUnimplementedTag creates a tag definition that prints a warning the first
 // time it's rendered, and otherwise does nothing.
 func CreateUnimplementedTag() liquid.Renderer {
 	warned := false
-	return func(ctx render.Context) (string, error) {
+	return func(rc render.Context) (string, error) {
 		if !warned {
-			fmt.Printf("The %q tag has not been implemented. It is being ignored.\n", ctx.TagName())
+			fmt.Printf("The %q tag has not been implemented. It is being ignored.\n", rc.TagName())
 			warned = true
 		}
 		return "", nil
 	}
 }
 
-func (tc tagContext) linkTag(ctx render.Context) (string, error) {
-	filename := ctx.TagArgs()
+func (tc tagContext) linkTag(rc render.Context) (string, error) {
+	filename := rc.TagArgs()
 	url, found := tc.lh(filename)
 	if !found {
 		return "", fmt.Errorf("missing link filename: %s", filename)
@@ -50,13 +50,13 @@ func (tc tagContext) linkTag(ctx render.Context) (string, error) {
 	return url, nil
 }
 
-func (tc tagContext) postURLTag(ctx render.Context) (string, error) {
+func (tc tagContext) postURLTag(rc render.Context) (string, error) {
 	var (
-		filename = ctx.TagArgs()
+		filename = rc.TagArgs()
 		found    = false
 		url      string
 	)
-	for _, ext := range append(tc.config.MarkdownExtensions(), "") {
+	for _, ext := range append(tc.cfg.MarkdownExtensions(), "") {
 		url, found = tc.lh(path.Join("_posts", filename+ext))
 		if found {
 			break

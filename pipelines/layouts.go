@@ -38,7 +38,7 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{
 func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl *liquid.Template, err error) {
 	// not cached, but the time here is negligible
 	exts := []string{"", ".html"}
-	for _, ext := range strings.SplitN(p.config.MarkdownExt, `,`, -1) {
+	for _, ext := range strings.SplitN(p.cfg.MarkdownExt, `,`, -1) {
 		exts = append(exts, "."+ext)
 	}
 	var (
@@ -77,7 +77,7 @@ loop:
 
 // LayoutsDir returns the path to the layouts directory.
 func (p *Pipeline) layoutDirs() []string {
-	dirs := []string{filepath.Join(p.SourceDir(), p.config.LayoutsDir)}
+	dirs := []string{filepath.Join(p.SourceDir(), p.cfg.LayoutsDir)}
 	if p.ThemeDir != "" {
 		dirs = append(dirs, filepath.Join(p.ThemeDir, "_layouts"))
 	}

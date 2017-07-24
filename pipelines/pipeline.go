@@ -21,7 +21,7 @@ type PipelineInterface interface {
 // Pipeline applies a rendering transformation to a file.
 type Pipeline struct {
 	PipelineOptions
-	config       config.Config
+	cfg          config.Config
 	liquidEngine *liquid.Engine
 	sassTempDir  string
 	sassHash     string
@@ -35,7 +35,7 @@ type PipelineOptions struct {
 
 // NewPipeline makes a rendering pipeline.
 func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
-	p := Pipeline{PipelineOptions: options, config: c}
+	p := Pipeline{PipelineOptions: options, cfg: c}
 	p.liquidEngine = p.makeLiquidEngine()
 	if err := p.CopySassFileIncludes(); err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 // SourceDir returns the site source directory. Seeing how far we can bend
 // the Law of Demeter.
 func (p *Pipeline) SourceDir() string {
-	return p.config.Source
+	return p.cfg.Source
 }
 
 // TemplateEngine returns the Liquid engine.
@@ -56,12 +56,12 @@ func (p *Pipeline) TemplateEngine() *liquid.Engine {
 
 // OutputExt returns the output extension.
 func (p *Pipeline) OutputExt(pathname string) string {
-	return p.config.OutputExt(pathname)
+	return p.cfg.OutputExt(pathname)
 }
 
 // Render returns nil iff it wrote to the writer
 func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e map[string]interface{}) ([]byte, error) {
-	if p.config.IsSASSPath(filename) {
+	if p.cfg.IsSASSPath(filename) {
 		buf := new(bytes.Buffer)
 		if err := p.WriteSass(buf, b); err != nil {
 			return nil, err
@@ -72,7 +72,7 @@ func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e 
 	if err != nil {
 		return nil, err
 	}
-	if p.config.IsMarkdown(filename) {
+	if p.cfg.IsMarkdown(filename) {
 		b = markdownRenderer(b)
 	}
 	return b, nil
@@ -92,7 +92,7 @@ func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename
 
 func (p *Pipeline) makeLiquidEngine() *liquid.Engine {
 	engine := liquid.NewEngine()
-	filters.AddJekyllFilters(engine, &p.config)
-	tags.AddJekyllTags(engine, &p.config, p.RelativeFilenameToURL)
+	filters.AddJekyllFilters(engine, &p.cfg)
+	tags.AddJekyllTags(engine, &p.cfg, p.RelativeFilenameToURL)
 	return engine
 }

@@ -8,17 +8,17 @@ import (
 	"github.com/osteele/liquid/render"
 )
 
-func (tc tagContext) includeTag(ctx render.Context) (string, error) {
-	return includeFromDir(ctx, filepath.Join(tc.config.Source, tc.config.IncludesDir))
+func (tc tagContext) includeTag(rc render.Context) (string, error) {
+	return includeFromDir(rc, filepath.Join(tc.cfg.Source, tc.cfg.IncludesDir))
 }
 
-func (tc tagContext) includeRelativeTag(ctx render.Context) (string, error) {
+func (tc tagContext) includeRelativeTag(rc render.Context) (string, error) {
 	// TODO "Note that you cannot use the ../ syntax"
-	return includeFromDir(ctx, path.Dir(ctx.SourceFile()))
+	return includeFromDir(rc, path.Dir(rc.SourceFile()))
 }
 
-func includeFromDir(ctx render.Context, dirname string) (string, error) {
-	argsline, err := ctx.ExpandTagArg()
+func includeFromDir(rc render.Context, dirname string) (string, error) {
+	argsline, err := rc.ExpandTagArg()
 	if err != nil {
 		return "", err
 	}
@@ -29,10 +29,10 @@ func includeFromDir(ctx render.Context, dirname string) (string, error) {
 	if len(args.Args) != 1 {
 		return "", fmt.Errorf("parse error")
 	}
-	include, err := args.EvalOptions(ctx)
+	include, err := args.EvalOptions(rc)
 	if err != nil {
 		return "", err
 	}
 	filename := filepath.Join(dirname, args.Args[0])
-	return ctx.RenderFile(filename, map[string]interface{}{"include": include})
+	return rc.RenderFile(filename, map[string]interface{}{"include": include})
 }
