@@ -1,6 +1,7 @@
 package config
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/osteele/gojekyll/templates"
@@ -49,15 +50,8 @@ type Config struct {
 	// Outputting
 	Permalink string
 	Timezone  string
-
-	Verbose bool
-
-	// CLI-only
-	DryRun       bool `yaml:"-"`
-	ForcePolling bool `yaml:"-"`
-	Watch        bool `yaml:"-"`
-
-	Defaults []struct {
+	Verbose   bool
+	Defaults  []struct {
 		Scope struct {
 			Path string
 			Type string
@@ -65,7 +59,17 @@ type Config struct {
 		Values map[string]interface{}
 	}
 
+	// CLI-only
+	DryRun       bool `yaml:"-"`
+	ForcePolling bool `yaml:"-"`
+	Watch        bool `yaml:"-"`
+
+	// Unstructured data for templates
 	Variables map[string]interface{} `yaml:"-"`
+
+	// Plugins
+	RequireFrontMatter        bool            `yaml:"-"`
+	RequireFrontMatterExclude map[string]bool `yaml:"-"`
 }
 
 type configCompat struct {
@@ -86,16 +90,41 @@ func (c *Config) SourceDir() string {
 }
 
 // GetFrontMatterDefaults implements https://jekyllrb.com/docs/configuration/#front-matter-defaults
-func (c *Config) GetFrontMatterDefaults(typename, relpath string) (m map[string]interface{}) {
+func (c *Config) GetFrontMatterDefaults(typename, rel string) (m map[string]interface{}) {
 	for _, entry := range c.Defaults {
 		scope := &entry.Scope
-		hasPrefix := strings.HasPrefix(relpath, scope.Path)
+		hasPrefix := strings.HasPrefix(rel, scope.Path)
 		hasType := scope.Type == "" || scope.Type == typename
 		if hasPrefix && hasType {
 			m = templates.MergeVariableMaps(m, entry.Values)
 		}
 	}
 	return
+}
+
+// RequiresFrontMatter returns a bool indicating whether the file requires front matter in order to recognize as a page.
+func (c *Config) RequiresFrontMatter(rel string) bool {
+	switch {
+	case c.RequireFrontMatter:
+		return true
+	case !c.IsMarkdown(rel):
+		return true
+	case contains(c.Include, rel):
+		return false
+	case c.RequireFrontMatterExclude[strings.ToUpper(utils.TrimExt(filepath.Base(rel)))]:
+		return true
+	default:
+		return false
+	}
+}
+
+func contains(array []string, s string) bool {
+	for _, item := range array {
+		if item == s {
+			return true
+		}
+	}
+	return false
 }
 
 // Unmarshal updates site from a YAML configuration file.

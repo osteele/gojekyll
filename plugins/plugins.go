@@ -34,10 +34,10 @@ type Plugin interface {
 
 type plugin struct{}
 
-func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error { return nil }
-func (p plugin) PostRender(b []byte) []byte                   { return b }
 func (p plugin) Initialize(Site) error                        { return nil }
+func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error { return nil }
 func (p plugin) PostRead(Site) error                          { return nil }
+func (p plugin) PostRender(b []byte) []byte                   { return b }
 
 // Lookup returns a plugin if it has been registered.
 func Lookup(name string) (Plugin, bool) {
@@ -69,6 +69,7 @@ func register(name string, p Plugin) {
 func init() {
 	register("jemoji", jekyllJemojiPlugin{})
 	register("jekyll-mentions", jekyllMentionsPlugin{})
+	register("jekyll-optional-front-matter", jekyllOptionalFrontMatterPlugin{})
 
 	// the following plugins are always active
 	// no warning but effect; the server runs in this mode anyway
@@ -99,6 +100,31 @@ func (p jekyllMentionsPlugin) PostRender(b []byte) []byte {
 	return utils.ApplyToHTMLText(b, func(s string) string {
 		return mentionPattern.ReplaceAllString(s, `<a href="https://github.com/$1" class="user-mention">@$1</a>`)
 	})
+}
+
+// jekyll-optional-front-matter
+
+type jekyllOptionalFrontMatterPlugin struct{ plugin }
+
+var requireFrontMatterExclude = []string{
+	"README",
+	"LICENSE",
+	"LICENCE",
+	"COPYING",
+	"CODE_OF_CONDUCT",
+	"CONTRIBUTING",
+	"ISSUE_TEMPLATE",
+	"PULL_REQUEST_TEMPLATE",
+}
+
+func (p jekyllOptionalFrontMatterPlugin) Initialize(s Site) error {
+	m := map[string]bool{}
+	for _, k := range requireFrontMatterExclude {
+		m[k] = true
+	}
+	s.Config().RequireFrontMatter = false
+	s.Config().RequireFrontMatterExclude = m
+	return nil
 }
 
 // helpers

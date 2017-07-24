@@ -10,7 +10,7 @@ func Default() Config {
 
 // FromString returns a new configuration initialized from a string
 func FromString(src string) Config {
-	var c Config
+	var c = Config{RequireFrontMatter: true}
 	// TODO this doesn't set c.Variables. Should it? If so,
 	// config.Unmarshal needs to merge them instead of overwriting them (unless yaml.Unmarshal already does this)
 	err := Unmarshal([]byte(src), &c)

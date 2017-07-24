@@ -50,7 +50,7 @@ func NewFile(s Site, filename string, relpath string, defaults map[string]interf
 		relpath:     relpath,
 		outputExt:   s.OutputExt(relpath),
 	}
-	if fm {
+	if fm || !s.Config().RequiresFrontMatter(relpath) {
 		return makePage(filename, fields)
 	}
 	fields.permalink = "/" + relpath

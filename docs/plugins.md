@@ -8,7 +8,7 @@ The functionality of some plugins is built into the core program:
 |------------------------------|---------------|---------------------|-------------------------------------------------------------------------|
 | jekyll-avatar                | GitHub Pages² | ✓                   |                                                                         |
 | jekyll-coffeescript          | GitHub Pages  |                     |                                                                         |
-| jekyll-default-layout        | GitHub Pages  |                     |                                                                         |
+| jekyll-default-layout        | GitHub Pages  | ✓                   |                                                                         |
 | jekyll-feed                  | GitHub Pages  | ✓                   |                                                                         |
 | jekyll-gist                  | core³         | ✓                   | `noscript`                                                              |
 | jekyll-github-metadata       | GitHub Pages  |                     |                                                                         |
