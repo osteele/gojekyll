@@ -3,6 +3,15 @@ permalink: /
 variable: page variable
 ---
 
+## Stats
+
+* {{ site.pages.size }} Pages
+* {{ site.posts.size }} Posts
+* {{ site.static_files.size }} Static Files
+* {{ site.html_pages.size }} HTML Pages
+* {{ site.html_files.size }} HTML Files
+* {{ site.pages.collections }} Collections
+
 ## Tests
 
 * [Archive]({% link archive.md %})
