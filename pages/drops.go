@@ -62,8 +62,8 @@ func (p *page) ToLiquid() interface{} {
 		// TODO next previous
 
 		// TODO Documented as present in all pages, but de facto only defined for collection pages
-		"id":    base,
-		"title": base, // TODO capitalize
+		"id": base,
+		// "title": base, // TODO capitalize
 		// TODO excerpt category? categories tags
 		// TODO slug
 		"categories": p.Categories(),
