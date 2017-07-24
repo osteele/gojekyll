@@ -19,6 +19,7 @@ type TagInjector struct {
 // Write injects a livereload script tag at the end of the HTML head, if present,
 // else at the beginning of the document.
 func (i TagInjector) Write(b []byte) (n int, err error) {
+	n = len(b)
 	if !bytes.Contains(b, i.insertion) && bytes.Contains(b, closeHeadTag) {
 		r := append(i.insertion, closeHeadTag...)
 		b = bytes.Replace(b, closeHeadTag, r, 1)
@@ -26,5 +27,6 @@ func (i TagInjector) Write(b []byte) (n int, err error) {
 	if !bytes.Contains(b, i.insertion) {
 		b = append(i.insertion, b...)
 	}
-	return i.w.Write(b)
+	_, err = i.w.Write(b)
+	return
 }
