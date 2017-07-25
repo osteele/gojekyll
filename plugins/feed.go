@@ -5,6 +5,7 @@ import (
 	"html"
 	"io"
 
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
@@ -41,7 +42,7 @@ func (p *jekyllFeedPlugin) PostRead(s Site) error {
 			path = "/" + pp
 		}
 	}
-	d := feedDoc{s, p, path}
+	d := feedDoc{pages.PageEmbed{Path: path}, s, p}
 	s.AddDocument(&d, true)
 	return nil
 }
@@ -55,17 +56,10 @@ func (p *jekyllFeedPlugin) feedMetaTag(ctx render.Context) (string, error) {
 }
 
 type feedDoc struct {
+	pages.PageEmbed
 	site   Site
 	plugin *jekyllFeedPlugin
-	path   string
 }
-
-func (d *feedDoc) Permalink() string  { return d.path }
-func (d *feedDoc) SourcePath() string { return "" }
-func (d *feedDoc) OutputExt() string  { return ".xml" }
-func (d *feedDoc) Published() bool    { return true }
-func (d *feedDoc) Static() bool       { return false } // FIXME means different things to different callers
-func (d *feedDoc) Reload() error      { return nil }
 
 func (d *feedDoc) Content() []byte {
 	bindings := map[string]interface{}{"site": d.site}

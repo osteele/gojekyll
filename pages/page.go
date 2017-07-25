@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"path"
 	"sync"
 	"time"
 
@@ -29,6 +30,28 @@ type Page interface {
 	Categories() []string
 	Tags() []string
 }
+
+// PageEmbed can be embedded to give defaults for the Page interface.
+type PageEmbed struct {
+	Path string
+}
+
+// Permalink is in the pages.Page interface.
+func (p *PageEmbed) Permalink() string { return p.Path }
+
+// OutputExt is in the pages.Page interface.
+func (p *PageEmbed) OutputExt() string { return path.Ext(p.Path) }
+
+// SourcePath is in the pages.Page interface.
+func (p *PageEmbed) SourcePath() string { return "" }
+
+// Published is in the pages.Page interface.
+func (p *PageEmbed) Published() bool { return true }
+
+// Static is in the pages.Page interface.
+func (p *PageEmbed) Static() bool { return false } // FIXME means different things to different callers
+// Reload is in the pages.Page interface.
+func (p *PageEmbed) Reload() error { return nil }
 
 type page struct {
 	file

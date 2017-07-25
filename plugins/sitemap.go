@@ -1,9 +1,5 @@
 package plugins
 
-import (
-	"github.com/osteele/gojekyll/pages"
-)
-
 type sitemapPlugin struct{ plugin }
 
 func init() {
@@ -16,17 +12,9 @@ func init() {
 // }
 
 func (p *sitemapPlugin) PostRead(s Site) error {
-	s.AddDocument(newTemplateDoc(s, "sitemap.xml", sitemapTemplateSource), true)
-	s.AddDocument(newTemplateDoc(s, "robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`), true)
+	s.AddDocument(newTemplateDoc(s, "/sitemap.xml", sitemapTemplateSource), true)
+	s.AddDocument(newTemplateDoc(s, "/robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`), true)
 	return nil
-}
-
-func newTemplateDoc(s Site, path, src string) pages.Document {
-	tpl, err := s.TemplateEngine().ParseTemplate([]byte(src))
-	if err != nil {
-		panic(err)
-	}
-	return &templateDoc{s, path, tpl}
 }
 
 // Taken verbatim from https://github.com/jekyll/jekyll-sitemap-plugin/

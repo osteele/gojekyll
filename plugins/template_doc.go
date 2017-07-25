@@ -2,23 +2,24 @@ package plugins
 
 import (
 	"io"
-	"path"
 
+	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/liquid"
 )
 
-type templateDoc struct {
-	site Site
-	path string
-	tpl  *liquid.Template
+func newTemplateDoc(s Site, path, src string) pages.Document {
+	tpl, err := s.TemplateEngine().ParseTemplate([]byte(src))
+	if err != nil {
+		panic(err)
+	}
+	return &templateDoc{pages.PageEmbed{Path: path}, s, tpl}
 }
 
-func (d *templateDoc) Permalink() string  { return "/" + d.path }
-func (d *templateDoc) SourcePath() string { return "" }
-func (d *templateDoc) OutputExt() string  { return path.Ext(d.path) }
-func (d *templateDoc) Published() bool    { return true }
-func (d *templateDoc) Static() bool       { return false } // FIXME means different things to different callers
-func (d *templateDoc) Reload() error      { return nil }
+type templateDoc struct {
+	pages.PageEmbed
+	site Site
+	tpl  *liquid.Template
+}
 
 func (d *templateDoc) Content() []byte {
 	bindings := map[string]interface{}{"site": d.site}
