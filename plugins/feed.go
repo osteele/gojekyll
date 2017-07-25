@@ -65,6 +65,7 @@ func (d *feedDoc) SourcePath() string { return "" }
 func (d *feedDoc) OutputExt() string  { return ".xml" }
 func (d *feedDoc) Published() bool    { return true }
 func (d *feedDoc) Static() bool       { return false } // FIXME means different things to different callers
+func (d *feedDoc) Reload() error      { return nil }
 
 func (d *feedDoc) Content() []byte {
 	bindings := map[string]interface{}{"site": d.site}

@@ -18,6 +18,8 @@ type Document interface {
 	Published() bool
 	Static() bool
 	Write(io.Writer) error
+
+	Reload() error
 }
 
 // Site is the interface that the site provides to a page.

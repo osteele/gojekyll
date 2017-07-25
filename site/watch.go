@@ -49,10 +49,12 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 }
 
 func (s *Site) makeFileWatcher() (<-chan string, error) {
-	if s.config.ForcePolling {
+	switch {
+	case s.config.ForcePolling:
 		return s.makePollingWatcher()
+	default:
+		return s.makeEventWatcher()
 	}
-	return s.makeEventWatcher()
 }
 
 func (s *Site) makePollingWatcher() (<-chan string, error) {

@@ -42,25 +42,47 @@ type page struct {
 func (p *page) Static() bool { return false }
 
 func makePage(filename string, f file) (*page, error) {
-	b, err := ioutil.ReadFile(filename)
+	raw, lineNo, err := readFrontMatter(&f)
 	if err != nil {
 		return nil, err
 	}
-	lineNo := 1
-	frontMatter, err := frontmatter.Read(&b, &lineNo)
-	if err != nil {
-		return nil, err
-	}
-	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
 	p := page{
 		file:      f,
 		firstLine: lineNo,
-		raw:       b,
+		raw:       raw,
 	}
-	if err = p.setPermalink(); err != nil {
+	if err := p.setPermalink(); err != nil {
 		return nil, err
 	}
 	return &p, nil
+}
+
+func (p *page) Reload() error {
+	if err := p.file.Reload(); err != nil {
+		return err
+	}
+	// FIXME use original defaults
+	raw, lineNo, err := readFrontMatter(&p.file)
+	if err != nil {
+		return err
+	}
+	p.firstLine = lineNo
+	p.raw = raw
+	return nil
+}
+
+func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
+	b, err = ioutil.ReadFile(f.filename)
+	if err != nil {
+		return
+	}
+	lineNo = 1
+	frontMatter, err := frontmatter.Read(&b, &lineNo)
+	if err != nil {
+		return
+	}
+	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
+	return
 }
 
 func (p *page) FrontMatter() map[string]interface{} {

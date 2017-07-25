@@ -104,6 +104,7 @@ func (d *redirectionDoc) SourcePath() string { return "" } // FIXME bad design
 func (d *redirectionDoc) OutputExt() string  { return ".html" }
 func (d *redirectionDoc) Published() bool    { return true }
 func (d *redirectionDoc) Static() bool       { return false } // FIXME means different things to different callers
+func (d *redirectionDoc) Reload() error      { return nil }
 
 func (d *redirectionDoc) Content() []byte {
 	buf := new(bytes.Buffer)

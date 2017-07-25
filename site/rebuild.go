@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/utils"
 )
 
 // WatchRebuild watches the site directory. Each time a file changes, it
@@ -52,23 +55,47 @@ func (s *Site) processFilesEvent(fileset FilesEvent, messages chan<- interface{}
 		return s
 	}
 	elapsed := time.Since(start)
-	messages <- fmt.Sprintf("wrote %d files in %.2fs.\n", count, elapsed.Seconds())
+	inflect := map[bool]string{true: "", false: "s"}[count == 1]
+	messages <- fmt.Sprintf("wrote %d file%s in %.2fs.\n", count, inflect, elapsed.Seconds())
 	return r
 }
 
 // reloads and rebuilds the site; returns a copy and count
-func (s *Site) rebuild(paths []string) (*Site, int, error) {
+func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
 	if s.requiresFullReload(paths) {
-		r, err := s.Reloaded(paths)
+		r, err = s.Reloaded(paths)
 		if err != nil {
-			return nil, 0, err
+			return
 		}
-		n, err := r.Build()
-		return r, n, err
+		n, err = r.Build()
+		return
 	}
-	return s, 0, nil
+	r = s
+	pathSet := utils.StringSet(paths)
+	for _, d := range s.docs {
+		if s.invalidatesDoc(pathSet, d) {
+			err = d.Reload()
+			if err != nil {
+				return
+			}
+			err = s.WriteDoc(d)
+			if err != nil {
+				return
+			}
+			n++
+		}
+	}
+	return
 }
 
+// Return true if a source file requires a full reload / rebuild.
+//
+// This is always true outside of incremental mode, since even a
+// static asset can cause pages to change if they reference its
+// variables.
+//
+// This function works on relative paths. It does not work for theme
+// sources.
 func (s *Site) requiresFullReload(paths []string) bool {
 	for _, path := range paths {
 		switch {
@@ -77,6 +104,8 @@ func (s *Site) requiresFullReload(paths []string) bool {
 		case s.Exclude(path):
 			return false
 		case !s.config.Incremental:
+			return true
+		case strings.HasPrefix(path, s.config.SassDir()):
 			return true
 		case strings.HasPrefix(path, s.config.DataDir):
 			return true
@@ -87,23 +116,32 @@ func (s *Site) requiresFullReload(paths []string) bool {
 	return false
 }
 
-// relativize and de-dup filenames, and filter to those that affect the build
-func (s *Site) affectsBuildFilter(filenames []string) []string {
+// De-dup relative paths, and filter to those that might affect the build.
+//
+// Site watch uses this to decide when to send events.
+func (s *Site) affectsBuildFilter(paths []string) []string {
 	var (
-		result = make([]string, 0, len(filenames))
+		result = make([]string, 0, len(paths))
 		seen   = map[string]bool{}
 	)
 loop:
-	for _, path := range filenames {
+	for _, path := range paths {
 		switch {
 		case s.config.IsConfigPath(path):
+			// break
 		case s.Exclude(path):
 			continue loop
 		case seen[path]:
 			continue loop
 		}
-		seen[path] = true
 		result = append(result, path)
+		seen[path] = true
 	}
 	return result
+}
+
+// returns true if changes to the site-relative paths invalidate doc
+func (s *Site) invalidatesDoc(paths map[string]bool, d pages.Document) bool {
+	rel := utils.MustRel(s.SourceDir(), d.SourcePath())
+	return paths[rel]
 }

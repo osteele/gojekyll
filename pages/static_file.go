@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// StaticFile is a static file.
+// A StaticFile is a static file. (Lint made me say this.)
 type StaticFile struct {
 	file
 }

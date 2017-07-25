@@ -112,6 +112,11 @@ func (c *Config) IsConfigPath(rel string) bool {
 	return rel == "_config.yml"
 }
 
+// SassDir returns the relative path of the SASS directory.
+func (c *Config) SassDir() string {
+	return "_sass"
+}
+
 // SourceDir returns the source directory as an absolute path.
 func (c *Config) SourceDir() string {
 	return utils.MustAbs(c.Source)
