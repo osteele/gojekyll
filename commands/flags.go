@@ -48,8 +48,11 @@ func init() {
 	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
 	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
 	_ = app.Flag("verbose", "Print verbose output.").Short('V').Action(boolVar("verbose", &options.Verbose)).Bool()
-	app.Flag("force_polling", "Force watch to use polling").BoolVar(&options.ForcePolling)
 	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&options.DryRun)
+
+	// these flags are just present on build and serve, but I don't see a DRY way to say this
+	app.Flag("incremental", "Enable incremental rebuild.").Short('I').Action(boolVar("incremental", &options.Incremental)).Bool()
+	app.Flag("force_polling", "Force watch to use polling").BoolVar(&options.ForcePolling)
 
 	// --watch has different defaults for build and serve
 	watchText := "Watch for changes and rebuild"

@@ -107,6 +107,11 @@ type collectionsMap struct {
 	Collections map[string]map[string]interface{}
 }
 
+// IsConfigPath returns true if its arguments is a site configuration file.
+func (c *Config) IsConfigPath(rel string) bool {
+	return rel == "_config.yml"
+}
+
 // SourceDir returns the source directory as an absolute path.
 func (c *Config) SourceDir() string {
 	return utils.MustAbs(c.Source)

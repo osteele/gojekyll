@@ -56,10 +56,27 @@ func (s *Site) processFilesEvent(fileset FilesEvent, messages chan<- interface{}
 	return r
 }
 
+// reloads and rebuilds the site; returns a copy and count
+func (s *Site) rebuild(paths []string) (*Site, int, error) {
+	if s.requiresFullReload(paths) {
+		r, err := s.Reloaded(paths)
+		if err != nil {
+			return nil, 0, err
+		}
+		n, err := r.Build()
+		return r, n, err
+	}
+	return s, 0, nil
+}
+
 func (s *Site) requiresFullReload(paths []string) bool {
 	for _, path := range paths {
 		switch {
-		case path == "_config.yml":
+		case s.config.IsConfigPath(path):
+			return true
+		case s.Exclude(path):
+			return false
+		case !s.config.Incremental:
 			return true
 		case strings.HasPrefix(path, s.config.DataDir):
 			return true
@@ -70,29 +87,23 @@ func (s *Site) requiresFullReload(paths []string) bool {
 	return false
 }
 
-// reloads and rebuilds the site; returns a copy and count
-func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
-	r, err = s.Reloaded(paths)
-	if err != nil {
-		return
-	}
-	n, err = r.Build()
-	return
-}
-
 // relativize and de-dup filenames, and filter to those that affect the build
-func (s *Site) sitePaths(filenames []string) []string {
+func (s *Site) affectsBuildFilter(filenames []string) []string {
 	var (
-		paths = make([]string, 0, len(filenames))
-		seen  = map[string]bool{}
+		result = make([]string, 0, len(filenames))
+		seen   = map[string]bool{}
 	)
+loop:
 	for _, path := range filenames {
-		if path == "_config.yml" || !s.Exclude(path) {
-			if !seen[path] {
-				seen[path] = true
-				paths = append(paths, path)
-			}
+		switch {
+		case s.config.IsConfigPath(path):
+		case s.Exclude(path):
+			continue loop
+		case seen[path]:
+			continue loop
 		}
+		seen[path] = true
+		result = append(result, path)
 	}
-	return paths
+	return result
 }

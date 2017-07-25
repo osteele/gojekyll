@@ -37,7 +37,7 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 	)
 	go func() {
 		for {
-			paths := s.sitePaths(<-debounced)
+			paths := s.affectsBuildFilter(<-debounced)
 			if len(paths) > 0 {
 				// Create a new timestamp. Except under pathological
 				// circumstances, it will be close enough.
