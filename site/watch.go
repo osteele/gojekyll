@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -26,7 +25,7 @@ func (e FilesEvent) String() string {
 	return fmt.Sprintf("%d file%s changed at %s", count, inflect, e.Time.Format("3:04:05PM"))
 }
 
-// WatchFiles sends FilesEvent on changes within the site directory.
+// WatchFiles returns a channel that receives FilesEvent on changes within the site directory.
 func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 	filenames, err := s.makeFileWatcher()
 	if err != nil {
@@ -49,41 +48,11 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 	return filesets, nil
 }
 
-// WatchRebuild watches the directory. Each time a file changes, it
-// rebuilds the site. It sends status messages and error to its output
-// channel.
-func (s *Site) WatchRebuild() (<-chan interface{}, error) {
-	var (
-		mu           sync.Mutex
-		events       = make(chan interface{})
-		changes, err = s.WatchFiles()
-	)
-	if err != nil {
-		return nil, err
+func (s *Site) makeFileWatcher() (<-chan string, error) {
+	if s.config.ForcePolling {
+		return s.makePollingWatcher()
 	}
-	go func(rebuild func(FilesEvent)) {
-		for change := range changes {
-			rebuild(change)
-		}
-	}(func(change FilesEvent) {
-		mu.Lock()
-		defer mu.Unlock()
-
-		// similar code to server.reload
-		events <- fmt.Sprintf("Regenerating: %s...", change)
-		start := time.Now()
-		r, count, err := s.rebuild(change.Paths)
-		if err != nil {
-			fmt.Println()
-			fmt.Fprintln(os.Stderr, err)
-			return
-		}
-		// use the new site value the next time
-		s = r
-		elapsed := time.Since(start)
-		events <- fmt.Sprintf("wrote %d files in %.2fs.\n", count, elapsed.Seconds())
-	})
-	return events, nil
+	return s.makeEventWatcher()
 }
 
 func (s *Site) makePollingWatcher() (<-chan string, error) {
@@ -143,40 +112,6 @@ func (s *Site) makeEventWatcher() (<-chan string, error) {
 		}
 	}()
 	return filenames, w.Add(sourceDir)
-}
-
-func (s *Site) makeFileWatcher() (<-chan string, error) {
-	if s.config.ForcePolling {
-		return s.makePollingWatcher()
-	}
-	return s.makeEventWatcher()
-}
-
-// reloads and rebuilds the site; returns a copy and count
-func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
-	r, err = s.Reloaded(paths)
-	if err != nil {
-		return
-	}
-	n, err = r.Build()
-	return
-}
-
-// relativize and de-dup filenames, and filter to those that affect the build
-func (s *Site) sitePaths(filenames []string) []string {
-	var (
-		paths = make([]string, 0, len(filenames))
-		seen  = map[string]bool{}
-	)
-	for _, path := range filenames {
-		if path == "_config.yml" || !s.Exclude(path) {
-			if !seen[path] {
-				seen[path] = true
-				paths = append(paths, path)
-			}
-		}
-	}
-	return paths
 }
 
 // debounce relays values from input to output, merging successive values so long as they keep changing
