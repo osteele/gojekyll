@@ -1,6 +1,8 @@
 package config
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -64,12 +66,33 @@ type Config struct {
 	ForcePolling bool `yaml:"-"`
 	Watch        bool `yaml:"-"`
 
-	// Unstructured data for templates
-	Variables map[string]interface{} `yaml:"-"`
+	// Meta
+	ConfigFile string                 `yaml:"-"`
+	Variables  map[string]interface{} `yaml:"-"`
 
 	// Plugins
 	RequireFrontMatter        bool            `yaml:"-"`
 	RequireFrontMatterExclude map[string]bool `yaml:"-"`
+}
+
+// FromDirectory updates the config from the config file in
+// the directory, if such a file exists.
+func (c *Config) FromDirectory(dir string) error {
+	path := filepath.Join(dir, "_config.yml")
+	bytes, err := ioutil.ReadFile(path)
+	switch {
+	case os.IsNotExist(err):
+		// break
+	case err != nil:
+		return err
+	default:
+		if err = Unmarshal(bytes, c); err != nil {
+			return utils.WrapPathError(err, path)
+		}
+		c.ConfigFile = path
+	}
+	c.Source = dir
+	return nil
 }
 
 type configCompat struct {

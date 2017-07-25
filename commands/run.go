@@ -80,8 +80,8 @@ func loadSite(source string, flags config.Flags) (*site.Site, error) {
 		return nil, err
 	}
 	const configurationFileLabel = "Configuration file:"
-	if site.ConfigFile != nil {
-		logger.path(configurationFileLabel, *site.ConfigFile)
+	if cf := site.Config().ConfigFile; cf != "" {
+		logger.path(configurationFileLabel, cf)
 	} else {
 		logger.label(configurationFileLabel, "none")
 	}

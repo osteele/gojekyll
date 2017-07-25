@@ -1,7 +1,6 @@
 package site
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -13,23 +12,11 @@ import (
 )
 
 // FromDirectory reads the configuration file, if it exists.
-func FromDirectory(source string, flags config.Flags) (*Site, error) {
+func FromDirectory(dir string, flags config.Flags) (*Site, error) {
 	s := New(flags)
-	configPath := filepath.Join(source, "_config.yml")
-	bytes, err := ioutil.ReadFile(configPath)
-	switch {
-	case err != nil && os.IsNotExist(err):
-		// ok
-	case err != nil:
+	if err := s.config.FromDirectory(dir); err != nil {
 		return nil, err
-	default:
-		err = config.Unmarshal(bytes, &s.config)
-		if err != nil {
-			return nil, utils.WrapPathError(err, configPath)
-		}
-		s.ConfigFile = &configPath
 	}
-	s.config.Source = source
 	s.config.ApplyFlags(s.flags)
 	return s, nil
 }

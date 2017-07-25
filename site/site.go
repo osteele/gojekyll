@@ -17,7 +17,6 @@ import (
 
 // Site is a Jekyll site.
 type Site struct {
-	ConfigFile  *string
 	Collections []*collection.Collection
 	Routes      map[string]pages.Document // URL path -> Document, only for output pages
 
