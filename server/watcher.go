@@ -11,7 +11,8 @@ import (
 // Create a goroutine that rebuilds the site when files change.
 func (s *Server) watchReload() error {
 	site := s.Site
-	// FIXME reload swaps in a new site but we're still watching the old one
+	// FIXME reload swaps in a new site but we're still watching the old one.
+	// This won't pick up changes to include, exclude, etc.
 	changes, err := site.WatchFiles()
 	if err != nil {
 		return err

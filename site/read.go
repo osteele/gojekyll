@@ -4,7 +4,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
@@ -58,32 +57,6 @@ func (s *Site) Read() error {
 		return err
 	}
 	return s.runHooks(func(p plugins.Plugin) error { return p.PostRead(s) })
-}
-
-// Reloaded returns a new site read the same source directory, configuration file, and load flags.
-func (s *Site) Reloaded(paths []string) (*Site, error) {
-	if s.requiresFullReload(paths) {
-		copy, err := FromDirectory(s.SourceDir(), s.flags)
-		if err != nil {
-			return nil, err
-		}
-		s = copy
-	}
-	return s, s.Read()
-}
-
-func (s *Site) requiresFullReload(paths []string) bool {
-	for _, path := range paths {
-		switch {
-		case path == "_config.yml":
-			return true
-		case strings.HasPrefix(path, s.config.DataDir):
-			return true
-		case strings.HasPrefix(path, s.config.LayoutsDir):
-			return true
-		}
-	}
-	return false
 }
 
 // readFiles scans the source directory and creates pages and collection.

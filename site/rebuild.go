@@ -3,6 +3,7 @@ package site
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -27,6 +28,19 @@ func (s *Site) WatchRebuild() (<-chan interface{}, error) {
 	return messages, nil
 }
 
+// Reloaded returns the same or a new site reading the same source directory, configuration file, and load flags.
+// build --incremental and site --incremental use this.
+func (s *Site) Reloaded(paths []string) (*Site, error) {
+	if s.requiresFullReload(paths) {
+		copy, err := FromDirectory(s.SourceDir(), s.flags)
+		if err != nil {
+			return nil, err
+		}
+		s = copy
+	}
+	return s, s.Read()
+}
+
 func (s *Site) processFilesEvent(fileset FilesEvent, messages chan<- interface{}) *Site {
 	// similar code to server.reload
 	messages <- fmt.Sprintf("Regenerating: %s...", fileset)
@@ -40,6 +54,20 @@ func (s *Site) processFilesEvent(fileset FilesEvent, messages chan<- interface{}
 	elapsed := time.Since(start)
 	messages <- fmt.Sprintf("wrote %d files in %.2fs.\n", count, elapsed.Seconds())
 	return r
+}
+
+func (s *Site) requiresFullReload(paths []string) bool {
+	for _, path := range paths {
+		switch {
+		case path == "_config.yml":
+			return true
+		case strings.HasPrefix(path, s.config.DataDir):
+			return true
+		case strings.HasPrefix(path, s.config.LayoutsDir):
+			return true
+		}
+	}
+	return false
 }
 
 // reloads and rebuilds the site; returns a copy and count
