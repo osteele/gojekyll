@@ -9,9 +9,10 @@ Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com) s
 | Stable                  |                                           | ✓      | ✓            |
 | Fast                    | ✓<br>([~20×Jekyll](./docs/benchmarks.md)) |        | ✓            |
 | Template language       | Liquid                                    | Liquid | Go templates |
+| SASS                    | ✓                                         | ✓      |              |
 | Jekyll compatibility    | [partial](#current-limitations)           | ✓      |              |
 | Plugins                 | [some](./docs/plugins.md)                 | yes    | ?            |
-| Runs on Windows         |                                           | ✓      | ✓            |
+| Windows support         |                                           | ✓      | ✓            |
 | Implementation language | Go                                        | Ruby   | Go           |
 
 <!-- TOC -->
@@ -104,7 +105,7 @@ These will probably not change:
 By design:
 
 - Plugins must be listed in the config file, not a Gemfile.
-- Liquid is run in strict mode; undefined filters are errors.a
+- Liquid is run in strict mode; undefined filters are errors.
 - The wrong type in a `_config.yml` is an error.
 - Server live reload is always on.
 - `serve --watch` (the default) reloads the `_config.yml` and data files too.
