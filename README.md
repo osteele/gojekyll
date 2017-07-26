@@ -169,17 +169,17 @@ Gojekyll uses these libraries:
 
 | Package                                                                        | Author(s)                                              | Usage                                  | License                                 |
 |--------------------------------------------------------------------------------|--------------------------------------------------------|----------------------------------------|-----------------------------------------|
-| [github.com/dchest/cssmin](https://github.com/dchest/cssmin)                   | Dmitry Chestnykh                                       | CSS minimization                       | BSD 3-clause "New" or "Revised" License |
 | [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim                                         | Live Reload                            | MIT License                             |
 | [github.com/kyokomi/emoji](https://github.com/kyokomi/emoji)                   | kyokomi                                                | `jemoji` plugin emulation              | MIT License                             |
 | [github.com/osteele/liquid](https://github.com/osteele/liquid)                 | yours truly                                            | Liquid processor                       | MIT License                             |
 | [github.com/pkg/browser](https://github.com/pkg/browser)                       | [pkg](https://github.com/pkg)                          | `serve --open-url` option              | BSD 2-clause "Simplified" License       |
+| [github.com/radovskyb/watcher](https://github.com/radovskyb/watcher)           | Benjamin Radovsky                                      | Polling file watch (`--force_polling`) | BSD 3-clause "New" or "Revised" License |
 | [github.com/russross/blackfriday](https://github.com/russross/blackfriday)     | Russ Ross                                              | Markdown processing                    | Simplified BSD License                  |
 | [github.com/sass/libsass](https://github.com/sass/libsass)                     | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler       | MIT License                             |
+| [github.com/tdewolff/minify](https://github.com/tdewolff/minify)               | Taco de Wolff                                          | CSS minimization                       | MIT License                             |
 | [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass)   | Drew Wells                                             | Go bindings for **libsass**            | ???                                     |
 | [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command-line arguments                 | MIT License                             |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                           | Apache License 2.0                      |
-| [github.com/radovskyb/watcher](https://github.com/radovskyb/watcher)           | Benjamin Radovsky                                      | Polling file watch (`--force_polling`) | BSD 3-clause "New" or "Revised" License |
 
 In addition, the following pieces of text were taken from Jekyll and its plugins.
 They are used under the terms of the MIT License.

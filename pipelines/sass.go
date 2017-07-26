@@ -10,9 +10,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/dchest/cssmin"
 	"github.com/osteele/gojekyll/cache"
 	"github.com/osteele/gojekyll/utils"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/css"
 
 	libsass "github.com/wellington/go-libsass"
 )
@@ -85,8 +86,13 @@ func (p *Pipeline) WriteSass(w io.Writer, b []byte) error {
 		if err = comp.Run(); err != nil {
 			return "", err
 		}
-		b = cssmin.Minify(buf.Bytes())
-		return string(b), nil
+		m := minify.New()
+		m.AddFunc("text/css", css.Minify)
+		min := bytes.NewBuffer(make([]byte, 0, buf.Len()))
+		if err := m.Minify("text/css", min, bytes.NewBuffer(buf.Bytes())); err != nil {
+			return "", err
+		}
+		return min.String(), nil
 	})
 	if err != nil {
 		return err
