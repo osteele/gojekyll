@@ -44,7 +44,7 @@ install: ## compile and install the executable
 	go install ${LDFLAGS} ${PACKAGE}
 
 lint: ## Run all the linters
-	gometalinter ./... --disable=gotype --disable=aligncheck
+	gometalinter ./... --tests --deadline=5m --disable=gotype --disable=aligncheck
 
 test: ## test the package
 	go test ./...
