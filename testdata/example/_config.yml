@@ -12,3 +12,7 @@ collections:
 plugins:
   - jekyll-avatar
   - jekyll-gist
+  - jekyll-github-metadata
+
+gist:
+  noscript: false

@@ -19,6 +19,7 @@ variable: page variable
 * [Markdown]({% link markdown.md %})
 * [Pages]({% link pages.md %})
 * [Plugins]({% link plugins.md %})
+  * [GitHub Metadata]({% link github-metadata.md %})
 * [Static file]({% link static.html %})
 * [Tags]({% link tags.md %})
 * [Variables]({% link variables.md %})
