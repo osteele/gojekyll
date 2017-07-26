@@ -57,6 +57,28 @@ func (s *Site) makeFileWatcher() (<-chan string, error) {
 	}
 }
 
+func (s *Site) makeEventWatcher() (<-chan string, error) {
+	var (
+		sourceDir = s.SourceDir()
+		filenames = make(chan string, 100)
+		w, err    = fsnotify.NewWatcher()
+	)
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		for {
+			select {
+			case event := <-w.Events:
+				filenames <- utils.MustRel(sourceDir, event.Name)
+			case err := <-w.Errors:
+				fmt.Fprintln(os.Stderr, "error:", err)
+			}
+		}
+	}()
+	return filenames, w.Add(sourceDir)
+}
+
 func (s *Site) makePollingWatcher() (<-chan string, error) {
 	var (
 		sourceDir = utils.MustAbs(s.SourceDir())
@@ -92,28 +114,6 @@ func (s *Site) makePollingWatcher() (<-chan string, error) {
 		}
 	}()
 	return filenames, nil
-}
-
-func (s *Site) makeEventWatcher() (<-chan string, error) {
-	var (
-		sourceDir = s.SourceDir()
-		filenames = make(chan string, 100)
-		w, err    = fsnotify.NewWatcher()
-	)
-	if err != nil {
-		return nil, err
-	}
-	go func() {
-		for {
-			select {
-			case event := <-w.Events:
-				filenames <- utils.MustRel(sourceDir, event.Name)
-			case err := <-w.Errors:
-				fmt.Fprintln(os.Stderr, "error:", err)
-			}
-		}
-	}()
-	return filenames, w.Add(sourceDir)
 }
 
 // debounce relays values from input to output, merging successive values so long as they keep changing

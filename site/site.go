@@ -205,7 +205,11 @@ func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 	return
 }
 
-// Exclude returns a boolean indicating that the site excludes a file or directory.
+// Exclude returns a boolean indicating that the site configuration excludes a file or directory.
+// This function just looks at the base name: it doesn't recognize that a file in an
+// excluded directory is therefore excluded. It also excludes files in _includes, _sass, and _{container}, etc.
+// which aren't copied to the destination but do affect the build.
+// Cf. Site.fileAffectsBuild.
 func (s *Site) Exclude(path string) bool {
 	base := filepath.Base(path)
 	switch {

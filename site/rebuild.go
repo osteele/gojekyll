@@ -3,6 +3,7 @@ package site
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -129,7 +130,7 @@ loop:
 		switch {
 		case s.config.IsConfigPath(path):
 			// break
-		case s.Exclude(path):
+		case !s.fileAffectsBuild(path):
 			continue loop
 		case seen[path]:
 			continue loop
@@ -138,6 +139,25 @@ loop:
 		seen[path] = true
 	}
 	return result
+}
+
+// Returns true if the file or a parent directory is excluded.
+// Cf. Site.Exclude.
+func (s *Site) fileAffectsBuild(rel string) bool {
+	for rel != "" {
+		switch {
+		case rel == ".":
+			return true
+		case utils.MatchList(s.config.Include, rel):
+			return true
+		case utils.MatchList(s.config.Exclude, rel):
+			return false
+		case strings.HasPrefix(rel, "."):
+			return false
+		}
+		rel = filepath.Dir(rel)
+	}
+	return true
 }
 
 // returns true if changes to the site-relative paths invalidate doc
