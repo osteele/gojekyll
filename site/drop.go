@@ -1,6 +1,7 @@
 package site
 
 import (
+	"log"
 	"time"
 
 	"github.com/osteele/gojekyll/pages"
@@ -17,7 +18,11 @@ func (s *Site) ToLiquid() interface{} {
 	s.Lock()
 	defer s.Unlock()
 	if len(s.drop) == 0 {
-		s.initializeDrop()
+		if err := s.initializeDrop(); err != nil {
+			if err != nil {
+				log.Fatalf("ModifySiteDrop failed: %s\n", err)
+			}
+		}
 	}
 	return s.drop
 }
@@ -28,7 +33,7 @@ func (s *Site) MarshalYAML() (interface{}, error) {
 	return s.ToLiquid(), nil
 }
 
-func (s *Site) initializeDrop() {
+func (s *Site) initializeDrop() error {
 	drop := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data":         s.data,
 		"documents":    s.docs,
@@ -48,12 +53,9 @@ func (s *Site) initializeDrop() {
 	drop["collections"] = collections
 	s.drop = drop
 	s.setPostVariables()
-	err := s.runHooks(func(h plugins.Plugin) error {
+	return s.runHooks(func(h plugins.Plugin) error {
 		return h.ModifySiteDrop(s, drop)
 	})
-	if err != nil {
-		panic(err)
-	}
 }
 
 func (s *Site) setPageContent() error {

@@ -102,6 +102,9 @@ func getCurrentRepo(c *config.Config) (nwo string, err error) {
 		return
 	}
 	m := regexp.MustCompile(`origin\s+https://github.com/(.+?)/(.+)\.git\b`).FindStringSubmatch(string(out))
+	if m == nil {
+		return "", fmt.Errorf("jekyll-github-metadata failed to find current repository")
+	}
 	owner, name := m[1], m[2]
 	nwo = fmt.Sprintf("%s/%s", owner, name)
 	return
