@@ -32,7 +32,7 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 	address := fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 	logger("Server address:", "http://"+address+"/")
 	if cfg.Watch {
-		if err := s.StartLiveReloader(); err != nil {
+		if err := s.startLiveReloader(); err != nil {
 			return err
 		}
 		if err := s.watchReload(); err != nil {
