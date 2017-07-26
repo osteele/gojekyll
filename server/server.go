@@ -84,7 +84,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 		eng := liquid.NewEngine()
 		excerpt, path := fileErrorContext(err)
 		out, e := eng.ParseAndRenderString(renderErrorTemplate, liquid.Bindings{
-			"error":   err,
+			"error":   fmt.Sprint(err),
 			"excerpt": excerpt,
 			"path":    path,
 			"watch":   site.Config().Watch,
@@ -133,7 +133,7 @@ const renderErrorTemplate = `<html><head>
 		code { font-size: xx-large; }
 		.line.error .gutter::before { content: "⚠️"; width: 0; float:left; }
 		.line.error, .line.error .lineno { color: red; }
-		.lineno { color: #6D7891; border-right: 1px solid #6D7891; padding-right: 10px; margin: 0 10px 0 55px; display: inline-block; text-align: right; }
+		.lineno { color: #6D7891; border-right: 1px solid #6D7891; padding-right: 10px; margin: 0 10px 0 5px; display: inline-block; text-align: right; width: 3em; }
 		footer { border-top: 1px solid #6D7891; margin-top: 5ex; padding-top: 5px; }
 	</style>
 </head>
