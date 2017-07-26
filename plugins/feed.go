@@ -3,9 +3,7 @@ package plugins
 import (
 	"fmt"
 	"html"
-	"io"
 
-	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
@@ -42,8 +40,8 @@ func (p *jekyllFeedPlugin) PostRead(s Site) error {
 			path = "/" + pp
 		}
 	}
-	d := feedDoc{pages.PageEmbed{Path: path}, s, p}
-	s.AddDocument(&d, true)
+	d := newTemplateDoc(s, path, feedTemplateSource)
+	s.AddDocument(d, true)
 	return nil
 }
 
@@ -53,26 +51,6 @@ func (p *jekyllFeedPlugin) feedMetaTag(ctx render.Context) (string, error) {
 	tag := fmt.Sprintf(`<link type="application/atom+xml" rel="alternate" href="%s/feed.xml" title="%s">`,
 		html.EscapeString(cfg.AbsoluteURL), html.EscapeString(name))
 	return tag, nil
-}
-
-type feedDoc struct {
-	pages.PageEmbed
-	site   Site
-	plugin *jekyllFeedPlugin
-}
-
-func (d *feedDoc) Content() []byte {
-	bindings := map[string]interface{}{"site": d.site}
-	b, err := d.plugin.tpl.Render(bindings)
-	if err != nil {
-		panic(err)
-	}
-	return b
-}
-
-func (d *feedDoc) Write(w io.Writer) error {
-	_, err := w.Write(d.Content())
-	return err
 }
 
 // Taken verbatim from https://github.com/jekyll/jekyll-feed/
