@@ -1,0 +1,17 @@
+title: Site Title
+description: Site description
+variable: site variable
+
+collections:
+  c1:
+    output: true
+    permalink: /:collection/:path
+  c2:
+    output: true
+
+plugins:
+  - jekyll-avatar
+  - jekyll-gist
+
+gist:
+  noscript: false
