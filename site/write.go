@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/osteele/gojekyll/pages"
@@ -17,12 +16,19 @@ import (
 // WriteFiles writes output files.
 // It attends to options.dry_run.
 func (s *Site) WriteFiles() (count int, err error) {
-	errs := make(chan error, runtime.NumCPU())
-	for _, p := range s.OutputDocs() {
+	errs := make(chan error)
+	// without this, large sites run out of file descriptors
+	sem := make(chan bool, 20)
+	for i, n := 0, cap(sem); i < n; i++ {
+		sem <- true
+	}
+	for _, d := range s.OutputDocs() {
 		count++
 		go func(d pages.Document) {
+			<-sem
 			errs <- s.WriteDoc(d)
-		}(p)
+			sem <- true
+		}(d)
 	}
 	var errList []error
 	for i := 0; i < count; i++ {
