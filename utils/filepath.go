@@ -15,8 +15,10 @@ func FilenameDate(s string) (time.Time, bool) {
 	return t, err == nil
 }
 
-// MatchList reports whether any glob pattern matches the path.
+// MatchList implement Jekyll include: and exclude: configurations.
+// It reports whether any glob pattern matches the path.
 // It panics with ErrBadPattern if any pattern is malformed.
+// To match Jekyll, a string "dir/" matches that begins with this prefix.
 func MatchList(patterns []string, name string) bool {
 	for _, p := range patterns {
 		match, err := filepath.Match(p, name)
@@ -24,6 +26,9 @@ func MatchList(patterns []string, name string) bool {
 			panic(err)
 		}
 		if match {
+			return true
+		}
+		if strings.HasSuffix(p, "/") && strings.HasPrefix(name, p) {
 			return true
 		}
 	}

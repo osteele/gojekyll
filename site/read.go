@@ -3,6 +3,7 @@ package site
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
@@ -56,7 +57,11 @@ func (s *Site) readFiles(dir, base string) error {
 		switch {
 		case info.IsDir() && s.Exclude(rel):
 			return filepath.SkipDir
-		case info.IsDir(), s.Exclude(rel):
+		case info.IsDir():
+			return nil
+		case s.Exclude(rel):
+			return nil
+		case strings.HasPrefix(rel, "_"):
 			return nil
 		}
 		defaultFrontmatter := s.config.GetFrontMatterDefaults("", rel)

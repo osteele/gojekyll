@@ -21,13 +21,13 @@ func readTestSiteDrop(t *testing.T) map[string]interface{} {
 
 func TestSite_ToLiquid(t *testing.T) {
 	drop := readTestSiteDrop(t)
-	docs, isTime := drop["documents"].([]pages.Document)
-	require.True(t, isTime, fmt.Sprintf("documents has type %T", drop["documents"]))
+	docs, ok := drop["documents"].([]pages.Document)
+	require.True(t, ok, fmt.Sprintf("documents has type %T", drop["documents"]))
 	require.Len(t, docs, 4)
 }
+
 func TestSite_ToLiquid_time(t *testing.T) {
 	drop := readTestSiteDrop(t)
-
 	_, ok := drop["time"].(time.Time)
 	require.True(t, ok)
 

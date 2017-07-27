@@ -3,7 +3,7 @@ package site
 import (
 	"fmt"
 	"path/filepath"
-	"strings"
+	"regexp"
 	"sync"
 
 	"github.com/osteele/gojekyll/collection"
@@ -205,23 +205,26 @@ func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 	return
 }
 
+var excludeFileRE = regexp.MustCompile(`^[#~]|^\..|~$`)
+
 // Exclude returns a boolean indicating that the site configuration excludes a file or directory.
-// This function just looks at the base name: it doesn't recognize that a file in an
-// excluded directory is therefore excluded. It also excludes files in _includes, _sass, and _{container}, etc.
-// which aren't copied to the destination but do affect the build.
-// Cf. Site.fileAffectsBuild.
-func (s *Site) Exclude(path string) bool {
-	base := filepath.Base(path)
-	switch {
-	case path == ".":
-		return false
-	case utils.MatchList(s.config.Include, base):
-		return false
-	case utils.MatchList(s.config.Exclude, base):
-		return true
-	case strings.HasPrefix(base, "."), strings.HasPrefix(base, "_"):
-		return true
-	default:
-		return false
+// It does not exclude top-level _underscore files and directories.
+func (s *Site) Exclude(siteRel string) bool {
+	for siteRel != "." {
+		dir, base := filepath.Dir(siteRel), filepath.Base(siteRel)
+		switch {
+		case utils.MatchList(s.config.Include, siteRel):
+			return false
+		case utils.MatchList(s.config.Exclude, siteRel):
+			return true
+		case dir != "." && base[0] == '_':
+			return true
+		default:
+			if excludeFileRE.MatchString(base) {
+				return true
+			}
+		}
+		siteRel = dir
 	}
+	return false
 }
