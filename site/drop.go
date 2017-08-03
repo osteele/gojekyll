@@ -12,18 +12,11 @@ import (
 
 // ToLiquid returns the site variable for template evaluation.
 func (s *Site) ToLiquid() interface{} {
-	if len(s.drop) > 0 {
-		return s.drop
-	}
-	s.Lock()
-	defer s.Unlock()
-	if len(s.drop) == 0 {
+	s.Do(func() {
 		if err := s.initializeDrop(); err != nil {
-			if err != nil {
-				log.Fatalf("ModifySiteDrop failed: %s\n", err)
-			}
+			log.Fatalf("ToLiquid failed: %s\n", err)
 		}
-	}
+	})
 	return s.drop
 }
 

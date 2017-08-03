@@ -28,7 +28,7 @@ type Site struct {
 	docs             []pages.Document // all documents, whether or not they are output
 	preparedToRender bool
 	drop             map[string]interface{} // cached drop value
-	sync.Mutex
+	sync.Once                               // for computing the drop
 }
 
 // SourceDir returns the site source directory.
