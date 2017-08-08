@@ -35,7 +35,7 @@ func (s *Site) WatchRebuild() (<-chan interface{}, error) {
 // Reloaded returns the same or a new site reading the same source directory, configuration file, and load flags.
 // build --incremental and site --incremental use this.
 func (s *Site) Reloaded(paths []string) (*Site, error) {
-	if s.requiresFullReload(paths) {
+	if s.RequiresFullReload(paths) {
 		copy, err := FromDirectory(s.SourceDir(), s.flags)
 		if err != nil {
 			return nil, err
@@ -63,7 +63,7 @@ func (s *Site) processFilesEvent(fileset FilesEvent, messages chan<- interface{}
 
 // reloads and rebuilds the site; returns a copy and count
 func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
-	if s.requiresFullReload(paths) {
+	if s.RequiresFullReload(paths) {
 		r, err = s.Reloaded(paths)
 		if err != nil {
 			return
@@ -89,7 +89,7 @@ func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
 	return
 }
 
-// Return true if a source file requires a full reload / rebuild.
+// RequiresFullReload returns true if a source file requires a full reload / rebuild.
 //
 // This is always true outside of incremental mode, since even a
 // static asset can cause pages to change if they reference its
@@ -97,20 +97,22 @@ func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
 //
 // This function works on relative paths. It does not work for theme
 // sources.
-func (s *Site) requiresFullReload(paths []string) bool {
+func (s *Site) RequiresFullReload(paths []string) bool {
 	for _, path := range paths {
 		switch {
 		case s.config.IsConfigPath(path):
 			return true
 		case s.Exclude(path):
-			return false
+			continue
 		case !s.config.Incremental:
-			return true
-		case strings.HasPrefix(path, s.config.SassDir()):
 			return true
 		case strings.HasPrefix(path, s.config.DataDir):
 			return true
+		case strings.HasPrefix(path, s.config.IncludesDir):
+			return true
 		case strings.HasPrefix(path, s.config.LayoutsDir):
+			return true
+		case strings.HasPrefix(path, s.config.SassDir()):
 			return true
 		}
 	}

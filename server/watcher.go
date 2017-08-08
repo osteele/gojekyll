@@ -28,6 +28,11 @@ func (s *Server) watchReload() error {
 					urls[url] = true
 				}
 			}
+			if site.RequiresFullReload(change.Paths) {
+				for u := range site.Routes {
+					urls[u] = true
+				}
+			}
 			// reload the site
 			s.reload(change)
 			// tell the pages their files (may have) changed
