@@ -16,10 +16,10 @@ Each of these results in a call to Pygment. This dominates the un-cached times.
 | Executable | Options                     | Time          |
 |------------|-----------------------------|---------------|
 | jekyll     |                             | 18.53s        |
-| gojekyll   | single-threaded; cold cache | 2.35s ± 0.11s |
-| gojekyll   | single-threaded; warm cache | 1.74s ± 0.09s |
-| gojekyll   | multi-threaded; cold cache  | 1.13s ± 0.07s |
-| gojekyll   | multi-threaded; warm cache  | 0.54s ± 0.05s |
+| gojekyll   | single-threaded; cold cache | 3.14s ± 0.23s |
+| gojekyll   | single-threaded; warm cache | 2.19s ± 0.03s |
+| gojekyll   | multi-threaded; cold cache  | 1.19s ± 0.03s |
+| gojekyll   | multi-threaded; warm cache  | 0.63s ± 0.03s |
 
 ## Software Design web site
 

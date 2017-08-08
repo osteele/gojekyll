@@ -60,6 +60,9 @@ func cleanCommand(site *site.Site) error {
 	return site.Clean()
 }
 
+// benchmarkCommand builds the site repeatedly until at least 10 seconds has elapsed,
+// and reports the trial times. Empirically, it the same mean but low variance as using
+// a separate benchmark runner that invokes a new gojekyll process each time.
 func benchmarkCommand() (err error) {
 	startTime := time.Now()
 	samples := []float64{}

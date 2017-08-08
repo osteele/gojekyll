@@ -28,6 +28,7 @@ func (s *Site) Clean() error {
 		case s.config.DryRun:
 			return nil
 		default:
+			// empirically, moving the os.Remove into a goroutine has no performance benefit
 			return os.Remove(filename)
 		}
 	}
