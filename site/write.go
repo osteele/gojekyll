@@ -43,10 +43,11 @@ func (s *Site) WriteFiles() (count int, err error) {
 // It attends to options.dry_run.
 func (s *Site) WriteDoc(d pages.Document) error {
 	from := d.SourcePath()
-	to := filepath.Join(s.DestDir(), d.Permalink())
-	if !d.Static() && filepath.Ext(to) == "" {
-		to = filepath.Join(to, "index.html")
+	rel := d.Permalink()
+	if !d.Static() && filepath.Ext(rel) == "" {
+		rel = filepath.Join(rel, "index.html")
 	}
+	to := filepath.Join(s.DestDir(), rel)
 	if s.config.Verbose {
 		fmt.Println("create", to, "from", d.SourcePath())
 	}
