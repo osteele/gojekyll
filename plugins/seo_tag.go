@@ -1,12 +1,15 @@
 package plugins
 
 import (
+	"bytes"
 	"fmt"
-	"regexp"
+	"text/template"
 
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
+	"github.com/tdewolff/minify"
+	"github.com/tdewolff/minify/html"
 )
 
 type jekyllSEOTagPlugin struct {
@@ -34,12 +37,23 @@ func (p *jekyllSEOTagPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	return nil
 }
 
+func (p *jekyllSEOTagPlugin) seoTag(ctx render.Context) (string, error) {
+	buf := new(bytes.Buffer)
+	e := seoTagTemplate.Execute(buf, seoTag{p.tpl, ctx})
+	return buf.String(), e
+}
+
+type seoTag struct {
+	tpl *liquid.Template
+	ctx render.Context
+}
+
 var seoSiteFields = []string{"url", "twitter", "facebook", "logo", "social", "google_site_verification", "lang"}
 var seoPageOrSiteFields = []string{"author", "description", "image", "author", "lang"}
-var seoTagMultipleLinesPattern = regexp.MustCompile(`( *\n)+`)
 
-func (p *jekyllSEOTagPlugin) seoTag(ctx render.Context) (string, error) {
+func (p seoTag) TagBody() (string, error) {
 	var (
+		ctx          = p.ctx
 		site         = liquid.FromDrop(ctx.Get("site")).(map[string]interface{})
 		page         = liquid.FromDrop(ctx.Get("page")).(map[string]interface{})
 		pageTitle    = page["title"]
@@ -80,7 +94,13 @@ func (p *jekyllSEOTagPlugin) seoTag(ctx render.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(seoTagMultipleLinesPattern.ReplaceAll(b, []byte{'\n'})), nil
+	m := minify.New()
+	m.AddFunc("text/html", html.Minify)
+	min := bytes.NewBuffer(make([]byte, 0, len(b)))
+	if err := m.Minify("text/html", min, bytes.NewBuffer(b)); err != nil {
+		return "", err
+	}
+	return min.String(), nil
 }
 
 func copyFields(to, from map[string]interface{}, fields []string) {
@@ -112,10 +132,15 @@ func makeJSONLD(seoTag map[string]interface{}) interface{} {
 	return jsonLD
 }
 
+// This is a separate template so it isn't minimized away.
+var seoTagTemplate = template.Must(template.New("SEO tag").Parse(
+	`<!-- Begin Jekyll SEO tag -->
+{{.TagBody}}
+<!-- End Jekyll SEO tag -->`))
+
 // Taken verbatim from https://github.com/jekyll/jekyll-seo-tag/
-const seoTagTemplateSource = `<!-- Begin emulated Jekyll SEO tag -->
-<!-- Adapted from github.com/jekyll/jekyll-seo-tag. Used according to the MIT License. -->
-{% if seo_tag.title? %}
+// Adapted from github.com/jekyll/jekyll-seo-tag. Used according to the MIT License.
+const seoTagTemplateSource = `{% if seo_tag.title? %}
   <title>{{ seo_tag.title }}</title>
 {% endif %}
 
@@ -215,6 +240,4 @@ const seoTagTemplateSource = `<!-- Begin emulated Jekyll SEO tag -->
 
 <script type="application/ld+json">
   {{ seo_tag.json_ld | jsonify }}
-</script>
-
-<!-- End emulated Jekyll SEO tag -->`
+</script>`
