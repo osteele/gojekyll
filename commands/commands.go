@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v1"
 
 	"github.com/montanaflynn/stats"
 	"github.com/osteele/gojekyll/pages"
@@ -159,7 +159,15 @@ func variablesCommand(site *site.Site) (err error) {
 	default:
 		data = site
 	}
-	b, err := yaml.Marshal(liquid.FromDrop(data))
+	data = liquid.FromDrop(data)
+	if m, ok := data.(map[string]interface{}); ok {
+		for k, v := range m {
+			if b, ok := v.([]byte); ok {
+				m[k] = string(b)
+			}
+		}
+	}
+	b, err := yaml.Marshal(data)
 	if err != nil {
 		return err
 	}
