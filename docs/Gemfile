@@ -1,3 +1,1 @@
-gem 'jekyll-theme-minimal'
-gem 'jekyll-github-metadata'
-gem 'jekyll-optional-front-matter'
+gem 'github-pages', group: :jekyll_plugins
