@@ -51,9 +51,10 @@ func (s *Site) initializeDrop() error {
 	})
 }
 
-func (s *Site) setPageContent() error {
+// Render renders the site's pages.
+func (s *Site) Render() error {
 	for _, c := range s.Collections {
-		if err := c.SetPageContent(); err != nil {
+		if err := c.Render(); err != nil {
 			return err
 		}
 	}

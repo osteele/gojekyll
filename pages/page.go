@@ -17,9 +17,9 @@ import (
 // Page is a document with frontmatter.
 type Page interface {
 	Document
-	// Content asks a page to compute its content.
+	// Render asks a page to compute its content.
 	// This has the side effect of causing the content to subsequently appear in the drop.
-	Content() (string, error)
+	Render() error
 	SetContent(string)
 	FrontMatter() map[string]interface{}
 	// PostDate returns the date computed from the filename or frontmatter.
@@ -162,10 +162,13 @@ func (f *file) PostDate() time.Time {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *page) Write(w io.Writer) error {
-	content, err := p.Content()
+	err := p.Render()
 	if err != nil {
 		return err
 	}
+	p.RLock()
+	defer p.RUnlock()
+	content := p.content
 	layout, ok := p.frontMatter["layout"].(string)
 	if ok && layout != "" {
 		rp := p.site.RenderingPipeline()
@@ -181,7 +184,7 @@ func (p *page) Write(w io.Writer) error {
 }
 
 // Content computes the page content.
-func (p *page) Content() (string, error) {
+func (p *page) Render() error {
 	p.contentOnce.Do(func() {
 		cn, ex, err := p.computeContent()
 		p.Lock()
@@ -191,7 +194,7 @@ func (p *page) Content() (string, error) {
 		p.excerpt = ex
 		p.rendered = true
 	})
-	return p.content, p.contentError
+	return p.contentError
 }
 
 func (p *page) Excerpt() interface{} {

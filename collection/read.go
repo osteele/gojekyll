@@ -14,7 +14,7 @@ const draftsPath = "_drafts"
 
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
 func (c *Collection) ReadPages() error {
-	if c.IsPostsCollection() && c.config.Drafts {
+	if c.IsPostsCollection() && c.cfg.Drafts {
 		if err := c.scanDirectory(draftsPath); err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func (c *Collection) ReadPages() error {
 // This function is distinct from ReadPages so that the posts collection can call it twice.
 func (c *Collection) scanDirectory(dirname string) error {
 	var (
-		sitePath = c.config.Source
+		sitePath = c.cfg.Source
 		dir      = filepath.Join(sitePath, dirname)
 	)
 	walkFn := func(filename string, info os.FileInfo, err error) error {
@@ -68,19 +68,19 @@ func (c *Collection) scanDirectory(dirname string) error {
 }
 
 func (c *Collection) readPost(abs string, rel string) error {
-	siteRel := utils.MustRel(c.config.Source, abs)
+	siteRel := utils.MustRel(c.cfg.Source, abs)
 	strategy := c.strategy()
 	switch {
 	case !strategy.collectible(rel):
 		return nil
-	case strategy.future(rel) && !c.config.Future:
+	case strategy.future(rel) && !c.cfg.Future:
 		return nil
 	}
 	pageDefaults := map[string]interface{}{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
 	}
-	fm := templates.MergeVariableMaps(pageDefaults, c.config.GetFrontMatterDefaults(c.Name, siteRel))
+	fm := templates.MergeVariableMaps(pageDefaults, c.cfg.GetFrontMatterDefaults(c.Name, siteRel))
 	strategy.addDate(rel, fm)
 	f, err := pages.NewFile(c.site, abs, filepath.ToSlash(rel), fm)
 	switch {
@@ -88,7 +88,7 @@ func (c *Collection) readPost(abs string, rel string) error {
 		return err
 	case f.Static():
 		return nil
-	case f.Published() || c.config.Unpublished:
+	case f.Published() || c.cfg.Unpublished:
 		p := f.(pages.Page) // f.Static() guarantees this
 		c.pages = append(c.pages, p)
 	}

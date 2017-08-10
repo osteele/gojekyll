@@ -30,7 +30,6 @@ func TestSite_ToLiquid_time(t *testing.T) {
 	drop := readTestSiteDrop(t)
 	_, ok := drop["time"].(time.Time)
 	require.True(t, ok)
-
 	// TODO read time from config if present
 }
 

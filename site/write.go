@@ -120,7 +120,7 @@ func (s *Site) prepareRendering() error {
 		if err := s.initializeRenderingPipeline(); err != nil {
 			return err
 		}
-		if err := s.setPageContent(); err != nil {
+		if err := s.Render(); err != nil {
 			return err
 		}
 		s.preparedToRender = true

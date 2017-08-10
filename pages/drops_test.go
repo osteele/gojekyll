@@ -28,13 +28,16 @@ func TestPage_ToLiquid_excerpt(t *testing.T) {
 	p, err := NewFile(site, "testdata/excerpt.md", "excerpt.md", map[string]interface{}{})
 	require.NoError(t, err)
 
-	drop := p.(liquid.Drop).ToLiquid()
-	excerpt := drop.(map[string]interface{})["excerpt"]
-	require.Equal(t, "First line.", fmt.Sprintf("%s", excerpt))
+	t.Run("before render", func(t *testing.T) {
+		drop := p.(liquid.Drop).ToLiquid()
+		excerpt := drop.(map[string]interface{})["excerpt"]
+		require.Equal(t, "First line.", fmt.Sprintf("%s", excerpt))
+	})
 
-	_, err = p.(Page).Content()
-	require.NoError(t, err)
-	drop = p.(liquid.Drop).ToLiquid()
-	excerpt = drop.(map[string]interface{})["excerpt"]
-	require.Equal(t, "rendered: First line.", fmt.Sprintf("%s", excerpt))
+	t.Run("after render", func(t *testing.T) {
+		require.NoError(t, p.(Page).Render())
+		drop := p.(liquid.Drop).ToLiquid()
+		excerpt := drop.(map[string]interface{})["excerpt"]
+		require.Equal(t, "rendered: First line.", fmt.Sprintf("%s", excerpt))
+	})
 }

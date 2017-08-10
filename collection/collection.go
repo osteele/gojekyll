@@ -14,9 +14,9 @@ type Collection struct {
 	Name     string
 	Metadata map[string]interface{}
 
-	config *config.Config
-	pages  []pages.Page
-	site   Site
+	cfg   *config.Config
+	pages []pages.Page
+	site  Site
 }
 
 // Site is the interface a site provides to collections it contains.
@@ -33,14 +33,14 @@ func New(s Site, name string, metadata map[string]interface{}) *Collection {
 	return &Collection{
 		Name:     name,
 		Metadata: metadata,
-		config:   s.Config(),
+		cfg:      s.Config(),
 		site:     s,
 	}
 }
 
 // AbsDir returns the absolute path to the collection directory.
 func (c *Collection) AbsDir() string {
-	return filepath.Join(c.config.SourceDir(), c.PathPrefix())
+	return filepath.Join(c.cfg.SourceDir(), c.PathPrefix())
 }
 
 // PathPrefix returns the collection's directory prefix, e.g. "_posts/"
@@ -52,15 +52,15 @@ func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
 // Output returns a bool indicating whether files in this collection should be written.
 func (c *Collection) Output() bool { return templates.VariableMap(c.Metadata).Bool("output", false) }
 
-// Pages is a list of pages.
+// Pages is a list of pages. Pages in the Post collection are ordered by date.
 func (c *Collection) Pages() []pages.Page {
 	return c.pages
 }
 
-// SetPageContent sets up the collection's pages' "content".
-func (c *Collection) SetPageContent() error {
+// Render renders the collection's pages.
+func (c *Collection) Render() error {
 	for _, p := range c.Pages() {
-		_, err := p.Content()
+		err := p.Render()
 		if err != nil {
 			return err
 		}
