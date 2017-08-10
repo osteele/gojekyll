@@ -24,6 +24,17 @@ func (c *Collection) ReadPages() error {
 	}
 	if c.IsPostsCollection() {
 		sort.Sort(pagesByDate{c.pages})
+		var prev pages.Page
+		for _, p := range c.pages {
+			p.FrontMatter()["previous"] = prev
+			if prev != nil {
+				prev.FrontMatter()["next"] = p
+			}
+			prev = p
+		}
+		if prev != nil {
+			prev.FrontMatter()["next"] = nil
+		}
 	}
 	return nil
 }

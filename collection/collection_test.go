@@ -40,7 +40,7 @@ func TestPermalinkPattern(t *testing.T) {
 	require.Contains(t, c3.PermalinkPattern(), "/:year/:month/:day/:title")
 }
 
-func TestReadPosts(t *testing.T) {
+func Test_ReadPages(t *testing.T) {
 	site := siteFake{config.FromString("source: testdata")}
 	c := New(site, "posts", map[string]interface{}{})
 	require.NoError(t, c.ReadPages())
@@ -55,4 +55,10 @@ func TestReadPosts(t *testing.T) {
 	c = New(site, "posts", map[string]interface{}{})
 	require.NoError(t, c.ReadPages())
 	require.Len(t, c.Pages(), 2)
+
+	pages := c.Pages()
+	require.Equal(t, nil, pages[0].FrontMatter()["previous"])
+	require.Equal(t, pages[1], pages[0].FrontMatter()["next"])
+	require.Equal(t, pages[0], pages[1].FrontMatter()["previous"])
+	require.Equal(t, nil, pages[1].FrontMatter()["next"])
 }
