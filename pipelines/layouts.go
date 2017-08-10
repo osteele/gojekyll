@@ -14,14 +14,14 @@ import (
 )
 
 // ApplyLayout applies the named layout to the data.
-func (p *Pipeline) ApplyLayout(name string, data []byte, e map[string]interface{}) ([]byte, error) {
+func (p *Pipeline) ApplyLayout(name string, data []byte, vars liquid.Bindings) ([]byte, error) {
 	for name != "" {
 		var lfm map[string]interface{}
 		tpl, err := p.FindLayout(name, &lfm)
 		if err != nil {
 			return nil, err
 		}
-		b := utils.MergeStringMaps(e, map[string]interface{}{
+		b := utils.MergeStringMaps(vars, map[string]interface{}{
 			"content": string(data),
 			"layout":  lfm,
 		})
@@ -77,7 +77,7 @@ loop:
 
 // LayoutsDir returns the path to the layouts directory.
 func (p *Pipeline) layoutDirs() []string {
-	dirs := []string{filepath.Join(p.SourceDir(), p.cfg.LayoutsDir)}
+	dirs := []string{filepath.Join(p.sourceDir(), p.cfg.LayoutsDir)}
 	if p.ThemeDir != "" {
 		dirs = append(dirs, filepath.Join(p.ThemeDir, "_layouts"))
 	}

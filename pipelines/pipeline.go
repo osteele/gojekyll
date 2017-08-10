@@ -13,9 +13,10 @@ import (
 
 // PipelineInterface applies transformations to a document.
 type PipelineInterface interface {
-	ApplyLayout(string, []byte, map[string]interface{}) ([]byte, error)
+	ApplyLayout(string, []byte, liquid.Bindings) ([]byte, error)
 	OutputExt(pathname string) string
-	Render(io.Writer, []byte, string, int, map[string]interface{}) error
+	Render(io.Writer, []byte, liquid.Bindings, string, int) error
+	RenderTemplate([]byte, liquid.Bindings, string, int) ([]byte, error)
 }
 
 // Pipeline applies a rendering transformation to a file.
@@ -43,9 +44,9 @@ func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 	return &p, nil
 }
 
-// SourceDir returns the site source directory. Seeing how far we can bend
+// sourceDir returns the site source directory. Seeing how far we can bend
 // the Law of Demeter.
-func (p *Pipeline) SourceDir() string {
+func (p *Pipeline) sourceDir() string {
 	return p.cfg.Source
 }
 
@@ -59,28 +60,29 @@ func (p *Pipeline) OutputExt(pathname string) string {
 	return p.cfg.OutputExt(pathname)
 }
 
-// Render returns nil iff it wrote to the writer
-func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e map[string]interface{}) error {
+// Render sends content through SASS and/or Liquid -> Markdown
+func (p *Pipeline) Render(w io.Writer, src []byte, vars liquid.Bindings, filename string, lineNo int) error {
 	if p.cfg.IsSASSPath(filename) {
-		return p.WriteSass(w, b)
+		return p.WriteSass(w, src)
 	}
-	b, err := p.renderTemplate(b, e, filename, lineNo)
+	src, err := p.RenderTemplate(src, vars, filename, lineNo)
 	if err != nil {
 		return err
 	}
 	if p.cfg.IsMarkdown(filename) {
-		b = markdownRenderer(b)
+		src = markdownRenderer(src)
 	}
-	_, err = w.Write(b)
+	_, err = w.Write(src)
 	return err
 }
 
-func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename string, lineNo int) ([]byte, error) {
+// RenderTemplate renders a Liquid template
+func (p *Pipeline) RenderTemplate(src []byte, vars liquid.Bindings, filename string, lineNo int) ([]byte, error) {
 	tpl, err := p.liquidEngine.ParseTemplateLocation(src, filename, lineNo)
 	if err != nil {
 		return nil, utils.WrapPathError(err, filename)
 	}
-	out, err := tpl.Render(b)
+	out, err := tpl.Render(vars)
 	if err != nil {
 		return nil, utils.WrapPathError(err, filename)
 	}

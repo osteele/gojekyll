@@ -36,7 +36,7 @@ func (p *Pipeline) CopySassFileIncludes() error {
 			return err
 		}
 	}
-	if err := copySassFiles(filepath.Join(p.SourceDir(), "_sass"), p.sassTempDir, h); err != nil {
+	if err := copySassFiles(filepath.Join(p.sourceDir(), "_sass"), p.sassTempDir, h); err != nil {
 		return err
 	}
 	p.sassHash = fmt.Sprintf("%x", h.Sum(nil))

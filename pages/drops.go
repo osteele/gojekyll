@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
@@ -44,30 +43,26 @@ func (p *page) ToLiquid() interface{} {
 		ext     = filepath.Ext(relpath)
 		root    = utils.TrimExt(p.relpath)
 		base    = filepath.Base(root)
-		content = p.maybeContent()
 	)
 	data := map[string]interface{}{
-		"content": content,
-		"excerpt": p.excerpt(),
+		"content": p.maybeContent(),
+		"excerpt": p.Excerpt(),
 		"path":    relpath,
 		"url":     p.Permalink(),
-		// TODO output
+		// "output": // TODO; includes layouts
 
 		// not documented, but present in both collection and non-collection pages
 		"permalink": p.Permalink(),
 
 		// TODO only in non-collection pages:
-		"dir":  "/" + path.Dir(relpath),
+		"dir":  fmt.Sprintf("%c%s", filepath.Separator, path.Dir(relpath)),
 		"name": path.Base(relpath),
-		// TODO next previous
 
-		// TODO Documented as present in all pages, but de facto only defined for collection pages
-		"id": base,
-		// "title": base, // TODO capitalize
-		// TODO excerpt category? categories tags
-		// TODO slug
+		// TODO documented as present in all pages, but de facto only defined for collection pages
+		"id":         base,
 		"categories": p.Categories(),
 		"tags":       p.Tags(),
+		// "title": base,
 
 		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
 		"relative_path": filepath.ToSlash(p.site.RelativePath(p.filename)),
@@ -89,22 +84,13 @@ func (p *page) ToLiquid() interface{} {
 	return data
 }
 
-func (p *page) maybeContent() string {
+func (p *page) maybeContent() interface{} {
 	p.RLock()
 	defer p.RUnlock()
-	return p.content
-}
-
-func (p *page) excerpt() string {
-	if ei, ok := p.frontMatter["excerpt"]; ok {
-		return fmt.Sprint(ei)
+	if p.rendered {
+		return p.content
 	}
-	content := p.maybeContent()
-	pos := strings.Index(content, p.site.Config().ExcerptSeparator)
-	if pos >= 0 {
-		return content[:pos]
-	}
-	return content
+	return p.raw
 }
 
 // MarshalYAML is part of the yaml.Marshaler interface

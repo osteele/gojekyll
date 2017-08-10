@@ -64,6 +64,8 @@ type page struct {
 	content      string
 	contentError error
 	contentOnce  sync.Once
+	excerpt      interface{} // []byte or string, depending on rendering stage
+	rendered     bool
 }
 
 // Static is in the File interface.
@@ -96,8 +98,13 @@ func (p *page) Reload() error {
 	}
 	p.firstLine = lineNo
 	p.raw = raw
-	p.contentOnce = sync.Once{}
+	p.reset()
 	return nil
+}
+
+func (p *page) reset() {
+	p.contentOnce = sync.Once{}
+	p.rendered = false
 }
 
 func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
@@ -176,23 +183,53 @@ func (p *page) Write(w io.Writer) error {
 // Content computes the page content.
 func (p *page) Content() (string, error) {
 	p.contentOnce.Do(func() {
-		s, err := p.computeContent()
+		cn, ex, err := p.computeContent()
 		p.Lock()
 		defer p.Unlock()
-		p.content = s
+		p.content = cn
 		p.contentError = err
+		p.excerpt = ex
+		p.rendered = true
 	})
 	return p.content, p.contentError
 }
 
-func (p *page) computeContent() (string, error) {
-	pipe := p.site.RenderingPipeline()
-	buf := new(bytes.Buffer)
-	err := pipe.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext())
-	if err != nil {
-		return "", err
+func (p *page) Excerpt() interface{} {
+	p.RLock()
+	defer p.RUnlock()
+	if exc, ok := p.frontMatter["excerpt"]; ok {
+		return exc
 	}
-	return buf.String(), nil
+	if p.rendered {
+		return p.excerpt
+	}
+	return p.extractExcerpt()
+}
+
+func (p *page) computeContent() (cn string, ex interface{}, err error) {
+	pl := p.site.RenderingPipeline()
+	buf := new(bytes.Buffer)
+	err = pl.Render(buf, p.raw, p.TemplateContext(), p.filename, p.firstLine)
+	if err != nil {
+		return
+	}
+	cn = buf.String()
+	ex = cn
+	exb := p.extractExcerpt()
+	if !bytes.Equal(exb, p.raw) {
+		buf.Reset()
+		ex, err = pl.RenderTemplate(exb, p.TemplateContext(), p.filename, p.firstLine)
+	}
+	return
+}
+
+func (p *page) extractExcerpt() []byte {
+	raw := p.raw
+	pos := bytes.Index(raw, []byte(p.site.Config().ExcerptSeparator))
+	if pos >= 0 {
+		return raw[:pos]
+	}
+	return raw
 }
 
 func (p *page) SetContent(content string) {

@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -22,15 +23,18 @@ func TestStaticFile_ToLiquid(t *testing.T) {
 	require.IsType(t, time.Now(), drop["modified_time"])
 }
 
-func TestPage_ToLiquid(t *testing.T) {
+func TestPage_ToLiquid_excerpt(t *testing.T) {
 	site := siteFake{t, config.Default()}
 	p, err := NewFile(site, "testdata/excerpt.md", "excerpt.md", map[string]interface{}{})
 	require.NoError(t, err)
-	_, err = p.(Page).Content()
-	require.NoError(t, err)
+
 	drop := p.(liquid.Drop).ToLiquid()
 	excerpt := drop.(map[string]interface{})["excerpt"]
-	ex, ok := excerpt.(string)
-	require.True(t, ok)
-	require.Equal(t, "First line.", ex)
+	require.Equal(t, "First line.", fmt.Sprintf("%s", excerpt))
+
+	_, err = p.(Page).Content()
+	require.NoError(t, err)
+	drop = p.(liquid.Drop).ToLiquid()
+	excerpt = drop.(map[string]interface{})["excerpt"]
+	require.Equal(t, "rendered: First line.", fmt.Sprintf("%s", excerpt))
 }
