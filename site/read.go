@@ -70,11 +70,14 @@ func (s *Site) readFiles(dir, base string) error {
 			return utils.WrapPathError(err, filename)
 		}
 		s.AddDocument(d, true)
+		if p, ok := d.(pages.Page); ok {
+			s.nonCollectionPages = append(s.nonCollectionPages, p)
+		}
 		return nil
 	})
 }
 
-// AddDocument adds a document to the site structures.
+// AddDocument adds a document to the site's fields.
 // It ignores unpublished documents unless config.Unpublished is true.
 func (s *Site) AddDocument(d pages.Document, output bool) {
 	if d.Published() || s.config.Unpublished {

@@ -25,7 +25,8 @@ type Site struct {
 	flags    config.Flags
 	themeDir string
 
-	docs []pages.Document // all documents, whether or not they are output
+	docs               []pages.Document // all documents, whether or not they are output
+	nonCollectionPages []pages.Page
 
 	pipeline   *pipelines.Pipeline
 	renderOnce sync.Once

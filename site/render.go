@@ -16,6 +16,11 @@ func (s *Site) Render() error {
 			return err
 		}
 	}
+	for _, c := range s.nonCollectionPages {
+		if err := c.Render(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
