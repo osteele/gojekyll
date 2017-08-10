@@ -24,8 +24,8 @@ install:
   - export PATH=$HOME/.local/bin:$PATH
 
 script:
-  - $HOME/gopath/bin/goveralls -service=travis-ci
-  - make lint
+  - test -n "$TRAVIS_TAG" || $HOME/gopath/bin/goveralls -service=travis-ci
+  - test -n "$TRAVIS_TAG" || make lint
 
 after_success:
   # - test -n "$TRAVIS_TAG" && curl -sL https://git.io/goreleaser | bash
