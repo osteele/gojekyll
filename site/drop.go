@@ -12,7 +12,7 @@ import (
 
 // ToLiquid returns the site variable for template evaluation.
 func (s *Site) ToLiquid() interface{} {
-	s.Do(func() {
+	s.dropOnce.Do(func() {
 		if err := s.initializeDrop(); err != nil {
 			log.Fatalf("ToLiquid failed: %s\n", err)
 		}
@@ -49,16 +49,6 @@ func (s *Site) initializeDrop() error {
 	return s.runHooks(func(h plugins.Plugin) error {
 		return h.ModifySiteDrop(s, drop)
 	})
-}
-
-// Render renders the site's pages.
-func (s *Site) Render() error {
-	for _, c := range s.Collections {
-		if err := c.Render(); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 // The following functions are only used in the drop, therefore they're

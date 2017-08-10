@@ -20,15 +20,18 @@ type Site struct {
 	Collections []*collection.Collection
 	Routes      map[string]pages.Document // URL path -> Document, only for output pages
 
-	config           config.Config
-	data             map[string]interface{}
-	flags            config.Flags
-	pipeline         *pipelines.Pipeline
-	themeDir         string
-	docs             []pages.Document // all documents, whether or not they are output
-	preparedToRender bool
-	drop             map[string]interface{} // cached drop value
-	sync.Once                               // for computing the drop
+	config   config.Config
+	data     map[string]interface{}
+	flags    config.Flags
+	themeDir string
+
+	docs []pages.Document // all documents, whether or not they are output
+
+	pipeline   *pipelines.Pipeline
+	renderOnce sync.Once
+
+	drop     map[string]interface{} // cached drop value
+	dropOnce sync.Once
 }
 
 // SourceDir returns the site source directory.

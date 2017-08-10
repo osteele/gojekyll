@@ -22,7 +22,7 @@ type Plugin interface {
 	ConfigureTemplateEngine(*liquid.Engine) error
 	ModifySiteDrop(Site, map[string]interface{}) error
 	PostRead(Site) error
-	PostRender([]byte) []byte
+	PostRender([]byte) ([]byte, error)
 }
 
 // Site is the site interface that is available to a plugin.
@@ -61,7 +61,7 @@ func (p plugin) Initialize(Site) error                             { return nil 
 func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error      { return nil }
 func (p plugin) ModifySiteDrop(Site, map[string]interface{}) error { return nil }
 func (p plugin) PostRead(Site) error                               { return nil }
-func (p plugin) PostRender(b []byte) []byte                        { return b }
+func (p plugin) PostRender(b []byte) ([]byte, error)               { return b, nil }
 
 var directory = map[string]Plugin{}
 
@@ -90,11 +90,10 @@ func init() {
 // jemojiPlugin emulates the jekyll-jemoji plugin.
 type jemojiPlugin struct{ plugin }
 
-func (p jemojiPlugin) PostRender(b []byte) []byte {
+func (p jemojiPlugin) PostRender(b []byte) ([]byte, error) {
 	return utils.ApplyToHTMLText(b, func(s string) string {
-		s = emoji.Sprint(s)
-		return s
-	})
+		return emoji.Sprint(s)
+	}), nil
 }
 
 // jekyllMentionsPlugin emulates the jekyll-mentions plugin.
@@ -102,10 +101,10 @@ type jekyllMentionsPlugin struct{ plugin }
 
 var mentionPattern = regexp.MustCompile(`@(\w+)`)
 
-func (p jekyllMentionsPlugin) PostRender(b []byte) []byte {
+func (p jekyllMentionsPlugin) PostRender(b []byte) ([]byte, error) {
 	return utils.ApplyToHTMLText(b, func(s string) string {
 		return mentionPattern.ReplaceAllString(s, `<a href="https://github.com/$1" class="user-mention">@$1</a>`)
-	})
+	}), nil
 }
 
 // jekyllOptionalFrontMatterPlugin emulates the jekyll-optional-front-matter plugin.

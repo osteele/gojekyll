@@ -44,7 +44,7 @@ func (s *Site) Build() (int, error) {
 	if err := s.setTimeZone(); err != nil {
 		return 0, err
 	}
-	if err := s.prepareRendering(); err != nil {
+	if err := s.ensureRendered(); err != nil {
 		return 0, err
 	}
 	if err := s.Clean(); err != nil {

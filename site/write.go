@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/plugins"
@@ -14,7 +13,6 @@ import (
 )
 
 // WriteFiles writes output files.
-// It attends to options.dry_run.
 func (s *Site) WriteFiles() (count int, err error) {
 	errs := make(chan error)
 	// without this, large sites run out of file descriptors
@@ -40,7 +38,6 @@ func (s *Site) WriteFiles() (count int, err error) {
 }
 
 // WriteDoc writes a document to the destination directory.
-// It attends to options.dry_run.
 func (s *Site) WriteDoc(d pages.Document) error {
 	from := d.SourcePath()
 	rel := d.Permalink()
@@ -69,7 +66,7 @@ func (s *Site) WriteDoc(d pages.Document) error {
 	}
 }
 
-// WriteDocument writes the document to a writer.
+// WriteDocument writes the rendered document.
 func (s *Site) WriteDocument(w io.Writer, d pages.Document) error {
 	switch p := d.(type) {
 	case pages.Page:
@@ -79,9 +76,9 @@ func (s *Site) WriteDocument(w io.Writer, d pages.Document) error {
 	}
 }
 
-// WritePage writes the page to a writer.
+// WritePage writes the rendered page.
 func (s *Site) WritePage(w io.Writer, p pages.Page) error {
-	if err := s.prepareRendering(); err != nil {
+	if err := s.ensureRendered(); err != nil {
 		return err
 	}
 	buf := new(bytes.Buffer)
@@ -89,41 +86,13 @@ func (s *Site) WritePage(w io.Writer, p pages.Page) error {
 		return err
 	}
 	b := buf.Bytes()
-	err := s.runHooks(func(p plugins.Plugin) error {
-		b = p.PostRender(b)
-		return nil
+	err := s.runHooks(func(p plugins.Plugin) (err error) {
+		b, err = p.PostRender(b)
+		return
 	})
 	if err != nil {
 		return err
 	}
 	_, err = w.Write(b)
 	return err
-}
-
-func combineErrors(errs []error) error {
-	switch len(errs) {
-	case 0:
-		return nil
-	case 1:
-		return errs[0]
-	default:
-		messages := make([]string, len(errs))
-		for i, e := range errs {
-			messages[i] = e.Error()
-		}
-		return fmt.Errorf(strings.Join(messages, "\n"))
-	}
-}
-
-func (s *Site) prepareRendering() error {
-	if !s.preparedToRender {
-		if err := s.initializeRenderingPipeline(); err != nil {
-			return err
-		}
-		if err := s.Render(); err != nil {
-			return err
-		}
-		s.preparedToRender = true
-	}
-	return nil
 }
