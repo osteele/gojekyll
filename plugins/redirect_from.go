@@ -99,12 +99,12 @@ type redirectionDoc struct {
 	To string
 }
 
-func (d *redirectionDoc) Content() []byte {
+func (d *redirectionDoc) Content() string {
 	buf := new(bytes.Buffer)
 	if err := redirectTemplate.Execute(buf, d); err != nil {
 		panic(err)
 	}
-	return buf.Bytes()
+	return buf.String()
 }
 
 func (d *redirectionDoc) Write(w io.Writer) error {
@@ -116,10 +116,10 @@ const redirectFromTemplateSource = `<!DOCTYPE html>
 <html lang="en-US">
   <meta charset="utf-8">
   <title>Redirecting…</title>
-  <link rel="canonical" href="{{ .To }}">
-  <meta http-equiv="refresh" content="0; url={{ .To }}">
+  <link rel="canonical" href="{{.To}}">
+  <meta http-equiv="refresh" content="0; url={{.To}}">
   <meta name="robots" content="noindex">
   <h1>Redirecting…</h1>
-  <a href="{{ .To }}">Click here if you are not redirected.</a>
-  <script>location="{{ .To }}"</script>
+  <a href="{{.To}}">Click here if you are not redirected.</a>
+  <script>location="{{.To}}"</script>
 </html>`

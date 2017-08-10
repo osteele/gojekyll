@@ -24,7 +24,7 @@ type templateDoc struct {
 	tpl  *liquid.Template
 }
 
-func (d *templateDoc) Content() []byte {
+func (d *templateDoc) Content() string {
 	bindings := map[string]interface{}{"site": d.site}
 	b, err := d.tpl.Render(bindings)
 	if err != nil {
@@ -36,10 +36,10 @@ func (d *templateDoc) Content() []byte {
 	if err := m.Minify("text/html", min, bytes.NewBuffer(b)); err != nil {
 		panic(err)
 	}
-	return min.Bytes()
+	return min.String()
 }
 
 func (d *templateDoc) Write(w io.Writer) error {
-	_, err := w.Write(d.Content())
+	_, err := io.WriteString(w, d.Content())
 	return err
 }

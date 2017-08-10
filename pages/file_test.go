@@ -27,7 +27,7 @@ func (p pipelineFake) ApplyLayout(layout string, src []byte, vars map[string]int
 	require.Equal(p.t, "layout1", layout)
 	return nil, nil
 }
-func (p pipelineFake) Render(w io.Writer, src []byte, filename string, lineNo int, vars map[string]interface{}) ([]byte, error) {
-	require.Equal(p.t, "testdata/page_with_layout.md", filename)
-	return nil, nil
+func (p pipelineFake) Render(w io.Writer, src []byte, filename string, lineNo int, vars map[string]interface{}) error {
+	_, err := w.Write(src)
+	return err
 }

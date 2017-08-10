@@ -1,10 +1,10 @@
 package pages
 
 import (
-	"bytes"
 	"fmt"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
@@ -44,7 +44,7 @@ func (p *page) ToLiquid() interface{} {
 		ext     = filepath.Ext(relpath)
 		root    = utils.TrimExt(p.relpath)
 		base    = filepath.Base(root)
-		content = p.maybeContent(true)
+		content = p.maybeContent()
 	)
 	data := map[string]interface{}{
 		"content": content,
@@ -89,26 +89,20 @@ func (p *page) ToLiquid() interface{} {
 	return data
 }
 
-func (p *page) maybeContent(fallback bool) []byte {
-	p.Lock()
-	defer p.Unlock()
-	if p.content != nil {
-		return *p.content
-	}
-	if fallback {
-		return p.raw
-	}
-	return nil
+func (p *page) maybeContent() string {
+	p.RLock()
+	defer p.RUnlock()
+	return p.content
 }
 
-func (p *page) excerpt() []byte {
+func (p *page) excerpt() string {
 	if ei, ok := p.frontMatter["excerpt"]; ok {
-		return []byte(fmt.Sprint(ei))
+		return fmt.Sprint(ei)
 	}
-	content := p.maybeContent(true)
-	pos := bytes.Index(content, []byte(p.site.Config().ExcerptSeparator))
+	content := p.maybeContent()
+	pos := strings.Index(content, p.site.Config().ExcerptSeparator)
 	if pos >= 0 {
-		content = content[:pos]
+		return content[:pos]
 	}
 	return content
 }

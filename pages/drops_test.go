@@ -24,11 +24,13 @@ func TestStaticFile_ToLiquid(t *testing.T) {
 
 func TestPage_ToLiquid(t *testing.T) {
 	site := siteFake{t, config.Default()}
-	page, err := NewFile(site, "testdata/excerpt.md", "excerpt.md", map[string]interface{}{})
+	p, err := NewFile(site, "testdata/excerpt.md", "excerpt.md", map[string]interface{}{})
 	require.NoError(t, err)
-	drop := page.(liquid.Drop).ToLiquid()
+	_, err = p.(Page).Content()
+	require.NoError(t, err)
+	drop := p.(liquid.Drop).ToLiquid()
 	excerpt := drop.(map[string]interface{})["excerpt"]
-	ex, ok := excerpt.([]byte)
+	ex, ok := excerpt.(string)
 	require.True(t, ok)
-	require.Equal(t, "First line.", string(ex))
+	require.Equal(t, "First line.", ex)
 }

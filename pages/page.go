@@ -19,8 +19,8 @@ type Page interface {
 	Document
 	// Content asks a page to compute its content.
 	// This has the side effect of causing the content to subsequently appear in the drop.
-	Content() ([]byte, error)
-	SetContent(content []byte)
+	Content() (string, error)
+	SetContent(string)
 	FrontMatter() map[string]interface{}
 	// PostDate returns the date computed from the filename or frontmatter.
 	// It is an uncaught error to call this on a page that is not a Post.
@@ -50,15 +50,20 @@ func (p *PageEmbed) Published() bool { return true }
 
 // Static is in the pages.Page interface.
 func (p *PageEmbed) Static() bool { return false } // FIXME means different things to different callers
+
 // Reload is in the pages.Page interface.
 func (p *PageEmbed) Reload() error { return nil }
 
+// A page is a concrete implementation of the Page interface.
 type page struct {
 	file
-	sync.Mutex
 	firstLine int
 	raw       []byte
-	content   *[]byte
+
+	sync.RWMutex
+	content      string
+	contentError error
+	contentOnce  sync.Once
 }
 
 // Static is in the File interface.
@@ -91,6 +96,7 @@ func (p *page) Reload() error {
 	}
 	p.firstLine = lineNo
 	p.raw = raw
+	p.contentOnce = sync.Once{}
 	return nil
 }
 
@@ -156,34 +162,42 @@ func (p *page) Write(w io.Writer) error {
 	layout, ok := p.frontMatter["layout"].(string)
 	if ok && layout != "" {
 		rp := p.site.RenderingPipeline()
-		content, err = rp.ApplyLayout(layout, content, p.TemplateContext())
-		if err != nil {
-			return err
+		b, e := rp.ApplyLayout(layout, []byte(content), p.TemplateContext())
+		if e != nil {
+			return e
 		}
+		_, err = w.Write(b)
+	} else {
+		_, err = io.WriteString(w, content)
 	}
-	_, err = w.Write(content)
 	return err
 }
 
 // Content computes the page content.
-func (p *page) Content() ([]byte, error) {
-	content := p.maybeContent(false)
-	if content != nil {
-		return content, nil
-	}
-	pipe := p.site.RenderingPipeline()
-	buf := new(bytes.Buffer)
-	b, err := pipe.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext())
-	if err != nil {
-		return nil, err
-	}
-	p.SetContent(b)
-	return b, nil
+func (p *page) Content() (string, error) {
+	p.contentOnce.Do(func() {
+		s, err := p.computeContent()
+		p.Lock()
+		defer p.Unlock()
+		p.content = s
+		p.contentError = err
+	})
+	return p.content, p.contentError
 }
 
-// retains its argument
-func (p *page) SetContent(content []byte) {
+func (p *page) computeContent() (string, error) {
+	pipe := p.site.RenderingPipeline()
+	buf := new(bytes.Buffer)
+	err := pipe.Render(buf, p.raw, p.filename, p.firstLine, p.TemplateContext())
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
+}
+
+func (p *page) SetContent(content string) {
 	p.Lock()
 	defer p.Unlock()
-	p.content = &content
+	p.content = content
+	p.contentError = nil
 }

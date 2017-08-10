@@ -1,7 +1,6 @@
 package pipelines
 
 import (
-	"bytes"
 	"io"
 	"path/filepath"
 
@@ -16,7 +15,7 @@ import (
 type PipelineInterface interface {
 	ApplyLayout(string, []byte, map[string]interface{}) ([]byte, error)
 	OutputExt(pathname string) string
-	Render(io.Writer, []byte, string, int, map[string]interface{}) ([]byte, error)
+	Render(io.Writer, []byte, string, int, map[string]interface{}) error
 }
 
 // Pipeline applies a rendering transformation to a file.
@@ -61,22 +60,19 @@ func (p *Pipeline) OutputExt(pathname string) string {
 }
 
 // Render returns nil iff it wrote to the writer
-func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e map[string]interface{}) ([]byte, error) {
+func (p *Pipeline) Render(w io.Writer, b []byte, filename string, lineNo int, e map[string]interface{}) error {
 	if p.cfg.IsSASSPath(filename) {
-		buf := new(bytes.Buffer)
-		if err := p.WriteSass(buf, b); err != nil {
-			return nil, err
-		}
-		return buf.Bytes(), nil
+		return p.WriteSass(w, b)
 	}
 	b, err := p.renderTemplate(b, e, filename, lineNo)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if p.cfg.IsMarkdown(filename) {
 		b = markdownRenderer(b)
 	}
-	return b, nil
+	_, err = w.Write(b)
+	return err
 }
 
 func (p *Pipeline) renderTemplate(src []byte, b map[string]interface{}, filename string, lineNo int) ([]byte, error) {
