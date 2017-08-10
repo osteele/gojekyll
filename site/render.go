@@ -1,8 +1,17 @@
 package site
 
+import (
+	"sort"
+
+	"github.com/osteele/gojekyll/collection"
+)
+
 // Render renders the site's pages.
 func (s *Site) Render() error {
-	for _, c := range s.Collections {
+	cols := make([]*collection.Collection, 0, len(s.Collections))
+	copy(cols, s.Collections)
+	sort.Sort(postsCollectionLast(cols))
+	for _, c := range cols {
 		if err := c.Render(); err != nil {
 			return err
 		}
@@ -22,4 +31,29 @@ func (s *Site) ensureRendered() (err error) {
 		}
 	})
 	return
+}
+
+type postsCollectionLast []*collection.Collection
+
+func (d postsCollectionLast) Len() int {
+	return len([]*collection.Collection(d))
+}
+
+func (d postsCollectionLast) Less(i, j int) bool {
+	array := []*collection.Collection(d)
+	a, b := array[i], array[j]
+	switch {
+	case a.IsPostsCollection():
+		return false
+	case b.IsPostsCollection():
+		return true
+	default:
+		return a.Name < b.Name
+	}
+}
+
+func (d postsCollectionLast) Swap(i, j int) {
+	array := []*collection.Collection(d)
+	a, b := array[i], array[j]
+	array[i], array[j] = b, a
 }
