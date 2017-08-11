@@ -38,6 +38,8 @@ func run(cmd string) error { // nolint: gocyclo
 	switch cmd {
 	case benchmark.FullCommand():
 		return benchmarkCommand()
+	case pluginsApp.FullCommand():
+		return pluginsCommand()
 	case versionCmd.FullCommand():
 		return versionCommand()
 	}

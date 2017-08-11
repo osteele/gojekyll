@@ -8,6 +8,7 @@ package plugins
 import (
 	"fmt"
 	"regexp"
+	"sort"
 
 	"github.com/kyokomi/emoji"
 	"github.com/osteele/gojekyll/config"
@@ -50,6 +51,16 @@ func Install(names []string, site Site) {
 			fmt.Printf("warning: gojekyll does not emulate the %s plugin.\n", name)
 		}
 	}
+}
+
+// Names returns a sorted list of names of registered plugins.
+func Names() []string {
+	var names []string
+	for name := range directory {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
 }
 
 // Embed plugin to implement defaults implementations of the Plugin interface.
