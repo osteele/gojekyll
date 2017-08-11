@@ -19,36 +19,32 @@ $(BINARY): $(SOURCES)
 
 build: $(BINARY) ## compile the package
 
-clean: ## remove binary files
+clean:
 	rm -f ${BINARY}
 
-imports: ## list imports
+imports:
 	go list -f '{{join .Imports "\n"}}' ./... | grep -v `go list -f '{{.ImportPath}}'` | grep '\.' | sort | uniq
 
-deps: ## list dependencies
+deps:
 	go list -f '{{join .Deps "\n"}}' ./... | grep -v `go list -f '{{.ImportPath}}'` | grep '\.' | sort | uniq
 
-race: ## build a binary with race detection
+race:
 	go build -race ${LDFLAGS} -o ${BINARY}-race ${PACKAGE}
 
 release: build
 	mkdir -p dist
 	tar -cvzf dist/$(BINARY)_$(VERSION)_$(OS:GNU/%=%)_$(shell uname -m).tar.gz $(BINARY) LICENSE README.md
 
-setup: ## install dependencies and development tools
+setup:
 	go get -t -u ./...
 	go get github.com/alecthomas/gometalinter
 	gometalinter --install
 
-install: ## compile and install the executable
+install:
 	go install ${LDFLAGS} ${PACKAGE}
 
-lint: ## Run all the linters
+lint:
 	gometalinter ./... --tests --deadline=5m --disable=gotype --disable=aligncheck
 
-test: ## test the package
+test:
 	go test ./...
-
-# Source: https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
-help:
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
