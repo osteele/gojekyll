@@ -92,15 +92,3 @@ func (p *page) maybeContent() interface{} {
 	}
 	return p.raw
 }
-
-// MarshalYAML is part of the yaml.Marshaler interface
-// The variables subcommand uses this.
-func (f *file) MarshalYAML() (interface{}, error) {
-	return f.ToLiquid(), nil
-}
-
-// MarshalYAML is part of the yaml.Marshaler interface
-// The variables subcommand uses this.
-func (p *page) MarshalYAML() (interface{}, error) {
-	return p.ToLiquid(), nil
-}

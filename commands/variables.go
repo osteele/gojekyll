@@ -1,17 +1,20 @@
 package commands
 
 import (
-	"fmt"
 	"strings"
 
+	"github.com/k0kubun/pp"
 	"github.com/osteele/gojekyll/site"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
-	yaml "gopkg.in/yaml.v1"
 )
 
-var variables = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
-var variablePath = variables.Arg("PATH", "Path, URL, site, or site...").String()
+var variables = app.Command(
+	"variables",
+	"Print site or document variables",
+).Alias("v").Alias("var").Alias("vars")
+
+var variablePath = variables.Arg("PATH", `Filename, URL, "site", or e.g. "site.x.y"`).String()
 
 func variablesCommand(site *site.Site) (err error) {
 	var data interface{}
@@ -30,18 +33,23 @@ func variablesCommand(site *site.Site) (err error) {
 		data = site
 	}
 	data = liquid.FromDrop(data)
+	bytesToStrings(data)
+	logger.label("Variables:", "")
+	_, err = pp.Print(data)
+	return err
+}
+
+// modifies its argument
+func bytesToStrings(data interface{}) {
 	if m, ok := data.(map[string]interface{}); ok {
 		for k, v := range m {
 			if b, ok := v.([]byte); ok {
-				m[k] = string(b)
+				s := string(b)
+				if len(s) > 200 {
+					s = s[:200] + "…"
+				}
+				m[k] = s
 			}
 		}
 	}
-	b, err := yaml.Marshal(data)
-	if err != nil {
-		return err
-	}
-	logger.label("Variables:", "")
-	fmt.Println(string(b))
-	return nil
 }

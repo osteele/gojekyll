@@ -20,12 +20,6 @@ func (s *Site) ToLiquid() interface{} {
 	return s.drop
 }
 
-// MarshalYAML is part of the yaml.Marshaler interface
-// The variables subcommand uses this.
-func (s *Site) MarshalYAML() (interface{}, error) {
-	return s.ToLiquid(), nil
-}
-
 func (s *Site) initializeDrop() error {
 	drop := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data":         s.data,
