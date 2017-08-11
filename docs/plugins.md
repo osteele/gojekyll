@@ -1,35 +1,37 @@
 # Gojekyll Plugin Status
 
-Gojekyll doesn't include¹ an extensible plugin system, and won't for the foreseeable future.
+Gojekyll doesn't include an extensible plugin system¹.
 
 The functionality of some plugins is built into the core program:
 
-| Plugin                                                       | Motivation    | Basic Functionality | Missing Features                                                        |
-|--------------------------------------------------------------|---------------|---------------------|-------------------------------------------------------------------------|
-| [jekyll-avatar][jekyll-avatar]                               | GitHub Pages² | ✓                   |                                                                         |
-| [jekyll-coffeescript][jekyll-coffeescript]                   | GitHub Pages  |                     |                                                                         |
-| [jekyll-default-layout][jekyll-default-layout]               | GitHub Pages  | ✓                   |                                                                         |
-| [jekyll-feed][jekyll-feed]                                   | GitHub Pages  | ✓                   |                                                                         |
-| [jekyll-gist][jekyll-gist]                                   | core³         | ✓                   | `noscript`                                                              |
-| [jekyll-github-metadata][jekyll-github-metadata]             | GitHub Pages  | some                |                                                                         |
-| [jekyll-live-reload][jekyll-live-reload]                     | core          | ✓ (always enabled)  |                                                                         |
-| [jekyll-mentions][jekyll-mentions]                           | GitHub Pages  | ✓                   |                                                                         |
-| [jekyll-optional-front-matter][jekyll-optional-front-matter] | GitHub Pages  |                     |                                                                         |
-| [jekyll-paginate][jekyll-paginate]                           | core          |                     |                                                                         |
-| [jekyll-readme-index][jekyll-readme-index]                   | GitHub Pages  |                     |                                                                         |
-| [jekyll-redirect_from][jekyll-redirect_from]                 | GitHub Pages  | ✓                   | user template                                                           |
-| [jekyll-relative-links][jekyll-relative-links]               | GitHub Pages  |                     |                                                                         |
-| [jekyll-sass-converter][jekyll-sass-converter]               | core          | ✓ (always enabled)  |                                                                         |
-| [jekyll-seo_tag][jekyll-seo_tag]                             | GitHub Pages  | ✓                   | SEO and JSON LD are not fully populated; site? and other tag parameters |
-| [jekyll-sitemap][jekyll-sitemap]                             | GitHub Pages  | ✓                   | file modified dates⁴                                                    |
-| [jemoji][jemoji]                                             | GitHub Pages  | ✓                   | image tag fallback                                                      |
+| Plugin                                                       | Motivation    | Implementation Status | Missing Features                                                                                                                           |
+|--------------------------------------------------------------|---------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| [jekyll-avatar][jekyll-avatar]                               | GitHub Pages² | ✓                     |                                                                                                                                            |
+| [jekyll-coffeescript][jekyll-coffeescript]                   | GitHub Pages  |                       |                                                                                                                                            |
+| [jekyll-default-layout][jekyll-default-layout]               | GitHub Pages  | ✓                     |                                                                                                                                            |
+| [jekyll-feed][jekyll-feed]                                   | GitHub Pages  | ✓                     |                                                                                                                                            |
+| [jekyll-gist][jekyll-gist]                                   | core³         | ✓                     | `noscript` option                                                                                                                          |
+| [jekyll-github-metadata][jekyll-github-metadata]             | GitHub Pages  | partial               | `build_revision`, `contributors`, `public_repositories`, `show_downloads`, `releases`, `versions`, `url`, `tar_url`, `zip_url`, `wiki_url` |
+| [jekyll-live-reload][jekyll-live-reload]                     | core          | ✓                     | always enabled (by design); no way to disable                                                                                              |
+| [jekyll-mentions][jekyll-mentions]                           | GitHub Pages  | ✓                     |                                                                                                                                            |
+| [jekyll-optional-front-matter][jekyll-optional-front-matter] | GitHub Pages  |                       |                                                                                                                                            |
+| [jekyll-paginate][jekyll-paginate]                           | core          |                       |                                                                                                                                            |
+| [jekyll-readme-index][jekyll-readme-index]                   | GitHub Pages  |                       |                                                                                                                                            |
+| [jekyll-redirect_from][jekyll-redirect_from]                 | GitHub Pages  | ✓                     | user template                                                                                                                              |
+| [jekyll-relative-links][jekyll-relative-links]               | GitHub Pages  |                       |                                                                                                                                            |
+| [jekyll-sass-converter][jekyll-sass-converter]               | core          | ✓                     | always enabled (by design); no way to disable                                                                                              |
+| [jekyll-seo_tag][jekyll-seo_tag]                             | GitHub Pages  | partial               | `dateModified`, `datePublished`, `publisher`, `mainEntityOfPage`, `@type`                                                                  |
+| [jekyll-sitemap][jekyll-sitemap]                             | GitHub Pages  | ✓                     | file modified dates⁴                                                                                                                       |
+| [jekyll-titles-from-headings][jekyll-titles-from-headings]   | GitHub Pages  |                       |                                                                                                                                            |
+| [jemoji][jemoji]                                             | GitHub Pages  | ✓                     | image tag fallback                                                                                                                         |
 
-¹ (1) The code and internal APIs are too immature for this; and (2) The [natural way](https://golang.org/pkg/plugin/) of implementing this only works on Linux.
+¹ (1) The code and internal APIs are too immature for this; and (2) the [natural way](https://golang.org/pkg/plugin/) of implementing this only works on Linux.
 
 ² <https://pages.github.com/versions/>
 
 ³ “Core” plugins are referenced in the main [Jekyll documentation](https://jekyllrb.com/docs/home/).
-The Jekyll documentation [Official Plugins](https://jekyllrb.com/docs/plugins/#available-plugins) / #Official tag of [Awesome Jekyll Plugins](https://github.com/planetjekyll/awesome-jekyll-plugins) look dated; I didn't use those.
+
+The [Official Plugins](https://jekyllrb.com/docs/plugins/#available-plugins) section of the Jekyll documentation, and the #Official tag of [Awesome Jekyll Plugins](https://github.com/planetjekyll/awesome-jekyll-plugins), look dated; I didn't use those.
 
 ⁴ These don't seem that useful with source control and CI. (Post dates are included.)
 
@@ -49,4 +51,5 @@ The Jekyll documentation [Official Plugins](https://jekyllrb.com/docs/plugins/#a
 [jekyll-sass-converter]: https://github.com/jekyll/jekyll-sass-converter
 [jekyll-seo_tag]: https://github.com/jekyll/jekyll-seo-tag
 [jekyll-sitemap]: https://github.com/jekyll/jekyll-sitemap
+[jekyll-titles-from-headings]: https://github.com/benbalter/jekyll-titles-from-headings
 [jemoji]: https://github.com/jekyll/jemoji
