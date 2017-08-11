@@ -1,6 +1,13 @@
 package pipelines
 
-import "github.com/russross/blackfriday"
+import (
+	"bytes"
+	"io"
+	"regexp"
+
+	"github.com/russross/blackfriday"
+	"golang.org/x/net/html"
+)
 
 const blackfridayFlags = 0 |
 	blackfriday.HTML_USE_XHTML |
@@ -22,8 +29,88 @@ const blackfridayExtensions = 0 |
 	// added relative to commonExtensions
 	blackfriday.EXTENSION_AUTO_HEADER_IDS
 
-func markdownRenderer(input []byte) []byte {
+func renderMarkdown(md []byte) []byte {
 	renderer := blackfriday.HtmlRenderer(blackfridayFlags, "", "")
-	return blackfriday.MarkdownOptions(input, renderer, blackfriday.Options{
+	html := blackfriday.MarkdownOptions(md, renderer, blackfriday.Options{
 		Extensions: blackfridayExtensions})
+	html, err := renderInnerMarkdown(html)
+	if err != nil {
+		panic(err)
+	}
+	return html
+}
+
+var markdownAttrRE = regexp.MustCompile(`\s*markdown\s*=\s*("1"|'1'|1)\s*`)
+
+func renderInnerMarkdown(b []byte) ([]byte, error) {
+	z := html.NewTokenizer(bytes.NewReader(b))
+	buf := new(bytes.Buffer)
+outer:
+	for {
+		tt := z.Next()
+		switch tt {
+		case html.ErrorToken:
+			if z.Err() == io.EOF {
+				break outer
+			}
+			return nil, z.Err()
+		case html.StartTagToken:
+			if hasAttr(z) {
+				tag := markdownAttrRE.ReplaceAll(z.Raw(), []byte(" "))
+				tag = bytes.Replace(tag, []byte(" >"), []byte(">"), 1)
+				_, err := buf.Write(tag)
+				if err != nil {
+					return nil, err
+				}
+				if err := processInnerMarkdown(buf, z); err != nil {
+					return nil, err
+				}
+				// the above leaves z set to the end token
+			}
+		}
+		_, err := buf.Write(z.Raw())
+		if err != nil {
+			return nil, err
+		}
+	}
+	return buf.Bytes(), nil
+}
+
+func hasAttr(z *html.Tokenizer) bool {
+	for {
+		k, v, more := z.TagAttr()
+		switch {
+		case string(k) == "markdown" && string(v) == "1":
+			return true
+		case !more:
+			return false
+		}
+	}
+}
+
+func processInnerMarkdown(w io.Writer, z *html.Tokenizer) error {
+	buf := new(bytes.Buffer)
+	depth := 1
+loop:
+	for {
+		tt := z.Next()
+		switch tt {
+		case html.ErrorToken:
+			return z.Err()
+		case html.StartTagToken:
+			depth++
+		case html.EndTagToken:
+			depth--
+			if depth == 0 {
+				break loop
+			}
+		}
+		_, err := buf.Write(z.Raw())
+		if err != nil {
+			panic(err)
+		}
+	}
+	html := renderMarkdown(buf.Bytes())
+	_, err := w.Write(html)
+	return err
 }

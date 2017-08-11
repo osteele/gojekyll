@@ -70,7 +70,7 @@ func (p *Pipeline) Render(w io.Writer, src []byte, vars liquid.Bindings, filenam
 		return err
 	}
 	if p.cfg.IsMarkdown(filename) {
-		src = markdownRenderer(src)
+		src = renderMarkdown(src)
 	}
 	_, err = w.Write(src)
 	return err
