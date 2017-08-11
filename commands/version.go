@@ -26,3 +26,14 @@ func init() {
 		}
 	}
 }
+
+var versionCmd = app.Command("version", "Print the name and version")
+
+func versionCommand() error {
+	var d string
+	if !BuildTime.IsZero() {
+		d = BuildTime.Format(" (Build time: 2006-01-02T15:04)")
+	}
+	fmt.Printf("gojekyll version %s%s\n", Version, d)
+	return nil
+}

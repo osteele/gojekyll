@@ -20,27 +20,6 @@ var (
 	_           = app.Flag("future", "Publishes posts with a future date").Action(boolVar("future", &options.Future)).Bool()
 	_           = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolVar("unpublished", &options.Unpublished)).Bool()
 	versionFlag = app.Flag("version", "Print the name and version").Short('v').Bool()
-
-	build = app.Command("build", "Build your site").Alias("b")
-	clean = app.Command("clean", "Clean the site (removes site output) without building.")
-
-	benchmark = app.Command("benchmark", "Repeat build for ten seconds. Implies --profile.")
-
-	render     = app.Command("render", "Render a file or URL path to standard output")
-	renderPath = render.Arg("PATH", "Path or URL").String()
-
-	routes        = app.Command("routes", "Display site permalinks and associated files")
-	dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files").Bool()
-
-	serve = app.Command("serve", "Serve your site locally").Alias("server").Alias("s")
-	open  = serve.Flag("open-url", "Launch your site in a browser").Short('o').Bool()
-	_     = serve.Flag("host", "Host to bind to").Short('H').Action(stringVar("host", &options.Host)).String()
-	_     = serve.Flag("port", "Port to listen on").Short('P').Action(intVar("port", &options.Port)).Int()
-
-	variables    = app.Command("variables", "Display a file or URL path's variables").Alias("v").Alias("var").Alias("vars")
-	variablePath = variables.Arg("PATH", "Path, URL, site, or site...").String()
-
-	versionCmd = app.Command("version", "Print the name and version")
 )
 
 func init() {
@@ -48,7 +27,6 @@ func init() {
 	app.Flag("profile", "Create a Go pprof CPU profile").BoolVar(&profile)
 	app.Flag("quiet", "Silence (some) output.").Short('q').BoolVar(&quiet)
 	_ = app.Flag("verbose", "Print verbose output.").Short('V').Action(boolVar("verbose", &options.Verbose)).Bool()
-	build.Flag("dry-run", "Dry run").Short('n').BoolVar(&options.DryRun)
 
 	// these flags are just present on build and serve, but I don't see a DRY way to say this
 	app.Flag("incremental", "Enable incremental rebuild.").Short('I').Action(boolVar("incremental", &options.Incremental)).Bool()
