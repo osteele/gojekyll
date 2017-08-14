@@ -88,13 +88,19 @@ It works on the GitHub Pages sites that I care about, and it looks credible on a
 
 Missing features:
 
-- Pagination
+- Windows compatibility
 - Math
 - Plugin system. ([Some individual plugins](./docs/plugins.md) are emulated.)
-- Liquid filter `sassify`
-- Markdown features: [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions), [`markdown=1`](https://kramdown.gettalong.org/syntax.html#html-blocks).
-- `site.data` is not sorted.
-- Windows compatibility
+- Liquid filter `sassify` is not implemented
+- Liquid is run in strict mode; undefined filters are errors.
+- Markdown features
+  - [Attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions)
+  - [`markdown="span"`, `markdown="block"`](https://kramdown.gettalong.org/syntax.html#html-blocks)
+- Markdown configuration options
+
+Differences:
+
+- The order of YAML maps, in `_config` and `site.data`, is not preserved.
 
 Also see the [detailed status](#feature-status) below.
 
@@ -105,13 +111,14 @@ These will probably not change:
 By design:
 
 - Plugins must be listed in the config file, not a Gemfile.
-- Liquid is run in strict mode; undefined filters are errors.
 - The wrong type in a `_config.yml` is an error.
 - Server live reload is always on.
 - `serve --watch` (the default) reloads the `_config.yml` and data files too.
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached in `/tmp/gojekyll-${USER}`, not `./.sass-cache`
 - Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
+- `markdown=1` is only processed in Markdown files. This matches the Jekyll documentation, but not its implementation (which also expands markdown inside of `markdown=1` elements inside \*.html files).
+- `<` and `>` inside markdown is interpreted as HTML. For example, `This is <b>bold</b>` renders as <b>bold</b>. This behavior matches the [Markdown spec](https://daringfireball.net/projects/markdown/syntax#html), but differs from Jekyll's default Kramdown processor.
 
 Muzukashii:
 
