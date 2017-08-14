@@ -15,7 +15,7 @@ func FollowDots(data interface{}, props []string) (interface{}, error) {
 		data = liquid.FromDrop(data)
 		if reflect.TypeOf(data).Kind() == reflect.Map {
 			item := reflect.ValueOf(data).MapIndex(reflect.ValueOf(name))
-			if item.IsValid() && !item.IsNil() && item.CanInterface() {
+			if item.IsValid() && (item.Kind() != reflect.Ptr || !item.IsNil()) && item.CanInterface() {
 				data = item.Interface()
 				continue
 			}

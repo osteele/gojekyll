@@ -4,6 +4,8 @@ title: GitHub Metadata
 
 # {{ page.title }}
 
+{% if jekyll.version contains 'gojekyll' %}
+
 ## Hash Style
 
 <table>
@@ -11,6 +13,8 @@ title: GitHub Metadata
   <tr><th style="text-align: left">{{ k[0] }}</th><td>{{ k[1] }}</td></tr>
 {% endfor %}
 </table>
+
+{% elsif false %}
 
 ## List-of-Keys Style
 
@@ -24,3 +28,5 @@ title: GitHub Metadata
   </tr>
 {% endfor %}
 </table>
+
+{% endif %}

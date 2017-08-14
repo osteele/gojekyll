@@ -8,6 +8,7 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/site"
+	"github.com/osteele/gojekyll/version"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -49,7 +50,7 @@ func run(cmd string) error { // nolint: gocyclo
 	// labels will line up. And print it even if
 	// loading the site produced an error.
 	if *versionFlag {
-		logger.label("Version:", Version)
+		logger.label("Version:", version.Version)
 	}
 	if err != nil {
 		return err

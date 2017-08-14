@@ -116,7 +116,6 @@ By design:
 - `serve --watch` (the default) reloads the `_config.yml` and data files too.
 - `serve` generates pages on the fly; it doesn't write to the file system.
 - Files are cached in `/tmp/gojekyll-${USER}`, not `./.sass-cache`
-- Jekyll provides an (undocumented) `jekyll.version` variable to templates. Copying this didn't seem right.
 - `markdown=1` is only processed in Markdown files. This matches the Jekyll documentation, but not its implementation (which also expands markdown inside of `markdown=1` elements inside \*.html files).
 - `<` and `>` inside markdown is interpreted as HTML. For example, `This is <b>bold</b>` renders as <b>bold</b>. This behavior matches the [Markdown spec](https://daringfireball.net/projects/markdown/syntax#html), but differs from Jekyll's default Kramdown processor.
 

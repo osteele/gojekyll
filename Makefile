@@ -9,7 +9,7 @@ BUILD_DATE = `date +%FT%T%z`
 VERSION := $(COMMIT_HASH)
 OS := $(shell uname -o)
 
-LDFLAGS=-ldflags "-X ${PACKAGE}/cmd.Version=${VERSION} -X ${PACKAGE}/cmd.BuildDate=${BUILD_DATE}"
+LDFLAGS=-ldflags "-X ${PACKAGE}/version.Version=${VERSION} -X ${PACKAGE}/version.BuildDate=${BUILD_DATE}"
 
 .DEFAULT_GOAL: build
 .PHONY: build clean deps setup install lint release test help

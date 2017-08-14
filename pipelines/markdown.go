@@ -40,8 +40,6 @@ func renderMarkdown(md []byte) []byte {
 	return html
 }
 
-var markdownAttrRE = regexp.MustCompile(`\s*markdown\s*=\s*("1"|'1'|1)\s*`)
-
 func renderInnerMarkdown(b []byte) ([]byte, error) {
 	z := html.NewTokenizer(bytes.NewReader(b))
 	buf := new(bytes.Buffer)
@@ -55,10 +53,8 @@ outer:
 			}
 			return nil, z.Err()
 		case html.StartTagToken:
-			if hasAttr(z) {
-				tag := markdownAttrRE.ReplaceAll(z.Raw(), []byte(" "))
-				tag = bytes.Replace(tag, []byte(" >"), []byte(">"), 1)
-				_, err := buf.Write(tag)
+			if hasMarkdownAttr(z) {
+				_, err := buf.Write(removeMarkdownAttr(z.Raw()))
 				if err != nil {
 					return nil, err
 				}
@@ -76,7 +72,9 @@ outer:
 	return buf.Bytes(), nil
 }
 
-func hasAttr(z *html.Tokenizer) bool {
+var markdownAttrRE = regexp.MustCompile(`\s*markdown\s*=\s*("1"|'1'|1)\s*`)
+
+func hasMarkdownAttr(z *html.Tokenizer) bool {
 	for {
 		k, v, more := z.TagAttr()
 		switch {
@@ -86,6 +84,12 @@ func hasAttr(z *html.Tokenizer) bool {
 			return false
 		}
 	}
+}
+
+func removeMarkdownAttr(tag []byte) []byte {
+	tag = markdownAttrRE.ReplaceAll(tag, []byte(" "))
+	tag = bytes.Replace(tag, []byte(" >"), []byte(">"), 1)
+	return tag
 }
 
 func processInnerMarkdown(w io.Writer, z *html.Tokenizer) error {

@@ -11,6 +11,7 @@ import (
 
 	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/version"
 	"github.com/osteele/liquid/evaluator"
 )
 
@@ -140,6 +141,8 @@ func (p *page) TemplateContext() map[string]interface{} {
 	return map[string]interface{}{
 		"page": p,
 		"site": p.site,
+		"jekyll": map[string]string{
+			"version": fmt.Sprintf("%s (gojekyll)", version.Version)},
 	}
 }
 
