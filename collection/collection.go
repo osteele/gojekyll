@@ -7,6 +7,7 @@ import (
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/liquid"
 )
 
 // Collection is a Jekyll collection https://jekyllrb.com/docs/collections/.
@@ -71,7 +72,7 @@ func (c *Collection) Render() error {
 // ToLiquid returns the value of the collection in the template
 // "collections" array.
 func (c *Collection) ToLiquid() interface{} {
-	return templates.MergeVariableMaps(
+	return liquid.IterationKeyedMap(templates.MergeVariableMaps(
 		c.Metadata,
 		map[string]interface{}{
 			"label":              c.Name,
@@ -79,7 +80,7 @@ func (c *Collection) ToLiquid() interface{} {
 			"files":              []string{},
 			"relative_directory": c.PathPrefix(),
 			"directory":          c.AbsDir(),
-		})
+		}))
 }
 
 // PermalinkPattern returns the default permalink pattern for this collection.

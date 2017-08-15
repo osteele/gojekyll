@@ -7,17 +7,18 @@ import (
 
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
+	"github.com/osteele/liquid"
 )
 
 // ToLiquid is part of the liquid.Drop interface.
 func (d *StaticFile) ToLiquid() interface{} {
-	return map[string]interface{}{
+	return liquid.IterationKeyedMap(map[string]interface{}{
 		"name":          d.relpath,
 		"basename":      utils.TrimExt(d.relpath),
 		"path":          d.Permalink(),
 		"modified_time": d.fileModTime,
 		"extname":       d.OutputExt(),
-	}
+	})
 }
 
 func (f *file) ToLiquid() interface{} {
@@ -27,13 +28,13 @@ func (f *file) ToLiquid() interface{} {
 		ext     = path.Ext(relpath)
 	)
 
-	return templates.MergeVariableMaps(f.frontMatter, map[string]interface{}{
+	return liquid.IterationKeyedMap(templates.MergeVariableMaps(f.frontMatter, map[string]interface{}{
 		"path":          relpath,
 		"modified_time": f.fileModTime,
 		"name":          base,
 		"basename":      utils.TrimExt(base),
 		"extname":       ext,
-	})
+	}))
 }
 
 // ToLiquid is in the liquid.Drop interface.
@@ -81,7 +82,7 @@ func (p *page) ToLiquid() interface{} {
 			data[k] = v
 		}
 	}
-	return data
+	return liquid.IterationKeyedMap(data)
 }
 
 func (p *page) maybeContent() interface{} {

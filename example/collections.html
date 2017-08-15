@@ -1,0 +1,35 @@
+---
+---
+
+<h1>Collections</h1>
+
+{% for c in site.collections %}
+  <h2> {{ c.label }}</h2>
+    <table>
+    {% for k in c %}{% if k != 'docs' %}
+    <tr><th style="text-align: left; vertical-align: top">{{k}}</th><td>{{c[k]}}</td></tr>
+    {% endif %}{% endfor %}
+    <tr><th style="text-align: left; vertical-align: top">docs</th><td>
+      <ul>
+        {% for p in c.docs %}
+          <li>{{ p.path }}
+            <table>
+              <tr>
+                <th style="text-align: left; vertical-align: top">properties</th>
+                <td>{% for k in p %}{{k}} {% endfor %}</td>
+              </tr>
+              <tr>
+                <th style="text-align: left; vertical-align: top">content</th>
+                <td><pre>{{p.content | escape}}</pre></td>
+              </tr>
+              <tr>
+                <th style="text-align: left; vertical-align: top">excerpt</th>
+                <td><pre>{{p.excerpt | escape}}</pre></td>
+              </tr>
+            </table>
+          </li>
+        {% endfor %}
+      </ul>
+    </td></tr>
+  </table>
+{% endfor %}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/liquid/tags"
 	"github.com/stretchr/testify/require"
 )
 
@@ -64,7 +65,7 @@ func TestSite_ToLiquid_static_files(t *testing.T) {
 	require.True(t, ok, fmt.Sprintf("static_files has type %T", drop["static_files"]))
 	require.Len(t, files, 1)
 
-	f := files[0].ToLiquid().(map[string]interface{})
+	f := files[0].ToLiquid().(tags.IterationKeyedMap)
 	require.IsType(t, "", f["path"])
 	require.IsType(t, time.Now(), f["modified_time"])
 	require.Equal(t, ".html", f["extname"])

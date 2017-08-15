@@ -1,6 +1,8 @@
 ---
 ---
 
+jekyll.version = {{ jekyll.version }}
+
 ## Page Variables ([reference](https://jekyllrb.com/docs/variables/#page-variables))
 
 | Name       | Value               |
@@ -12,7 +14,6 @@
 | tags       | {{ page.tags }}       |
 | title      | {{ page.title }}      |
 | url        | {{ page.url }}        |
-
 
 {% comment %}
 TODO:

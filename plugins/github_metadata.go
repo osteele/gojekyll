@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/liquid"
 	"golang.org/x/oauth2"
 )
 
@@ -78,7 +79,7 @@ func (p jekyllGithubMetadataPlugin) ModifySiteDrop(s Site, d map[string]interfac
 			gh[key] = s
 		}
 	}
-	d["github"] = gh
+	d["github"] = liquid.IterationKeyedMap(gh)
 	return err
 }
 
