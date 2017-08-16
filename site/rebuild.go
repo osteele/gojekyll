@@ -68,7 +68,7 @@ func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
 		if err != nil {
 			return
 		}
-		n, err = r.Build()
+		n, err = r.Write()
 		return
 	}
 	r = s

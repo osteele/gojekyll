@@ -21,7 +21,7 @@ func benchmarkCommand() (err error) {
 		if err != nil {
 			return err
 		}
-		_, err = site.Build()
+		_, err = site.Write()
 		if err != nil {
 			return err
 		}

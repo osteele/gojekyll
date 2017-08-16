@@ -22,7 +22,7 @@ func buildCommand(site *site.Site) error {
 
 	logger.path("Destination:", site.DestDir())
 	logger.label("Generating...", "")
-	count, err := site.Build()
+	count, err := site.Write()
 	switch {
 	case err == nil:
 		elapsed := time.Since(commandStartTime)

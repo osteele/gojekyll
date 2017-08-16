@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/osteele/gojekyll/config"
@@ -37,6 +38,10 @@ func New(s Site, name string, metadata map[string]interface{}) *Collection {
 		cfg:      s.Config(),
 		site:     s,
 	}
+}
+
+func (c *Collection) String() string {
+	return fmt.Sprintf("%T{Name=%q}", c, c.Name)
 }
 
 // AbsDir returns the absolute path to the collection directory.

@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -200,19 +201,14 @@ func (p *page) Render() error {
 	return p.contentError
 }
 
-func (p *page) Excerpt() interface{} {
-	p.RLock()
-	defer p.RUnlock()
-	if exc, ok := p.frontMatter["excerpt"]; ok {
-		return exc
-	}
-	if p.rendered {
-		return p.excerpt
-	}
-	return p.extractExcerpt()
+func (p *page) SetContent(content string) {
+	p.Lock()
+	defer p.Unlock()
+	p.content = content
+	p.contentError = nil
 }
 
-func (p *page) computeContent() (cn string, ex interface{}, err error) {
+func (p *page) computeContent() (cn string, ex string, err error) {
 	pl := p.site.RenderingPipeline()
 	buf := new(bytes.Buffer)
 	err = pl.Render(buf, p.raw, p.TemplateContext(), p.filename, p.firstLine)
@@ -221,12 +217,23 @@ func (p *page) computeContent() (cn string, ex interface{}, err error) {
 	}
 	cn = buf.String()
 	ex = cn
-	exb := p.extractExcerpt()
-	if !bytes.Equal(exb, p.raw) {
-		buf.Reset()
-		ex, err = pl.RenderTemplate(exb, p.TemplateContext(), p.filename, p.firstLine)
+	pos := strings.Index(ex, p.site.Config().ExcerptSeparator)
+	if pos >= 0 {
+		ex = ex[:pos]
 	}
 	return
+}
+
+func (p *page) Excerpt() interface{} {
+	if exc, ok := p.frontMatter["excerpt"]; ok {
+		return exc
+	}
+	p.RLock()
+	defer p.RUnlock()
+	if p.rendered {
+		return p.excerpt
+	}
+	return p.extractExcerpt()
 }
 
 func (p *page) extractExcerpt() []byte {
@@ -236,11 +243,4 @@ func (p *page) extractExcerpt() []byte {
 		return raw[:pos]
 	}
 	return raw
-}
-
-func (p *page) SetContent(content string) {
-	p.Lock()
-	defer p.Unlock()
-	p.content = content
-	p.contentError = nil
 }

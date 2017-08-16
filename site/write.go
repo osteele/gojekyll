@@ -12,6 +12,21 @@ import (
 	"github.com/osteele/gojekyll/utils"
 )
 
+// Write cleans the destination and writes files into it.
+// It sets TZ from the site config.
+func (s *Site) Write() (int, error) {
+	if err := s.setTimeZone(); err != nil {
+		return 0, err
+	}
+	if err := s.ensureRendered(); err != nil {
+		return 0, err
+	}
+	if err := s.Clean(); err != nil {
+		return 0, err
+	}
+	return s.WriteFiles()
+}
+
 // WriteFiles writes output files.
 func (s *Site) WriteFiles() (count int, err error) {
 	errs := make(chan error)
@@ -76,7 +91,9 @@ func (s *Site) WriteDocument(w io.Writer, d pages.Document) error {
 	}
 }
 
-// WritePage writes the rendered page.
+// WritePage writes the rendered page. It is called as part of site.Write,
+// but also, in an incremental build, to write a single page – therefore it
+// also ensures that all pages have been rendered before writing this one.
 func (s *Site) WritePage(w io.Writer, p pages.Page) error {
 	if err := s.ensureRendered(); err != nil {
 		return err

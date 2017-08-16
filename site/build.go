@@ -38,21 +38,6 @@ func (s *Site) Clean() error {
 	return utils.RemoveEmptyDirectories(s.DestDir())
 }
 
-// Build cleans the destination and create files in it.
-// This sets TZ from the site config.
-func (s *Site) Build() (int, error) {
-	if err := s.setTimeZone(); err != nil {
-		return 0, err
-	}
-	if err := s.ensureRendered(); err != nil {
-		return 0, err
-	}
-	if err := s.Clean(); err != nil {
-		return 0, err
-	}
-	return s.WriteFiles()
-}
-
 func (s *Site) setTimeZone() error {
 	if tz := s.config.Timezone; tz != "" {
 		if _, err := time.LoadLocation(tz); err != nil {

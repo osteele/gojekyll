@@ -6,12 +6,9 @@ import (
 	"github.com/osteele/gojekyll/collection"
 )
 
-// Render renders the site's pages.
-func (s *Site) Render() error {
-	cols := make([]*collection.Collection, 0, len(s.Collections))
-	copy(cols, s.Collections)
-	sort.Sort(postsCollectionLast(cols))
-	for _, c := range cols {
+// render renders the site's pages.
+func (s *Site) render() error {
+	for _, c := range s.sortedCollections() {
 		if err := c.Render(); err != nil {
 			return err
 		}
@@ -30,7 +27,7 @@ func (s *Site) ensureRendered() (err error) {
 		if err != nil {
 			return
 		}
-		err = s.Render()
+		err = s.render()
 		if err != nil {
 			return
 		}
@@ -38,11 +35,15 @@ func (s *Site) ensureRendered() (err error) {
 	return
 }
 
-type postsCollectionLast []*collection.Collection
-
-func (d postsCollectionLast) Len() int {
-	return len([]*collection.Collection(d))
+// returns a slice of collections, sorted by name but with _posts last.
+func (s *Site) sortedCollections() []*collection.Collection {
+	cols := make([]*collection.Collection, len(s.Collections))
+	copy(cols, s.Collections)
+	sort.Slice(cols, postsCollectionLast(cols).Less)
+	return cols
 }
+
+type postsCollectionLast []*collection.Collection
 
 func (d postsCollectionLast) Less(i, j int) bool {
 	array := []*collection.Collection(d)
@@ -55,10 +56,4 @@ func (d postsCollectionLast) Less(i, j int) bool {
 	default:
 		return a.Name < b.Name
 	}
-}
-
-func (d postsCollectionLast) Swap(i, j int) {
-	array := []*collection.Collection(d)
-	a, b := array[i], array[j]
-	array[i], array[j] = b, a
 }

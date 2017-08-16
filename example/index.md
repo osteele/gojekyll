@@ -15,7 +15,7 @@ variable: page variable
 ## Tests
 
 * [Archive]({% link archive.md %})
-* [Collections]({% link collections.md %})
+* [Collections]({% link collections.html %})
 * [Markdown]({% link markdown.md %})
 * [Pages]({% link pages.md %})
 * [Plugins]({% link plugins.md %})
