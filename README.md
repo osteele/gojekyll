@@ -88,6 +88,7 @@ It works on the GitHub Pages sites that I care about, and it looks credible on a
 
 Missing features:
 
+- Pagination
 - Windows compatibility
 - Math
 - Plugin system. ([Some individual plugins](./docs/plugins.md) are emulated.)
