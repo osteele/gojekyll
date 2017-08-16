@@ -8,6 +8,7 @@ import (
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
+	"github.com/osteele/liquid/tags"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/html"
 )
@@ -55,7 +56,7 @@ func (p seoTag) TagBody() (string, error) {
 	var (
 		ctx          = p.ctx
 		site         = liquid.FromDrop(ctx.Get("site")).(map[string]interface{})
-		page         = liquid.FromDrop(ctx.Get("page")).(map[string]interface{})
+		page         = liquid.FromDrop(ctx.Get("page")).(tags.IterationKeyedMap)
 		pageTitle    = page["title"]
 		siteTitle    = site["title"]
 		canonicalURL = fmt.Sprintf("%s%s", site["url"], page["url"])
