@@ -21,11 +21,12 @@ func TestMustAbs(t *testing.T) {
 }
 
 func TestFilenameDate(t *testing.T) {
-	d, found := FilenameDate("2017-07-02-post.html")
+	d, title, found := FilenameDate("2017-07-02-post.html")
 	require.True(t, found)
+	require.Equal(t, "post", title)
 	require.Equal(t, timeMustParse("2017-07-02T00:00:00Z"), d)
 
-	_, found = FilenameDate("not-post.html")
+	_, _, found = FilenameDate("not-post.html")
 	require.False(t, found)
 }
 

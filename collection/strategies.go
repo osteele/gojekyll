@@ -31,18 +31,19 @@ func (s defaultStrategy) future(filename string) bool                { return fa
 type postsStrategy struct{}
 
 func (s postsStrategy) addDate(filename string, fm map[string]interface{}) {
-	if t, found := utils.FilenameDate(filename); found {
+	if t, title, found := utils.FilenameDate(filename); found {
 		fm["date"] = t
+		fm["title"] = title
 	}
 }
 
 func (s postsStrategy) collectible(filename string) bool {
-	_, ok := utils.FilenameDate(filename)
+	_, _, ok := utils.FilenameDate(filename)
 	return ok
 }
 
 func (s postsStrategy) future(filename string) bool {
-	t, ok := utils.FilenameDate(filename)
+	t, _, ok := utils.FilenameDate(filename)
 	return ok && t.After(time.Now())
 }
 

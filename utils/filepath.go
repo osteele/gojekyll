@@ -9,10 +9,21 @@ import (
 
 // FilenameDate returns the date for a filename that uses Jekyll post convention.
 // It also returns a bool indicating whether a date was found.
-func FilenameDate(s string) (time.Time, bool) {
-	layout := "2006-01-02-"
-	t, err := time.Parse(layout, filepath.Base(s + layout)[:len(layout)])
-	return t, err == nil
+func FilenameDate(s string) (t time.Time, title string, found bool) {
+	var (
+		base   = TrimExt(filepath.Base(s))
+		layout = "2006-01-02-"
+	)
+	if len(base) < len(layout) {
+		found = false
+		return
+	}
+	t, err := time.Parse(layout, base[:len(layout)])
+	if err != nil {
+		return
+	}
+	title, found = base[len(layout):], true
+	return
 }
 
 // MatchList implement Jekyll include: and exclude: configurations.
