@@ -1,4 +1,4 @@
-package pipelines
+package renderers
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 )
 
 // ApplyLayout applies the named layout to the data.
-func (p *Pipeline) ApplyLayout(name string, data []byte, vars liquid.Bindings) ([]byte, error) {
+func (p *Manager) ApplyLayout(name string, data []byte, vars liquid.Bindings) ([]byte, error) {
 	for name != "" {
 		var lfm map[string]interface{}
 		tpl, err := p.FindLayout(name, &lfm)
@@ -35,7 +35,7 @@ func (p *Pipeline) ApplyLayout(name string, data []byte, vars liquid.Bindings) (
 }
 
 // FindLayout returns a template for the named layout.
-func (p *Pipeline) FindLayout(base string, fm *map[string]interface{}) (tpl *liquid.Template, err error) {
+func (p *Manager) FindLayout(base string, fm *map[string]interface{}) (tpl *liquid.Template, err error) {
 	// not cached, but the time here is negligible
 	exts := []string{"", ".html"}
 	for _, ext := range strings.SplitN(p.cfg.MarkdownExt, `,`, -1) {
@@ -76,7 +76,7 @@ loop:
 }
 
 // LayoutsDir returns the path to the layouts directory.
-func (p *Pipeline) layoutDirs() []string {
+func (p *Manager) layoutDirs() []string {
 	dirs := []string{filepath.Join(p.sourceDir(), p.cfg.LayoutsDir)}
 	if p.ThemeDir != "" {
 		dirs = append(dirs, filepath.Join(p.ThemeDir, "_layouts"))

@@ -23,7 +23,7 @@ func (s *Site) render() error {
 
 func (s *Site) ensureRendered() (err error) {
 	s.renderOnce.Do(func() {
-		err = s.initializeRenderingPipeline()
+		err = s.initializeRenderers()
 		if err != nil {
 			return
 		}

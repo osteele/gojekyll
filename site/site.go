@@ -9,8 +9,8 @@ import (
 	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pages"
-	"github.com/osteele/gojekyll/pipelines"
 	"github.com/osteele/gojekyll/plugins"
+	"github.com/osteele/gojekyll/renderers"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 )
@@ -28,7 +28,7 @@ type Site struct {
 	docs               []pages.Document // all documents, whether or not they are output
 	nonCollectionPages []pages.Page
 
-	pipeline   *pipelines.Pipeline
+	renderer   *renderers.Manager
 	renderOnce sync.Once
 
 	drop     map[string]interface{} // cached drop value
@@ -153,30 +153,30 @@ func (s *Site) FilenameURLPath(relpath string) (string, bool) {
 	return "", false
 }
 
-// RenderingPipeline returns the rendering pipeline.
-func (s *Site) RenderingPipeline() pipelines.PipelineInterface {
-	if s.pipeline == nil {
-		panic(fmt.Errorf("uninitialized rendering pipeline"))
+// RendererManager returns the rendering manager.
+func (s *Site) RendererManager() renderers.Renderers {
+	if s.renderer == nil {
+		panic(fmt.Errorf("uninitialized rendering manager"))
 	}
-	return s.pipeline
+	return s.renderer
 }
 
 // TemplateEngine is part of the plugins.Site interface.
 func (s *Site) TemplateEngine() *liquid.Engine {
-	return s.pipeline.TemplateEngine()
+	return s.renderer.TemplateEngine()
 }
 
-// initializeRenderingPipeline initializes the rendering pipeline
-func (s *Site) initializeRenderingPipeline() (err error) {
-	options := pipelines.PipelineOptions{
+// initializeRenderers initializes the rendering manager
+func (s *Site) initializeRenderers() (err error) {
+	options := renderers.Options{
 		RelativeFilenameToURL: s.FilenameURLPath,
 		ThemeDir:              s.themeDir,
 	}
-	s.pipeline, err = pipelines.NewPipeline(s.config, options)
+	s.renderer, err = renderers.New(s.config, options)
 	if err != nil {
 		return err
 	}
-	engine := s.pipeline.TemplateEngine()
+	engine := s.renderer.TemplateEngine()
 	return s.runHooks(func(p plugins.Plugin) error {
 		return p.ConfigureTemplateEngine(engine)
 	})

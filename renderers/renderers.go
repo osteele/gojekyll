@@ -1,4 +1,4 @@
-package pipelines
+package renderers
 
 import (
 	"io"
@@ -11,32 +11,32 @@ import (
 	"github.com/osteele/liquid"
 )
 
-// PipelineInterface applies transformations to a document.
-type PipelineInterface interface {
+// Renderers applies transformations to a document.
+type Renderers interface {
 	ApplyLayout(string, []byte, liquid.Bindings) ([]byte, error)
 	OutputExt(pathname string) string
 	Render(io.Writer, []byte, liquid.Bindings, string, int) error
 	RenderTemplate([]byte, liquid.Bindings, string, int) ([]byte, error)
 }
 
-// Pipeline applies a rendering transformation to a file.
-type Pipeline struct {
-	PipelineOptions
+// Manager applies a rendering transformation to a file.
+type Manager struct {
+	Options
 	cfg          config.Config
 	liquidEngine *liquid.Engine
 	sassTempDir  string
 	sassHash     string
 }
 
-// PipelineOptions configures a pipeline.
-type PipelineOptions struct {
+// Options configures a rendering manager.
+type Options struct {
 	RelativeFilenameToURL tags.LinkTagHandler
 	ThemeDir              string
 }
 
-// NewPipeline makes a rendering pipeline.
-func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
-	p := Pipeline{PipelineOptions: options, cfg: c}
+// New makes a rendering manager.
+func New(c config.Config, options Options) (*Manager, error) {
+	p := Manager{Options: options, cfg: c}
 	p.liquidEngine = p.makeLiquidEngine()
 	if err := p.CopySassFileIncludes(); err != nil {
 		return nil, err
@@ -46,22 +46,22 @@ func NewPipeline(c config.Config, options PipelineOptions) (*Pipeline, error) {
 
 // sourceDir returns the site source directory. Seeing how far we can bend
 // the Law of Demeter.
-func (p *Pipeline) sourceDir() string {
+func (p *Manager) sourceDir() string {
 	return p.cfg.Source
 }
 
 // TemplateEngine returns the Liquid engine.
-func (p *Pipeline) TemplateEngine() *liquid.Engine {
+func (p *Manager) TemplateEngine() *liquid.Engine {
 	return p.liquidEngine
 }
 
 // OutputExt returns the output extension.
-func (p *Pipeline) OutputExt(pathname string) string {
+func (p *Manager) OutputExt(pathname string) string {
 	return p.cfg.OutputExt(pathname)
 }
 
 // Render sends content through SASS and/or Liquid -> Markdown
-func (p *Pipeline) Render(w io.Writer, src []byte, vars liquid.Bindings, filename string, lineNo int) error {
+func (p *Manager) Render(w io.Writer, src []byte, vars liquid.Bindings, filename string, lineNo int) error {
 	if p.cfg.IsSASSPath(filename) {
 		return p.WriteSass(w, src)
 	}
@@ -77,7 +77,7 @@ func (p *Pipeline) Render(w io.Writer, src []byte, vars liquid.Bindings, filenam
 }
 
 // RenderTemplate renders a Liquid template
-func (p *Pipeline) RenderTemplate(src []byte, vars liquid.Bindings, filename string, lineNo int) ([]byte, error) {
+func (p *Manager) RenderTemplate(src []byte, vars liquid.Bindings, filename string, lineNo int) ([]byte, error) {
 	tpl, err := p.liquidEngine.ParseTemplateLocation(src, filename, lineNo)
 	if err != nil {
 		return nil, utils.WrapPathError(err, filename)
@@ -89,7 +89,7 @@ func (p *Pipeline) RenderTemplate(src []byte, vars liquid.Bindings, filename str
 	return out, err
 }
 
-func (p *Pipeline) makeLiquidEngine() *liquid.Engine {
+func (p *Manager) makeLiquidEngine() *liquid.Engine {
 	dirs := []string{filepath.Join(p.cfg.Source, p.cfg.IncludesDir)}
 	if p.ThemeDir != "" {
 		dirs = append(dirs, filepath.Join(p.ThemeDir, "_includes"))

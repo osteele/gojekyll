@@ -4,17 +4,17 @@ import (
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/pipelines"
+	"github.com/osteele/gojekyll/renderers"
 	"github.com/stretchr/testify/require"
 )
 
 type siteFake struct{ c config.Config }
 
-func (s siteFake) Config() *config.Config                         { return &s.c }
-func (s siteFake) Exclude(string) bool                            { return false }
-func (s siteFake) OutputExt(string) string                        { return "" }
-func (s siteFake) RelativePath(string) string                     { panic("unimplemented") }
-func (s siteFake) RenderingPipeline() pipelines.PipelineInterface { panic("unimplemented") }
+func (s siteFake) Config() *config.Config               { return &s.c }
+func (s siteFake) Exclude(string) bool                  { return false }
+func (s siteFake) OutputExt(string) string              { return "" }
+func (s siteFake) RelativePath(string) string           { panic("unimplemented") }
+func (s siteFake) RendererManager() renderers.Renderers { panic("unimplemented") }
 
 func TestNewCollection(t *testing.T) {
 	site := siteFake{config.Default()}

@@ -287,7 +287,7 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 // string filters
 
 func scssifyFilter(s string) (string, error) {
-	// this doesn't try to share context or setup with the rendering pipeline,
+	// this doesn't try to share context or setup with the rendering manager,
 	// and it doesn't minify
 	buf := new(bytes.Buffer)
 	comp, err := libsass.New(buf, bytes.NewBufferString(s))

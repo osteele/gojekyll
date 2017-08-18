@@ -4,7 +4,7 @@ import (
 	"io"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/pipelines"
+	"github.com/osteele/gojekyll/renderers"
 )
 
 // A Document is a Jekyll post, page, or file.
@@ -26,6 +26,6 @@ type Document interface {
 type Site interface {
 	Config() *config.Config
 	RelativePath(string) string
-	RenderingPipeline() pipelines.PipelineInterface
+	RendererManager() renderers.Renderers
 	OutputExt(pathname string) string
 }

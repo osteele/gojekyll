@@ -6,7 +6,7 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pages"
-	"github.com/osteele/gojekyll/pipelines"
+	"github.com/osteele/gojekyll/renderers"
 	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/liquid"
 )
@@ -26,7 +26,7 @@ type Site interface {
 	Config() *config.Config
 	Exclude(string) bool
 	RelativePath(string) string
-	RenderingPipeline() pipelines.PipelineInterface
+	RendererManager() renderers.Renderers
 	OutputExt(pathname string) string
 }
 

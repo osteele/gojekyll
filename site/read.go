@@ -41,7 +41,7 @@ func (s *Site) Read() error {
 	if err := s.ReadCollections(); err != nil {
 		return err
 	}
-	if err := s.initializeRenderingPipeline(); err != nil {
+	if err := s.initializeRenderers(); err != nil {
 		return err
 	}
 	return s.runHooks(func(p plugins.Plugin) error { return p.PostRead(s) })

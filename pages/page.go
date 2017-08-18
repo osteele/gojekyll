@@ -181,7 +181,7 @@ func (p *page) Write(w io.Writer) error {
 	content := p.content
 	layout, ok := p.frontMatter["layout"].(string)
 	if ok && layout != "" {
-		rp := p.site.RenderingPipeline()
+		rp := p.site.RendererManager()
 		b, e := rp.ApplyLayout(layout, []byte(content), p.TemplateContext())
 		if e != nil {
 			return e
@@ -215,7 +215,7 @@ func (p *page) SetContent(content string) {
 }
 
 func (p *page) computeContent() (cn string, ex string, err error) {
-	pl := p.site.RenderingPipeline()
+	pl := p.site.RendererManager()
 	buf := new(bytes.Buffer)
 	err = pl.Render(buf, p.raw, p.TemplateContext(), p.filename, p.firstLine)
 	if err != nil {

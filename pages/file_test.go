@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/pipelines"
+	"github.com/osteele/gojekyll/renderers"
 	"github.com/osteele/liquid"
 	"github.com/stretchr/testify/require"
 )
@@ -16,19 +16,19 @@ type siteFake struct {
 	cfg config.Config
 }
 
-func (s siteFake) Config() *config.Config                         { return &s.cfg }
-func (s siteFake) RelativePath(p string) string                   { return p }
-func (s siteFake) RenderingPipeline() pipelines.PipelineInterface { return &pipelineFake{s.t} }
-func (s siteFake) OutputExt(p string) string                      { return filepath.Ext(p) }
+func (s siteFake) Config() *config.Config               { return &s.cfg }
+func (s siteFake) RelativePath(p string) string         { return p }
+func (s siteFake) RendererManager() renderers.Renderers { return &renderManagerFake{s.t} }
+func (s siteFake) OutputExt(p string) string            { return filepath.Ext(p) }
 
-type pipelineFake struct{ t *testing.T }
+type renderManagerFake struct{ t *testing.T }
 
-func (p pipelineFake) OutputExt(string) string { return ".html" }
-func (p pipelineFake) ApplyLayout(layout string, src []byte, vars liquid.Bindings) ([]byte, error) {
+func (p renderManagerFake) OutputExt(string) string { return ".html" }
+func (p renderManagerFake) ApplyLayout(layout string, src []byte, vars liquid.Bindings) ([]byte, error) {
 	require.Equal(p.t, "layout1", layout)
 	return nil, nil
 }
-func (p pipelineFake) Render(w io.Writer, src []byte, vars liquid.Bindings, filename string, lineNo int) error {
+func (p renderManagerFake) Render(w io.Writer, src []byte, vars liquid.Bindings, filename string, lineNo int) error {
 	_, err := io.WriteString(w, "rendered: ")
 	if err != nil {
 		return err
@@ -37,6 +37,6 @@ func (p pipelineFake) Render(w io.Writer, src []byte, vars liquid.Bindings, file
 	return err
 }
 
-func (p pipelineFake) RenderTemplate(src []byte, vars liquid.Bindings, filename string, lineNo int) ([]byte, error) {
+func (p renderManagerFake) RenderTemplate(src []byte, vars liquid.Bindings, filename string, lineNo int) ([]byte, error) {
 	return append([]byte("rendered: "), src...), nil
 }
