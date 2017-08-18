@@ -47,8 +47,8 @@ gojekyll help build
 ### Binary Downloads
 
 1. Ubuntu (64-bit) and macOS binaries are available from the [releases page](https://github.com/osteele/gojekyll/releases).
-2. [Optional] **Highlight**. To use the `{% highlight %}` tag, you also need [Pygments](http://pygments.org): `pip install Pygments`.
-3. [Optional] **Themes**. To use a theme, you need to create a `Gemfile` that lists the theme, and run (the Ruby command) `bundle install`. The [Jekyll theme instructions](https://jekyllrb.com/docs/themes/) provides more detail, and should work for Gojekyll too.
+2. [Optional] **Highlight**. To use the `{% highlight %}` tag, you need [Pygments](http://pygments.org): `pip install Pygments`.
+3. [Optional] **Themes**. To use a theme, you need to install Ruby and [bundler](http://bundler.io/). Create a `Gemfile` that lists the theme., and run `bundle install`. The [Jekyll theme instructions](https://jekyllrb.com/docs/themes/) provide more detail, and should work for Gojekyll too.
 
 ### From Source
 
@@ -63,13 +63,15 @@ First-time install:
 go get github.com/osteele/gojekyll
 ```
 
-[Later] Update to the latest version:
+Update to the latest version:
 
 ```bash
 go get -u github.com/osteele/liquid github.com/osteele/gojekyll
 ```
 
-[Optional] Install command-line autocompletion:
+## [Optional] Install command-line autocompletion
+
+Add this to your `.bashrc` or `.zshrc`:
 
 ```bash
 # Bash:
@@ -93,11 +95,11 @@ Missing features:
 - Math
 - Plugin system. ([Some individual plugins](./docs/plugins.md) are emulated.)
 - Liquid filter `sassify` is not implemented
-- Liquid is run in strict mode; undefined filters are errors.
-- Markdown features
+- Liquid is run in strict mode: undefined filters and variables are errors.
+- Missing markdown features:
   - [Attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions)
   - [`markdown="span"`, `markdown="block"`](https://kramdown.gettalong.org/syntax.html#html-blocks)
-- Markdown configuration options
+  - Markdown configuration options
 
 Differences:
 
@@ -112,7 +114,7 @@ These will probably not change:
 By design:
 
 - Plugins must be listed in the config file, not a Gemfile.
-- The wrong type in a `_config.yml` is an error.
+- The wrong type in a `_config.yml` is a generally a error.
 - Server live reload is always on.
 - `serve --watch` (the default) reloads the `_config.yml` and data files too.
 - `serve` generates pages on the fly; it doesn't write to the file system.
