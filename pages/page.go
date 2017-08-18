@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path"
 	"strings"
 	"sync"
@@ -139,11 +140,16 @@ func (p *page) Tags() []string {
 
 // TemplateContext returns the local variables for template evaluation
 func (p *page) TemplateContext() map[string]interface{} {
+	env := os.Getenv("JEKYLL_ENV")
+	if env == "" {
+		env = "development"
+	}
 	return map[string]interface{}{
 		"page": p,
 		"site": p.site,
 		"jekyll": map[string]string{
-			"version": fmt.Sprintf("%s (gojekyll)", version.Version)},
+			"environment": env,
+			"version":     fmt.Sprintf("%s (gojekyll)", version.Version)},
 	}
 }
 

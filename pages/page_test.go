@@ -2,11 +2,28 @@ package pages
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/stretchr/testify/require"
 )
+
+func TestPage_TemplateContext(t *testing.T) {
+	s := siteFake{t, config.Default()}
+	f := file{site: s}
+	p := page{file: f}
+	os.Setenv("JEKYLL_ENV", "") // nolint: errcheck
+	tc := p.TemplateContext()
+	j := tc["jekyll"].(map[string]string)
+	require.Equal(t, "development", j["environment"])
+	require.Contains(t, j["version"], "gojekyll")
+
+	os.Setenv("JEKYLL_ENV", "production") // nolint: errcheck
+	tc = p.TemplateContext()
+	j = tc["jekyll"].(map[string]string)
+	require.Equal(t, "production", j["environment"])
+}
 
 func TestPage_Categories(t *testing.T) {
 	s := siteFake{t, config.Default()}

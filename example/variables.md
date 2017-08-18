@@ -15,14 +15,6 @@ jekyll.version = {{ jekyll.version }}
 | title      | {{ page.title }}      |
 | url        | {{ page.url }}        |
 
-{% comment %}
-TODO:
-excerpt
-content
-next
-previous
-{% endcomment %}
-
 ## Site Variables ([reference](https://jekyllrb.com/docs/variables/#site-variables))
 
 | Name        | Value                | Notes                |
@@ -45,3 +37,10 @@ documents
 categories
 tags
 {% endcomment %}
+
+## Jekyll Variables
+
+| Name        | Value                    |
+|-------------|--------------------------|
+| environment | {{ jekyll.environment }} |
+| version     | {{ jekyll.version }}     |
