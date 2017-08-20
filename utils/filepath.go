@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-// FilenameDate returns the date for a filename that uses Jekyll post convention.
+// ParseFilenameDateTitle returns the date for a filename that uses Jekyll post convention.
 // It also returns a bool indicating whether a date was found.
-func FilenameDate(s string) (t time.Time, title string, found bool) {
+func ParseFilenameDateTitle(s string) (t time.Time, title string, found bool) {
 	var (
 		base   = TrimExt(filepath.Base(s))
 		layout = "2006-01-02-"
@@ -22,7 +22,8 @@ func FilenameDate(s string) (t time.Time, title string, found bool) {
 	if err != nil {
 		return
 	}
-	title, found = base[len(layout):], true
+	title = Titleize(base[len(layout):])
+	found = true
 	return
 }
 

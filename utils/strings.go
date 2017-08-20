@@ -51,9 +51,20 @@ func Slugify(s string) string {
 
 // StringArrayToMap creates a map for use as a set.
 func StringArrayToMap(a []string) map[string]bool {
-	stringMap := map[string]bool{}
+	m := map[string]bool{}
 	for _, s := range a {
-		stringMap[s] = true
+		m[s] = true
 	}
-	return stringMap
+	return m
+}
+
+// Titleize splits at ` `, capitalizes, and joins.
+func Titleize(s string) string {
+	a := strings.Split(s, "-")
+	for i, s := range a {
+		if len(s) > 0 {
+			a[i] = strings.ToUpper(s[:1]) + s[1:]
+		}
+	}
+	return strings.Join(a, " ")
 }

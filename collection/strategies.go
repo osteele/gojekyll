@@ -31,19 +31,19 @@ func (s defaultStrategy) isFuture(string) bool                         { return 
 type postsStrategy struct{}
 
 func (s postsStrategy) parseFilename(filename string, fm map[string]interface{}) {
-	if t, title, found := utils.FilenameDate(filename); found {
+	if t, title, found := utils.ParseFilenameDateTitle(filename); found {
 		fm["date"] = t
 		fm["title"] = title
 	}
 }
 
 func (s postsStrategy) isCollectible(filename string) bool {
-	_, _, ok := utils.FilenameDate(filename)
+	_, _, ok := utils.ParseFilenameDateTitle(filename)
 	return ok
 }
 
 func (s postsStrategy) isFuture(filename string) bool {
-	t, _, ok := utils.FilenameDate(filename)
+	t, _, ok := utils.ParseFilenameDateTitle(filename)
 	return ok && t.After(time.Now())
 }
 
