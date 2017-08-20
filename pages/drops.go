@@ -40,9 +40,10 @@ func (f *file) ToLiquid() interface{} {
 // ToLiquid is in the liquid.Drop interface.
 func (p *page) ToLiquid() interface{} {
 	var (
-		fm      = p.frontMatter
-		relpath = p.relpath
-		ext     = filepath.Ext(relpath)
+		fm          = p.frontMatter
+		relpath     = p.relpath
+		siteRelPath = filepath.ToSlash(p.site.RelativePath(p.filename))
+		ext         = filepath.Ext(relpath)
 	)
 	data := map[string]interface{}{
 		"categories":    p.Categories(),
@@ -50,8 +51,8 @@ func (p *page) ToLiquid() interface{} {
 		"date":          fm.Get("date", p.fileModTime),
 		"excerpt":       p.Excerpt(),
 		"id":            utils.TrimExt(p.Permalink()),
-		"path":          relpath,
-		"relative_path": filepath.ToSlash(p.site.RelativePath(p.filename)),
+		"path":          siteRelPath,
+		"relative_path": siteRelPath,
 		"slug":          fm.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relpath)))),
 		"tags":          p.Tags(),
 		"url":           p.Permalink(),
