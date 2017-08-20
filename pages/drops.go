@@ -46,6 +46,7 @@ func (p *page) ToLiquid() interface{} {
 	)
 	data := map[string]interface{}{
 		"content": p.maybeContent(),
+		"date":    fm.Get("date", p.fileModTime),
 		"excerpt": p.Excerpt(),
 		"path":    relpath,
 		"url":     p.Permalink(),

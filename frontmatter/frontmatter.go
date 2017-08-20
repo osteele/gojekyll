@@ -1,6 +1,7 @@
 package frontmatter
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 	"strings"
@@ -21,11 +22,22 @@ func (fm FrontMatter) Bool(k string, defaultValue bool) bool {
 	return defaultValue
 }
 
-// String returns m[k] if it's a string; else defaultValue.
+// Get returns m[k] if present; else defaultValue.
+func (fm FrontMatter) Get(k string, defaultValue interface{}) interface{} {
+	if val, found := fm[k]; found {
+		return val
+	}
+	return defaultValue
+}
+
+// String returns m[k] if it's a string or can be stringified; else defaultValue.
 func (fm FrontMatter) String(k string, defaultValue string) string {
 	if val, found := fm[k]; found {
-		if v, ok := val.(string); ok {
+		switch v := val.(type) {
+		case string:
 			return v
+		case fmt.Stringer:
+			return v.String()
 		}
 	}
 	return defaultValue
