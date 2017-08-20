@@ -3,6 +3,7 @@ package collection
 import (
 	"fmt"
 	"path/filepath"
+	"strings"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pages"
@@ -83,7 +84,7 @@ func (c *Collection) ToLiquid() interface{} {
 			"label":              c.Name,
 			"docs":               c.pages,
 			"files":              []string{},
-			"relative_directory": c.PathPrefix(),
+			"relative_directory": strings.TrimSuffix(c.PathPrefix(), "/"),
 			"directory":          c.AbsDir(),
 		}))
 }
