@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -21,6 +22,7 @@ func TestMustAbs(t *testing.T) {
 }
 
 func TestParseFilenameDate(t *testing.T) {
+	os.Setenv("TZ", "America/New_York") // nolint: errcheck
 	d, title, found := ParseFilenameDateTitle("2017-07-02-post.html")
 	require.True(t, found)
 	require.Equal(t, "Post", title)
