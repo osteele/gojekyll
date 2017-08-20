@@ -1,7 +1,6 @@
 package pages
 
 import (
-	"fmt"
 	"path"
 	"path/filepath"
 
@@ -51,13 +50,6 @@ func (p *page) ToLiquid() interface{} {
 		"path":    relpath,
 		"url":     p.Permalink(),
 		// "output": // TODO; includes layouts
-
-		// not documented, but present in both collection and non-collection pages
-		"permalink": p.Permalink(),
-
-		// TODO only in non-collection pages:
-		"dir":  fmt.Sprintf("%c%s", filepath.Separator, path.Dir(relpath)),
-		"name": path.Base(relpath),
 
 		// TODO documented as present in all pages, but de facto only defined for collection pages
 		"id":         base,
