@@ -24,32 +24,32 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ array | array_to_sentence_string }}`, "first, second, and third"},
 	{`{{ array | sample }}`, "third"},
 
-	{`{{ site.members | group_by: "graduation_year" | map: "name" | sort | join }}`, "2013, 2014, 2015"},
+	{`{{ site.members | group_by: "graduation_year" | map: "name" | sort | join }}`, "2013 2014 2015"},
 	{`{{ site.members | group_by_exp: "item", "item.graduation_year" | size }}`, "4"},
 
 	// TODO what is the default for nil first?
 	{`{{ animals | sort | join: ", " }}`, "Sally Snake, giraffe, octopus, zebra"},
-	{`{{ site.pages | sort: "weight" | map: "name" | join }}`, "b, a, d, c"},
-	{`{{ site.pages | sort: "weight", true | map: "name" | join }}`, "b, a, d, c"},
-	{`{{ site.pages | sort: "weight", false | map: "name" | join }}`, "a, d, c, b"},
+	{`{{ site.pages | sort: "weight" | map: "name" | join }}`, "b a d c"},
+	{`{{ site.pages | sort: "weight", true | map: "name" | join }}`, "b a d c"},
+	{`{{ site.pages | sort: "weight", false | map: "name" | join }}`, "a d c b"},
 
 	{`{{ site.members | where: "graduation_year", "2014" | map: "name" }}`, "Alan"},
 	{`{{ site.members | where_exp: "item", "item.graduation_year == 2014" | map: "name" }}`, "Alan"},
 	{`{{ site.members | where_exp: "item", "item.graduation_year < 2014" | map: "name" }}`, "Alonzo"},
-	{`{{ site.members | where_exp: "item", "item.name contains 'Al'" | map: "name" | join }}`, "Alonzo, Alan"},
+	{`{{ site.members | where_exp: "item", "item.name contains 'Al'" | map: "name" | join }}`, "Alonzo Alan"},
 
-	{`{{ page.tags | push: 'Spokane' | join }}`, "Seattle, Tacoma, Spokane"},
+	{`{{ page.tags | push: 'Spokane' | join }}`, "Seattle Tacoma Spokane"},
 	{`{{ page.tags | pop }}`, "Seattle"},
 	{`{{ page.tags | shift }}`, "Tacoma"},
-	{`{{ page.tags | unshift: "Olympia" | join }}`, "Olympia, Seattle, Tacoma"},
+	{`{{ page.tags | unshift: "Olympia" | join }}`, "Olympia Seattle Tacoma"},
 
 	// strings
 	{`{{ "/assets/style.css" | relative_url }}`, "/my-baseurl/assets/style.css"},
 	{`{{ "/assets/style.css" | absolute_url }}`, "http://example.com/my-baseurl/assets/style.css"},
 	{`{{ "Markdown with _emphasis_ and *bold*." | markdownify }}`, "<p>Markdown with <em>emphasis</em> and <em>bold</em>.</p>"},
 	{`{{ obj | jsonify }}`, `{"a":[1,2,3,4]}`},
-	{`{{ site.pages | map: "name" | join }}`, "a, b, c, d"},
-	{`{{ site.pages | filter: "weight" | map: "name" | join }}`, "a, c, d"},
+	{`{{ site.pages | map: "name" | join }}`, "a b c d"},
+	{`{{ site.pages | filter: "weight" | map: "name" | join }}`, "a c d"},
 	{"{{ ws | normalize_whitespace }}", "a b c"},
 	{`{{ "123" | to_integer | type }}`, "int"},
 	{`{{ false | to_integer }}`, "0"},
