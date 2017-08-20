@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,7 +43,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	)
 
 	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
-		fm := templates.MergeVariableMaps(data, map[string]interface{}{"permalink": pattern})
+		fm := frontmatter.Merge(data, frontmatter.FrontMatter{"permalink": pattern})
 		ext := filepath.Ext(path)
 		switch ext {
 		case ".md", ".markdown":

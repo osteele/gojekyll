@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
 )
 
@@ -46,7 +45,7 @@ func (p *page) permalinkVariables() map[string]string {
 		root     = utils.TrimExt(relpath)
 		name     = filepath.Base(root)
 		fm       = p.frontMatter
-		bindings = templates.VariableMap(fm)
+		bindings = fm
 		slug     = bindings.String("slug", utils.Slugify(name))
 		// date      = p.fileModTime
 		date = p.PostDate().In(time.Local)
@@ -69,7 +68,7 @@ func (p *page) permalinkVariables() map[string]string {
 }
 
 func (p *page) computePermalink(vars map[string]string) (src string, err error) {
-	pattern := templates.VariableMap(p.frontMatter).String("permalink", DefaultPermalinkPattern)
+	pattern := p.frontMatter.String("permalink", DefaultPermalinkPattern)
 	if p, found := PermalinkStyles[pattern]; found {
 		pattern = p
 	}

@@ -4,7 +4,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/templates"
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 )
@@ -28,8 +28,7 @@ func (f *file) ToLiquid() interface{} {
 		base    = path.Base(relpath)
 		ext     = path.Ext(relpath)
 	)
-
-	return liquid.IterationKeyedMap(templates.MergeVariableMaps(f.frontMatter, map[string]interface{}{
+	return liquid.IterationKeyedMap(f.frontMatter.Merged(frontmatter.FrontMatter{
 		"path":          relpath,
 		"modified_time": f.fileModTime,
 		"name":          base,
@@ -41,7 +40,7 @@ func (f *file) ToLiquid() interface{} {
 // ToLiquid is in the liquid.Drop interface.
 func (p *page) ToLiquid() interface{} {
 	var (
-		vars    = templates.VariableMap(p.frontMatter)
+		fm      = p.frontMatter
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
 	)
@@ -50,7 +49,7 @@ func (p *page) ToLiquid() interface{} {
 		"excerpt": p.Excerpt(),
 		"path":    relpath,
 		"url":     p.Permalink(),
-		"slug":    vars.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relpath)))),
+		"slug":    fm.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relpath)))),
 		// "output": // TODO; includes layouts
 
 		// TODO documented as present in all pages, but de facto only defined for collection pages

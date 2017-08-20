@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"sort"
 
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/pages"
-	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/utils"
 )
 
@@ -77,11 +77,11 @@ func (c *Collection) readPost(abs string, rel string) error {
 	case strategy.isFuture(rel) && !c.cfg.Future:
 		return nil
 	}
-	pageDefaults := map[string]interface{}{
+	pageDefaults := frontmatter.FrontMatter{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
 	}
-	fm := templates.MergeVariableMaps(pageDefaults, c.cfg.GetFrontMatterDefaults(c.Name, siteRel))
+	fm := pageDefaults.Merged(c.cfg.GetFrontMatterDefaults(c.Name, siteRel))
 	strategy.parseFilename(rel, fm)
 	f, err := pages.NewFile(c.site, abs, filepath.ToSlash(rel), fm)
 	switch {

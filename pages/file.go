@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/frontmatter"
-	"github.com/osteele/gojekyll/templates"
 )
 
 // file is embedded in StaticFile and page
@@ -17,14 +16,14 @@ type file struct {
 	outputExt   string
 	permalink   string // cached permalink
 	fileModTime time.Time
-	frontMatter map[string]interface{}
+	frontMatter frontmatter.FrontMatter
 }
 
 // NewFile creates a Page or StaticFile.
 //
 // filename is the absolute filename. relpath is the path relative to the site or collection directory.
-func NewFile(s Site, filename string, relpath string, defaults map[string]interface{}) (Document, error) {
-	fm, err := frontmatter.FileHasFrontMatter(filename)
+func NewFile(s Site, filename string, relpath string, fm frontmatter.FrontMatter) (Document, error) {
+	hasFM, err := frontmatter.FileHasFrontMatter(filename)
 	if err != nil {
 		return nil, err
 	}
@@ -32,16 +31,15 @@ func NewFile(s Site, filename string, relpath string, defaults map[string]interf
 	if err != nil {
 		return nil, err
 	}
-
 	fields := file{
 		site:        s,
 		filename:    filename,
-		frontMatter: defaults,
+		frontMatter: fm,
 		fileModTime: info.ModTime(),
 		relpath:     relpath,
 		outputExt:   s.OutputExt(relpath),
 	}
-	if fm || !s.Config().RequiresFrontMatter(relpath) {
+	if hasFM || !s.Config().RequiresFrontMatter(relpath) {
 		return makePage(filename, fields)
 	}
 	fields.permalink = "/" + relpath
@@ -55,7 +53,7 @@ func (f *file) String() string {
 
 func (f *file) OutputExt() string  { return f.outputExt }
 func (f *file) Permalink() string  { return f.permalink }
-func (f *file) Published() bool    { return templates.VariableMap(f.frontMatter).Bool("published", true) }
+func (f *file) Published() bool    { return f.frontMatter.Bool("published", true) }
 func (f *file) SourcePath() string { return f.filename }
 
 // const requiresReloadError = error.Error("requires reload")

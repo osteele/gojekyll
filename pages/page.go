@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/frontmatter"
-	"github.com/osteele/gojekyll/templates"
 	"github.com/osteele/gojekyll/version"
 	"github.com/osteele/liquid/evaluator"
 )
@@ -116,11 +115,11 @@ func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
 		return
 	}
 	lineNo = 1
-	frontMatter, err := frontmatter.Read(&b, &lineNo)
+	fm, err := frontmatter.Read(&b, &lineNo)
 	if err != nil {
 		return
 	}
-	f.frontMatter = templates.MergeVariableMaps(f.frontMatter, frontMatter)
+	f.frontMatter = f.frontMatter.Merged(fm)
 	return
 }
 
@@ -130,12 +129,12 @@ func (p *page) FrontMatter() map[string]interface{} {
 
 // Categories is in the Page interface
 func (p *page) Categories() []string {
-	return frontmatter.FrontMatter(p.frontMatter).SortedStringArray("categories")
+	return p.frontMatter.SortedStringArray("categories")
 }
 
 // Tags is in the Page interface
 func (p *page) Tags() []string {
-	return frontmatter.FrontMatter(p.frontMatter).SortedStringArray("tags")
+	return p.frontMatter.SortedStringArray("tags")
 }
 
 // TemplateContext returns the local variables for template evaluation
