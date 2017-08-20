@@ -54,17 +54,17 @@ func readDataFile(filename string) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		var data interface{}
-		err = json.Unmarshal(b, &data)
-		return data, err
+		var d interface{}
+		err = json.Unmarshal(b, &d)
+		return d, err
 	case ".yaml", ".yml":
 		b, err := ioutil.ReadFile(filename)
 		if err != nil {
-			break
+			return nil, err
 		}
-		var data interface{}
-		err = utils.UnmarshalYAMLInterface(b, &data)
-		return data, err
+		var d interface{}
+		err = utils.UnmarshalYAMLInterface(b, &d)
+		return d, err
 	}
 	return nil, nil
 }

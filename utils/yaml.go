@@ -2,10 +2,10 @@ package utils
 
 import yaml "gopkg.in/yaml.v2"
 
-// UnmarshalYAMLInterface is a wrapper for yaml.Unmarshall that
+// UnmarshalYAMLInterface is a wrapper for yaml.Unmarshal that
 // knows how to unmarshal maps and lists.
 func UnmarshalYAMLInterface(b []byte, i *interface{}) error {
-	var m map[interface{}]interface{}
+	var m yaml.MapSlice
 	err := yaml.Unmarshal(b, &m)
 	switch err.(type) {
 	case *yaml.TypeError:
