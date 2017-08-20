@@ -45,23 +45,16 @@ func (p *page) ToLiquid() interface{} {
 		ext     = filepath.Ext(relpath)
 	)
 	data := map[string]interface{}{
-		"content": p.maybeContent(),
-		"date":    fm.Get("date", p.fileModTime),
-		"excerpt": p.Excerpt(),
-		"path":    relpath,
-		"url":     p.Permalink(),
-		"slug":    fm.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relpath)))),
-		// "output": // TODO; includes layouts
-
-		// TODO documented as present in all pages, but de facto only defined for collection pages
-		"id":         utils.TrimExt(p.Permalink()),
-		"categories": p.Categories(),
-		"tags":       p.Tags(),
-		// "title": base,
-
-		// TODO Only present in collection pages https://jekyllrb.com/docs/collections/#documents
+		"categories":    p.Categories(),
+		"content":       p.maybeContent(),
+		"date":          fm.Get("date", p.fileModTime),
+		"excerpt":       p.Excerpt(),
+		"id":            utils.TrimExt(p.Permalink()),
+		"path":          relpath,
 		"relative_path": filepath.ToSlash(p.site.RelativePath(p.filename)),
-		// TODO collection(name)
+		"slug":          fm.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relpath)))),
+		"tags":          p.Tags(),
+		"url":           p.Permalink(),
 
 		// de facto
 		"ext": ext,
