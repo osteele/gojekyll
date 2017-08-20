@@ -27,5 +27,4 @@ type Site interface {
 	Config() *config.Config
 	RelativePath(string) string
 	RendererManager() renderers.Renderers
-	OutputExt(pathname string) string
 }

@@ -28,7 +28,6 @@ type Site interface {
 	Exclude(string) bool
 	RelativePath(string) string
 	RendererManager() renderers.Renderers
-	OutputExt(pathname string) string
 }
 
 const draftsPath = "_drafts"

@@ -37,7 +37,7 @@ func NewFile(s Site, filename string, relpath string, fm frontmatter.FrontMatter
 		frontMatter: fm,
 		fileModTime: info.ModTime(),
 		relpath:     relpath,
-		outputExt:   s.OutputExt(relpath),
+		outputExt:   s.Config().OutputExt(relpath),
 	}
 	if hasFM || !s.Config().RequiresFrontMatter(relpath) {
 		return makePage(filename, fields)

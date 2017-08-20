@@ -12,7 +12,6 @@ type siteFake struct{ c config.Config }
 
 func (s siteFake) Config() *config.Config               { return &s.c }
 func (s siteFake) Exclude(string) bool                  { return false }
-func (s siteFake) OutputExt(string) string              { return "" }
 func (s siteFake) RelativePath(string) string           { panic("unimplemented") }
 func (s siteFake) RendererManager() renderers.Renderers { panic("unimplemented") }
 

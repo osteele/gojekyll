@@ -192,11 +192,6 @@ func (s *Site) RelativePath(path string) string {
 	return utils.MustRel(s.config.Source, path)
 }
 
-// OutputExt is in the page.Container interface.
-func (s *Site) OutputExt(path string) string {
-	return s.config.OutputExt(path)
-}
-
 // URLPage returns the page that will be served at URL
 func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 	p, found = s.Routes[urlpath]

@@ -14,7 +14,6 @@ import (
 // Renderers applies transformations to a document.
 type Renderers interface {
 	ApplyLayout(string, []byte, liquid.Bindings) ([]byte, error)
-	OutputExt(pathname string) string
 	Render(io.Writer, []byte, liquid.Bindings, string, int) error
 	RenderTemplate([]byte, liquid.Bindings, string, int) ([]byte, error)
 }
@@ -53,11 +52,6 @@ func (p *Manager) sourceDir() string {
 // TemplateEngine returns the Liquid engine.
 func (p *Manager) TemplateEngine() *liquid.Engine {
 	return p.liquidEngine
-}
-
-// OutputExt returns the output extension.
-func (p *Manager) OutputExt(pathname string) string {
-	return p.cfg.OutputExt(pathname)
 }
 
 // Render sends content through SASS and/or Liquid -> Markdown
