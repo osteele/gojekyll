@@ -24,9 +24,13 @@ func (c *Collection) strategy() collectionStrategy {
 
 type defaultStrategy struct{}
 
-func (s defaultStrategy) parseFilename(string, map[string]interface{}) {}
-func (s defaultStrategy) isCollectible(string) bool                    { return true }
-func (s defaultStrategy) isFuture(string) bool                         { return false }
+func (s defaultStrategy) parseFilename(_ string, fm map[string]interface{}) {
+	// de facto
+	fm["draft"] = false
+}
+
+func (s defaultStrategy) isCollectible(string) bool { return true }
+func (s defaultStrategy) isFuture(string) bool      { return false }
 
 type postsStrategy struct{}
 
@@ -34,6 +38,7 @@ func (s postsStrategy) parseFilename(filename string, fm map[string]interface{})
 	if t, title, found := utils.ParseFilenameDateTitle(filename); found {
 		fm["date"] = t
 		fm["title"] = title
+		fm["slug"] = utils.Slugify(title)
 	}
 }
 

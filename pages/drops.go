@@ -12,11 +12,13 @@ import (
 // ToLiquid is part of the liquid.Drop interface.
 func (d *StaticFile) ToLiquid() interface{} {
 	return liquid.IterationKeyedMap(map[string]interface{}{
-		"name":          d.relpath,
-		"basename":      utils.TrimExt(d.relpath),
+		"name":          path.Base(d.relpath),
+		"basename":      utils.TrimExt(path.Base(d.relpath)),
 		"path":          d.Permalink(),
 		"modified_time": d.fileModTime,
 		"extname":       d.OutputExt(),
+		// de facto:
+		"collection": nil,
 	})
 }
 
@@ -39,20 +41,20 @@ func (f *file) ToLiquid() interface{} {
 // ToLiquid is in the liquid.Drop interface.
 func (p *page) ToLiquid() interface{} {
 	var (
+		vars    = templates.VariableMap(p.frontMatter)
 		relpath = p.relpath
 		ext     = filepath.Ext(relpath)
-		root    = utils.TrimExt(p.relpath)
-		base    = filepath.Base(root)
 	)
 	data := map[string]interface{}{
 		"content": p.maybeContent(),
 		"excerpt": p.Excerpt(),
 		"path":    relpath,
 		"url":     p.Permalink(),
+		"slug":    vars.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relpath)))),
 		// "output": // TODO; includes layouts
 
 		// TODO documented as present in all pages, but de facto only defined for collection pages
-		"id":         base,
+		"id":         utils.TrimExt(p.Permalink()),
 		"categories": p.Categories(),
 		"tags":       p.Tags(),
 		// "title": base,
@@ -61,7 +63,7 @@ func (p *page) ToLiquid() interface{} {
 		"relative_path": filepath.ToSlash(p.site.RelativePath(p.filename)),
 		// TODO collection(name)
 
-		// TODO undocumented; only present in collection pages:
+		// de facto
 		"ext": ext,
 	}
 	for k, v := range p.frontMatter {

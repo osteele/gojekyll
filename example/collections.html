@@ -59,7 +59,7 @@ Keys: {{ ks | join }}
 <h2>Static File</h2>
 
 {% assign d = site.static_files.first %}
-{% capture ks %}{% for k in p %}{{ k }} {% endfor %}{% endcapture %}
+{% capture ks %}{% for k in d %}{{ k }} {% endfor %}{% endcapture %}
 {% assign ks = ks | split: ' ' | sort %}
 Keys: {{ ks | join }}
 
