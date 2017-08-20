@@ -10,8 +10,6 @@ import (
 	"github.com/osteele/gojekyll/utils"
 )
 
-const draftsPath = "_drafts"
-
 // ReadPages scans the file system for collection pages, and adds them to c.Pages.
 func (c *Collection) ReadPages() error {
 	if c.IsPostsCollection() && c.cfg.Drafts {
@@ -24,30 +22,34 @@ func (c *Collection) ReadPages() error {
 	}
 	if c.IsPostsCollection() {
 		sort.Sort(pagesByDate{c.pages})
-		var prev pages.Page
-		for _, p := range c.pages {
-			p.FrontMatter()["previous"] = prev
-			if prev != nil {
-				prev.FrontMatter()["next"] = p
-			}
-			prev = p
-		}
-		if prev != nil {
-			prev.FrontMatter()["next"] = nil
-		}
+		addPrevNext(c.pages)
 	}
 	return nil
+}
+
+func addPrevNext(ps []pages.Page) {
+	const prevPageField = "previous"
+	const nextPageField = "next"
+	var prev pages.Page
+	for _, p := range ps {
+		p.FrontMatter()[prevPageField] = prev
+		if prev != nil {
+			prev.FrontMatter()[nextPageField] = p
+		}
+		prev = p
+	}
+	if prev != nil {
+		prev.FrontMatter()[nextPageField] = nil
+	}
 }
 
 // scanDirectory scans the file system for collection pages, and adds them to c.Pages.
 //
 // This function is distinct from ReadPages so that the posts collection can call it twice.
 func (c *Collection) scanDirectory(dirname string) error {
-	var (
-		sitePath = c.cfg.Source
-		dir      = filepath.Join(sitePath, dirname)
-	)
-	walkFn := func(filename string, info os.FileInfo, err error) error {
+	sitePath := c.cfg.Source
+	dir := filepath.Join(sitePath, dirname)
+	return filepath.Walk(dir, func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
 			if os.IsNotExist(err) {
 				return nil
@@ -63,17 +65,16 @@ func (c *Collection) scanDirectory(dirname string) error {
 		default:
 			return c.readPost(filename, utils.MustRel(dir, filename))
 		}
-	}
-	return filepath.Walk(dir, walkFn)
+	})
 }
 
 func (c *Collection) readPost(abs string, rel string) error {
 	siteRel := utils.MustRel(c.cfg.Source, abs)
 	strategy := c.strategy()
 	switch {
-	case !strategy.collectible(rel):
+	case !strategy.isCollectible(rel):
 		return nil
-	case strategy.future(rel) && !c.cfg.Future:
+	case strategy.isFuture(rel) && !c.cfg.Future:
 		return nil
 	}
 	pageDefaults := map[string]interface{}{
@@ -81,7 +82,7 @@ func (c *Collection) readPost(abs string, rel string) error {
 		"permalink":  c.PermalinkPattern(),
 	}
 	fm := templates.MergeVariableMaps(pageDefaults, c.cfg.GetFrontMatterDefaults(c.Name, siteRel))
-	strategy.addDate(rel, fm)
+	strategy.parseFilename(rel, fm)
 	f, err := pages.NewFile(c.site, abs, filepath.ToSlash(rel), fm)
 	switch {
 	case err != nil:

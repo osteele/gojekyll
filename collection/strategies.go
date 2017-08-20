@@ -6,13 +6,13 @@ import (
 	"github.com/osteele/gojekyll/utils"
 )
 
-// A collectionStrategy encapsulates behavior differences between the _post
-// collection and other collection.
+// A collectionStrategy encapsulates behavior differences between the `_post`
+// collection and other collections.
 type collectionStrategy interface {
-	addDate(filename string, fm map[string]interface{})
-	collectible(filename string) bool
 	defaultPermalinkPattern() string
-	future(filename string) bool
+	isCollectible(filename string) bool
+	isFuture(filename string) bool
+	parseFilename(string, map[string]interface{})
 }
 
 func (c *Collection) strategy() collectionStrategy {
@@ -24,25 +24,25 @@ func (c *Collection) strategy() collectionStrategy {
 
 type defaultStrategy struct{}
 
-func (s defaultStrategy) addDate(_ string, _ map[string]interface{}) {}
-func (s defaultStrategy) collectible(filename string) bool           { return true }
-func (s defaultStrategy) future(filename string) bool                { return false }
+func (s defaultStrategy) parseFilename(string, map[string]interface{}) {}
+func (s defaultStrategy) isCollectible(string) bool                    { return true }
+func (s defaultStrategy) isFuture(string) bool                         { return false }
 
 type postsStrategy struct{}
 
-func (s postsStrategy) addDate(filename string, fm map[string]interface{}) {
+func (s postsStrategy) parseFilename(filename string, fm map[string]interface{}) {
 	if t, title, found := utils.FilenameDate(filename); found {
 		fm["date"] = t
 		fm["title"] = title
 	}
 }
 
-func (s postsStrategy) collectible(filename string) bool {
+func (s postsStrategy) isCollectible(filename string) bool {
 	_, _, ok := utils.FilenameDate(filename)
 	return ok
 }
 
-func (s postsStrategy) future(filename string) bool {
+func (s postsStrategy) isFuture(filename string) bool {
 	t, _, ok := utils.FilenameDate(filename)
 	return ok && t.After(time.Now())
 }

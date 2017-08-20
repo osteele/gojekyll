@@ -22,7 +22,7 @@ type Collection struct {
 	site  Site
 }
 
-// Site is the interface a site provides to collections it contains.
+// Site is the interface a site provides to its collections.
 type Site interface {
 	Config() *config.Config
 	Exclude(string) bool
@@ -30,6 +30,9 @@ type Site interface {
 	RendererManager() renderers.Renderers
 	OutputExt(pathname string) string
 }
+
+const draftsPath = "_drafts"
+const postsName = "posts"
 
 // New creates a new Collection
 func New(s Site, name string, metadata map[string]interface{}) *Collection {
@@ -54,12 +57,12 @@ func (c *Collection) AbsDir() string {
 func (c *Collection) PathPrefix() string { return filepath.FromSlash("_" + c.Name + "/") }
 
 // IsPostsCollection returns true if the collection is the special "posts" collection.
-func (c *Collection) IsPostsCollection() bool { return c.Name == "posts" }
+func (c *Collection) IsPostsCollection() bool { return c.Name == postsName }
 
 // Output returns a bool indicating whether files in this collection should be written.
 func (c *Collection) Output() bool { return templates.VariableMap(c.Metadata).Bool("output", false) }
 
-// Pages is a list of pages. Pages in the Post collection are ordered by date.
+// Pages is a slice of the collection's pages. Pages in the Post collection are ordered by date.
 func (c *Collection) Pages() []pages.Page {
 	return c.pages
 }
@@ -91,6 +94,6 @@ func (c *Collection) ToLiquid() interface{} {
 
 // PermalinkPattern returns the default permalink pattern for this collection.
 func (c *Collection) PermalinkPattern() string {
-	defaultPattern := c.strategy().defaultPermalinkPattern()
-	return templates.VariableMap(c.Metadata).String("permalink", defaultPattern)
+	pattern := c.strategy().defaultPermalinkPattern()
+	return templates.VariableMap(c.Metadata).String("permalink", pattern)
 }

@@ -164,10 +164,8 @@ func (f *file) PostDate() time.Time {
 		if err == nil {
 			return t
 		}
-	default:
-		panic(fmt.Sprintf("expected a date %v", value))
 	}
-	panic("read posts should have set this")
+	return f.fileModTime
 }
 
 // Write applies Liquid and Markdown, as appropriate.

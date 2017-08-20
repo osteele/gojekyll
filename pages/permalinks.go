@@ -42,18 +42,15 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 // See https://jekyllrb.com/docs/permalinks/#template-variables
 func (p *page) permalinkVariables() map[string]string {
 	var (
-		relpath   = p.relpath
-		root      = utils.TrimExt(relpath)
-		name      = filepath.Base(root)
-		fm        = p.frontMatter
-		bindings  = templates.VariableMap(fm)
-		slug      = bindings.String("slug", utils.Slugify(name))
-		date      = p.fileModTime
-		dateField = bindings.String("date", "")
-	)
-	if dateField != "" {
+		relpath  = p.relpath
+		root     = utils.TrimExt(relpath)
+		name     = filepath.Base(root)
+		fm       = p.frontMatter
+		bindings = templates.VariableMap(fm)
+		slug     = bindings.String("slug", utils.Slugify(name))
+		// date      = p.fileModTime
 		date = p.PostDate().In(time.Local)
-	}
+	)
 	vars := map[string]string{
 		"categories": strings.Join(p.Categories(), "/"),
 		"collection": bindings.String("collection", ""),

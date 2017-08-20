@@ -18,7 +18,7 @@ func FilenameDate(s string) (t time.Time, title string, found bool) {
 		found = false
 		return
 	}
-	t, err := time.Parse(layout, base[:len(layout)])
+	t, err := time.ParseInLocation(layout, base[:len(layout)], time.Local)
 	if err != nil {
 		return
 	}
