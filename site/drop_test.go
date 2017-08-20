@@ -22,9 +22,9 @@ func readTestSiteDrop(t *testing.T) map[string]interface{} {
 
 func TestSite_ToLiquid(t *testing.T) {
 	drop := readTestSiteDrop(t)
-	docs, ok := drop["documents"].([]pages.Document)
+	docs, ok := drop["documents"].([]pages.Page)
 	require.True(t, ok, fmt.Sprintf("documents has type %T", drop["documents"]))
-	require.Len(t, docs, 4)
+	require.Len(t, docs, 3)
 }
 
 func TestSite_ToLiquid_time(t *testing.T) {
@@ -38,11 +38,11 @@ func TestSite_ToLiquid_pages(t *testing.T) {
 	drop := readTestSiteDrop(t)
 	ps, ok := drop["pages"].([]pages.Page)
 	require.True(t, ok, fmt.Sprintf("pages has type %T", drop["pages"]))
-	require.Len(t, ps, 3)
+	require.Len(t, ps, 1)
 
 	ps, ok = drop["html_pages"].([]pages.Page)
 	require.True(t, ok, fmt.Sprintf("pages has type %T", drop["pages"]))
-	require.Len(t, ps, 3)
+	require.Len(t, ps, 1)
 }
 
 func TestSite_ToLiquid_posts(t *testing.T) {

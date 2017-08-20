@@ -21,17 +21,21 @@ func (s *Site) ToLiquid() interface{} {
 }
 
 func (s *Site) initializeDrop() error {
+	var docs []pages.Page
+	for _, c := range s.Collections {
+		docs = append(docs, c.Pages()...)
+	}
 	drop := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
 		"data":         s.data,
-		"documents":    s.docs,
+		"documents":    docs,
 		"html_files":   s.htmlFiles(),
 		"html_pages":   s.htmlPages(),
-		"pages":        s.Pages(),
+		"pages":        s.nonCollectionPages,
 		"static_files": s.staticFiles(),
 		// TODO read time from _config, if it's available
 		"time": time.Now(),
 	})
-	collections := []interface{}{}
+	var collections []interface{}
 	for _, c := range s.Collections {
 		drop[c.Name] = c.Pages()
 		collections = append(collections, c.ToLiquid())
@@ -60,7 +64,7 @@ func (s *Site) htmlFiles() (out []*pages.StaticFile) {
 }
 
 func (s *Site) htmlPages() (out []pages.Page) {
-	for _, p := range s.Pages() {
+	for _, p := range s.nonCollectionPages {
 		if p.OutputExt() == ".html" {
 			out = append(out, p)
 		}
