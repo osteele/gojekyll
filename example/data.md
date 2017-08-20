@@ -3,11 +3,21 @@
 
 ## YAML data
 
-* {{ site.data.file_data.key }}
+{% assign data = site.data.file_data %}
+<table>
+  {% for k in data %}
+    <tr><td>{{ k[0] }}</td><td>{{ k[1] }}</td>
+  {% endfor %}
+</table>
 
 ## JSON data
 
-{{ site.data.json_data.key }}
+{% assign data = site.data.json_data %}
+<table>
+  {% for k in data %}
+    <tr><td>{{ k[0] }}</td><td>{{ k[1] }}</td>
+  {% endfor %}
+</table>
 
 ## CSV data
 
