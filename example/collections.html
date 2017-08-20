@@ -3,35 +3,71 @@
 
 <h1>Collections</h1>
 
-{% for c in site.collections %}
-  <h2> {{ c.label }}</h2>
-    <table>
-    {% for k in c %}{% if k != 'docs' %}
-    <tr><th style="text-align: left; vertical-align: top">{{k}}</th><td>{{c[k]}}</td></tr>
-    {% endif %}{% endfor %}
-    <tr><th style="text-align: left; vertical-align: top">docs</th><td>
-      <ul>
-        {% for p in c.docs %}
-          <li>{{ p.path }}
-            <table>
-              {% for k in p %}
-                <tr>
-                  <th style="text-align: left; vertical-align: top">{{k}}</th>
-                  <td><pre>{{p[k]}}</pre></td>
-                </tr>
-              {% endfor %}
-              <!-- <tr>
-                <th style="text-align: left; vertical-align: top">content</th>
-                <td><pre>{{p.content | escape}}</pre></td>
-              </tr>
-              <tr>
-                <th style="text-align: left; vertical-align: top">excerpt</th>
-                <td><pre>{{p.excerpt | escape}}</pre></td>
-              </tr> -->
-            </table>
-          </li>
-        {% endfor %}
-      </ul>
-    </td></tr>
-  </table>
-{% endfor %}
+<dl>
+  {% for c in site.collections %}
+    {% capture ks %}{% for k in c %}{{ k }} {% endfor %}{% endcapture %}
+    {% assign ks = ks | split: ' ' | sort %}
+    <dt> {{ c.label }}</dt>
+    <dd>Keys: {{ ks | join }}</dd>
+    <dd>
+      <table>
+      {% for k in ks %}
+        <tr>
+          <th style="text-align: left; vertical-align: top">{{ k }}</th>
+          {% if k != 'docs' %}
+            <td>{{ c[k] }}</td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+      </table>
+    </dd>
+  {% endfor %}
+</dl>
+
+<h2>Collection Page</h2>
+
+{% assign p = site.c1.first %}
+{% capture ks %}{% for k in p %}{{ k }} {% endfor %}{% endcapture %}
+{% assign ks = ks | split: ' ' | sort %}
+Keys: {{ ks | join }}
+
+<table>
+  {% for k in ks %}
+    <tr>
+      <th style="text-align: left; vertical-align: top">{{ k }}</th>
+      <td><pre>{{ p[k] }}</pre></td>
+    </tr>
+  {% endfor %}
+</table>
+
+<h2>Post</h2>
+
+{% assign p = site.posts.first %}
+{% capture ks %}{% for k in p %}{{ k }} {% endfor %}{% endcapture %}
+{% assign ks = ks | split: ' ' | sort %}
+Keys: {{ ks | join }}
+
+<table>
+  {% for k in ks %}
+    <tr>
+      <th style="text-align: left; vertical-align: top">{{ k }}</th>
+      <td><pre>{{ p[k] }}</pre></td>
+    </tr>
+  {% endfor %}
+</table>
+
+<h2>Static File</h2>
+
+{% assign d = site.static_files.first %}
+{% capture ks %}{% for k in p %}{{ k }} {% endfor %}{% endcapture %}
+{% assign ks = ks | split: ' ' | sort %}
+Keys: {{ ks | join }}
+
+<table>
+  {% for k in ks %}
+    <tr>
+      <th style="text-align: left; vertical-align: top">{{ k }}</th>
+      <td><pre>{{ d[k] }}</pre></td>
+    </tr>
+  {% endfor %}
+</table>
