@@ -1,18 +1,6 @@
 ---
 ---
 
-## Page Variables ([reference](https://jekyllrb.com/docs/variables/#page-variables))
-
-| Name       | Value                 |
-|------------|-----------------------|
-| categories | {{ page.categories }} |
-| date       | {{ page.date }}       |
-| id         | {{ page.id }}         |
-| path       | {{ page.path }}       |
-| tags       | {{ page.tags }}       |
-| title      | {{ page.title }}      |
-| url        | {{ page.url }}        |
-
 ## Site Variables ([reference](https://jekyllrb.com/docs/variables/#site-variables))
 
 | Name              | Value                                                            | Notes                |
@@ -30,15 +18,30 @@
 | categories        | {{ site.categories }} {% for k in categories %}{{k}}{% endfor %} |                      |
 | tags              | {{ site.tags }}                                                  |                      |
 
-{% comment %}
-TODO:
-related_posts
-collections
-data
-documents
-categories
-tags
-{% endcomment %}
+{% if false %}
+{% capture ks %}{% for k in site %}{{ k }} {% endfor %}{% endcapture %}
+{% assign ks = ks | split: ' ' | sort %}
+
+<table>{% for k in ks %}
+  <tr>
+    <td style="text-align: left; vertical-align: top">{{k}}</td>
+    <td><pre>{{site[k]|escape|truncate: 80}}</pre></td>
+  </tr>
+{% endfor %}
+</table>
+{% endif %}
+
+## Page Variables ([reference](https://jekyllrb.com/docs/variables/#page-variables))
+
+| Name       | Value                 |
+|------------|-----------------------|
+| categories | {{ page.categories }} |
+| date       | {{ page.date }}       |
+| id         | {{ page.id }}         |
+| path       | {{ page.path }}       |
+| tags       | {{ page.tags }}       |
+| title      | {{ page.title }}      |
+| url        | {{ page.url }}        |
 
 ## Jekyll Variables
 

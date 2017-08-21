@@ -7,7 +7,7 @@ import (
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/templates"
-	"github.com/osteele/liquid/evaluator"
+	"github.com/osteele/liquid"
 )
 
 // ToLiquid returns the site variable for template evaluation.
@@ -17,7 +17,7 @@ func (s *Site) ToLiquid() interface{} {
 			log.Fatalf("ToLiquid failed: %s\n", err)
 		}
 	})
-	return s.drop
+	return liquid.IterationKeyedMap(s.drop)
 }
 
 func (s *Site) initializeDrop() error {
@@ -26,6 +26,7 @@ func (s *Site) initializeDrop() error {
 		docs = append(docs, c.Pages()...)
 	}
 	drop := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
+		"collections":  s.collectionDrops(),
 		"data":         s.data,
 		"documents":    docs,
 		"html_files":   s.htmlFiles(),
@@ -35,13 +36,9 @@ func (s *Site) initializeDrop() error {
 		// TODO read time from _config, if it's available
 		"time": time.Now(),
 	})
-	var collections []interface{}
 	for _, c := range s.Collections {
 		drop[c.Name] = c.Pages()
-		collections = append(collections, c.ToLiquid())
 	}
-	evaluator.SortByProperty(collections, "label", true)
-	drop["collections"] = collections
 	s.drop = drop
 	s.setPostVariables()
 	return s.runHooks(func(h plugins.Plugin) error {
@@ -49,33 +46,40 @@ func (s *Site) initializeDrop() error {
 	})
 }
 
-// The following functions are only used in the drop, therefore they're
-// non-public and they're listed here.
+// The following functions are only used in the drop.
 //
 // Since the drop is cached, there's no effort to cache these too.
 
-func (s *Site) htmlFiles() (out []*pages.StaticFile) {
+func (s *Site) collectionDrops() []interface{} {
+	var drops []interface{}
+	for _, c := range s.Collections {
+		drops = append(drops, c.ToLiquid())
+	}
+	return drops
+}
+
+func (s *Site) htmlFiles() (result []*pages.StaticFile) {
 	for _, p := range s.staticFiles() {
 		if p.OutputExt() == ".html" {
-			out = append(out, p)
+			result = append(result, p)
 		}
 	}
 	return
 }
 
-func (s *Site) htmlPages() (out []pages.Page) {
+func (s *Site) htmlPages() (result []pages.Page) {
 	for _, p := range s.nonCollectionPages {
 		if p.OutputExt() == ".html" {
-			out = append(out, p)
+			result = append(result, p)
 		}
 	}
 	return
 }
 
-func (s *Site) staticFiles() (out []*pages.StaticFile) {
+func (s *Site) staticFiles() (result []*pages.StaticFile) {
 	for _, d := range s.docs {
 		if sd, ok := d.(*pages.StaticFile); ok {
-			out = append(out, sd)
+			result = append(result, sd)
 		}
 	}
 	return

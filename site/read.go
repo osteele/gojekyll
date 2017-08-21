@@ -3,6 +3,7 @@ package site
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/osteele/gojekyll/collection"
@@ -90,16 +91,22 @@ func (s *Site) AddDocument(d pages.Document, output bool) {
 
 // ReadCollections reads the pages of the collections named in the site configuration.
 // It adds each collection's pages to the site map, and creates a template site variable for each collection.
-func (s *Site) ReadCollections() error {
+func (s *Site) ReadCollections() (err error) {
+	var cols []*collection.Collection
 	for name, data := range s.config.Collections {
 		c := collection.New(s, name, data)
-		s.Collections = append(s.Collections, c)
-		if err := c.ReadPages(); err != nil {
-			return err
+		cols = append(cols, c)
+		err = c.ReadPages()
+		if err != nil {
+			break
 		}
 		for _, p := range c.Pages() {
 			s.AddDocument(p, c.Output())
 		}
 	}
+	sort.Slice(cols, func(i, j int) bool {
+		return cols[i].Name < cols[j].Name
+	})
+	s.Collections = cols
 	return nil
 }

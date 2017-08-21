@@ -5,18 +5,19 @@ variable: page variable
 
 ## Stats
 
-* {{ site.pages.size }} Pages
-* {{ site.posts.size }} Posts
-* {{ site.static_files.size }} Static Files
+* {{ site.collections.size }} Collections
+* {{ site.documents.size }} Documents
+* {{ site.html_files.size }} HTML File(s)
 * {{ site.html_pages.size }} HTML Pages
-* {{ site.html_files.size }} HTML Files
-* {{ site.pages.collections.size }} Collections
+* {{ site.pages.size }} Pages
+* {{ site.posts.size }} Post(s)
+* {{ site.static_files.size }} Static Files
 
 ## Tests
 
 * [Archive]({% link archive.md %})
-* [Data]({% link data.md %})
 * [Collections]({% link collections.html %})
+* [Data]({% link data.md %})
 * [Markdown]({% link markdown.md %})
 * [Pages]({% link pages.md %})
 * [Plugins]({% link plugins.md %})
@@ -27,6 +28,8 @@ variable: page variable
 
 ## Variables
 
-* {{ page.variable }}
-* {{ site.variable }}
-* {{ site.data.file_data.k1 }}
+| &nbsp;          | &nbsp;                       |
+|-----------------|------------------------------|
+| Page variable   | {{ page.variable }}          |
+| Site variable   | {{ site.variable }}          |
+| Data file value | {{ site.data.file_data.k1 }} |

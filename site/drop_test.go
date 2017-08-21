@@ -15,7 +15,7 @@ func readTestSiteDrop(t *testing.T) map[string]interface{} {
 	site, err := FromDirectory("testdata/site1", config.Flags{})
 	require.NoError(t, err)
 	require.NoError(t, site.Read())
-	return site.ToLiquid().(map[string]interface{})
+	return site.ToLiquid().(tags.IterationKeyedMap)
 }
 
 // TODO test cases for collections, categories, tags, data
