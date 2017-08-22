@@ -64,7 +64,10 @@ func (p *Manager) Render(w io.Writer, src []byte, vars liquid.Bindings, filename
 		return err
 	}
 	if p.cfg.IsMarkdown(filename) {
-		src = renderMarkdown(src)
+		src, err = renderMarkdown(src)
+		if err != nil {
+			return err
+		}
 	}
 	_, err = w.Write(src)
 	return err

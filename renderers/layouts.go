@@ -13,8 +13,8 @@ import (
 	"github.com/osteele/liquid"
 )
 
-// ApplyLayout applies the named layout to the data.
-func (p *Manager) ApplyLayout(name string, data []byte, vars liquid.Bindings) ([]byte, error) {
+// ApplyLayout applies the named layout to the content.
+func (p *Manager) ApplyLayout(name string, content []byte, vars liquid.Bindings) ([]byte, error) {
 	for name != "" {
 		var lfm map[string]interface{}
 		tpl, err := p.FindLayout(name, &lfm)
@@ -22,16 +22,16 @@ func (p *Manager) ApplyLayout(name string, data []byte, vars liquid.Bindings) ([
 			return nil, err
 		}
 		b := utils.MergeStringMaps(vars, map[string]interface{}{
-			"content": string(data),
+			"content": string(content),
 			"layout":  lfm,
 		})
-		data, err = tpl.Render(b)
+		content, err = tpl.Render(b)
 		if err != nil {
 			return nil, utils.WrapPathError(err, name)
 		}
 		name = templates.VariableMap(lfm).String("layout", "")
 	}
-	return data, nil
+	return content, nil
 }
 
 // FindLayout returns a template for the named layout.

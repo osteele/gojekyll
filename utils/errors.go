@@ -19,8 +19,12 @@ type pathError struct {
 	path  string
 }
 
-func (p *pathError) Error() string {
-	return fmt.Sprintf("%s: %s", p.path, p.cause)
+func (pe *pathError) Error() string {
+	return fmt.Sprintf("%s: %s", pe.path, pe.cause)
+}
+
+func (pe *pathError) Path() string {
+	return pe.path
 }
 
 // WrapPathError returns an error that will print with a path.\

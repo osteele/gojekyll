@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/osteele/gojekyll/frontmatter"
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/gojekyll/version"
 	"github.com/osteele/liquid/evaluator"
 )
@@ -169,24 +170,23 @@ func (f *file) PostDate() time.Time {
 
 // Write applies Liquid and Markdown, as appropriate.
 func (p *page) Write(w io.Writer) error {
-	err := p.Render()
-	if err != nil {
+	if err := p.Render(); err != nil {
 		return err
 	}
 	p.RLock()
 	defer p.RUnlock()
-	content := p.content
-	layout, ok := p.frontMatter["layout"].(string)
-	if ok && layout != "" {
-		rp := p.site.RendererManager()
-		b, e := rp.ApplyLayout(layout, []byte(content), p.TemplateContext())
-		if e != nil {
-			return e
+	cn := p.content
+	lo, ok := p.frontMatter["layout"].(string)
+	if ok && lo != "" {
+		rm := p.site.RendererManager()
+		b, err := rm.ApplyLayout(lo, []byte(cn), p.TemplateContext())
+		if err != nil {
+			return err
 		}
 		_, err = w.Write(b)
-	} else {
-		_, err = io.WriteString(w, content)
+		return err
 	}
+	_, err := io.WriteString(w, cn)
 	return err
 }
 
@@ -197,7 +197,7 @@ func (p *page) Render() error {
 		p.Lock()
 		defer p.Unlock()
 		p.content = cn
-		p.contentError = err
+		p.contentError = utils.WrapPathError(err, p.filename)
 		p.excerpt = ex
 		p.rendered = true
 	})

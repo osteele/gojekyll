@@ -2,6 +2,7 @@ package renderers
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"regexp"
 
@@ -29,17 +30,31 @@ const blackfridayExtensions = 0 |
 	// added relative to commonExtensions
 	blackfriday.EXTENSION_AUTO_HEADER_IDS
 
-func renderMarkdown(md []byte) []byte {
+func renderMarkdown(md []byte) ([]byte, error) {
 	renderer := blackfriday.HtmlRenderer(blackfridayFlags, "", "")
-	html := blackfriday.MarkdownOptions(md, renderer, blackfriday.Options{
-		Extensions: blackfridayExtensions})
+	html := blackfriday.MarkdownOptions(
+		md,
+		renderer,
+		blackfriday.Options{Extensions: blackfridayExtensions},
+	)
 	html, err := renderInnerMarkdown(html)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("%s while rendering markdown", err)
 	}
-	return html
+	return html, nil
 }
 
+func _renderMarkdown(md []byte) ([]byte, error) {
+	renderer := blackfriday.HtmlRenderer(blackfridayFlags, "", "")
+	html := blackfriday.MarkdownOptions(
+		md,
+		renderer,
+		blackfriday.Options{Extensions: blackfridayExtensions},
+	)
+	return html, nil
+}
+
+// search HTML for markdown=1, and process if found
 func renderInnerMarkdown(b []byte) ([]byte, error) {
 	z := html.NewTokenizer(bytes.NewReader(b))
 	buf := new(bytes.Buffer)
@@ -54,7 +69,7 @@ outer:
 			return nil, z.Err()
 		case html.StartTagToken:
 			if hasMarkdownAttr(z) {
-				_, err := buf.Write(removeMarkdownAttr(z.Raw()))
+				_, err := buf.Write(stripMarkdownAttr(z.Raw()))
 				if err != nil {
 					return nil, err
 				}
@@ -62,6 +77,7 @@ outer:
 					return nil, err
 				}
 				// the above leaves z set to the end token
+				// fall through to render it
 			}
 		}
 		_, err := buf.Write(z.Raw())
@@ -71,8 +87,6 @@ outer:
 	}
 	return buf.Bytes(), nil
 }
-
-var markdownAttrRE = regexp.MustCompile(`\s*markdown\s*=\s*("1"|'1'|1)\s*`)
 
 func hasMarkdownAttr(z *html.Tokenizer) bool {
 	for {
@@ -86,12 +100,18 @@ func hasMarkdownAttr(z *html.Tokenizer) bool {
 	}
 }
 
-func removeMarkdownAttr(tag []byte) []byte {
+var markdownAttrRE = regexp.MustCompile(`\s*markdown\s*=[^\s>]*\s*`)
+
+// return the text of a start tag, w/out the markdown attribute
+func stripMarkdownAttr(tag []byte) []byte {
 	tag = markdownAttrRE.ReplaceAll(tag, []byte(" "))
 	tag = bytes.Replace(tag, []byte(" >"), []byte(">"), 1)
 	return tag
 }
 
+// called once markdown="1" attribute is detected.
+// Collects the HTML tokens into a string, applies markdown to them,
+// and writes the result
 func processInnerMarkdown(w io.Writer, z *html.Tokenizer) error {
 	buf := new(bytes.Buffer)
 	depth := 1
@@ -111,10 +131,13 @@ loop:
 		}
 		_, err := buf.Write(z.Raw())
 		if err != nil {
-			panic(err)
+			return err
 		}
 	}
-	html := renderMarkdown(buf.Bytes())
-	_, err := w.Write(html)
+	html, err := _renderMarkdown(buf.Bytes())
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(html)
 	return err
 }

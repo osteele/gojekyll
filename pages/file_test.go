@@ -1,6 +1,8 @@
 package pages
 
 import (
+	"bytes"
+	"fmt"
 	"io"
 	"testing"
 
@@ -21,11 +23,15 @@ func (s siteFake) RendererManager() renderers.Renderers { return &renderManagerF
 
 type renderManagerFake struct{ t *testing.T }
 
-func (rm renderManagerFake) ApplyLayout(layout string, src []byte, vars liquid.Bindings) ([]byte, error) {
+func (rm renderManagerFake) ApplyLayout(layout string, content []byte, vars liquid.Bindings) ([]byte, error) {
 	require.Equal(rm.t, "layout1", layout)
-	return nil, nil
+	return content, nil
 }
+
 func (rm renderManagerFake) Render(w io.Writer, src []byte, vars liquid.Bindings, filename string, lineNo int) error {
+	if bytes.Contains(src, []byte("{% error %}")) {
+		return fmt.Errorf("render error")
+	}
 	_, err := io.WriteString(w, "rendered: ")
 	if err != nil {
 		return err
