@@ -16,6 +16,10 @@ func TestRenderMarkdown(t *testing.T) {
 
 	_, err := renderMarkdownString(`<div a=1 markdown=1><p></div>`)
 	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "EOF")
+
+	require.Contains(t, mustMarkdownString(`<div markdown=1><user@example.com></div>`), `<a href="mailto:user@example.com">user@example.com</a>`)
+	require.Contains(t, mustMarkdownString(`<div markdown=1><http://example.com></div>`), `<a href="http://example.com">http://example.com</a>`)
 }
 
 func mustMarkdownString(md string) string {

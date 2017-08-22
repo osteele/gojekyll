@@ -109,6 +109,12 @@ func stripMarkdownAttr(tag []byte) []byte {
 	return tag
 }
 
+// Used inside markdown=1.
+// TODO Instead of this approach, only count tags that match the start
+// tag. For example, if <div markdown="1"> kicked off the inner markdown,
+// count the div depth.
+var notATagRE = regexp.MustCompile(`@|(https?|ftp):`)
+
 // called once markdown="1" attribute is detected.
 // Collects the HTML tokens into a string, applies markdown to them,
 // and writes the result
@@ -122,7 +128,9 @@ loop:
 		case html.ErrorToken:
 			return z.Err()
 		case html.StartTagToken:
-			depth++
+			if !notATagRE.Match(z.Raw()) {
+				depth++
+			}
 		case html.EndTagToken:
 			depth--
 			if depth == 0 {
