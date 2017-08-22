@@ -2,10 +2,10 @@ package renderers
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"regexp"
 
+	"github.com/osteele/gojekyll/utils"
 	"github.com/russross/blackfriday"
 	"golang.org/x/net/html"
 )
@@ -39,7 +39,7 @@ func renderMarkdown(md []byte) ([]byte, error) {
 	)
 	html, err := renderInnerMarkdown(html)
 	if err != nil {
-		return nil, fmt.Errorf("%s while rendering markdown", err)
+		return nil, utils.WrapError(err, "markdown")
 	}
 	return html, nil
 }
