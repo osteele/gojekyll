@@ -68,7 +68,8 @@ type Config struct {
 
 	// Meta
 	ConfigFile string                 `yaml:"-"`
-	Variables  map[string]interface{} `yaml:"-"`
+	m          map[string]interface{} `yaml:"-"` // config file, as map
+	ms         yaml.MapSlice          `yaml:"-"` // config file, as MapSlice
 
 	// Plugins
 	RequireFrontMatter        bool            `yaml:"-"`
@@ -142,22 +143,13 @@ func (c *Config) RequiresFrontMatter(rel string) bool {
 		return true
 	case !c.IsMarkdown(rel):
 		return true
-	case contains(c.Include, rel):
+	case utils.StringContains(c.Include, rel):
 		return false
 	case c.RequireFrontMatterExclude[strings.ToUpper(utils.TrimExt(filepath.Base(rel)))]:
 		return true
 	default:
 		return false
 	}
-}
-
-func contains(array []string, s string) bool {
-	for _, item := range array {
-		if item == s {
-			return true
-		}
-	}
-	return false
 }
 
 // Unmarshal updates site from a YAML configuration file.
@@ -169,7 +161,10 @@ func Unmarshal(bytes []byte, c *Config) error {
 	if err := yaml.Unmarshal(bytes, &c); err != nil {
 		return err
 	}
-	if err := yaml.Unmarshal(bytes, &c.Variables); err != nil {
+	if err := yaml.Unmarshal(bytes, &c.ms); err != nil {
+		return err
+	}
+	if err := yaml.Unmarshal(bytes, &c.m); err != nil {
 		return err
 	}
 	if err := yaml.Unmarshal(bytes, &cList); err == nil {
@@ -191,4 +186,48 @@ func Unmarshal(bytes []byte, c *Config) error {
 		c.Plugins = compat.Gems
 	}
 	return nil
+}
+
+// Variables returns the configuration as a Liquid variable map.
+func (c *Config) Variables() map[string]interface{} {
+	m := map[string]interface{}{}
+	for _, item := range c.ms {
+		if s, ok := item.Key.(string); ok {
+			m[s] = item.Value
+		}
+	}
+	return m
+}
+
+// Set sets a value in the Liquid variable map.
+// This does not update the corresponding value in the Config struct.
+func (c *Config) Set(key string, val interface{}) {
+	c.m[key] = val
+	for _, item := range c.ms {
+		if item.Key == key {
+			item.Value = val
+			return
+		}
+	}
+	c.ms = append(c.ms, yaml.MapItem{Key: key, Value: val})
+}
+
+// Map returns the config indexed by key, if it's a map.
+func (c *Config) Map(key string) (map[string]interface{}, bool) {
+	if m, ok := c.m[key]; ok {
+		if m, ok := m.(map[string]interface{}); ok {
+			return m, ok
+		}
+	}
+	return nil, false
+}
+
+//String returns the config indexed by key, if it's a string.
+func (c *Config) String(key string) (string, bool) {
+	if m, ok := c.m[key]; ok {
+		if m, ok := m.(string); ok {
+			return m, ok
+		}
+	}
+	return "", false
 }

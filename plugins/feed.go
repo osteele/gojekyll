@@ -35,7 +35,7 @@ func (p *jekyllFeedPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 
 func (p *jekyllFeedPlugin) PostRead(s Site) error {
 	path := "/feed.xml"
-	if cfg, ok := s.Config().Variables["feed"].(map[string]interface{}); ok {
+	if cfg, ok := s.Config().Map("feed"); ok {
 		if pp, ok := cfg["path"].(string); ok {
 			path = "/" + pp
 		}
@@ -47,9 +47,12 @@ func (p *jekyllFeedPlugin) PostRead(s Site) error {
 
 func (p *jekyllFeedPlugin) feedMetaTag(ctx render.Context) (string, error) {
 	cfg := p.site.Config()
-	name, _ := cfg.Variables["name"].(string)
+	title, _ := cfg.String("name")
+	if s, ok := cfg.String("title"); ok {
+		title = s
+	}
 	tag := fmt.Sprintf(`<link type="application/atom+xml" rel="alternate" href="%s/feed.xml" title="%s">`,
-		html.EscapeString(cfg.AbsoluteURL), html.EscapeString(name))
+		html.EscapeString(cfg.AbsoluteURL), html.EscapeString(title))
 	return tag, nil
 }
 

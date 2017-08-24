@@ -26,3 +26,11 @@
   <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
 {% endfor %}
 </table>
+
+## Site data
+
+<table>
+{% for row in site.config_data %}
+  <tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+{% endfor %}
+</table>

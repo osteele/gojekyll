@@ -22,6 +22,7 @@ Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com) s
     - [Installation](#installation)
         - [Binary Downloads](#binary-downloads)
         - [From Source](#from-source)
+    - [[Optional] Install command-line autocompletion](#optional-install-command-line-autocompletion)
     - [Status](#status)
         - [Current Limitations](#current-limitations)
         - [Other Differences](#other-differences)
@@ -100,10 +101,6 @@ Missing features:
   - [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions)
   - [`markdown="span"`, `markdown="block"`](https://kramdown.gettalong.org/syntax.html#html-blocks)
   - Markdown configuration options
-
-Differences:
-
-- The order of YAML maps, in `_config` and `site.data`, is not preserved.
 
 Also see the [detailed status](#feature-status) below.
 

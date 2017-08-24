@@ -110,7 +110,7 @@ func New(flags config.Flags) *Site {
 // The server uses this.
 func (s *Site) SetAbsoluteURL(url string) {
 	s.config.AbsoluteURL = url
-	s.config.Variables["url"] = url
+	s.config.Set("url", url)
 	if s.drop != nil {
 		s.drop["url"] = url
 	}

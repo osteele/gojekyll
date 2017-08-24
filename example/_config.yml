@@ -16,3 +16,11 @@ plugins:
 
 gist:
   noscript: false
+
+config_data:
+  k1: first
+  k2: second
+  k0: third
+  k5: fourth
+  k4: fifth
+  k3: sixth

@@ -25,7 +25,7 @@ func (s *Site) initializeDrop() error {
 	for _, c := range s.Collections {
 		docs = append(docs, c.Pages()...)
 	}
-	drop := templates.MergeVariableMaps(s.config.Variables, map[string]interface{}{
+	drop := templates.MergeVariableMaps(s.config.Variables(), map[string]interface{}{
 		"collections":  s.collectionDrops(),
 		"data":         s.data,
 		"documents":    docs,

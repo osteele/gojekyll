@@ -120,10 +120,8 @@ func getCurrentRepo(c *config.Config) (string, error) {
 	if nwo := os.Getenv("PAGES_REPO_NWO"); nwo != "" {
 		return nwo, nil
 	}
-	if s, ok := c.Variables["repository"]; ok {
-		if s, ok := s.(string); ok {
-			return s, nil
-		}
+	if s, ok := c.String("repository"); ok {
+		return s, nil
 	}
 	cmd := exec.Command("git", "remote", "-v") // nolint: gas
 	cmd.Dir = c.SourceDir()

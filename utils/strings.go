@@ -58,6 +58,16 @@ func StringArrayToMap(a []string) map[string]bool {
 	return m
 }
 
+// StringContains returns a bool indicating whether the array contains the string.
+func StringContains(a []string, s string) bool {
+	for _, item := range a {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
 // Titleize splits at ` `, capitalizes, and joins.
 func Titleize(s string) string {
 	a := strings.Split(s, "-")
