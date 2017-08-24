@@ -3,7 +3,6 @@ package site
 import (
 	"fmt"
 	"path/filepath"
-	"regexp"
 	"sync"
 
 	"github.com/osteele/gojekyll/collection"
@@ -202,28 +201,4 @@ func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
 		p, found = s.Routes[filepath.Join(urlpath, "index.htm")]
 	}
 	return
-}
-
-var excludeFileRE = regexp.MustCompile(`^[#~]|^\..|~$`)
-
-// Exclude returns a boolean indicating that the site configuration excludes a file or directory.
-// It does not exclude top-level _underscore files and directories.
-func (s *Site) Exclude(siteRel string) bool {
-	for siteRel != "." {
-		dir, base := filepath.Dir(siteRel), filepath.Base(siteRel)
-		switch {
-		case utils.MatchList(s.config.Include, siteRel):
-			return false
-		case utils.MatchList(s.config.Exclude, siteRel):
-			return true
-		case dir != "." && base[0] == '_':
-			return true
-		default:
-			if excludeFileRE.MatchString(base) {
-				return true
-			}
-		}
-		siteRel = dir
-	}
-	return false
 }
