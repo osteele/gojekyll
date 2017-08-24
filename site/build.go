@@ -13,7 +13,7 @@ import (
 func (s *Site) Clean() error {
 	// TODO PERF when called as part of build, keep files that will be re-generated
 	removeFiles := func(filename string, info os.FileInfo, err error) error {
-		if s.config.Verbose {
+		if s.cfg.Verbose {
 			fmt.Println("rm", filename)
 		}
 		switch {
@@ -25,7 +25,7 @@ func (s *Site) Clean() error {
 			return nil
 		case s.KeepFile(utils.MustRel(s.DestDir(), filename)):
 			return nil
-		case s.config.DryRun:
+		case s.cfg.DryRun:
 			return nil
 		default:
 			// empirically, moving the os.Remove into a goroutine has no performance benefit
@@ -39,7 +39,7 @@ func (s *Site) Clean() error {
 }
 
 func (s *Site) setTimeZone() error {
-	if tz := s.config.Timezone; tz != "" {
+	if tz := s.cfg.Timezone; tz != "" {
 		if _, err := time.LoadLocation(tz); err != nil {
 			fmt.Fprintf(os.Stderr, "%s; using local time zone\n", err)
 		} else if err := os.Setenv("TZ", tz); err != nil {

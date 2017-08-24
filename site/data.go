@@ -12,7 +12,7 @@ import (
 
 func (s *Site) readDataFiles() error {
 	s.data = map[string]interface{}{}
-	dataDir := filepath.Join(s.SourceDir(), s.config.DataDir)
+	dataDir := filepath.Join(s.SourceDir(), s.cfg.DataDir)
 	files, err := ioutil.ReadDir(dataDir)
 	if err != nil {
 		if os.IsNotExist(err) {

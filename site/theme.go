@@ -10,19 +10,19 @@ import (
 )
 
 func (s *Site) findTheme() error {
-	if s.config.Theme == "" {
+	if s.cfg.Theme == "" {
 		return nil
 	}
 	exe, err := exec.LookPath("bundle")
 	if err != nil {
 		log.Fatal("bundle is not in your PATH", err)
 	}
-	cmd := exec.Command(exe, "show", s.config.Theme) // nolint: gas
+	cmd := exec.Command(exe, "show", s.cfg.Theme) // nolint: gas
 	cmd.Dir = s.AbsDir()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("the %s theme could not be found", s.config.Theme)
+			return fmt.Errorf("the %s theme could not be found", s.cfg.Theme)
 		}
 		return err
 	}

@@ -17,12 +17,12 @@ import (
 // Site is a Jekyll site.
 type Site struct {
 	Collections []*collection.Collection
-	Routes      map[string]pages.Document // URL path -> Document, only for output pages
+	Routes      map[string]pages.Document // URL path -> Document; only for output pages
 
-	config   config.Config
-	data     map[string]interface{}
-	flags    config.Flags
-	themeDir string
+	cfg      config.Config
+	data     map[string]interface{} // from _data files
+	flags    config.Flags           // command-line flags, override config files
+	themeDir string                 // absolute path to theme directory
 
 	docs               []pages.Document // all documents, whether or not they are output
 	nonCollectionPages []pages.Page
@@ -35,14 +35,14 @@ type Site struct {
 }
 
 // SourceDir returns the site source directory.
-func (s *Site) SourceDir() string { return s.config.Source }
+func (s *Site) SourceDir() string { return s.cfg.Source }
 
 // DestDir returns the site destination directory.
 func (s *Site) DestDir() string {
-	if filepath.IsAbs(s.config.Destination) {
-		return s.config.Destination
+	if filepath.IsAbs(s.cfg.Destination) {
+		return s.cfg.Destination
 	}
-	return filepath.Join(s.config.Source, s.config.Destination)
+	return filepath.Join(s.cfg.Source, s.cfg.Destination)
 }
 
 // OutputDocs returns a list of output pages.
@@ -75,11 +75,11 @@ func (s *Site) AbsDir() string {
 
 // Config is in the collection.Site interface.
 func (s *Site) Config() *config.Config {
-	return &s.config
+	return &s.cfg
 }
 
 func (s *Site) runHooks(h func(plugins.Plugin) error) error {
-	for _, name := range s.config.Plugins {
+	for _, name := range s.cfg.Plugins {
 		p, ok := plugins.Lookup(name)
 		if ok {
 			if err := h(p); err != nil {
@@ -100,16 +100,16 @@ func (s *Site) PathPrefix() string { return "" }
 
 // New creates a new site record, initialized with the site defaults.
 func New(flags config.Flags) *Site {
-	s := &Site{config: config.Default(), flags: flags}
-	s.config.ApplyFlags(flags)
+	s := &Site{cfg: config.Default(), flags: flags}
+	s.cfg.ApplyFlags(flags)
 	return s
 }
 
 // SetAbsoluteURL overrides the loaded configuration.
 // The server uses this.
 func (s *Site) SetAbsoluteURL(url string) {
-	s.config.AbsoluteURL = url
-	s.config.Set("url", url)
+	s.cfg.AbsoluteURL = url
+	s.cfg.Set("url", url)
 	if s.drop != nil {
 		s.drop["url"] = url
 	}
@@ -126,7 +126,7 @@ func (s *Site) FilenameURLs() map[string]string {
 
 // KeepFile returns a boolean indicating that clean should leave the file in the destination directory.
 func (s *Site) KeepFile(filename string) bool {
-	return utils.SearchStrings(s.config.KeepFiles, filename)
+	return utils.SearchStrings(s.cfg.KeepFiles, filename)
 }
 
 // FilePathPage returns a Page, give a file path relative to site source directory.
@@ -171,7 +171,7 @@ func (s *Site) initializeRenderers() (err error) {
 		RelativeFilenameToURL: s.FilenameURLPath,
 		ThemeDir:              s.themeDir,
 	}
-	s.renderer, err = renderers.New(s.config, options)
+	s.renderer, err = renderers.New(s.cfg, options)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func (s *Site) RelativePath(path string) string {
 			return rel
 		}
 	}
-	return utils.MustRel(s.config.Source, path)
+	return utils.MustRel(s.cfg.Source, path)
 }
 
 // URLPage returns the page that will be served at URL

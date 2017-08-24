@@ -60,10 +60,10 @@ func (s *Site) WriteDoc(d pages.Document) error {
 		rel = filepath.Join(rel, "index.html")
 	}
 	to := filepath.Join(s.DestDir(), rel)
-	if s.config.Verbose {
+	if s.cfg.Verbose {
 		fmt.Println("create", to, "from", d.SourcePath())
 	}
-	if s.config.DryRun {
+	if s.cfg.DryRun {
 		// FIXME render the page, just don't write it
 		return nil
 	}

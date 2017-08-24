@@ -17,9 +17,9 @@ func (s *Site) Exclude(siteRel string) bool {
 	for siteRel != "." {
 		dir, base := filepath.Dir(siteRel), filepath.Base(siteRel)
 		switch {
-		case utils.MatchList(s.config.Include, siteRel):
+		case utils.MatchList(s.cfg.Include, siteRel):
 			return false
-		case utils.MatchList(s.config.Exclude, siteRel):
+		case utils.MatchList(s.cfg.Exclude, siteRel):
 			return true
 		case dir != "." && base[0] == '_':
 			return true
@@ -44,19 +44,19 @@ func (s *Site) Exclude(siteRel string) bool {
 func (s *Site) RequiresFullReload(paths []string) bool {
 	for _, path := range paths {
 		switch {
-		case s.config.IsConfigPath(path):
+		case s.cfg.IsConfigPath(path):
 			return true
 		case s.Exclude(path):
 			continue
-		case !s.config.Incremental:
+		case !s.cfg.Incremental:
 			return true
-		case strings.HasPrefix(path, s.config.DataDir):
+		case strings.HasPrefix(path, s.cfg.DataDir):
 			return true
-		case strings.HasPrefix(path, s.config.IncludesDir):
+		case strings.HasPrefix(path, s.cfg.IncludesDir):
 			return true
-		case strings.HasPrefix(path, s.config.LayoutsDir):
+		case strings.HasPrefix(path, s.cfg.LayoutsDir):
 			return true
-		case strings.HasPrefix(path, s.config.SassDir()):
+		case strings.HasPrefix(path, s.cfg.SassDir()):
 			return true
 		}
 	}
@@ -74,7 +74,7 @@ func (s *Site) affectsBuildFilter(paths []string) []string {
 loop:
 	for _, path := range paths {
 		switch {
-		case s.config.IsConfigPath(path):
+		case s.cfg.IsConfigPath(path):
 			// break
 		case !s.fileAffectsBuild(path):
 			continue loop
@@ -94,9 +94,9 @@ func (s *Site) fileAffectsBuild(rel string) bool {
 		switch {
 		case rel == ".":
 			return true
-		case utils.MatchList(s.config.Include, rel):
+		case utils.MatchList(s.cfg.Include, rel):
 			return true
-		case utils.MatchList(s.config.Exclude, rel):
+		case utils.MatchList(s.cfg.Exclude, rel):
 			return false
 		case strings.HasPrefix(rel, "."):
 			return false

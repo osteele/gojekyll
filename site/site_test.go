@@ -17,8 +17,8 @@ func TestKeepFile(t *testing.T) {
 
 func TestExclude(t *testing.T) {
 	s := New(config.Flags{})
-	s.config.Exclude = append(s.config.Exclude, "exclude/")
-	s.config.Include = append(s.config.Include, ".include/")
+	s.cfg.Exclude = append(s.cfg.Exclude, "exclude/")
+	s.cfg.Include = append(s.cfg.Include, ".include/")
 	require.False(t, s.Exclude("."))
 	require.True(t, s.Exclude(".git"))
 	require.True(t, s.Exclude(".dir"))

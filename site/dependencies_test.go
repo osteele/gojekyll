@@ -11,7 +11,7 @@ import (
 
 func TestSite_Reloaded(t *testing.T) {
 	s0 := New(config.Flags{})
-	s0.config.Incremental = true
+	s0.cfg.Incremental = true
 	s1, _ := s0.Reloaded([]string{})
 	require.Equal(t, s0, s1)
 
@@ -30,7 +30,7 @@ func TestSite_RequiresFullReload(t *testing.T) {
 	// require.False(t, s.RequiresFullReload([]string{"_site"}))
 	// require.False(t, s.RequiresFullReload([]string{"_site/index.html"}))
 
-	s.config.Incremental = true
+	s.cfg.Incremental = true
 	require.False(t, s.RequiresFullReload([]string{}))
 	require.False(t, s.RequiresFullReload([]string{"file.md"}))
 	require.True(t, s.RequiresFullReload([]string{"_config.yml"}))

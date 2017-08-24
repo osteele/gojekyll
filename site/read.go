@@ -16,17 +16,17 @@ import (
 // FromDirectory reads the configuration file, if it exists.
 func FromDirectory(dir string, flags config.Flags) (*Site, error) {
 	s := New(flags)
-	if err := s.config.FromDirectory(dir); err != nil {
+	if err := s.cfg.FromDirectory(dir); err != nil {
 		return nil, err
 	}
-	s.config.ApplyFlags(s.flags)
+	s.cfg.ApplyFlags(s.flags)
 	return s, nil
 }
 
 // Read loads the site data and files.
 func (s *Site) Read() error {
 	s.Routes = make(map[string]pages.Document)
-	plugins.Install(s.config.Plugins, s)
+	plugins.Install(s.cfg.Plugins, s)
 	if err := s.findTheme(); err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (s *Site) readFiles(dir, base string) error {
 		case strings.HasPrefix(rel, "_"):
 			return nil
 		}
-		defaultFrontmatter := s.config.GetFrontMatterDefaults("", rel)
+		defaultFrontmatter := s.cfg.GetFrontMatterDefaults("", rel)
 		d, err := pages.NewFile(s, filename, filepath.ToSlash(rel), defaultFrontmatter)
 		if err != nil {
 			return utils.WrapPathError(err, filename)
@@ -81,7 +81,7 @@ func (s *Site) readFiles(dir, base string) error {
 // AddDocument adds a document to the site's fields.
 // It ignores unpublished documents unless config.Unpublished is true.
 func (s *Site) AddDocument(d pages.Document, output bool) {
-	if d.Published() || s.config.Unpublished {
+	if d.Published() || s.cfg.Unpublished {
 		s.docs = append(s.docs, d)
 		if output {
 			s.Routes[d.Permalink()] = d
@@ -93,7 +93,7 @@ func (s *Site) AddDocument(d pages.Document, output bool) {
 // It adds each collection's pages to the site map, and creates a template site variable for each collection.
 func (s *Site) ReadCollections() (err error) {
 	var cols []*collection.Collection
-	for name, data := range s.config.Collections {
+	for name, data := range s.cfg.Collections {
 		c := collection.New(s, name, data)
 		cols = append(cols, c)
 		err = c.ReadPages()

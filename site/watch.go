@@ -50,7 +50,7 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 
 func (s *Site) makeFileWatcher() (<-chan string, error) {
 	switch {
-	case s.config.ForcePolling:
+	case s.cfg.ForcePolling:
 		return s.makePollingWatcher()
 	default:
 		return s.makeEventWatcher()
@@ -88,7 +88,7 @@ func (s *Site) makePollingWatcher() (<-chan string, error) {
 	if err := w.AddRecursive(sourceDir); err != nil {
 		return nil, err
 	}
-	for _, path := range s.config.Exclude {
+	for _, path := range s.cfg.Exclude {
 		if err := w.Ignore(filepath.Join(sourceDir, path)); err != nil {
 			return nil, err
 		}
