@@ -37,7 +37,7 @@ type Options struct {
 func New(c config.Config, options Options) (*Manager, error) {
 	p := Manager{Options: options, cfg: c}
 	p.liquidEngine = p.makeLiquidEngine()
-	if err := p.CopySassFileIncludes(); err != nil {
+	if err := p.copySASSFileIncludes(); err != nil {
 		return nil, err
 	}
 	return &p, nil

@@ -37,11 +37,13 @@ type Config struct {
 	// Plugins
 	Plugins []string
 
-	// Plugins
-	ExcerptSeparator string `yaml:"excerpt_separator"`
-
 	// Conversion
-	Incremental bool
+	ExcerptSeparator string `yaml:"excerpt_separator"`
+	Incremental      bool
+	Sass             struct {
+		Dir string `yaml:"sass_dir"`
+		// TODO Style string // compressed
+	}
 
 	// Serving
 	Host        string

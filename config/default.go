@@ -60,4 +60,6 @@ paginate_path: /page:num
 timezone:      null
 
 verbose:  false
+sass:
+  sass_dir: _sass
 `
