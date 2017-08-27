@@ -41,25 +41,23 @@ var templateVariableMatcher = regexp.MustCompile(`:\w+\b`)
 // See https://jekyllrb.com/docs/permalinks/#template-variables
 func (p *page) permalinkVariables() map[string]string {
 	var (
-		relpath  = p.relpath
-		root     = utils.TrimExt(relpath)
-		name     = filepath.Base(root)
-		fm       = p.frontMatter
-		bindings = fm
-		slug     = bindings.String("slug", utils.Slugify(name))
+		relpath = p.relPath
+		root    = utils.TrimExt(relpath)
+		name    = filepath.Base(root)
+		slug    = p.fm.String("slug", utils.Slugify(name))
 		// date      = p.fileModTime
 		date = p.PostDate().In(time.Local)
 	)
 	vars := map[string]string{
 		"categories": strings.Join(p.Categories(), "/"),
-		"collection": bindings.String("collection", ""),
+		"collection": p.fm.String("collection", ""),
 		"name":       utils.Slugify(name),
 		"path":       "/" + root, // TODO are we removing and then adding this?
 		"slug":       slug,
-		"title":      utils.Slugify(bindings.String("title", name)),
-		// The following aren't documented, but are evident
+		"title":      utils.Slugify(p.fm.String("title", name)),
+		"y_day":      strconv.Itoa(p.modTime.YearDay()),
+		// Not documented, but evident:
 		"output_ext": p.OutputExt(),
-		"y_day":      strconv.Itoa(p.fileModTime.YearDay()),
 	}
 	for k, v := range permalinkDateVariables {
 		vars[k] = date.Format(v)
@@ -68,9 +66,9 @@ func (p *page) permalinkVariables() map[string]string {
 }
 
 func (p *page) computePermalink(vars map[string]string) (src string, err error) {
-	pattern := p.frontMatter.String("permalink", DefaultPermalinkPattern)
-	if p, found := PermalinkStyles[pattern]; found {
-		pattern = p
+	pattern := p.fm.String("permalink", DefaultPermalinkPattern)
+	if pat, found := PermalinkStyles[pattern]; found {
+		pattern = pat
 	}
 	templateVariables := p.permalinkVariables()
 	s, err := utils.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {

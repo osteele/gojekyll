@@ -10,13 +10,14 @@ import (
 
 // file is embedded in StaticFile and page
 type file struct {
-	site        Site
-	filename    string // target filepath
-	relpath     string // slash-separated path relative to site or container source
-	outputExt   string
-	permalink   string // cached permalink
-	fileModTime time.Time
-	frontMatter frontmatter.FrontMatter
+	site      Site
+	filename  string // target filepath
+	relPath   string // slash-separated path relative to site or container source
+	outputExt string
+	permalink string // cached permalink
+	modTime   time.Time
+	dfm       frontmatter.FrontMatter // default frontMatter
+	fm        frontmatter.FrontMatter
 }
 
 // NewFile creates a Page or StaticFile.
@@ -32,12 +33,13 @@ func NewFile(s Site, filename string, relpath string, fm frontmatter.FrontMatter
 		return nil, err
 	}
 	fields := file{
-		site:        s,
-		filename:    filename,
-		frontMatter: fm,
-		fileModTime: info.ModTime(),
-		relpath:     relpath,
-		outputExt:   s.Config().OutputExt(relpath),
+		site:      s,
+		filename:  filename,
+		dfm:       fm,
+		fm:        fm,
+		modTime:   info.ModTime(),
+		relPath:   relpath,
+		outputExt: s.Config().OutputExt(relpath),
 	}
 	if hasFM || !s.Config().RequiresFrontMatter(relpath) {
 		return makePage(filename, fields)
@@ -48,12 +50,12 @@ func NewFile(s Site, filename string, relpath string, fm frontmatter.FrontMatter
 }
 
 func (f *file) String() string {
-	return fmt.Sprintf("%T{Path=%v, Permalink=%v}", f, f.relpath, f.permalink)
+	return fmt.Sprintf("%T{Path=%v, Permalink=%v}", f, f.relPath, f.permalink)
 }
 
 func (f *file) OutputExt() string  { return f.outputExt }
 func (f *file) Permalink() string  { return f.permalink }
-func (f *file) Published() bool    { return f.frontMatter.Bool("published", true) }
+func (f *file) Published() bool    { return f.fm.Bool("published", true) }
 func (f *file) SourcePath() string { return f.filename }
 
 // const requiresReloadError = error.Error("requires reload")
@@ -63,6 +65,6 @@ func (f *file) Reload() error {
 	if err != nil {
 		return err
 	}
-	f.fileModTime = info.ModTime()
+	f.modTime = info.ModTime()
 	return nil
 }

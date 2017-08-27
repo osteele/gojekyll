@@ -120,22 +120,22 @@ func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
 	if err != nil {
 		return
 	}
-	f.frontMatter = f.frontMatter.Merged(fm)
+	f.fm = f.fm.Merged(fm)
 	return
 }
 
 func (p *page) FrontMatter() map[string]interface{} {
-	return p.frontMatter
+	return p.fm
 }
 
 // Categories is in the Page interface
 func (p *page) Categories() []string {
-	return p.frontMatter.SortedStringArray("categories")
+	return p.fm.SortedStringArray("categories")
 }
 
 // Tags is in the Page interface
 func (p *page) Tags() []string {
-	return p.frontMatter.SortedStringArray("tags")
+	return p.fm.SortedStringArray("tags")
 }
 
 // TemplateContext returns the local variables for template evaluation
@@ -156,7 +156,7 @@ func (p *page) TemplateContext() map[string]interface{} {
 // PostDate is part of the Page interface.
 // FIXME move this back to Page interface, or re-work this entirely.
 func (f *file) PostDate() time.Time {
-	switch value := f.frontMatter["date"].(type) {
+	switch value := f.fm["date"].(type) {
 	case time.Time:
 		return value
 	case string:
@@ -165,7 +165,7 @@ func (f *file) PostDate() time.Time {
 			return t
 		}
 	}
-	return f.fileModTime
+	return f.modTime
 }
 
 // Write applies Liquid and Markdown, as appropriate.
@@ -176,7 +176,7 @@ func (p *page) Write(w io.Writer) error {
 	p.RLock()
 	defer p.RUnlock()
 	cn := p.content
-	lo, ok := p.frontMatter["layout"].(string)
+	lo, ok := p.fm["layout"].(string)
 	if ok && lo != "" {
 		rm := p.site.RendererManager()
 		b, err := rm.ApplyLayout(lo, []byte(cn), p.TemplateContext())
@@ -228,7 +228,7 @@ func (p *page) computeContent() (cn string, ex string, err error) {
 }
 
 func (p *page) Excerpt() interface{} {
-	if exc, ok := p.frontMatter["excerpt"]; ok {
+	if exc, ok := p.fm["excerpt"]; ok {
 		return exc
 	}
 	p.RLock()

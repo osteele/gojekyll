@@ -32,7 +32,7 @@ func TestPage_TemplateContext(t *testing.T) {
 func TestPage_Categories(t *testing.T) {
 	s := siteFake{t, config.Default()}
 	fm := frontmatter.FrontMatter{"categories": "b a"}
-	f := file{site: s, frontMatter: fm}
+	f := file{site: s, fm: fm}
 	p := page{file: f}
 	require.Equal(t, []string{"a", "b"}, p.Categories())
 }
