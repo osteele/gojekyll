@@ -55,7 +55,7 @@ var seoPageOrSiteFields = []string{"author", "description", "image", "author", "
 func (p seoTag) TagBody() (string, error) {
 	var (
 		ctx          = p.ctx
-		site         = liquid.FromDrop(ctx.Get("site")).(map[string]interface{})
+		site         = liquid.FromDrop(ctx.Get("site")).(tags.IterationKeyedMap)
 		page         = liquid.FromDrop(ctx.Get("page")).(tags.IterationKeyedMap)
 		pageTitle    = page["title"]
 		siteTitle    = site["title"]

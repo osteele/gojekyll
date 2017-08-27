@@ -79,7 +79,7 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ "http://foo.com/?q=foo, \bar?" | uri_escape }}`, "http://foo.com/?q=foo%2C+%5Cbar%3F"},
 }
 
-var filterTestScope = map[string]interface{}{
+var filterTestBindings = liquid.Bindings{
 	"animals": []string{"zebra", "octopus", "giraffe", "Sally Snake"},
 	"array":   []string{"first", "second", "third"},
 	"obj": map[string]interface{}{
@@ -106,32 +106,13 @@ var filterTestScope = map[string]interface{}{
 	"ws":   "a  b\n\t c",
 }
 
-func timeMustParse(s string) time.Time {
-	t, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		panic(err)
-	}
-	return t
-}
-
 func TestFilters(t *testing.T) {
 	rand.Seed(1)
 	for i, test := range filterTests {
 		t.Run(fmt.Sprintf("%02d", i+1), func(t *testing.T) {
-			requireTemplateRender(t, test.in, filterTestScope, test.expected)
+			requireTemplateRender(t, test.in, filterTestBindings, test.expected)
 		})
 	}
-}
-
-func requireTemplateRender(t *testing.T, tmpl string, bindings map[string]interface{}, expected string) {
-	engine := liquid.NewEngine()
-	c := config.Default()
-	c.BaseURL = "/my-baseurl"
-	c.AbsoluteURL = "http://example.com"
-	AddJekyllFilters(engine, &c)
-	data, err := engine.ParseAndRender([]byte(tmpl), bindings)
-	require.NoErrorf(t, err, tmpl)
-	require.Equalf(t, expected, strings.TrimSpace(string(data)), tmpl)
 }
 
 // func TestXMLEscapeFilter(t *testing.T) {
@@ -171,4 +152,23 @@ func TestWhereExpFilter_objects(t *testing.T) {
 			},
 		}}
 	requireTemplateRender(t, tmpl, data, "A")
+}
+
+func requireTemplateRender(t *testing.T, tmpl string, bindings liquid.Bindings, expected string) {
+	engine := liquid.NewEngine()
+	cfg := config.Default()
+	cfg.BaseURL = "/my-baseurl"
+	cfg.AbsoluteURL = "http://example.com"
+	AddJekyllFilters(engine, &cfg)
+	data, err := engine.ParseAndRender([]byte(tmpl), bindings)
+	require.NoErrorf(t, err, tmpl)
+	require.Equalf(t, expected, strings.TrimSpace(string(data)), tmpl)
+}
+
+func timeMustParse(s string) time.Time {
+	t, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		panic(err)
+	}
+	return t
 }

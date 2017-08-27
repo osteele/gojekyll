@@ -25,7 +25,7 @@ func TestAvatarTag(t *testing.T) {
 	plugins := []string{"jekyll-avatar"}
 	Install(plugins, siteFake{config.Default(), engine})
 	require.NoError(t, directory[plugins[0]].ConfigureTemplateEngine(engine))
-	bindings := map[string]interface{}{"user": "osteele"}
+	bindings := liquid.Bindings{"user": "osteele"}
 
 	s, err := engine.ParseAndRenderString(`{% avatar osteele %}`, bindings)
 	require.NoError(t, err)

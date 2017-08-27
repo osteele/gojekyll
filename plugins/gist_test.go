@@ -14,9 +14,8 @@ func TestGistTag(t *testing.T) {
 	plugins := []string{"jekyll-gist"}
 	Install(plugins, siteFake{config.Default(), engine})
 	require.NoError(t, directory[plugins[0]].ConfigureTemplateEngine(engine))
-	bindings := map[string]interface{}{}
 
-	s, err := engine.ParseAndRenderString(`{% gist parkr/931c1c8d465a04042403 %}`, bindings)
+	s, err := engine.ParseAndRenderString(`{% gist parkr/931c1c8d465a04042403 %}`, liquid.Bindings{})
 	require.NoError(t, err)
 	re := regexp.MustCompile(`<script.*>\s*</script>`)
 	require.Contains(t, s, `src=https://gist.github.com/parkr/931c1c8d465a04042403.js`)
