@@ -68,8 +68,8 @@ func (c *Collection) scanDirectory(dirname string) error {
 	})
 }
 
-func (c *Collection) readPost(abs string, rel string) error {
-	siteRel := utils.MustRel(c.cfg.Source, abs)
+func (c *Collection) readPost(path string, rel string) error {
+	siteRel := utils.MustRel(c.cfg.Source, path)
 	strategy := c.strategy()
 	switch {
 	case !strategy.isCollectible(rel):
@@ -77,13 +77,12 @@ func (c *Collection) readPost(abs string, rel string) error {
 	case strategy.isFuture(rel) && !c.cfg.Future:
 		return nil
 	}
-	pageDefaults := frontmatter.FrontMatter{
+	fm := frontmatter.FrontMatter{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
-	}
-	fm := pageDefaults.Merged(c.cfg.GetFrontMatterDefaults(c.Name, siteRel))
+	}.Merged(c.cfg.GetFrontMatterDefaults(c.Name, siteRel))
 	strategy.parseFilename(rel, fm)
-	f, err := pages.NewFile(c.site, abs, filepath.ToSlash(rel), fm)
+	f, err := pages.NewFile(c.site, path, filepath.ToSlash(rel), fm)
 	switch {
 	case err != nil:
 		return err

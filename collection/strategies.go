@@ -3,13 +3,14 @@ package collection
 import (
 	"time"
 
+	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/utils"
 )
 
 // A collectionStrategy encapsulates behavior differences between the `_post`
 // collection and other collections.
 type collectionStrategy interface {
-	defaultPermalinkPattern() string
+	defaultPermalinkPattern(*config.Config) string
 	isCollectible(filename string) bool
 	isFuture(filename string) bool
 	parseFilename(string, map[string]interface{})
@@ -58,10 +59,13 @@ const DefaultCollectionPermalinkPattern = "/:collection/:path:output_ext"
 // DefaultPostsCollectionPermalinkPattern is the default collection permalink pattern
 const DefaultPostsCollectionPermalinkPattern = "/:categories/:year/:month/:day/:title.html"
 
-func (s defaultStrategy) defaultPermalinkPattern() string {
+func (s defaultStrategy) defaultPermalinkPattern(*config.Config) string {
 	return DefaultCollectionPermalinkPattern
 }
 
-func (s postsStrategy) defaultPermalinkPattern() string {
+func (s postsStrategy) defaultPermalinkPattern(cfg *config.Config) string {
+	if s, ok := cfg.String("permalink"); ok {
+		return s
+	}
 	return DefaultPostsCollectionPermalinkPattern
 }

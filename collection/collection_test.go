@@ -36,7 +36,7 @@ func TestPermalinkPattern(t *testing.T) {
 	require.Equal(t, "out", c2.PermalinkPattern())
 
 	c3 := New(site, "posts", map[string]interface{}{})
-	require.Contains(t, c3.PermalinkPattern(), "/:year/:month/:day/:title")
+	require.Contains(t, c3.PermalinkPattern(), "date")
 }
 
 func Test_ReadPages(t *testing.T) {

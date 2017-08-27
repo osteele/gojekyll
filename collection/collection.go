@@ -93,6 +93,6 @@ func (c *Collection) ToLiquid() interface{} {
 
 // PermalinkPattern returns the default permalink pattern for this collection.
 func (c *Collection) PermalinkPattern() string {
-	pattern := c.strategy().defaultPermalinkPattern()
+	pattern := c.strategy().defaultPermalinkPattern(c.cfg)
 	return templates.VariableMap(c.Metadata).String("permalink", pattern)
 }
