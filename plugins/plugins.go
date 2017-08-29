@@ -32,6 +32,7 @@ type Site interface {
 	Config() *config.Config
 	TemplateEngine() *liquid.Engine
 	Pages() []pages.Page
+	Posts() []pages.Page
 }
 
 // Lookup returns a plugin if it has been registered.

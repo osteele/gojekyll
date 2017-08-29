@@ -6,11 +6,6 @@ func init() {
 	register("jekyll-sitemap", &sitemapPlugin{})
 }
 
-// func (p *sitemapPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
-// 	// e.RegisterTag("feed_meta", p.feedMetaTag)
-// 	return nil
-// }
-
 func (p *sitemapPlugin) PostRead(s Site) error {
 	s.AddDocument(newTemplateDoc(s, "/sitemap.xml", sitemapTemplateSource), true)
 	s.AddDocument(newTemplateDoc(s, "/robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`), true)

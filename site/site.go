@@ -64,6 +64,16 @@ func (s *Site) Pages() (out []pages.Page) {
 	return
 }
 
+// Posts is part of the plugins.Site interface.
+func (s *Site) Posts() []pages.Page {
+	for _, c := range s.Collections {
+		if c.Name == "posts" {
+			return c.Pages()
+		}
+	}
+	return nil
+}
+
 // AbsDir is in the collection.Site interface.
 func (s *Site) AbsDir() string {
 	d, err := filepath.Abs(s.SourceDir())
