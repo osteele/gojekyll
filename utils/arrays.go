@@ -12,12 +12,3 @@ func SearchStrings(array []string, s string) bool {
 	}
 	return false
 }
-
-// StringSet creates a characteristic function map that tests for presence in an array.
-func StringSet(array []string) map[string]bool {
-	set := map[string]bool{}
-	for _, s := range array {
-		set[s] = true
-	}
-	return set
-}

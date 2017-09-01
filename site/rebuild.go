@@ -69,7 +69,7 @@ func (s *Site) rebuild(paths []string) (r *Site, n int, err error) {
 		return
 	}
 	r = s
-	pathSet := utils.StringSet(paths)
+	pathSet := utils.MakeStringSet(paths)
 	for _, d := range s.docs {
 		if s.invalidatesDoc(pathSet, d) {
 			err = d.Reload()

@@ -7,8 +7,9 @@ import (
 
 func (s *Site) installPlugins() error {
 	names := s.cfg.Plugins
-	installed := map[string]bool{}
-	// install plugins and call their ModifyPluginList lists
+	installed := utils.StringSet{}
+	// Install plugins and call their ModifyPluginList methods.
+	// Repeat until no plugins have been added.
 	for {
 		pending := []string{}
 		for _, name := range names {
@@ -30,9 +31,7 @@ func (s *Site) installPlugins() error {
 				}
 			}
 		}
-		for _, name := range pending {
-			installed[name] = true
-		}
+		installed.AddStrings(pending)
 	}
 	s.plugins = names
 	return nil
