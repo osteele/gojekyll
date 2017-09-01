@@ -7,6 +7,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestStringList_Reject(t *testing.T) {
+	sl := StringList([]string{"a", "b"})
+	require.Equal(t, StringList([]string{"b"}), sl.Reject(func(s string) bool { return s == "a" }))
+}
+
 func TestSearchStrings(t *testing.T) {
 	tests := []struct {
 		a      []string

@@ -18,3 +18,8 @@ func (ss StringSet) AddStrings(a []string) {
 		ss[s] = true
 	}
 }
+
+// Contains returns true iff the string is in the set.
+func (ss StringSet) Contains(s string) bool {
+		return ss[s]
+}

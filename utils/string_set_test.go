@@ -24,3 +24,10 @@ func TestStringSet_AddStrings(t *testing.T) {
 	require.True(t, ss["c"])
 	require.True(t, ss["d"])
 }
+
+func TestStringSet_Contains(t *testing.T) {
+	ss := MakeStringSet([]string{"a", "b"})
+	require.True(t, ss.Contains("a"))
+	require.True(t, ss.Contains("b"))
+	require.False(t, ss.Contains("c"))
+}

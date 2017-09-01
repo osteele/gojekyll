@@ -6,34 +6,24 @@ import (
 )
 
 func (s *Site) installPlugins() error {
-	names := s.cfg.Plugins
+	s.plugins = s.cfg.Plugins
 	installed := utils.StringSet{}
 	// Install plugins and call their ModifyPluginList methods.
 	// Repeat until no plugins have been added.
-	for {
-		pending := []string{}
-		for _, name := range names {
-			if !installed[name] {
-				pending = append(pending, name)
-			}
-		}
-		if len(pending) == 0 {
-			break
-		}
+	for len(s.plugins) > len(installed) {
+		// Collect plugins into a list instead of map, in order to preserve order
+		pending := utils.StringList(s.plugins).Reject(installed.Contains)
 		if err := plugins.Install(pending, s); err != nil {
 			return err
 		}
-		for _, name := range names {
-			if !installed[name] {
-				p, ok := plugins.Lookup(name)
-				if ok {
-					names = p.ModifyPluginList(names)
-				}
+		for _, name := range pending {
+			p, ok := plugins.Lookup(name)
+			if ok {
+				s.plugins = p.ModifyPluginList(s.plugins)
 			}
 		}
 		installed.AddStrings(pending)
 	}
-	s.plugins = names
 	return nil
 }
 
