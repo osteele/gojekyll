@@ -93,7 +93,7 @@ func (s *Site) runHooks(h func(plugins.Plugin) error) error {
 		p, ok := plugins.Lookup(name)
 		if ok {
 			if err := h(p); err != nil {
-				return err
+				return utils.WrapError(err, "running plugin")
 			}
 		}
 	}

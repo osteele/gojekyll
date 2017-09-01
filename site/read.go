@@ -17,7 +17,7 @@ import (
 func FromDirectory(dir string, flags config.Flags) (*Site, error) {
 	s := New(flags)
 	if err := s.cfg.FromDirectory(dir); err != nil {
-		return nil, err
+		return nil, utils.WrapError(err, "reading site")
 	}
 	s.cfg.ApplyFlags(s.flags)
 	return s, nil
@@ -28,22 +28,22 @@ func (s *Site) Read() error {
 	s.Routes = make(map[string]pages.Document)
 	plugins.Install(s.cfg.Plugins, s)
 	if err := s.findTheme(); err != nil {
-		return err
+		return utils.WrapError(err, "finding theme")
 	}
 	if err := s.readDataFiles(); err != nil {
-		return err
+		return utils.WrapError(err, "reading data files")
 	}
 	if err := s.readThemeAssets(); err != nil {
-		return err
+		return utils.WrapError(err, "reading theme assets")
 	}
 	if err := s.readFiles(s.SourceDir(), s.SourceDir()); err != nil {
-		return err
+		return utils.WrapError(err, "reading files")
 	}
 	if err := s.ReadCollections(); err != nil {
-		return err
+		return utils.WrapError(err, "reading collections")
 	}
 	if err := s.initializeRenderers(); err != nil {
-		return err
+		return utils.WrapError(err, "initializing renderers")
 	}
 	return s.runHooks(func(p plugins.Plugin) error { return p.PostRead(s) })
 }
