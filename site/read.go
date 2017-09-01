@@ -25,8 +25,10 @@ func FromDirectory(dir string, flags config.Flags) (*Site, error) {
 
 // Read loads the site data and files.
 func (s *Site) Read() error {
+	if err := s.installPlugins(); err != nil {
+		return utils.WrapError(err, "initializing plugins")
+	}
 	s.Routes = make(map[string]pages.Document)
-	plugins.Install(s.cfg.Plugins, s)
 	if err := s.findTheme(); err != nil {
 		return utils.WrapError(err, "finding theme")
 	}

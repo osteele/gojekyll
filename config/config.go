@@ -145,7 +145,7 @@ func (c *Config) RequiresFrontMatter(rel string) bool {
 		return true
 	case !c.IsMarkdown(rel):
 		return true
-	case utils.StringContains(c.Include, rel):
+	case utils.StringArrayContains(c.Include, rel):
 		return false
 	case c.RequireFrontMatterExclude[strings.ToUpper(utils.TrimExt(filepath.Base(rel)))]:
 		return true

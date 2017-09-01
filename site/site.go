@@ -22,6 +22,7 @@ type Site struct {
 	cfg      config.Config
 	data     map[string]interface{} // from _data files
 	flags    config.Flags           // command-line flags, override config files
+	plugins  []string               // initially cfg.Plugins, but plugins can modify this this
 	themeDir string                 // absolute path to theme directory
 
 	docs               []pages.Document // all documents, whether or not they are output
@@ -86,18 +87,6 @@ func (s *Site) AbsDir() string {
 // Config is in the collection.Site interface.
 func (s *Site) Config() *config.Config {
 	return &s.cfg
-}
-
-func (s *Site) runHooks(h func(plugins.Plugin) error) error {
-	for _, name := range s.cfg.Plugins {
-		p, ok := plugins.Lookup(name)
-		if ok {
-			if err := h(p); err != nil {
-				return utils.WrapError(err, "running plugin")
-			}
-		}
-	}
-	return nil
 }
 
 // Site is in the pages.RenderingContext interface.

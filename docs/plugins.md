@@ -24,6 +24,7 @@ The functionality of some plugins is built into the core program:
 | [jekyll-sitemap][jekyll-sitemap]                             | GitHub Pages  | ✓                     | file modified dates⁴                                                                                                                  |
 | [jekyll-titles-from-headings][jekyll-titles-from-headings]   | GitHub Pages  |                       |                                                                                                                                       |
 | [jemoji][jemoji]                                             | GitHub Pages  | ✓                     | image tag fallback                                                                                                                    |
+| [GitHub pages][github-pages]                                 | GitHub Pages  | ✓                     | The plugins that github-pages *includes* are in various stages of implementation, listed above                                        |
 
 ¹ (1) The code and internal APIs are too immature for this; and (2) the [natural way](https://golang.org/pkg/plugin/) of implementing this only works on Linux.
 
@@ -53,3 +54,4 @@ The [Official Plugins](https://jekyllrb.com/docs/plugins/#available-plugins) sec
 [jekyll-sitemap]: https://github.com/jekyll/jekyll-sitemap
 [jekyll-titles-from-headings]: https://github.com/benbalter/jekyll-titles-from-headings
 [jemoji]: https://github.com/jekyll/jemoji
+[github-pages]: https://github.com/github/pages-gem

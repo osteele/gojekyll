@@ -58,8 +58,8 @@ func StringArrayToMap(a []string) map[string]bool {
 	return m
 }
 
-// StringContains returns a bool indicating whether the array contains the string.
-func StringContains(a []string, s string) bool {
+// StringArrayContains returns a bool indicating whether the array contains the string.
+func StringArrayContains(a []string, s string) bool {
 	for _, item := range a {
 		if item == s {
 			return true

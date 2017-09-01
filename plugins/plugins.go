@@ -21,6 +21,7 @@ import (
 type Plugin interface {
 	Initialize(Site) error
 	ConfigureTemplateEngine(*liquid.Engine) error
+	ModifyPluginList([]string) []string
 	ModifySiteDrop(Site, map[string]interface{}) error
 	PostRead(Site) error
 	PostRender([]byte) ([]byte, error)
@@ -42,16 +43,17 @@ func Lookup(name string) (Plugin, bool) {
 }
 
 // Install installs a registered plugin.
-func Install(names []string, site Site) {
+func Install(names []string, site Site) error {
 	for _, name := range names {
 		if p, found := directory[name]; found {
 			if err := p.Initialize(site); err != nil {
-				panic(err)
+				return err
 			}
 		} else {
 			fmt.Printf("warning: gojekyll does not emulate the %s plugin.\n", name)
 		}
 	}
+	return nil
 }
 
 // Names returns a sorted list of names of registered plugins.
@@ -71,6 +73,7 @@ type plugin struct{}
 
 func (p plugin) Initialize(Site) error                             { return nil }
 func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error      { return nil }
+func (p plugin) ModifyPluginList(names []string) []string          { return names }
 func (p plugin) ModifySiteDrop(Site, map[string]interface{}) error { return nil }
 func (p plugin) PostRead(Site) error                               { return nil }
 func (p plugin) PostRender(b []byte) ([]byte, error)               { return b, nil }
