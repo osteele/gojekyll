@@ -24,11 +24,12 @@ type Page interface {
 	// This has the side effect of causing the content to subsequently appear in the drop.
 	Render() error
 	SetContent(string)
-	FrontMatter() map[string]interface{}
+	FrontMatter() frontmatter.FrontMatter
 	// PostDate returns the date computed from the filename or frontmatter.
 	// It is an uncaught error to call this on a page that is not a Post.
 	// TODO Should posts have their own interface?
 	PostDate() time.Time
+	IsPost() bool
 
 	Categories() []string
 	Tags() []string
@@ -124,13 +125,18 @@ func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
 	return
 }
 
-func (p *page) FrontMatter() map[string]interface{} {
+func (p *page) FrontMatter() frontmatter.FrontMatter {
 	return p.fm
 }
 
 // Categories is in the Page interface
 func (p *page) Categories() []string {
 	return p.fm.SortedStringArray("categories")
+}
+
+// IsPost is in the Page interface
+func (p *page) IsPost() bool {
+	return p.fm["collection"] == "posts"
 }
 
 // Tags is in the Page interface

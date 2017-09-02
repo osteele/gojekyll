@@ -35,7 +35,7 @@ func (p *Manager) ApplyLayout(name string, content []byte, vars liquid.Bindings)
 }
 
 // FindLayout returns a template for the named layout.
-func (p *Manager) FindLayout(base string, fm *map[string]interface{}) (tpl *liquid.Template, err error) {
+func (p *Manager) FindLayout(base string, fmp *map[string]interface{}) (tpl *liquid.Template, err error) {
 	// not cached, but the time here is negligible
 	exts := []string{"", ".html"}
 	for _, ext := range strings.SplitN(p.cfg.MarkdownExt, `,`, -1) {
@@ -64,9 +64,12 @@ loop:
 		return nil, fmt.Errorf("no template for %s", base)
 	}
 	lineNo := 1
-	*fm, err = frontmatter.Read(&content, &lineNo)
+	fm, err := frontmatter.Read(&content, &lineNo)
 	if err != nil {
 		return
+	}
+	if fmp != nil {
+		*fmp = fm
 	}
 	tpl, err = p.liquidEngine.ParseTemplateLocation(content, filename, lineNo)
 	if err != nil {

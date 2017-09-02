@@ -180,6 +180,12 @@ func (s *Site) initializeRenderers() (err error) {
 	})
 }
 
+// HasLayout is in the plugins.Site interface.
+func (s *Site) HasLayout(ln string) bool {
+	l, err := s.renderer.FindLayout(ln, nil)
+	return err == nil && l != nil
+}
+
 // RelativePath is in the page.Container interface.
 func (s *Site) RelativePath(path string) string {
 	if s.themeDir != "" {

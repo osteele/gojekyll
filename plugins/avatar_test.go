@@ -17,6 +17,7 @@ type siteFake struct {
 
 func (s siteFake) AddDocument(pages.Document, bool) {}
 func (s siteFake) Config() *config.Config           { return &s.c }
+func (s siteFake) HasLayout(string) bool            { return true }
 func (s siteFake) Pages() []pages.Page              { return nil }
 func (s siteFake) Posts() []pages.Page              { return nil }
 func (s siteFake) TemplateEngine() *liquid.Engine   { return s.e }

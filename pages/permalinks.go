@@ -56,7 +56,7 @@ func (p *page) permalinkVariables() map[string]string {
 		"slug":       slug,
 		"title":      utils.Slugify(p.fm.String("title", name)),
 		"y_day":      strconv.Itoa(p.modTime.YearDay()),
-		// Not documented, but evident:
+		// Undocumented but evident:
 		"output_ext": p.OutputExt(),
 	}
 	for k, v := range permalinkDateVariables {

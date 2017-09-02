@@ -12,6 +12,7 @@ import (
 
 	"github.com/kyokomi/emoji"
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
@@ -23,17 +24,26 @@ type Plugin interface {
 	ConfigureTemplateEngine(*liquid.Engine) error
 	ModifyPluginList([]string) []string
 	ModifySiteDrop(Site, map[string]interface{}) error
+	PostInitPage(Site, Page) error
 	PostRead(Site) error
 	PostRender([]byte) ([]byte, error)
 }
 
-// Site is the site interface that is available to a plugin.
+// Site is the site interface that is available to plugins.
 type Site interface {
 	AddDocument(pages.Document, bool)
 	Config() *config.Config
 	TemplateEngine() *liquid.Engine
 	Pages() []pages.Page
 	Posts() []pages.Page
+	HasLayout(string) bool
+}
+
+// Page is the page interface that is available to plugins.
+type Page interface {
+	FrontMatter() frontmatter.FrontMatter
+	IsPost() bool
+	Permalink() string
 }
 
 // Lookup returns a plugin if it has been registered.
@@ -75,6 +85,7 @@ func (p plugin) Initialize(Site) error                             { return nil 
 func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error      { return nil }
 func (p plugin) ModifyPluginList(names []string) []string          { return names }
 func (p plugin) ModifySiteDrop(Site, map[string]interface{}) error { return nil }
+func (p plugin) PostInitPage(Site, Page) error                     { return nil }
 func (p plugin) PostRead(Site) error                               { return nil }
 func (p plugin) PostRender(b []byte) ([]byte, error)               { return b, nil }
 

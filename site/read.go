@@ -47,6 +47,14 @@ func (s *Site) Read() error {
 	if err := s.initializeRenderers(); err != nil {
 		return utils.WrapError(err, "initializing renderers")
 	}
+	for _, p := range s.Pages() {
+		err := s.runHooks(func(h plugins.Plugin) error {
+			return h.PostInitPage(s, p)
+		})
+		if err != nil {
+			return err
+		}
+	}
 	return s.runHooks(func(p plugins.Plugin) error { return p.PostRead(s) })
 }
 
