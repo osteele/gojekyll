@@ -1,7 +1,8 @@
 #!/bin/bash -eu
 
 ddir=/tmp/$USER/gojekyll-compare
+basename=$(basename $1)
 
-./scripts/gojekyll build -s $1 -d $ddir/$1.go
-(cd $1 && bundle exec jekyll build -d $ddir/$1.jekyll)
-ksdiff $ddir/$1.jekyll $ddir/$1.go
+./scripts/gojekyll build -s $1 -d $ddir/$basename.go
+(cd $1 && bundle exec jekyll build -d $ddir/$basename.jekyll)
+ksdiff $ddir/$basename.jekyll $ddir/$basename.go
