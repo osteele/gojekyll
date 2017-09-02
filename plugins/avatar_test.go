@@ -25,7 +25,7 @@ func (s siteFake) TemplateEngine() *liquid.Engine   { return s.e }
 func TestAvatarTag(t *testing.T) {
 	engine := liquid.NewEngine()
 	plugins := []string{"jekyll-avatar"}
-	Install(plugins, siteFake{config.Default(), engine})
+	_ = Install(plugins, siteFake{config.Default(), engine})
 	require.NoError(t, directory[plugins[0]].ConfigureTemplateEngine(engine))
 	bindings := liquid.Bindings{"user": "osteele"}
 

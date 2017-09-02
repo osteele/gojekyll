@@ -12,7 +12,7 @@ import (
 func TestGistTag(t *testing.T) {
 	engine := liquid.NewEngine()
 	plugins := []string{"jekyll-gist"}
-	Install(plugins, siteFake{config.Default(), engine})
+	_ = Install(plugins, siteFake{config.Default(), engine})
 	require.NoError(t, directory[plugins[0]].ConfigureTemplateEngine(engine))
 
 	s, err := engine.ParseAndRenderString(`{% gist parkr/931c1c8d465a04042403 %}`, liquid.Bindings{})

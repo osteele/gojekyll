@@ -17,7 +17,7 @@ func TestSEOTag(t *testing.T) {
 	cfg.AbsoluteURL = "http://example.com"
 	filters.AddJekyllFilters(engine, &cfg)
 	plugins := []string{"jekyll-seo-tag"}
-	Install(plugins, siteFake{config.Default(), engine})
+	_ = Install(plugins, siteFake{config.Default(), engine})
 	require.NoError(t, directory[plugins[0]].ConfigureTemplateEngine(engine))
 	bindings := liquid.Bindings{
 		"site": tags.IterationKeyedMap{

@@ -7,25 +7,23 @@ func init() {
 type jekyllDefaultLayout struct{ plugin }
 
 const (
-	defaultLayout int = iota
-	pageLayout
-	postLayout
-	homeLayout
+	pageLayoutName = "page"
+	postLayoutName = "post"
+	homeLayoutName = "home"
 )
 
-var layoutNames = []string{"default", "post", "page", "home"}
+var layoutNames = []string{"default", postLayoutName, pageLayoutName, homeLayoutName}
 
-func (p jekyllDefaultLayout) layoutNames(s Site) []string {
-	var ln string
-	names := make([]string, len(layoutNames))
-	for i, n := range layoutNames {
-		// fmt.Println("examine", i, n, names)
-		if s.HasLayout(n) {
-			ln = n
+func (p jekyllDefaultLayout) layoutNames(s Site) map[string]string {
+	var m = map[string]string{}
+	var n string
+	for _, k := range layoutNames {
+		if s.HasLayout(k) {
+			n = k
 		}
-		names[i] = ln
+		m[k] = n
 	}
-	return names
+	return m
 }
 
 func (p jekyllDefaultLayout) PostInitPage(s Site, pg Page) error {
@@ -34,15 +32,16 @@ func (p jekyllDefaultLayout) PostInitPage(s Site, pg Page) error {
 		return nil
 	}
 	layoutNames := p.layoutNames(s)
-	ln := layoutNames[pageLayout]
+	k := pageLayoutName
 	switch {
 	case pg.IsPost():
-		ln = layoutNames[postLayout]
+		k = postLayoutName
 	case pg.URL() == "/":
-		ln = layoutNames[homeLayout]
+		k = homeLayoutName
 	}
-	if ln != "" {
-		fm["layout"] = ln
+	n := layoutNames[k]
+	if n != "" {
+		fm["layout"] = n
 	}
 	return nil
 }
