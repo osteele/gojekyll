@@ -27,7 +27,7 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 	e.RegisterFilter("array_to_sentence_string", arrayToSentenceStringFilter)
 	// TODO doc neither Liquid nor Jekyll docs this, but it appears to be present
 	e.RegisterFilter("filter", func(values []map[string]interface{}, key string) []interface{} {
-		result := []interface{}{}
+		var result []interface{}
 		for _, value := range values {
 			if _, ok := value[key]; ok {
 				result = append(result, value)
@@ -200,7 +200,7 @@ func groupByExpFilter(array []map[string]interface{}, name string, expr expressi
 			groups[key] = []interface{}{item}
 		}
 	}
-	result := []map[string]interface{}{}
+	var result []map[string]interface{}
 	for k, v := range groups {
 		result = append(result, map[string]interface{}{"name": k, "items": v})
 	}
@@ -227,7 +227,7 @@ func groupByFilter(array []map[string]interface{}, property string) []map[string
 			}
 		}
 	}
-	result := []map[string]interface{}{}
+	var result []map[string]interface{}
 	for k, v := range groups {
 		result = append(result, map[string]interface{}{"name": k, "items": v})
 	}
@@ -252,7 +252,7 @@ func whereExpFilter(array []interface{}, name string, expr expressions.Closure) 
 	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
 		return nil, nil
 	}
-	result := []interface{}{}
+	var result []interface{}
 	for i := 0; i < rt.Len(); i++ {
 		item := rt.Index(i).Interface()
 		value, err := expr.Bind(name, item).Evaluate()
@@ -271,7 +271,7 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 	if rt.Kind() != reflect.Array && rt.Kind() != reflect.Slice {
 		return nil
 	}
-	result := []interface{}{}
+	var result []interface{}
 	for i := 0; i < rt.Len(); i++ {
 		item := rt.Index(i)
 		if item.Kind() == reflect.Map && item.Type().Key().Kind() == reflect.String {

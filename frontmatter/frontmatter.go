@@ -49,20 +49,19 @@ func (fm FrontMatter) String(k string, defaultValue string) string {
 //
 // This is the format for page categories and tags.
 func (fm FrontMatter) SortedStringArray(key string) []string {
-	out := []string{}
-	field := fm[key]
-	switch value := field.(type) {
+	var result []string
+	switch v := fm[key].(type) {
 	case string:
-		out = strings.Fields(value)
+		result = strings.Fields(v)
 	case []interface{}:
-		if c, e := evaluator.Convert(value, reflect.TypeOf(out)); e == nil {
-			out = c.([]string)
+		if c, e := evaluator.Convert(v, reflect.TypeOf(result)); e == nil {
+			result = c.([]string)
 		}
 	case []string:
-		out = value
+		result = v
 	}
-	sort.Strings(out)
-	return out
+	sort.Strings(result)
+	return result
 }
 
 // Merge creates a new FrontMatter that merges its arguments,

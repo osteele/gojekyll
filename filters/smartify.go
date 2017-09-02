@@ -41,7 +41,7 @@ var smartifyReplacementPattern *regexp.Regexp
 
 func init() {
 	smartifyReplacements = map[string]string{}
-	disjuncts := []string{}
+	var disjuncts []string
 	regexQuoter := regexp.MustCompile(`[\(\)\.]`)
 	escape := func(s string) string {
 		return regexQuoter.ReplaceAllString(s, `\$0`)

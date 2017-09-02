@@ -18,12 +18,12 @@ func TestFileHasFrontMatter(t *testing.T) {
 }
 
 func TestFrontMatter_SortedStringArray(t *testing.T) {
-	sortedStringValue := func(value interface{}) []string {
-		fm := map[string]interface{}{"categories": value}
-		return FrontMatter(fm).SortedStringArray("categories")
+	sorted := func(v interface{}) []string {
+		fm := FrontMatter{"categories": v}
+		return fm.SortedStringArray("categories")
 	}
-	require.Equal(t, []string{"a", "b"}, sortedStringValue("b a"))
-	require.Equal(t, []string{"a", "b"}, sortedStringValue([]interface{}{"b", "a"}))
-	require.Equal(t, []string{"a", "b"}, sortedStringValue([]string{"b", "a"}))
-	require.Equal(t, []string{}, sortedStringValue(3))
+	require.Equal(t, []string{"a", "b"}, sorted("b a"))
+	require.Equal(t, []string{"a", "b"}, sorted([]interface{}{"b", "a"}))
+	require.Equal(t, []string{"a", "b"}, sorted([]string{"b", "a"}))
+	require.Len(t, sorted(3), 0)
 }

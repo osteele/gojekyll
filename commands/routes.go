@@ -12,7 +12,7 @@ var dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files
 
 func routesCommand(site *site.Site) error {
 	logger.label("Routes:", "")
-	urls := []string{}
+	var urls []string
 	for u, p := range site.Routes {
 		if !(*dynamicRoutes && p.IsStatic()) {
 			urls = append(urls, u)

@@ -14,7 +14,7 @@ var benchmark = app.Command("benchmark", "Repeat build for ten seconds. Implies 
 // a separate benchmark runner that invokes a new gojekyll process each time.
 func benchmarkCommand() (err error) {
 	startTime := time.Now()
-	samples := []float64{}
+	var samples []float64
 	for i := 0; time.Since(startTime) < 10*time.Second; i++ {
 		sampleStart := time.Now()
 		site, err := loadSite(*source, options)
