@@ -86,7 +86,7 @@ func (c *Collection) readPost(path string, rel string) error {
 	switch {
 	case err != nil:
 		return err
-	case f.Static():
+	case f.IsStatic():
 		return nil
 	case f.Published() || c.cfg.Unpublished:
 		p := f.(pages.Page) // f.Static() guarantees this

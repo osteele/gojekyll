@@ -40,20 +40,20 @@ type PageEmbed struct {
 	Path string
 }
 
-// Permalink is in the pages.Page interface.
-func (p *PageEmbed) Permalink() string { return p.Path }
+// URL is in the pages.Page interface.
+func (p *PageEmbed) URL() string { return p.Path }
 
 // OutputExt is in the pages.Page interface.
 func (p *PageEmbed) OutputExt() string { return path.Ext(p.Path) }
 
-// SourcePath is in the pages.Page interface.
-func (p *PageEmbed) SourcePath() string { return "" }
+// Source is in the pages.Page interface.
+func (p *PageEmbed) Source() string { return "" }
 
 // Published is in the pages.Page interface.
 func (p *PageEmbed) Published() bool { return true }
 
-// Static is in the pages.Page interface.
-func (p *PageEmbed) Static() bool { return false } // FIXME means different things to different callers
+// IsStatic is in the pages.Page interface.
+func (p *PageEmbed) IsStatic() bool { return false } // FIXME means different things to different callers
 
 // Reload is in the pages.Page interface.
 func (p *PageEmbed) Reload() error { return nil }
@@ -72,8 +72,8 @@ type page struct {
 	rendered     bool
 }
 
-// Static is in the File interface.
-func (p *page) Static() bool { return false }
+// IsStatic is in the File interface.
+func (p *page) IsStatic() bool { return false }
 
 func makePage(filename string, f file) (*page, error) {
 	raw, lineNo, err := readFrontMatter(&f)

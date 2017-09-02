@@ -10,8 +10,8 @@ type StaticFile struct {
 	file
 }
 
-// Static is in the File interface.
-func (p *StaticFile) Static() bool { return true }
+// IsStatic is in the File interface.
+func (p *StaticFile) IsStatic() bool { return true }
 
 func (p *StaticFile) Write(w io.Writer) error {
 	in, err := os.Open(p.filename)

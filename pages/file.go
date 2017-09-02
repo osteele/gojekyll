@@ -53,10 +53,10 @@ func (f *file) String() string {
 	return fmt.Sprintf("%T{Path=%v, Permalink=%v}", f, f.relPath, f.permalink)
 }
 
-func (f *file) OutputExt() string  { return f.outputExt }
-func (f *file) Permalink() string  { return f.permalink }
-func (f *file) Published() bool    { return f.fm.Bool("published", true) }
-func (f *file) SourcePath() string { return f.filename }
+func (f *file) OutputExt() string { return f.outputExt }
+func (f *file) URL() string       { return f.permalink }
+func (f *file) Published() bool   { return f.fm.Bool("published", true) }
+func (f *file) Source() string    { return f.filename }
 
 // const requiresReloadError = error.Error("requires reload")
 

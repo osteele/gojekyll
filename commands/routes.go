@@ -14,13 +14,13 @@ func routesCommand(site *site.Site) error {
 	logger.label("Routes:", "")
 	urls := []string{}
 	for u, p := range site.Routes {
-		if !(*dynamicRoutes && p.Static()) {
+		if !(*dynamicRoutes && p.IsStatic()) {
 			urls = append(urls, u)
 		}
 	}
 	sort.Strings(urls)
 	for _, u := range urls {
-		filename := site.Routes[u].SourcePath()
+		filename := site.Routes[u].Source()
 		fmt.Printf("  %s -> %s\n", u, filename)
 	}
 	return nil

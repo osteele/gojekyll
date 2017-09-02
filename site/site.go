@@ -118,7 +118,7 @@ func (s *Site) SetAbsoluteURL(url string) {
 func (s *Site) FilenameURLs() map[string]string {
 	urls := map[string]string{}
 	for _, page := range s.Pages() {
-		urls[utils.MustRel(s.SourceDir(), page.SourcePath())] = page.Permalink()
+		urls[utils.MustRel(s.SourceDir(), page.Source())] = page.URL()
 	}
 	return urls
 }
@@ -132,8 +132,8 @@ func (s *Site) KeepFile(filename string) bool {
 func (s *Site) FilePathPage(rel string) (pages.Document, bool) {
 	// This looks wasteful. If it shows up as a hotspot, you know what to do.
 	for _, p := range s.Routes {
-		if p.SourcePath() != "" {
-			if r, err := filepath.Rel(s.SourceDir(), p.SourcePath()); err == nil {
+		if p.Source() != "" {
+			if r, err := filepath.Rel(s.SourceDir(), p.Source()); err == nil {
 				if r == rel {
 					return p, true
 				}
@@ -146,7 +146,7 @@ func (s *Site) FilePathPage(rel string) (pages.Document, bool) {
 // FilenameURLPath returns a page's URL path, give a relative file path relative to the site source directory.
 func (s *Site) FilenameURLPath(relpath string) (string, bool) {
 	if p, found := s.FilePathPage(relpath); found {
-		return p.Permalink(), true
+		return p.URL(), true
 	}
 	return "", false
 }

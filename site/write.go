@@ -54,14 +54,14 @@ func (s *Site) WriteFiles() (count int, err error) {
 
 // WriteDoc writes a document to the destination directory.
 func (s *Site) WriteDoc(d pages.Document) error {
-	from := d.SourcePath()
-	rel := d.Permalink()
-	if !d.Static() && filepath.Ext(rel) == "" {
+	from := d.Source()
+	rel := d.URL()
+	if !d.IsStatic() && filepath.Ext(rel) == "" {
 		rel = filepath.Join(rel, "index.html")
 	}
 	to := filepath.Join(s.DestDir(), rel)
 	if s.cfg.Verbose {
-		fmt.Println("create", to, "from", d.SourcePath())
+		fmt.Println("create", to, "from", d.Source())
 	}
 	if s.cfg.DryRun {
 		// FIXME render the page, just don't write it
@@ -72,7 +72,7 @@ func (s *Site) WriteDoc(d pages.Document) error {
 		return err
 	}
 	switch {
-	case d.Static():
+	case d.IsStatic():
 		return utils.CopyFileContents(to, from, 0644)
 	default:
 		return utils.VisitCreatedFile(to, func(w io.Writer) error {

@@ -108,6 +108,6 @@ func (s *Site) fileAffectsBuild(rel string) bool {
 
 // returns true if changes to the site-relative paths invalidate doc
 func (s *Site) invalidatesDoc(paths map[string]bool, d pages.Document) bool {
-	rel := utils.MustRel(s.SourceDir(), d.SourcePath())
+	rel := utils.MustRel(s.SourceDir(), d.Source())
 	return paths[rel]
 }

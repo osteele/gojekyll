@@ -15,8 +15,8 @@ func renderCommand(site *site.Site) error {
 	if err != nil {
 		return err
 	}
-	logger.path("Render:", filepath.Join(site.SourceDir(), p.SourcePath()))
-	logger.label("URL:", p.Permalink())
+	logger.path("Render:", filepath.Join(site.SourceDir(), p.Source()))
+	logger.label("URL:", p.URL())
 	logger.label("Content:", "")
 	return site.WriteDocument(os.Stdout, p)
 }

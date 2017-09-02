@@ -46,7 +46,7 @@ func (p jekyllRedirectFromPlugin) processRedirectFrom(site Site, ps []pages.Page
 		redirections = []pages.Document{}
 	)
 	addRedirectFrom := func(from string, to pages.Page) {
-		r := redirectionDoc{pages.PageEmbed{Path: from}, prefix + to.Permalink()}
+		r := redirectionDoc{pages.PageEmbed{Path: from}, prefix + to.URL()}
 		redirections = append(redirections, &r)
 	}
 	for _, p := range ps {
@@ -68,7 +68,7 @@ func (p jekyllRedirectFromPlugin) processRedirectTo(site Site, ps []pages.Page) 
 			return err
 		}
 		if len(sources) > 0 {
-			r := redirectionDoc{pages.PageEmbed{Path: p.Permalink()}, sources[0]}
+			r := redirectionDoc{pages.PageEmbed{Path: p.URL()}, sources[0]}
 			p.SetContent(r.Content())
 		}
 	}

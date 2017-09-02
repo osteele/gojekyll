@@ -38,7 +38,7 @@ func (p jekyllDefaultLayout) PostInitPage(s Site, pg Page) error {
 	switch {
 	case pg.IsPost():
 		ln = layoutNames[postLayout]
-	case pg.Permalink() == "/":
+	case pg.URL() == "/":
 		ln = layoutNames[homeLayout]
 	}
 	if ln != "" {

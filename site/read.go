@@ -94,7 +94,7 @@ func (s *Site) AddDocument(d pages.Document, output bool) {
 	if d.Published() || s.cfg.Unpublished {
 		s.docs = append(s.docs, d)
 		if output {
-			s.Routes[d.Permalink()] = d
+			s.Routes[d.URL()] = d
 		}
 	}
 }

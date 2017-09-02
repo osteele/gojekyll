@@ -43,7 +43,7 @@ type Site interface {
 type Page interface {
 	FrontMatter() frontmatter.FrontMatter
 	IsPost() bool
-	Permalink() string
+	URL() string
 }
 
 // Lookup returns a plugin if it has been registered.

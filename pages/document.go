@@ -10,13 +10,13 @@ import (
 // A Document is a Jekyll post, page, or file.
 type Document interface {
 	// Paths
-	Permalink() string // relative URL path
-	SourcePath() string
+	URL() string // relative to site base
+	Source() string
 	OutputExt() string
 
 	// Output
 	Published() bool
-	Static() bool
+	IsStatic() bool
 	Write(io.Writer) error
 
 	Reload() error

@@ -14,7 +14,7 @@ func (d *StaticFile) ToLiquid() interface{} {
 	return liquid.IterationKeyedMap(map[string]interface{}{
 		"name":          path.Base(d.relPath),
 		"basename":      utils.TrimExt(path.Base(d.relPath)),
-		"path":          d.Permalink(),
+		"path":          d.URL(),
 		"modified_time": d.modTime,
 		"extname":       d.OutputExt(),
 		// de facto:
@@ -50,12 +50,12 @@ func (p *page) ToLiquid() interface{} {
 		"content":       p.maybeContent(),
 		"date":          fm.Get("date", p.modTime),
 		"excerpt":       p.Excerpt(),
-		"id":            utils.TrimExt(p.Permalink()),
+		"id":            utils.TrimExt(p.URL()),
 		"path":          siteRelPath,
 		"relative_path": siteRelPath,
 		"slug":          fm.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relPath)))),
 		"tags":          p.Tags(),
-		"url":           p.Permalink(),
+		"url":           p.URL(),
 
 		// de facto
 		"ext": ext,
