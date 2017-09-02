@@ -18,7 +18,7 @@ func init() {
 	register("jekyll-feed", &jekyllFeedPlugin{})
 }
 
-func (p *jekyllFeedPlugin) Initialize(s Site) error {
+func (p *jekyllFeedPlugin) AfterInitSite(s Site) error {
 	p.site = s
 	return nil
 }
@@ -33,7 +33,7 @@ func (p *jekyllFeedPlugin) ConfigureTemplateEngine(e *liquid.Engine) error {
 	return nil
 }
 
-func (p *jekyllFeedPlugin) PostRead(s Site) error {
+func (p *jekyllFeedPlugin) PostReadSite(s Site) error {
 	path := "/feed.xml"
 	if cfg, ok := s.Config().Map("feed"); ok {
 		if pp, ok := cfg["path"].(string); ok {

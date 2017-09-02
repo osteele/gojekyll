@@ -22,7 +22,7 @@ func init() {
 	redirectTemplate = tmpl
 }
 
-func (p jekyllRedirectFromPlugin) PostRead(site Site) error {
+func (p jekyllRedirectFromPlugin) PostReadSite(site Site) error {
 	ps := site.Pages()
 	newPages, err := p.processRedirectFrom(site, ps)
 	if err != nil {

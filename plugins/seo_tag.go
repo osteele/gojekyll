@@ -23,7 +23,7 @@ func init() {
 	register("jekyll-seo-tag", &jekyllSEOTagPlugin{})
 }
 
-func (p *jekyllSEOTagPlugin) Initialize(s Site) error {
+func (p *jekyllSEOTagPlugin) AfterInitSite(s Site) error {
 	p.site = s
 	return nil
 }

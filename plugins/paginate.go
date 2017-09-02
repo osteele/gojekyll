@@ -18,7 +18,7 @@ func (p *paginatePlugin) ModifyRenderContext(s Site, m map[string]interface{}) e
 	return nil
 }
 
-func (p *paginatePlugin) PostRead(s Site) error {
+func (p *paginatePlugin) PostReadSite(s Site) error {
 	// s.AddDocument(newTemplateDoc(s, "/sitemap.xml", sitemapTemplateSource), true)
 	// s.AddDocument(newTemplateDoc(s, "/robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`), true)
 	// iterate over pagesets

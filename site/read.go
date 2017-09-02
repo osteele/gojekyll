@@ -55,7 +55,7 @@ func (s *Site) Read() error {
 			return err
 		}
 	}
-	return s.runHooks(func(p plugins.Plugin) error { return p.PostRead(s) })
+	return s.runHooks(func(p plugins.Plugin) error { return p.PostReadSite(s) })
 }
 
 // readFiles scans the source directory and creates pages and collection.

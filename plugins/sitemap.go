@@ -6,7 +6,7 @@ func init() {
 	register("jekyll-sitemap", &sitemapPlugin{})
 }
 
-func (p *sitemapPlugin) PostRead(s Site) error {
+func (p *sitemapPlugin) PostReadSite(s Site) error {
 	s.AddDocument(newTemplateDoc(s, "/sitemap.xml", sitemapTemplateSource), true)
 	s.AddDocument(newTemplateDoc(s, "/robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`), true)
 	return nil

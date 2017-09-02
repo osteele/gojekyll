@@ -20,12 +20,12 @@ import (
 
 // Plugin describes the hooks that a plugin can override.
 type Plugin interface {
-	Initialize(Site) error
+	AfterInitSite(Site) error
 	ConfigureTemplateEngine(*liquid.Engine) error
 	ModifyPluginList([]string) []string
 	ModifySiteDrop(Site, map[string]interface{}) error
 	PostInitPage(Site, Page) error
-	PostRead(Site) error
+	PostReadSite(Site) error
 	PostRender([]byte) ([]byte, error)
 }
 
@@ -56,7 +56,7 @@ func Lookup(name string) (Plugin, bool) {
 func Install(names []string, site Site) error {
 	for _, name := range names {
 		if p, found := directory[name]; found {
-			if err := p.Initialize(site); err != nil {
+			if err := p.AfterInitSite(site); err != nil {
 				return err
 			}
 		} else {
@@ -81,12 +81,12 @@ func Names() []string {
 // This is internal until better baked.
 type plugin struct{}
 
-func (p plugin) Initialize(Site) error                             { return nil }
+func (p plugin) AfterInitSite(Site) error                          { return nil }
 func (p plugin) ConfigureTemplateEngine(*liquid.Engine) error      { return nil }
 func (p plugin) ModifyPluginList(names []string) []string          { return names }
 func (p plugin) ModifySiteDrop(Site, map[string]interface{}) error { return nil }
 func (p plugin) PostInitPage(Site, Page) error                     { return nil }
-func (p plugin) PostRead(Site) error                               { return nil }
+func (p plugin) PostReadSite(Site) error                           { return nil }
 func (p plugin) PostRender(b []byte) ([]byte, error)               { return b, nil }
 
 var directory = map[string]Plugin{}
@@ -147,7 +147,7 @@ var requireFrontMatterExclude = []string{
 	"PULL_REQUEST_TEMPLATE",
 }
 
-func (p jekyllOptionalFrontMatterPlugin) Initialize(s Site) error {
+func (p jekyllOptionalFrontMatterPlugin) AfterInitSite(s Site) error {
 	m := map[string]bool{}
 	for _, k := range requireFrontMatterExclude {
 		m[k] = true
