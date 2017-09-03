@@ -43,6 +43,25 @@ func (fm FrontMatter) String(k string, defaultValue string) string {
 	return defaultValue
 }
 
+// StringArray returns m[k] if it's a []string or string array
+func (fm FrontMatter) StringArray(k string) []string {
+	if value, ok := fm[k]; ok {
+		switch value := value.(type) {
+		case []string:
+			return value
+		case []interface{}:
+			a := make([]string, len(value))
+			for i, item := range value {
+				a[i] = fmt.Sprintf("%s", item)
+			}
+			return a
+		case string:
+			return []string{value}
+		}
+	}
+	return nil
+}
+
 // SortedStringArray returns a sorts list of strings from a
 // frontmatter variable that is either a string (in which case it
 // is a ws-separated list of words), or a list of strings.

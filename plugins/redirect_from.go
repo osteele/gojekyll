@@ -2,7 +2,6 @@ package plugins
 
 import (
 	"bytes"
-	"fmt"
 	"text/template"
 )
 
@@ -47,11 +46,7 @@ func (p jekyllRedirectFromPlugin) processRedirectFrom(s Site, ps []Page) (func()
 		redirects = append(redirects, f)
 	}
 	for _, p := range ps {
-		sources, err := getStringArray(p, "redirect_from")
-		if err != nil {
-			return nil, err
-		}
-		for _, from := range sources {
+		for _, from := range p.FrontMatter().StringArray("redirect_from") {
 			addRedirectFrom(from, p)
 		}
 	}
@@ -64,35 +59,12 @@ func (p jekyllRedirectFromPlugin) processRedirectFrom(s Site, ps []Page) (func()
 
 func (p jekyllRedirectFromPlugin) processRedirectTo(_ Site, ps []Page) error {
 	for _, p := range ps {
-		sources, err := getStringArray(p, "redirect_to")
-		if err != nil {
-			return err
-		}
+		sources := p.FrontMatter().StringArray("redirect_to")
 		if len(sources) > 0 {
 			p.SetContent(createRedirectionHTML(sources[0]))
 		}
 	}
 	return nil
-}
-
-func getStringArray(p Page, fieldName string) ([]string, error) {
-	var a []string
-	if value, ok := p.FrontMatter()[fieldName]; ok {
-		switch value := value.(type) {
-		case []string:
-			a = value
-		case []interface{}:
-			a = make([]string, len(value))
-			for i, item := range value {
-				a[i] = fmt.Sprintf("%s", item)
-			}
-		case string:
-			a = []string{value}
-		default:
-			return nil, fmt.Errorf("unimplemented redirect_from type %T", value)
-		}
-	}
-	return a, nil
 }
 
 func createRedirectionHTML(to string) string {
