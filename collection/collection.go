@@ -18,7 +18,7 @@ type Collection struct {
 	Metadata map[string]interface{}
 
 	cfg   *config.Config
-	pages []pages.Page
+	pages []Page
 	site  Site
 }
 
@@ -29,6 +29,9 @@ type Site interface {
 	RelativePath(string) string
 	RendererManager() renderers.Renderers
 }
+
+// Page is in package pages.
+type Page = pages.Page
 
 const draftsPath = "_drafts"
 const postsName = "posts"
@@ -61,8 +64,8 @@ func (c *Collection) IsPostsCollection() bool { return c.Name == postsName }
 // Output returns a bool indicating whether files in this collection should be written.
 func (c *Collection) Output() bool { return templates.VariableMap(c.Metadata).Bool("output", false) }
 
-// Pages is a slice of the collection's pages. Pages in the Post collection are ordered by date.
-func (c *Collection) Pages() []pages.Page {
+// Pages in the Post collection are ordered by date.
+func (c *Collection) Pages() []Page {
 	return c.pages
 }
 

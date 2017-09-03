@@ -1,10 +1,6 @@
 package collection
 
-import (
-	"github.com/osteele/gojekyll/pages"
-)
-
-type pagesByDate struct{ pages []pages.Page }
+type pagesByDate struct{ pages []Page }
 
 // Len is part of sort.Interface.
 func (p pagesByDate) Len() int {

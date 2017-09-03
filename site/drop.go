@@ -21,7 +21,7 @@ func (s *Site) ToLiquid() interface{} {
 }
 
 func (s *Site) initializeDrop() error {
-	var docs []pages.Page
+	var docs []Page
 	for _, c := range s.Collections {
 		docs = append(docs, c.Pages()...)
 	}
@@ -67,7 +67,7 @@ func (s *Site) htmlFiles() (result []*pages.StaticFile) {
 	return
 }
 
-func (s *Site) htmlPages() (result []pages.Page) {
+func (s *Site) htmlPages() (result []Page) {
 	for _, p := range s.nonCollectionPages {
 		if p.OutputExt() == ".html" {
 			result = append(result, p)

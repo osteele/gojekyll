@@ -28,7 +28,7 @@ func (s *Site) Read() error {
 	if err := s.installPlugins(); err != nil {
 		return utils.WrapError(err, "initializing plugins")
 	}
-	s.Routes = make(map[string]pages.Document)
+	s.Routes = make(map[string]Document)
 	if err := s.findTheme(); err != nil {
 		return utils.WrapError(err, "finding theme")
 	}
@@ -81,7 +81,7 @@ func (s *Site) readFiles(dir, base string) error {
 			return utils.WrapPathError(err, filename)
 		}
 		s.AddDocument(d, true)
-		if p, ok := d.(pages.Page); ok {
+		if p, ok := d.(Page); ok {
 			s.nonCollectionPages = append(s.nonCollectionPages, p)
 		}
 		return nil
@@ -90,7 +90,7 @@ func (s *Site) readFiles(dir, base string) error {
 
 // AddDocument adds a document to the site's fields.
 // It ignores unpublished documents unless config.Unpublished is true.
-func (s *Site) AddDocument(d pages.Document, output bool) {
+func (s *Site) AddDocument(d Document, output bool) {
 	if d.Published() || s.cfg.Unpublished {
 		s.docs = append(s.docs, d)
 		if output {

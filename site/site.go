@@ -17,7 +17,7 @@ import (
 // Site is a Jekyll site.
 type Site struct {
 	Collections []*collection.Collection
-	Routes      map[string]pages.Document // URL path -> Document; only for output pages
+	Routes      map[string]Document // URL path -> Document; only for output pages
 
 	cfg      config.Config
 	data     map[string]interface{} // from _data files
@@ -25,8 +25,8 @@ type Site struct {
 	plugins  []string               // initially cfg.Plugins, but plugins can modify this this
 	themeDir string                 // absolute path to theme directory
 
-	docs               []pages.Document // all documents, whether or not they are output
-	nonCollectionPages []pages.Page
+	docs               []Document // all documents, whether or not they are output
+	nonCollectionPages []Page
 
 	renderer   *renderers.Manager
 	renderOnce sync.Once
@@ -34,6 +34,12 @@ type Site struct {
 	drop     map[string]interface{} // cached drop value
 	dropOnce sync.Once
 }
+
+// Document is in package pages.
+type Document = pages.Document
+
+// Page is in package pages.
+type Page = pages.Page
 
 // SourceDir returns the site source directory.
 func (s *Site) SourceDir() string { return s.cfg.Source }
@@ -47,8 +53,8 @@ func (s *Site) DestDir() string {
 }
 
 // OutputDocs returns a list of output pages.
-func (s *Site) OutputDocs() []pages.Document {
-	out := make([]pages.Document, 0, len(s.Routes))
+func (s *Site) OutputDocs() []Document {
+	out := make([]Document, 0, len(s.Routes))
 	for _, p := range s.Routes {
 		out = append(out, p)
 	}
@@ -56,9 +62,9 @@ func (s *Site) OutputDocs() []pages.Document {
 }
 
 // Pages returns all the pages, output or not.
-func (s *Site) Pages() (out []pages.Page) {
+func (s *Site) Pages() (out []Page) {
 	for _, d := range s.docs {
-		if p, ok := d.(pages.Page); ok {
+		if p, ok := d.(Page); ok {
 			out = append(out, p)
 		}
 	}
@@ -66,7 +72,7 @@ func (s *Site) Pages() (out []pages.Page) {
 }
 
 // Posts is part of the plugins.Site interface.
-func (s *Site) Posts() []pages.Page {
+func (s *Site) Posts() []Page {
 	for _, c := range s.Collections {
 		if c.Name == "posts" {
 			return c.Pages()
@@ -129,7 +135,7 @@ func (s *Site) KeepFile(filename string) bool {
 }
 
 // FilePathPage returns a Page, give a file path relative to site source directory.
-func (s *Site) FilePathPage(rel string) (pages.Document, bool) {
+func (s *Site) FilePathPage(rel string) (Document, bool) {
 	// This looks wasteful. If it shows up as a hotspot, you know what to do.
 	for _, p := range s.Routes {
 		if p.Source() != "" {
@@ -197,7 +203,7 @@ func (s *Site) RelativePath(path string) string {
 }
 
 // URLPage returns the page that will be served at URL
-func (s *Site) URLPage(urlpath string) (p pages.Document, found bool) {
+func (s *Site) URLPage(urlpath string) (p Document, found bool) {
 	p, found = s.Routes[urlpath]
 	if !found {
 		p, found = s.Routes[filepath.Join(urlpath, "index.html")]

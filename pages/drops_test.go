@@ -36,9 +36,13 @@ func TestPage_ToLiquid_excerpt(t *testing.T) {
 	})
 
 	t.Run("after render", func(t *testing.T) {
-		require.NoError(t, p.(Page).Render())
+		require.NoError(t, p.(renderer).Render())
 		drop := p.(liquid.Drop).ToLiquid()
 		excerpt := drop.(tags.IterationKeyedMap)["excerpt"]
 		require.Equal(t, "rendered: First line.", fmt.Sprintf("%s", excerpt))
 	})
+}
+
+type renderer interface {
+	Render() error
 }

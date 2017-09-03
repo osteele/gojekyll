@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/utils"
 )
@@ -37,7 +36,7 @@ func (s *Site) WriteFiles() (count int, err error) {
 	}
 	for _, d := range s.OutputDocs() {
 		count++
-		go func(d pages.Document) {
+		go func(d Document) {
 			<-sem
 			errs <- s.WriteDoc(d)
 			sem <- true
@@ -53,7 +52,7 @@ func (s *Site) WriteFiles() (count int, err error) {
 }
 
 // WriteDoc writes a document to the destination directory.
-func (s *Site) WriteDoc(d pages.Document) error {
+func (s *Site) WriteDoc(d Document) error {
 	from := d.Source()
 	rel := d.URL()
 	if !d.IsStatic() && filepath.Ext(rel) == "" {
@@ -82,9 +81,9 @@ func (s *Site) WriteDoc(d pages.Document) error {
 }
 
 // WriteDocument writes the rendered document.
-func (s *Site) WriteDocument(w io.Writer, d pages.Document) error {
+func (s *Site) WriteDocument(w io.Writer, d Document) error {
 	switch p := d.(type) {
-	case pages.Page:
+	case Page:
 		return s.WritePage(w, p)
 	default:
 		return d.Write(w)
@@ -94,7 +93,7 @@ func (s *Site) WriteDocument(w io.Writer, d pages.Document) error {
 // WritePage writes the rendered page. It is called as part of site.Write,
 // but also, in an incremental build, to write a single page – therefore it
 // also ensures that all pages have been rendered before writing this one.
-func (s *Site) WritePage(w io.Writer, p pages.Page) error {
+func (s *Site) WritePage(w io.Writer, p Page) error {
 	if err := s.ensureRendered(); err != nil {
 		return err
 	}

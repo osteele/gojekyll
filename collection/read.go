@@ -27,10 +27,10 @@ func (c *Collection) ReadPages() error {
 	return nil
 }
 
-func addPrevNext(ps []pages.Page) {
+func addPrevNext(ps []Page) {
 	const prevPageField = "previous"
 	const nextPageField = "next"
-	var prev pages.Page
+	var prev Page
 	for _, p := range ps {
 		p.FrontMatter()[prevPageField] = prev
 		if prev != nil {
@@ -89,7 +89,7 @@ func (c *Collection) readPost(path string, rel string) error {
 	case f.IsStatic():
 		return nil
 	case f.Published() || c.cfg.Unpublished:
-		p := f.(pages.Page) // f.Static() guarantees this
+		p := f.(Page) // f.Static() guarantees this
 		c.pages = append(c.pages, p)
 	}
 	return nil

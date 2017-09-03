@@ -40,8 +40,7 @@ func (p *jekyllFeedPlugin) PostReadSite(s Site) error {
 			path = "/" + pp
 		}
 	}
-	d := newTemplateDoc(s, path, feedTemplateSource)
-	s.AddDocument(d, true)
+	s.AddHTMLPage(path, feedTemplateSource, nil)
 	return nil
 }
 

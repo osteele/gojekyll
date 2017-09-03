@@ -31,20 +31,16 @@ type Plugin interface {
 
 // Site is the site interface that is available to plugins.
 type Site interface {
-	AddDocument(pages.Document, bool)
+	AddHTMLPage(url string, tpl string, fm frontmatter.FrontMatter)
 	Config() *config.Config
 	TemplateEngine() *liquid.Engine
-	Pages() []pages.Page
-	Posts() []pages.Page
+	Pages() []Page
+	Posts() []Page
 	HasLayout(string) bool
 }
 
-// Page is the page interface that is available to plugins.
-type Page interface {
-	FrontMatter() frontmatter.FrontMatter
-	IsPost() bool
-	URL() string
-}
+// Page is in package pages.
+type Page = pages.Page
 
 // Lookup returns a plugin if it has been registered.
 func Lookup(name string) (Plugin, bool) {

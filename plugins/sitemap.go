@@ -7,8 +7,8 @@ func init() {
 }
 
 func (p *sitemapPlugin) PostReadSite(s Site) error {
-	s.AddDocument(newTemplateDoc(s, "/sitemap.xml", sitemapTemplateSource), true)
-	s.AddDocument(newTemplateDoc(s, "/robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`), true)
+	s.AddHTMLPage("/sitemap.xml", sitemapTemplateSource, nil)
+	s.AddHTMLPage("/robots.txt", `Sitemap: {{ "sitemap.xml" | absolute_url }}`, nil)
 	return nil
 }
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/liquid"
 	"github.com/stretchr/testify/require"
 )
@@ -15,12 +15,12 @@ type siteFake struct {
 	e *liquid.Engine
 }
 
-func (s siteFake) AddDocument(pages.Document, bool) {}
-func (s siteFake) Config() *config.Config           { return &s.c }
-func (s siteFake) HasLayout(string) bool            { return true }
-func (s siteFake) Pages() []pages.Page              { return nil }
-func (s siteFake) Posts() []pages.Page              { return nil }
-func (s siteFake) TemplateEngine() *liquid.Engine   { return s.e }
+func (s siteFake) AddHTMLPage(string, string, frontmatter.FrontMatter) {}
+func (s siteFake) Config() *config.Config                              { return &s.c }
+func (s siteFake) HasLayout(string) bool                               { return true }
+func (s siteFake) Pages() []Page                                       { return nil }
+func (s siteFake) Posts() []Page                                       { return nil }
+func (s siteFake) TemplateEngine() *liquid.Engine                      { return s.e }
 
 func TestAvatarTag(t *testing.T) {
 	engine := liquid.NewEngine()

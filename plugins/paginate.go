@@ -3,8 +3,6 @@ package plugins
 import (
 	"fmt"
 	"strings"
-
-	"github.com/osteele/gojekyll/pages"
 )
 
 type paginatePlugin struct{ plugin }
@@ -25,7 +23,7 @@ func (p *paginatePlugin) PostReadSite(s Site) error {
 	return nil
 }
 
-func createPaginator(n, perPage int, posts []pages.Page) map[string]interface{} {
+func createPaginator(n, perPage int, posts []Page) map[string]interface{} {
 	pageCount := (len(posts) + perPage - 1) / perPage
 	paginatePath := "/blog/page:num/"
 	pagePath := func(n int) string {

@@ -22,7 +22,7 @@ func readTestSiteDrop(t *testing.T) map[string]interface{} {
 
 func TestSite_ToLiquid(t *testing.T) {
 	drop := readTestSiteDrop(t)
-	docs, ok := drop["documents"].([]pages.Page)
+	docs, ok := drop["documents"].([]Page)
 	require.True(t, ok, fmt.Sprintf("documents has type %T", drop["documents"]))
 	require.Len(t, docs, 3)
 }
@@ -36,25 +36,25 @@ func TestSite_ToLiquid_time(t *testing.T) {
 
 func TestSite_ToLiquid_pages(t *testing.T) {
 	drop := readTestSiteDrop(t)
-	ps, ok := drop["pages"].([]pages.Page)
+	ps, ok := drop["pages"]
 	require.True(t, ok, fmt.Sprintf("pages has type %T", drop["pages"]))
 	require.Len(t, ps, 1)
 
-	ps, ok = drop["html_pages"].([]pages.Page)
+	ps, ok = drop["html_pages"]
 	require.True(t, ok, fmt.Sprintf("pages has type %T", drop["pages"]))
 	require.Len(t, ps, 1)
 }
 
 func TestSite_ToLiquid_posts(t *testing.T) {
 	drop := readTestSiteDrop(t)
-	posts, ok := drop["posts"].([]pages.Page)
+	posts, ok := drop["posts"].([]Page)
 	require.True(t, ok, fmt.Sprintf("posts has type %T", drop["posts"]))
 	require.Len(t, posts, 1)
 }
 
 func TestSite_ToLiquid_related_posts(t *testing.T) {
 	drop := readTestSiteDrop(t)
-	posts, ok := drop["related_posts"].([]pages.Page)
+	posts, ok := drop["related_posts"].([]Page)
 	require.True(t, ok, fmt.Sprintf("related_posts has type %T", drop["related_posts"]))
 	require.Len(t, posts, 1)
 }

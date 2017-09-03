@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/utils"
 )
 
@@ -107,7 +106,7 @@ func (s *Site) fileAffectsBuild(rel string) bool {
 }
 
 // returns true if changes to the site-relative paths invalidate doc
-func (s *Site) invalidatesDoc(paths map[string]bool, d pages.Document) bool {
+func (s *Site) invalidatesDoc(paths map[string]bool, d Document) bool {
 	rel := utils.MustRel(s.SourceDir(), d.Source())
 	return paths[rel]
 }

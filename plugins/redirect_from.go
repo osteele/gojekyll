@@ -3,10 +3,7 @@ package plugins
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"text/template"
-
-	"github.com/osteele/gojekyll/pages"
 )
 
 type jekyllRedirectFromPlugin struct{ plugin }
@@ -22,32 +19,32 @@ func init() {
 	redirectTemplate = tmpl
 }
 
-func (p jekyllRedirectFromPlugin) PostReadSite(site Site) error {
-	ps := site.Pages()
-	newPages, err := p.processRedirectFrom(site, ps)
+func (p jekyllRedirectFromPlugin) PostReadSite(s Site) error {
+	ps := s.Pages()
+	addRedirects, err := p.processRedirectFrom(s, ps)
 	if err != nil {
 		return err
 	}
-	if err := p.processRedirectTo(site, ps); err != nil {
+	if err := p.processRedirectTo(s, ps); err != nil {
 		return err
 	}
-	for _, r := range newPages {
-		site.AddDocument(r, true)
-	}
+	addRedirects()
 	return nil
 }
 
-func (p jekyllRedirectFromPlugin) processRedirectFrom(site Site, ps []pages.Page) ([]pages.Document, error) {
+func (p jekyllRedirectFromPlugin) processRedirectFrom(s Site, ps []Page) (func(), error) {
 	var (
-		cfg          = site.Config()
-		siteurl      = cfg.AbsoluteURL
-		baseurl      = cfg.BaseURL
-		prefix       = siteurl + baseurl
-		redirections = []pages.Document{}
+		cfg       = s.Config()
+		siteurl   = cfg.AbsoluteURL
+		baseurl   = cfg.BaseURL
+		prefix    = siteurl + baseurl
+		redirects = []func(){}
 	)
-	addRedirectFrom := func(from string, to pages.Page) {
-		r := redirectionDoc{pages.PageEmbed{Path: from}, prefix + to.URL()}
-		redirections = append(redirections, &r)
+	addRedirectFrom := func(from string, to Page) {
+		f := func() {
+			s.AddHTMLPage(from, createRedirectionHTML(prefix+to.URL()), nil)
+		}
+		redirects = append(redirects, f)
 	}
 	for _, p := range ps {
 		sources, err := getStringArray(p, "redirect_from")
@@ -58,57 +55,57 @@ func (p jekyllRedirectFromPlugin) processRedirectFrom(site Site, ps []pages.Page
 			addRedirectFrom(from, p)
 		}
 	}
-	return redirections, nil
+	return func() {
+		for _, f := range redirects {
+			f()
+		}
+	}, nil
 }
 
-func (p jekyllRedirectFromPlugin) processRedirectTo(site Site, ps []pages.Page) error {
+func (p jekyllRedirectFromPlugin) processRedirectTo(_ Site, ps []Page) error {
 	for _, p := range ps {
 		sources, err := getStringArray(p, "redirect_to")
 		if err != nil {
 			return err
 		}
 		if len(sources) > 0 {
-			r := redirectionDoc{pages.PageEmbed{Path: p.URL()}, sources[0]}
-			p.SetContent(r.Content())
+			p.SetContent(createRedirectionHTML(sources[0]))
 		}
 	}
 	return nil
 }
 
-func getStringArray(p pages.Page, fieldName string) (out []string, err error) {
+func getStringArray(p Page, fieldName string) ([]string, error) {
+	var a []string
 	if value, ok := p.FrontMatter()[fieldName]; ok {
 		switch value := value.(type) {
 		case []string:
-			out = value
+			a = value
 		case []interface{}:
-			out = make([]string, len(value))
+			a = make([]string, len(value))
 			for i, item := range value {
-				out[i] = fmt.Sprintf("%s", item)
+				a[i] = fmt.Sprintf("%s", item)
 			}
 		case string:
-			out = []string{value}
+			a = []string{value}
 		default:
-			err = fmt.Errorf("unimplemented redirect_from type %T", value)
+			return nil, fmt.Errorf("unimplemented redirect_from type %T", value)
 		}
 	}
-	return
+	return a, nil
 }
 
-type redirectionDoc struct {
-	pages.PageEmbed
-	To string
-}
-
-func (d *redirectionDoc) Content() string {
+func createRedirectionHTML(to string) string {
+	r := redirection{to}
 	buf := new(bytes.Buffer)
-	if err := redirectTemplate.Execute(buf, d); err != nil {
+	if err := redirectTemplate.Execute(buf, r); err != nil {
 		panic(err)
 	}
 	return buf.String()
 }
 
-func (d *redirectionDoc) Write(w io.Writer) error {
-	return redirectTemplate.Execute(w, d)
+type redirection struct {
+	To string
 }
 
 // Adapted from https://github.com/jekyll/jekyll-redirect-from
