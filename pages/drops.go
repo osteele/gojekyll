@@ -4,7 +4,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 )
@@ -28,7 +27,7 @@ func (f *file) ToLiquid() interface{} {
 		base    = path.Base(relpath)
 		ext     = path.Ext(relpath)
 	)
-	return liquid.IterationKeyedMap(f.fm.Merged(frontmatter.FrontMatter{
+	return liquid.IterationKeyedMap(f.fm.Merged(FrontMatter{
 		"path":          relpath,
 		"modified_time": f.modTime,
 		"name":          base,

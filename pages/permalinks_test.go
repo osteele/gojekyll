@@ -43,7 +43,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	)
 
 	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
-		fm := frontmatter.Merge(data, frontmatter.FrontMatter{"permalink": pattern})
+		fm := frontmatter.Merge(data, FrontMatter{"permalink": pattern})
 		ext := filepath.Ext(path)
 		switch ext {
 		case ".md", ".markdown":

@@ -12,7 +12,6 @@ import (
 
 	"github.com/kyokomi/emoji"
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
@@ -31,7 +30,7 @@ type Plugin interface {
 
 // Site is the site interface that is available to plugins.
 type Site interface {
-	AddHTMLPage(url string, tpl string, fm frontmatter.FrontMatter)
+	AddHTMLPage(url string, tpl string, fm pages.FrontMatter)
 	Config() *config.Config
 	TemplateEngine() *liquid.Engine
 	Pages() []Page

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/utils"
@@ -14,7 +13,7 @@ import (
 )
 
 // AddHTMLPage is in the plugins.Site interface.
-func (s *Site) AddHTMLPage(url string, src string, fm frontmatter.FrontMatter) {
+func (s *Site) AddHTMLPage(url string, src string, fm pages.FrontMatter) {
 	tpl, err := s.TemplateEngine().ParseTemplate([]byte(src))
 	if err != nil {
 		panic(err)

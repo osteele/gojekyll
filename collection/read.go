@@ -5,7 +5,6 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/utils"
 )
@@ -77,7 +76,7 @@ func (c *Collection) readPost(path string, rel string) error {
 	case strategy.isFuture(rel) && !c.cfg.Future:
 		return nil
 	}
-	fm := frontmatter.FrontMatter{
+	fm := pages.FrontMatter{
 		"collection": c.Name,
 		"permalink":  c.PermalinkPattern(),
 	}.Merged(c.cfg.GetFrontMatterDefaults(c.Name, siteRel))

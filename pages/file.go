@@ -16,14 +16,14 @@ type file struct {
 	outputExt string
 	permalink string // cached permalink
 	modTime   time.Time
-	dfm       frontmatter.FrontMatter // default frontMatter
-	fm        frontmatter.FrontMatter
+	dfm       FrontMatter // default frontMatter
+	fm        FrontMatter
 }
 
 // NewFile creates a Page or StaticFile.
 //
 // filename is the absolute filename. relpath is the path relative to the site or collection directory.
-func NewFile(s Site, filename string, relpath string, fm frontmatter.FrontMatter) (Document, error) {
+func NewFile(s Site, filename string, relpath string, fm FrontMatter) (Document, error) {
 	hasFM, err := frontmatter.FileHasFrontMatter(filename)
 	if err != nil {
 		return nil, err

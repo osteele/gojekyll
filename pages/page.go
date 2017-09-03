@@ -24,7 +24,7 @@ type Page interface {
 	// This has the side effect of causing the content to subsequently appear in the drop.
 	Render() error
 	SetContent(string)
-	FrontMatter() frontmatter.FrontMatter
+	FrontMatter() FrontMatter
 	// PostDate returns the date computed from the filename or frontmatter.
 	// It is an uncaught error to call this on a page that is not a Post.
 	// TODO Should posts have their own interface?
@@ -39,6 +39,9 @@ type Page interface {
 type PageEmbed struct {
 	Path string
 }
+
+// FrontMatter is from the frontmatter package.
+type FrontMatter = frontmatter.FrontMatter
 
 // URL is in the pages.Page interface.
 func (p *PageEmbed) URL() string { return p.Path }
@@ -125,7 +128,7 @@ func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
 	return
 }
 
-func (p *page) FrontMatter() frontmatter.FrontMatter {
+func (p *page) FrontMatter() FrontMatter {
 	return p.fm
 }
 

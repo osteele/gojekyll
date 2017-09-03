@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
-	"github.com/osteele/gojekyll/frontmatter"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/stretchr/testify/require"
 )
@@ -31,7 +30,7 @@ func TestPage_TemplateContext(t *testing.T) {
 
 func TestPage_Categories(t *testing.T) {
 	s := siteFake{t, config.Default()}
-	fm := frontmatter.FrontMatter{"categories": "b a"}
+	fm := FrontMatter{"categories": "b a"}
 	f := file{site: s, fm: fm}
 	p := page{file: f}
 	require.Equal(t, []string{"a", "b"}, p.Categories())
@@ -61,7 +60,7 @@ func fakePageFromFile(t *testing.T, file string) (Document, error) {
 		siteFake{t, config.Default()},
 		filepath.Join("testdata", file),
 		file,
-		frontmatter.FrontMatter{},
+		FrontMatter{},
 	)
 }
 
