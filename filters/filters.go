@@ -87,7 +87,7 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 		return c.BaseURL + s
 	})
 	e.RegisterFilter("jsonify", json.Marshal)
-	e.RegisterFilter("markdownify", blackfriday.MarkdownCommon)
+	e.RegisterFilter("markdownify", blackfriday.Run)
 	e.RegisterFilter("normalize_whitespace", func(s string) string {
 		// s = strings.Replace(s, "n", "N", -1)
 		wsPattern := regexp.MustCompile(`(?s:[\s\n]+)`)
