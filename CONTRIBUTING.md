@@ -15,7 +15,8 @@ If you choose to contribute code, please review the [pull request template](http
 
 Fork and clone the repo.
 
-[Install go](https://golang.org/doc/install#install). On macOS running Homebrew, `brew install go` is easier than the linked instructions.
+[Install go](https://golang.org/doc/install#install). On macOS running Homebrew,
+`brew install go` is easier than the linked instructions.
 
 Install package dependencies and development tools:
 
@@ -23,6 +24,9 @@ Install package dependencies and development tools:
 make setup
 go get -t ./...
 ```
+
+[Install golangci-lint](https://golangci-lint.run/usage/install/#local-installation).
+On macOS: `brew install golangci-lint`
 
 ### Test and Lint
 

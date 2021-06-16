@@ -30,7 +30,7 @@ func (p *Manager) copySASSFileIncludes() error {
 	if err := p.makeSASSTempDir(); err != nil {
 		return err
 	}
-	h := md5.New() // nolint: gas, noncrypto
+	h := md5.New() // nolint: gas
 	if p.ThemeDir != "" {
 		if err := p.copySASSFiles(filepath.Join(p.ThemeDir, sassDirName), p.sassTempDir, h); err != nil {
 			return err

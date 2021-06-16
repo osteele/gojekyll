@@ -38,14 +38,12 @@ release: build
 setup:
 	go mod init || true
 	go get -t -u ./...
-	go get github.com/alecthomas/gometalinter
-	gometalinter --install
 
 install:
 	go install ${LDFLAGS} ${PACKAGE}
 
 lint:
-	gometalinter ./... --tests --deadline=5m --disable=gotype --disable=aligncheck
+	golangci-lint run
 
 test:
 	go test ./...

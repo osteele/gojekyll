@@ -46,7 +46,7 @@ func Disable() {
 // header and content are distinct parameters to relieve the caller from
 // having to concatenate them.
 func WithFile(header string, content string, fn func() (string, error)) (string, error) {
-	h := md5.New()             // nolint: gas, noncrypto
+	h := md5.New()             // nolint: gas
 	io.WriteString(h, content) // nolint: errcheck, gas
 	io.WriteString(h, "\n")    // nolint: errcheck, gas
 	io.WriteString(h, header)  // nolint: errcheck, gas
