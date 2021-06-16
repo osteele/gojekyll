@@ -7,7 +7,7 @@ SOURCES := $(shell find $(SOURCEDIR) -name '*.go')
 COMMIT_HASH = `git rev-parse --short HEAD 2>/dev/null`
 BUILD_DATE = `date +%FT%T%z`
 VERSION := $(COMMIT_HASH)
-OS := $(shell uname -o)
+OS := $(shell uname)
 
 LDFLAGS=-ldflags "-X ${PACKAGE}/version.Version=${VERSION} -X ${PACKAGE}/version.BuildDate=${BUILD_DATE}"
 
