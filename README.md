@@ -8,10 +8,10 @@ Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com) s
 |-------------------------|-------------------------------------------|--------|--------------|
 | Stable                  |                                           | ✓      | ✓            |
 | Fast                    | ✓<br>([~20×Jekyll](./docs/benchmarks.md)) |        | ✓            |
-| Template language       | Liquid                                    | Liquid | Go templates |
-| SASS                    | ✓                                         | ✓      |              |
+| Template language       | Liquid                                    | Liquid | Go, Ace and Amber templates |
+| SASS                    | ✓                                         | ✓      | ✓            |
 | Jekyll compatibility    | [partial](#current-limitations)           | ✓      |              |
-| Plugins                 | [some](./docs/plugins.md)                 | yes    | ?            |
+| Plugins                 | [some](./docs/plugins.md)                 | yes    | shortcodes, theme components |
 | Windows support         |                                           | ✓      | ✓            |
 | Implementation language | Go                                        | Ruby   | Go           |
 
