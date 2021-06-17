@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"github.com/osteele/gojekyll/utils"
-	"github.com/russross/blackfriday"
+	"github.com/russross/blackfriday/v2"
 	"golang.org/x/net/html"
 )
 

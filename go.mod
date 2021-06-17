@@ -22,7 +22,7 @@ require (
 	github.com/osteele/tuesday v1.0.3 // indirect
 	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32
 	github.com/radovskyb/watcher v1.0.7
-	github.com/russross/blackfriday v1.6.0
+	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/tdewolff/minify v2.3.6+incompatible
@@ -31,7 +31,7 @@ require (
 	github.com/wellington/go-libsass v0.9.2
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
-	golang.org/x/sys v0.0.0-20210616045830-e2b7044e8c71 // indirect
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect

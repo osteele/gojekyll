@@ -17,7 +17,7 @@ import (
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
-	"github.com/russross/blackfriday"
+	"github.com/russross/blackfriday/v2"
 	libsass "github.com/wellington/go-libsass"
 )
 
