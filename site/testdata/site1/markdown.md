@@ -21,6 +21,13 @@ Some **bold** and *italic* text.
 
 `code`
 
+## Markdown inside HTML should not render
+
 <div>*b*</div>
+## Markdown inside HTML markdown=1 should render
 
 <div markdown="1">*b*</div>
+
+<div markdown=1><user@example.com></div>
+
+<div markdown=1><http://example.com></div>
