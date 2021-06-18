@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"html"
+	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -48,12 +50,12 @@ func highlightTag(rc render.Context) (string, error) {
 		}
 		return buf.String(), nil
 	})
-	if e, ok := err.(*exec.Error); ok {
-		if e.Err == exec.ErrNotFound {
+	if pathErr, ok := err.(*fs.PathError); ok {
+		if filepath.Base(pathErr.Path) == pygmentizeCmd {
 			r, err = `<code>`+html.EscapeString(s)+`</code>`, nil
 			if !warnedMissingPygmentize {
 				warnedMissingPygmentize = true
-				_, err = fmt.Fprintf(os.Stdout, "%s\nThe {%% highlight %%} tag will use <code>…</code> instead\n", err)
+				_, err = fmt.Fprintf(os.Stdout, "Error: %s\nRun `pip install Pygments` to install %s.\nThe {%% highlight %%} tag will use <code>…</code> instead\n", pathErr, pygmentizeCmd)
 			}
 		}
 	}
