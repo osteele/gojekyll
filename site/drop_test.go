@@ -38,11 +38,11 @@ func TestSite_ToLiquid_pages(t *testing.T) {
 	drop := readTestSiteDrop(t)
 	ps, ok := drop["pages"]
 	require.True(t, ok, fmt.Sprintf("pages has type %T", drop["pages"]))
-	require.Len(t, ps, 1)
+	require.Len(t, ps, 2)
 
 	ps, ok = drop["html_pages"]
 	require.True(t, ok, fmt.Sprintf("pages has type %T", drop["pages"]))
-	require.Len(t, ps, 1)
+	require.Len(t, ps, 2)
 }
 
 func TestSite_ToLiquid_posts(t *testing.T) {
