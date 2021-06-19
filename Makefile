@@ -36,7 +36,6 @@ release: build
 	tar -cvzf dist/$(BINARY)_$(VERSION)_$(OS:GNU/%=%)_$(shell uname -m).tar.gz $(BINARY) LICENSE README.md
 
 setup:
-	go mod init || true
 	go get -t -u ./...
 
 install:

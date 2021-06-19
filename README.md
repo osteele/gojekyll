@@ -1,6 +1,10 @@
 # Gojekyll
 
- [![][travis-svg]][travis-url] [![][coveralls-svg]][coveralls-url] [![][go-report-card-svg]][go-report-card-url] [![][license-svg]][license-url]
+ [![Travis badge][travis-svg]][travis-url]
+ [![Golangci-lint badge][golangci-lint-svg]][golangci-lint-url]
+ [![Coveralls badge][coveralls-svg]][coveralls-url]
+ [![Go Report Card badge][go-report-card-svg]][go-report-card-url]
+ [![MIT License][license-svg]][license-url]
 
 Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com) static site generator, written in the [Go](https://golang.org) programming language. It provides `build` and `serve` commands, with directory watch and live reload.
 
@@ -18,19 +22,19 @@ Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com) s
 <!-- TOC -->
 
 - [Gojekyll](#gojekyll)
-    - [Usage](#usage)
-    - [Installation](#installation)
-        - [Binary Downloads](#binary-downloads)
-        - [From Source](#from-source)
-    - [[Optional] Install command-line autocompletion](#optional-install-command-line-autocompletion)
-    - [Status](#status)
-        - [Current Limitations](#current-limitations)
-        - [Other Differences](#other-differences)
-        - [Feature Checklist](#feature-checklist)
-    - [Contributing](#contributing)
-    - [Attribution](#attribution)
-    - [Related](#related)
-    - [License](#license)
+  - [Usage](#usage)
+  - [Installation](#installation)
+    - [Binary Downloads](#binary-downloads)
+    - [From Source](#from-source)
+  - [[Optional] Install command-line autocompletion](#optional-install-command-line-autocompletion)
+  - [Status](#status)
+    - [Current Limitations](#current-limitations)
+    - [Other Differences](#other-differences)
+    - [Feature Checklist](#feature-checklist)
+  - [Contributing](#contributing)
+  - [Attribution](#attribution)
+  - [Related](#related)
+  - [License](#license)
 
 <!-- /TOC -->
 
@@ -230,8 +234,11 @@ MIT
 [license-url]: https://github.com/osteele/gojekyll/blob/master/LICENSE
 [license-svg]: https://img.shields.io/badge/license-MIT-blue.svg
 
+[golangci-lint-url]: https://github.com/osteele/gojekyll/actions?query=workflow%3Agolangci-lint
+[golangci-lint-svg]: https://github.com/osteele/gojekyll/actions/workflows/golangci-lint.yml/badge.svg
+
 [go-report-card-url]: https://goreportcard.com/report/github.com/osteele/gojekyll
 [go-report-card-svg]:  https://goreportcard.com/badge/github.com/osteele/gojekyll
 
-[travis-url]: https://travis-ci.org/osteele/gojekyll
+[travis-url]: https://travis-ci.com/osteele/gojekyll
 [travis-svg]: https://img.shields.io/travis/osteele/gojekyll.svg?branch=master
