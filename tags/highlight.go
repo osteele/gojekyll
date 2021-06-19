@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"html"
-	"io/fs"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -50,14 +48,35 @@ func highlightTag(rc render.Context) (string, error) {
 		}
 		return buf.String(), nil
 	})
-	if pathErr, ok := err.(*fs.PathError); ok {
-		if filepath.Base(pathErr.Path) == pygmentizeCmd {
-			r, err = `<code>`+html.EscapeString(s)+`</code>`, nil
-			if !warnedMissingPygmentize {
-				warnedMissingPygmentize = true
-				_, err = fmt.Fprintf(os.Stdout, "Error: %s\nRun `pip install Pygments` to install %s.\nThe {%% highlight %%} tag will use <code>…</code> instead\n", pathErr, pygmentizeCmd)
-			}
+	if e, ok := err.(*exec.Error); ok {
+		// This only works in go < 1.16:
+		if e.Err == exec.ErrNotFound {
+			r, err = maybeWarnMissingPygmentize(s, err)
+		}
+		// This is language-dependent, but works in go 1.16 too
+		if strings.Contains(e.Err.Error(), "executable file not found") && e.Name == pygmentizeCmd {
+			r, err = maybeWarnMissingPygmentize(s, err)
 		}
 	}
+	// TODO: replace the test above by the following once support for go < 1.16
+	// is dropped if pathErr, ok := err.(*fs.PathError); ok {
+	//  if filepath.Base(pathErr.Path) == pygmentizeCmd {
+	//      r, err = maybeWarnMissingPygmentize(s, err)
+	//  }
+	// }
+	return r, err
+}
+
+func maybeWarnMissingPygmentize(s string, err error) (string, error) {
+	r := `<code>` + html.EscapeString(s) + `</code>`
+	if warnedMissingPygmentize {
+		return r, nil
+	}
+	warnedMissingPygmentize = true
+	_, err = fmt.Fprintf(os.Stderr,
+		"Error: %s\n"+
+			"Run `pip install Pygments` to install %s.\n"+
+			"The {%% highlight %%} tag will use <code>…</code> instead.\n",
+		err, pygmentizeCmd)
 	return r, err
 }
