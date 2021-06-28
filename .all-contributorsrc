@@ -35,6 +35,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "mevdschee",
+      "name": "Maurits van der Schee",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1288217?v=4",
+      "profile": "https://tqdev.com/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
