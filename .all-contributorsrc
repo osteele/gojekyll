@@ -1,0 +1,32 @@
+{
+  "projectName": "gojekyll",
+  "projectOwner": "osteele",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": true,
+  "commitConvention": "none",
+  "contributors": [
+    {
+      "login": "osteele",
+      "name": "Oliver Steele",
+      "avatar_url": "https://avatars.githubusercontent.com/u/674?v=4",
+      "profile": "https://code.osteele.com/",
+      "contributions": [
+        "code",
+        "design",
+        "doc",
+        "ideas",
+        "infra",
+        "maintenance",
+        "projectManagement",
+        "review",
+        "test"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
+}

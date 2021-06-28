@@ -1,4 +1,7 @@
 # Gojekyll
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
  [![Travis badge][travis-svg]][travis-url]
  [![Golangci-lint badge][golangci-lint-svg]][golangci-lint-url]
@@ -276,3 +279,23 @@ MIT
 
 [travis-url]: https://travis-ci.com/osteele/gojekyll
 [travis-svg]: https://img.shields.io/travis/osteele/gojekyll.svg?branch=master
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://code.osteele.com/"><img src="https://avatars.githubusercontent.com/u/674?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Oliver Steele</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Code">💻</a> <a href="#design-osteele" title="Design">🎨</a> <a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Documentation">📖</a> <a href="#ideas-osteele" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-osteele" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-osteele" title="Maintenance">🚧</a> <a href="#projectManagement-osteele" title="Project Management">📆</a> <a href="https://github.com/osteele/gojekyll/pulls?q=is%3Apr+reviewed-by%3Aosteele" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Tests">⚠️</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
