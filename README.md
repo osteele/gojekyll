@@ -1,6 +1,6 @@
 # Gojekyll
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
  [![Travis badge][travis-svg]][travis-url]
@@ -290,6 +290,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://code.osteele.com/"><img src="https://avatars.githubusercontent.com/u/674?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Oliver Steele</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Code">💻</a> <a href="#design-osteele" title="Design">🎨</a> <a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Documentation">📖</a> <a href="#ideas-osteele" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-osteele" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-osteele" title="Maintenance">🚧</a> <a href="#projectManagement-osteele" title="Project Management">📆</a> <a href="https://github.com/osteele/gojekyll/pulls?q=is%3Apr+reviewed-by%3Aosteele" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Tests">⚠️</a></td>
+    <td align="center"><a href="https://bep.is/"><img src="https://avatars.githubusercontent.com/u/394382?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bjørn Erik Pedersen</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=bep" title="Documentation">📖</a></td>
   </tr>
 </table>
 

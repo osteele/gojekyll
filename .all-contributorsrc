@@ -26,6 +26,15 @@
         "review",
         "test"
       ]
+    },
+    {
+      "login": "bep",
+      "name": "Bjørn Erik Pedersen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/394382?v=4",
+      "profile": "https://bep.is/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7
