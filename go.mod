@@ -20,7 +20,7 @@ require (
 	github.com/montanaflynn/stats v0.6.6
 	github.com/osteele/liquid v1.2.4
 	github.com/osteele/tuesday v1.0.3 // indirect
-	github.com/pkg/browser v0.0.0-20210606212950-a7b7a6107d32
+	github.com/pkg/browser v0.0.0-20210621091255-c198bc921a84
 	github.com/radovskyb/watcher v1.0.7
 	github.com/russross/blackfriday/v2 v2.1.0
 	github.com/smartystreets/goconvey v1.6.4 // indirect
@@ -30,9 +30,10 @@ require (
 	github.com/tdewolff/test v1.0.6 // indirect
 	github.com/wellington/go-libsass v0.9.2
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
-	golang.org/x/oauth2 v0.0.0-20210615190721-d04028783cf1
+	golang.org/x/oauth2 v0.0.0-20210622215436-a8dc77f794b6
 	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/protobuf v1.27.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/yaml.v2 v2.4.0
