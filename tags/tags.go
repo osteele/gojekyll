@@ -24,9 +24,9 @@ func AddJekyllTags(e *liquid.Engine, c *config.Config, includeDirs []string, lh 
 
 // tagContext provides the context to a tag renderer.
 type tagContext struct {
-	cfg *config.Config
+	cfg         *config.Config
 	includeDirs []string
-	lh  LinkTagHandler
+	lh          LinkTagHandler
 }
 
 // CreateUnimplementedTag creates a tag definition that prints a warning the first

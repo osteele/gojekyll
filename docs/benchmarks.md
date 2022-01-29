@@ -1,6 +1,6 @@
 # Benchmarks
 
-`[go]jekyll build` on a late-2015 MacBook Pro, running current versions of everything as of 2017-07-09.
+`[go]jekyll build` on an Intel Xeon E5620 @ 2.40GHz, running current versions of everything as of 2022-01-29.
 
 Disable the cache by setting the environment variable `GOJEKYLL_DISABLE_CACHE=1`.
 Disable threading by setting `GOMAXPROCS=1`.
@@ -13,22 +13,19 @@ This site contains only one SASS file.
 It contains a few instances of `{\% highlight \%}`.
 Each of these results in a call to Pygment. This dominates the un-cached times.
 
-| Executable | Options                     | Time          |
-|------------|-----------------------------|---------------|
-| jekyll     |                             | 18.53s        |
-| gojekyll   | single-threaded; cold cache | 3.14s ± 0.23s |
-| gojekyll   | single-threaded; warm cache | 2.19s ± 0.03s |
-| gojekyll   | multi-threaded; cold cache  | 1.19s ± 0.03s |
-| gojekyll   | multi-threaded; warm cache  | 0.63s ± 0.03s |
+| Executable | Options         | Time   |
+|------------|-----------------|--------|
+| jekyll     |                 | 9.086s |
+| gojekyll   | single-threaded | 5.35s  |
+| gojekyll   | multi-threaded  | 2.50s  |
 
-## Software Design web site
 
-This site makes heavy use of SASS.
+## MadelineProto Docs
 
-| Executable | Options                     | Time          |
-|------------|-----------------------------|---------------|
-| jekyll     |                             | 8.07s         |
-| gojekyll   | single-threaded; cold cache | 1.46s ± 0.21s |
-| gojekyll   | single-threaded; warm cache | 0.60s ± 0.23s |
-| gojekyll   | multi-threaded; cold cache  | 1.23s ± 0.10s |
-| gojekyll   | multi-threaded; warm cache  | 0.35s ± 0.04s |
+This site contains 1873 markdown files, and runs a modified version of the complex [Just The Docs theme](https://pmarsceill.github.io/just-the-docs/), with many SASS files, sitemap, search index generation.
+
+| Executable | Options         | Time             |
+|------------|-----------------|------------------|
+| jekyll     |                 | Timeout @ 1 hour |
+| gojekyll   | single-threaded | 750.61s          |
+| gojekyll   | multi-threaded  | 142.16s          |

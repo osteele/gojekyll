@@ -5,8 +5,8 @@ import (
 	"io"
 	"regexp"
 
+	"github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/utils"
-	"github.com/russross/blackfriday/v2"
 	"golang.org/x/net/html"
 )
 
@@ -27,6 +27,7 @@ const blackfridayExtensions = 0 |
 	blackfriday.HeadingIDs |
 	blackfriday.BackslashLineBreak |
 	blackfriday.DefinitionLists |
+	blackfriday.NoEmptyLineBeforeBlock |
 	// added relative to commonExtensions
 	blackfriday.AutoHeadingIDs
 

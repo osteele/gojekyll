@@ -59,9 +59,7 @@ gojekyll help build
 
 1. Ubuntu (64-bit) and macOS binaries are available from the [releases
    page](https://github.com/osteele/gojekyll/releases).
-2. [Optional] **Highlight**. To use the `{% highlight %}` tag, you need
-   [Pygments](http://pygments.org): `pip install Pygments`.
-3. [Optional] **Themes**. To use a theme, you need to install Ruby and
+2. [Optional] **Themes**. To use a theme, you need to install Ruby and
    [bundler](http://bundler.io/). Create a `Gemfile` that lists the theme., and
    run `bundle install`. The [Jekyll theme
    instructions](https://jekyllrb.com/docs/themes/) provide more detail, and
