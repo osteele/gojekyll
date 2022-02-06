@@ -1,9 +1,15 @@
 # Benchmarks
 
-Disable the cache by setting the environment variable `GOJEKYLL_DISABLE_CACHE=1`.
-Disable threading by setting `GOMAXPROCS=1`.
+This document lists the times to run `jekyll build` and `gojekyll build` on a
+few different sites.
 
-SASS conversion and Pygments (`{\% highlight \%}`) are cached.
+See the Benchmarks section of CONTRIBUTING.md for instructions on how to
+run a benchmark.
+
+Notes:
+
+- SASS conversion is cached
+- Pygments (for version gojkeyll <= 0.2.5) is cached.
 
 ## MadelineProto Docs
 
@@ -23,11 +29,19 @@ many SASS files, sitemap, search index generation.
 ## Software Design web site
 
 Site source: <https://github.com/sd17spring/sd17spring.github.io>
-This site makes heavy use of SASS.
 
 MacBook Pro (13", M1, 2020), macOS Monterey (12.2)
 gojekyll v0.2.5
 go1.17.6 darwin/arm64
+
+Notes:
+
+- This site makes heavy use of SASS.
+- This site uses The GitHub metadata plugin. The results of that plugin are not
+  cached. (See issue [#43](https://github.com/osteele/gojekyll/issues/43).)
+  These benchmarks are run from a machine with a high latency to GitHub. I
+  suspect that this latency dominates these benchmark time. Previous benchmarks
+  were from the U.S.
 
 | Executable | Options                         | Time               |
 | ---------- | ------------------------------- | ------------------ |

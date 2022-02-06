@@ -7,7 +7,9 @@ Here's some ways to help:
 * Search the sources for FIXME and TODO comments.
 * Improve the [code coverage](https://coveralls.io/github/osteele/gojekyll?branch=master).
 
-If you choose to contribute code, please review the [pull request template](https://github.com/osteele/gojekyll/blob/master/.github/PULL_REQUEST_TEMPLATE.md) before you get too far along.
+If you choose to contribute code, please review the [pull request
+template](https://github.com/osteele/gojekyll/blob/master/.github/PULL_REQUEST_TEMPLATE.md)
+before you get too far along.
 
 ## Developer Cookbook
 
@@ -39,14 +41,42 @@ make lint
 
 ```bash
 gojekyll -s path/to/site render index.md              # render a file to stdout
-gojekyll -s path/to/site render page.md               # render a file to stdout
 gojekyll -s path/to/site render /                     # render a URL to stdout
 gojekyll -s path/to/site variables /                  # print a file or URL's variables
 gojekyll -s path/to/site variables site               # print the site variables
 gojekyll -s path/to/site variables site.twitter.name  # print a specific site variable
 ```
 
-`./scripts/gojekyll` is an alternative to the `gojekyll` executable, that uses `go run` each time it's invoked.
+`./scripts/gojekyll` is an alternative to the `gojekyll` executable, that uses
+`go run` each time it's invoked.
+
+### Benchmarks
+
+Benchmarks are listed in the file ./docs/benchmarks.md.
+
+As of 2022-02, I use [hyperfine](https://github.com/sharkdp/hyperfine) for
+benchmarking. (I don't remember what I used for previous benchmarks.)
+
+The "single-threaded" and "cached disabled" benchmarks use these settings:
+
+* Cache disabled: Disable the cache by setting the environment variable
+  `GOJEKYLL_DISABLE_CACHE=1`.
+* Single-threaded: Disable threading by setting `GOMAXPROCS=1`.
+
+For example:
+
+```sh
+GOMAXPROCS=1 GOJEKYLL_DISABLE_CACHE=1 hyperfine --warmup 2 "gojekyll build -s ${SITE_SRC}"
+GOMAXPROCS=1 hyperfine --warmup 2 "gojekyll build -s ${SITE_SRC}"
+GOJEKYLL_DISABLE_CACHE=1 hyperfine --warmup 2 "gojekyll build -s ${SITE_SRC}"
+hyperfine --warmup 2 "gojekyll build -s ${SITE_SRC}"
+```
+
+If you run into an error after a few runs, add the `--show-ouput` option to
+`hyperfine`. If the error is "403 API rate limit exceeded", you are probably
+building a repository that uses the `jekyll-github-metadata` gem; try setting
+the `JEKYLL_GITHUB_TOKEN` environment variable to the value of a GitHub access
+token and trying again.
 
 ### Coverage
 
