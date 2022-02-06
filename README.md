@@ -246,6 +246,7 @@ Gojekyll uses these libraries:
 | [github.com/tdewolff/minify](https://github.com/tdewolff/minify)               | Taco de Wolff                                          | CSS minimization                       | MIT License                             |
 | [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass)   | Drew Wells                                             | Go bindings for **libsass**            | ???                                     |
 | [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command-line arguments                 | MIT License                             |
+| [github.com/alecthomas/chroma](https://github.com/alecthomas/chroma)           | Alec Thomas                                            | Syntax highlighter                     | MIT License                             |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                           | Apache License 2.0                      |
 
 In addition, the following pieces of text were taken from Jekyll and its plugins.
@@ -279,13 +280,8 @@ during development.
 Jekyll-compatible (-), but it's highly polished, performant, and productized
 (+++).
 
-[jkl](https://github.com/drone/jkl) is another Go clone of Jekyll. If I'd found
-it sooner I might have started this project by forking that one. It's got a
-better name.
-
 [Liquid](https://github.com/osteele/liquid) is a pure Go implementation of
-Liquid templates, that I finally caved and wrote in order to use in this
-project.
+Liquid templates. I created it in order to use in this project.
 
 [Jekyll](https://jekyllrb.com), of course.
 
