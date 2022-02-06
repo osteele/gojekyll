@@ -44,6 +44,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "danog",
+      "name": "Daniil Gentili",
+      "avatar_url": "https://avatars.githubusercontent.com/u/7339644?v=4",
+      "profile": "https://daniil.it/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7
