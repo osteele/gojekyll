@@ -16,12 +16,12 @@ var highlightTagTests = []struct{ in, out string }{
 	def foo
 	  puts 'foo'
 	end
-	{% endhighlight %}`, "highlight"},
+	{% endhighlight %}`, "chroma"},
 	{`{% highlight ruby linenos %}
 	def foo
 	  puts 'foo'
 	end
-	{% endhighlight %}`, "highlighttable"},
+	{% endhighlight %}`, "lntable"},
 }
 
 func TestHighlightTag(t *testing.T) {

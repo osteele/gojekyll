@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
-	"github.com/russross/blackfriday/v2"
 	libsass "github.com/wellington/go-libsass"
 )
 
