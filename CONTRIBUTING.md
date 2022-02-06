@@ -73,10 +73,7 @@ hyperfine --warmup 2 "gojekyll build -s ${SITE_SRC}"
 ```
 
 If you run into an error after a few runs, add the `--show-ouput` option to
-`hyperfine`. If the error is "403 API rate limit exceeded", you are probably
-building a repository that uses the `jekyll-github-metadata` gem; try setting
-the `JEKYLL_GITHUB_TOKEN` environment variable to the value of a GitHub access
-token and trying again.
+`hyperfine`.
 
 ### Coverage
 

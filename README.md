@@ -14,33 +14,33 @@ static site generator, written in the [Go](https://golang.org) programming
 language. It provides `build` and `serve` commands, with directory watch and
 live reload.
 
-| &nbsp;                  | Gojekyll                                  | Jekyll | Hugo         |
-|-------------------------|-------------------------------------------|--------|--------------|
-| Stable                  |                                           | ✓      | ✓            |
-| Fast                    | ✓<br>([~20×Jekyll](./docs/benchmarks.md)) |        | ✓            |
-| Template language       | Liquid                                    | Liquid | Go, Ace and Amber templates |
-| SASS                    | ✓                                         | ✓      | ✓            |
-| Jekyll compatibility    | [partial](#current-limitations)           | ✓      |              |
+| &nbsp;                  | Gojekyll                                  | Jekyll | Hugo                         |
+| ----------------------- | ----------------------------------------- | ------ | ---------------------------- |
+| Stable                  |                                           | ✓      | ✓                            |
+| Fast                    | ✓<br>([~20×Jekyll](./docs/benchmarks.md)) |        | ✓                            |
+| Template language       | Liquid                                    | Liquid | Go, Ace and Amber templates  |
+| SASS                    | ✓                                         | ✓      | ✓                            |
+| Jekyll compatibility    | [partial](#current-limitations)           | ✓      |                              |
 | Plugins                 | [some](./docs/plugins.md)                 | yes    | shortcodes, theme components |
-| Windows support         |                                           | ✓      | ✓            |
-| Implementation language | Go                                        | Ruby   | Go           |
+| Windows support         |                                           | ✓      | ✓                            |
+| Implementation language | Go                                        | Ruby   | Go                           |
 
 <!-- TOC -->
 
-- [Gojekyll](#gojekyll)
-  - [Usage](#usage)
-  - [Installation](#installation)
-    - [Binary Downloads](#binary-downloads)
-    - [From Source](#from-source)
-  - [[Optional] Install command-line autocompletion](#optional-install-command-line-autocompletion)
-  - [Status](#status)
-    - [Current Limitations](#current-limitations)
-    - [Other Differences](#other-differences)
-    - [Feature Checklist](#feature-checklist)
-  - [Contributors](#contributors)
-  - [Attribution](#attribution)
-  - [Related](#related)
-  - [License](#license)
+- [Usage](#usage)
+- [Installation](#installation)
+  - [Binary Downloads](#binary-downloads)
+  - [From Source](#from-source)
+- [[Optional] Install command-line autocompletion](#optional-install-command-line-autocompletion)
+- [Status](#status)
+  - [Current Limitations](#current-limitations)
+  - [Other Differences](#other-differences)
+  - [Feature Checklist](#feature-checklist)
+- [Troubleshooting](#troubleshooting)
+- [Contributors](#contributors)
+- [Attribution](#attribution)
+- [Related](#related)
+- [License](#license)
 
 <!-- /TOC -->
 
@@ -194,6 +194,16 @@ Muzukashii:
   - [ ] `doctor`, `import`, `new`, `new-theme` – not planned
 - [ ] Windows
 
+## Troubleshooting
+
+If the error is "403 API rate limit exceeded", you are probably building a
+repository that uses the `jekyll-github-metadata` gem. Try setting the
+`JEKYLL_GITHUB_TOKEN`, `JEKYLL_GITHUB_TOKEN`, or `OCTOKIT_ACCESS_TOKEN`
+environment variable to the value of a [GitHub personal access
+token][personal-access-token] and trying again.
+
+[personal-access-token]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+
 ## Contributors
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -223,7 +233,7 @@ specification. [Contributions of any kind welcome](./CONTRIBUTING.md)!
 Gojekyll uses these libraries:
 
 | Package                                                                        | Author(s)                                              | Usage                                  | License                                 |
-|--------------------------------------------------------------------------------|--------------------------------------------------------|----------------------------------------|-----------------------------------------|
+| ------------------------------------------------------------------------------ | ------------------------------------------------------ | -------------------------------------- | --------------------------------------- |
 | [github.com/jaschaephraim/lrserver](https://github.com/jaschaephraim/lrserver) | Jascha Ephraim                                         | Live Reload                            | MIT License                             |
 | [github.com/kyokomi/emoji](https://github.com/kyokomi/emoji)                   | kyokomi                                                | `jemoji` plugin emulation              | MIT License                             |
 | [github.com/osteele/liquid](https://github.com/osteele/liquid)                 | yours truly                                            | Liquid processor                       | MIT License                             |
@@ -240,7 +250,7 @@ In addition, the following pieces of text were taken from Jekyll and its plugins
 They are used under the terms of the MIT License.
 
 | Source                                                                          | Use                  | Description            |
-|---------------------------------------------------------------------------------|----------------------|------------------------|
+| ------------------------------------------------------------------------------- | -------------------- | ---------------------- |
 | [Jekyll template documentation](https://jekyllrb.com/docs/templates/)           | test cases           | filter examples        |
 | `jekyll help` command                                                           | `gojekyll help` text | help text              |
 | [`jekyll-feed` plugin](https://github.com/jekyll/jekyll-feed)                   | plugin emulation     | `feed.xml` template    |

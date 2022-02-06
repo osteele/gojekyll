@@ -88,6 +88,8 @@ func getGitHubRepo(nwo string) (*github.Repository, error) {
 	var ts oauth2.TokenSource
 	if tok := os.Getenv("JEKYLL_GITHUB_TOKEN"); tok != "" {
 		ts = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: tok})
+	} else if tok := os.Getenv("GITHUB_TOKEN"); tok != "" {
+		ts = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: tok})
 	} else if tok := os.Getenv("OCTOKIT_ACCESS_TOKEN"); tok != "" {
 		ts = oauth2.StaticTokenSource(&oauth2.Token{AccessToken: tok})
 	}
