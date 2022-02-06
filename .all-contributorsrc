@@ -53,6 +53,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "cameronelliott",
+      "name": "Cameron Elliott",
+      "avatar_url": "https://avatars.githubusercontent.com/u/868689?v=4",
+      "profile": "http://cameronelliott.com/",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7

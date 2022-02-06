@@ -1,6 +1,6 @@
 # Gojekyll
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
  [![Travis badge][travis-svg]][travis-url]
@@ -217,6 +217,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://bep.is/"><img src="https://avatars.githubusercontent.com/u/394382?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bjørn Erik Pedersen</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=bep" title="Documentation">📖</a></td>
     <td align="center"><a href="https://tqdev.com/"><img src="https://avatars.githubusercontent.com/u/1288217?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Maurits van der Schee</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=mevdschee" title="Code">💻</a></td>
     <td align="center"><a href="https://daniil.it/"><img src="https://avatars.githubusercontent.com/u/7339644?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniil Gentili</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=danog" title="Code">💻</a></td>
+    <td align="center"><a href="http://cameronelliott.com/"><img src="https://avatars.githubusercontent.com/u/868689?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cameron Elliott</b></sub></a><br /><a href="#ideas-cameronelliott" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
