@@ -3,7 +3,7 @@
 
 ## 0.3 (unreleased)
 
-Contributions:
+### Contributions
 
 * [@danog (Daniil Gentili)](https://github.com/danog): Add native chroma
   highlighting (~30x performance increase) [PR
@@ -15,6 +15,14 @@ Contributions:
 
 * [@bep (Bjørn Erik Pedersen)](https://github.com/bep): Update Hugo matrix in
   README [PR #38](https://github.com/osteele/gojekyll/pull/38)
+
+### Other changes
+
+* Upgraded to liquid v1.3.0. See the liquid release notes
+  [here](https://github.com/osteele/liquid/blob/main/CHANGELOG.md#130-2020-02-13).
+
+* The binary is built with go v1.17. (The previous release, v0.2.5, was built
+  with go v1.08.)
 
 ## 0.2.5 (Aug 18, 2017)
 

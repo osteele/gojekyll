@@ -11,7 +11,7 @@ require (
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/kyokomi/emoji v2.2.4+incompatible
 	github.com/montanaflynn/stats v0.6.6
-	github.com/osteele/liquid v1.2.4
+	github.com/osteele/liquid v1.3.0
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/radovskyb/watcher v1.0.7
 	github.com/stretchr/testify v1.7.0
@@ -37,12 +37,12 @@ require (
 	github.com/osteele/tuesday v1.0.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/smartystreets/goconvey v1.7.2 // indirect
-	github.com/stretchr/objx v0.1.0 // indirect
+	github.com/stretchr/objx v0.3.0 // indirect
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
 	github.com/tdewolff/test v1.0.6 // indirect
-	golang.org/x/mod v0.3.0 // indirect
+	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
-	golang.org/x/tools v0.0.0-20200825202427-b303f430e36d // indirect
+	golang.org/x/tools v0.1.9 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
