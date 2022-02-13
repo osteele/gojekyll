@@ -3,7 +3,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
- [![Travis badge][travis-svg]][travis-url]
+[![go badge][go-svg]][go-url]
  [![Golangci-lint badge][golangci-lint-svg]][golangci-lint-url]
  [![Coveralls badge][coveralls-svg]][coveralls-url]
  [![Go Report Card badge][go-report-card-svg]][go-report-card-url]
@@ -295,11 +295,11 @@ MIT
 [license-url]: https://github.com/osteele/gojekyll/blob/master/LICENSE
 [license-svg]: https://img.shields.io/badge/license-MIT-blue.svg
 
+[go-url]: https://github.com/osteele/gojekyll/actions?query=workflow%3A%22Build+Status%22
+[go-svg]: https://github.com/osteele/gojekyll/actions/workflows/go.yml/badge.svg
+
 [golangci-lint-url]: https://github.com/osteele/gojekyll/actions?query=workflow%3Agolangci-lint
 [golangci-lint-svg]: https://github.com/osteele/gojekyll/actions/workflows/golangci-lint.yml/badge.svg
 
 [go-report-card-url]: https://goreportcard.com/report/github.com/osteele/gojekyll
 [go-report-card-svg]:  https://goreportcard.com/badge/github.com/osteele/gojekyll
-
-[travis-url]: https://travis-ci.com/osteele/gojekyll
-[travis-svg]: https://img.shields.io/travis/osteele/gojekyll.svg?branch=master
