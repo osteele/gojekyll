@@ -107,6 +107,7 @@ var filterTestBindings = liquid.Bindings{
 }
 
 func TestFilters(t *testing.T) {
+	//nolint:staticcheck // Ignore this for now
 	rand.Seed(1)
 	for i, test := range filterTests {
 		t.Run(fmt.Sprintf("%02d", i+1), func(t *testing.T) {

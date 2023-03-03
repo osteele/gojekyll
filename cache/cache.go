@@ -4,7 +4,6 @@ import (
 	"crypto/md5" // nolint: gas
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -65,7 +64,7 @@ func WithFile(header string, content string, fn func() (string, error)) (string,
 	//
 	// Do as much work as possible before checking if the cache is enabled, to
 	// minimize code paths and timing differences.
-	if b, err := ioutil.ReadFile(cachefile); err == nil && len(b) > 0 && enabled {
+	if b, err := os.ReadFile(cachefile); err == nil && len(b) > 0 && enabled {
 		return string(b), err
 	}
 	s, err := fn()
@@ -77,7 +76,7 @@ func WithFile(header string, content string, fn func() (string, error)) (string,
 	}
 	defer cacheMx.Unlock()
 	cacheMx.Lock()
-	if err := ioutil.WriteFile(cachefile, []byte(s), 0600); err != nil {
+	if err := os.WriteFile(cachefile, []byte(s), 0600); err != nil {
 		return "", err
 	}
 	return s, nil
