@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html"
 	"io"
-	"io/ioutil"
 	"mime"
 	"net/http"
 	"os"
@@ -104,7 +103,7 @@ func fileErrorContext(e error) (s, path string) {
 		return
 	}
 	path, n := cause.Path(), cause.LineNumber()
-	b, err := ioutil.ReadFile(path)
+	b, err := os.ReadFile(path)
 	if err != nil {
 		return
 	}

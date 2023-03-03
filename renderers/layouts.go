@@ -2,7 +2,6 @@ package renderers
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -50,7 +49,7 @@ loop:
 	for _, dir := range p.layoutDirs() {
 		for _, ext := range exts {
 			filename = filepath.Join(dir, base+ext)
-			content, err = ioutil.ReadFile(filename)
+			content, err = os.ReadFile(filename)
 			if err == nil {
 				found = true
 				break loop

@@ -3,7 +3,6 @@ package utils
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -55,7 +54,7 @@ func ReadFileMagic(filename string) ([]byte, error) {
 // PostfixWalk is like filepath.Walk, but visits each directory after visiting its children instead of before.
 // It does not implement SkipDir.
 func PostfixWalk(root string, walkFn filepath.WalkFunc) error {
-	if files, err := ioutil.ReadDir(root); err == nil {
+	if files, err := os.ReadDir(root); err == nil {
 		for _, stat := range files {
 			if stat.IsDir() {
 				if err = PostfixWalk(filepath.Join(root, stat.Name()), walkFn); err != nil {

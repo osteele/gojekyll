@@ -1,7 +1,6 @@
 package config
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -82,7 +81,7 @@ type Config struct {
 // the directory, if such a file exists.
 func (c *Config) FromDirectory(dir string) error {
 	path := filepath.Join(dir, "_config.yml")
-	bytes, err := ioutil.ReadFile(path)
+	bytes, err := os.ReadFile(path)
 	switch {
 	case os.IsNotExist(err):
 		// break
@@ -224,7 +223,7 @@ func (c *Config) Map(key string) (map[string]interface{}, bool) {
 	return nil, false
 }
 
-//String returns the config indexed by key, if it's a string.
+// String returns the config indexed by key, if it's a string.
 func (c *Config) String(key string) (string, bool) {
 	if m, ok := c.m[key]; ok {
 		if m, ok := m.(string); ok {

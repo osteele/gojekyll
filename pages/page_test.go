@@ -2,7 +2,7 @@ package pages
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -46,7 +46,7 @@ func TestPage_Write(t *testing.T) {
 
 	t.Run("rendering error", func(t *testing.T) {
 		p := requirePageFromFile(t, "liquid_error.md")
-		err := p.Write(ioutil.Discard)
+		err := p.Write(io.Discard)
 		require.NotNil(t, err)
 		require.Contains(t, err.Error(), "render error")
 		pe, ok := err.(utils.PathError)

@@ -5,7 +5,6 @@ import (
 	"crypto/md5" // nolint: gas
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,7 +44,7 @@ func (p *Manager) copySASSFileIncludes() error {
 
 func (p *Manager) makeSASSTempDir() error {
 	if p.sassTempDir == "" {
-		dir, err := ioutil.TempDir(os.TempDir(), "_sass")
+		dir, err := os.MkdirTemp(os.TempDir(), "_sass")
 		if p.cfg.Verbose {
 			fmt.Println("create", dir)
 		}
