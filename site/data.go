@@ -3,7 +3,6 @@ package site
 import (
 	"encoding/csv"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -13,7 +12,7 @@ import (
 func (s *Site) readDataFiles() error {
 	s.data = map[string]interface{}{}
 	dataDir := filepath.Join(s.SourceDir(), s.cfg.DataDir)
-	files, err := ioutil.ReadDir(dataDir)
+	files, err := os.ReadDir(dataDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -50,7 +49,7 @@ func readDataFile(filename string) (interface{}, error) {
 		r := csv.NewReader(f)
 		return r.ReadAll()
 	case ".json":
-		b, err := ioutil.ReadFile(filename)
+		b, err := os.ReadFile(filename)
 		if err != nil {
 			return nil, err
 		}
@@ -58,7 +57,7 @@ func readDataFile(filename string) (interface{}, error) {
 		err = json.Unmarshal(b, &d)
 		return d, err
 	case ".yaml", ".yml":
-		b, err := ioutil.ReadFile(filename)
+		b, err := os.ReadFile(filename)
 		if err != nil {
 			return nil, err
 		}

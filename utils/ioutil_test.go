@@ -2,7 +2,7 @@ package utils
 
 import (
 	"io"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -16,7 +16,7 @@ func testFile(name string) string {
 }
 
 func TestCopyFileContents(t *testing.T) {
-	f, err := ioutil.TempFile("", "ioutil-test")
+	f, err := os.CreateTemp("", "ioutil-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -25,7 +25,7 @@ func TestCopyFileContents(t *testing.T) {
 	err = CopyFileContents(f.Name(), testFile("test.txt"), 0x644)
 	require.NoError(t, err)
 
-	b, err := ioutil.ReadFile(f.Name())
+	b, err := os.ReadFile(f.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,7 +49,7 @@ func TestReadFileMagic(t *testing.T) {
 }
 
 func TestVisitCreatedFile(t *testing.T) {
-	f, err := ioutil.TempFile("", "ioutil-test")
+	f, err := os.CreateTemp("", "ioutil-test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -61,7 +61,7 @@ func TestVisitCreatedFile(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	b, err := ioutil.ReadFile(f.Name())
+	b, err := os.ReadFile(f.Name())
 	if err != nil {
 		t.Fatal(err)
 	}

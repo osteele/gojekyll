@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -115,7 +114,7 @@ func (p *page) reset() {
 }
 
 func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
-	b, err = ioutil.ReadFile(f.filename)
+	b, err = os.ReadFile(f.filename)
 	if err != nil {
 		return
 	}
