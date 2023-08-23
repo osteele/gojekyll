@@ -1,8 +1,8 @@
 package commands
 
 import (
+	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/osteele/gojekyll/config"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 // Command-line options

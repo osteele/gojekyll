@@ -245,7 +245,7 @@ Gojekyll uses these libraries:
 | [github.com/sass/libsass](https://github.com/sass/libsass)                     | Listed [here](https://https://github.com/sass/libsass) | C port of the Ruby SASS compiler       | MIT License                             |
 | [github.com/tdewolff/minify](https://github.com/tdewolff/minify)               | Taco de Wolff                                          | CSS minimization                       | MIT License                             |
 | [github.com/wellington/go-libsass](https://github.com/wellington/go-libsass)   | Drew Wells                                             | Go bindings for **libsass**            | ???                                     |
-| [gopkg.in/alecthomas/kingpin.v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command-line arguments                 | MIT License                             |
+| [github.com/alecthomas/kingpin/v2](https://github.com/alecthomas/kingpin)        | Alec Thomas                                            | command-line arguments                 | MIT License                             |
 | [github.com/alecthomas/chroma](https://github.com/alecthomas/chroma)           | Alec Thomas                                            | Syntax highlighter                     | MIT License                             |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                              | YAML support                           | Apache License 2.0                      |
 
