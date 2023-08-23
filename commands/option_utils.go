@@ -3,7 +3,7 @@ package commands
 import (
 	"strconv"
 
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	kingpin "github.com/alecthomas/kingpin/v2"
 )
 
 func boolVar(name string, ptr **bool) kingpin.Action {

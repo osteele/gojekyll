@@ -6,10 +6,10 @@ import (
 	"reflect"
 	"runtime/pprof"
 
+	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/site"
 	"github.com/osteele/gojekyll/version"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 // ParseAndRun parses and executes the command-line arguments.
