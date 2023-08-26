@@ -48,15 +48,3 @@ changelog:
   filters:
     exclude:
       - '^docs:'
-
-kos:
-  - repository: danog/gojekyll
-    tags:
-    - '{{.Version}}'
-    - latest
-    bare: true
-    preserve_import_paths: false
-    base_image: ko.local/gojekyll_base
-    platforms:
-    - linux/amd64
-    - linux/arm64
