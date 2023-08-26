@@ -17,7 +17,7 @@ RUN git clone https://github.com/sass/dart-sass.git /dart-sass && \
     dart run grinder protobuf && \
     dart compile exe bin/sass.dart
 
-FROM cgr.dev/chainguard/glibc-dynamic:latest
+FROM debian:stable-slim
 
 COPY --from=gojekyll /gojekyll/main /usr/bin/gojekyll
 COPY --from=sass /dart-sass/bin/sass.exe /usr/bin/sass
