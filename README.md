@@ -64,13 +64,13 @@ gojekyll help build
 You can use `gojekyll` with the official `danog/gojekyll` image, for example to build the site in the current directory into `_site`:
 
 ```
-docker run -v $PWD:/app --pull always --rm -it danog/gojekyll build -s /app
+docker run --user $UID:$GID -v $PWD:/app --pull always --rm -it danog/gojekyll build -s /app
 ```
 
 Another example, serve the website in the current directory on `http://localhost:4040`, automatically reloading on changes:
 
 ```
-docker run -v $PWD:/app --pull always --network host --rm -it danog/gojekyll serve -s /app
+docker run --user $UID:$GID -v $PWD:/app --pull always --network host --rm -it danog/gojekyll serve -s /app
 ```
 
 ### Binary Downloads
