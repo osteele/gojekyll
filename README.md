@@ -63,13 +63,13 @@ gojekyll help build
 
 You can use `gojekyll` with the official `danog/gojekyll` image, for example to build the site in the current directory into `_site`:
 
-```
+```bash
 docker run --user $UID:$GID -v $PWD:/app --pull always --rm -it danog/gojekyll build -s /app
 ```
 
 Another example, serve the website in the current directory on `http://localhost:4040`, automatically reloading on changes:
 
-```
+```bash
 docker run --user $UID:$GID -v $PWD:/app --pull always --network host --rm -it danog/gojekyll serve -s /app
 ```
 
@@ -90,19 +90,14 @@ Pre-requisites:
 
 1. **Install go** (1) via [Homebrew](https://brew.sh): `brew install go`; or (2)
    [download](https://golang.org/doc/install#tarball).
-2. See items (2-3) under **Binary Downloads**, above.
+2. See items (2-3) under [Binary Downloads](#binary-downloads), above.
 
-First-time install:
-
-```bash
-go get github.com/osteele/gojekyll
-```
-
-Update to the latest version:
+Then run:
 
 ```bash
-go get -u github.com/osteele/liquid github.com/osteele/gojekyll
+go install github.com/osteele/gojekyll@latest
 ```
+
 
 ## [Optional] Install command-line autocompletion
 
