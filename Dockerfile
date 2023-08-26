@@ -22,6 +22,8 @@ FROM cgr.dev/chainguard/glibc-dynamic:latest
 COPY --from=gojekyll /gojekyll/main /usr/bin/gojekyll
 COPY --from=sass /dart-sass/bin/sass.exe /usr/bin/sass
 
+WORKDIR /app
+
 ENTRYPOINT [ "/usr/bin/gojekyll" ]
 
 CMD [ "--help" ]
