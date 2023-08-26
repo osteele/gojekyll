@@ -12,6 +12,8 @@
 [![Go Report Card badge][go-report-card-svg]][go-report-card-url]
 [![MIT License][license-svg]][license-url]
 
+This project was created by Oliver Steele ([@osteele](https://github.com/osteele)), and is currently maintained by Daniil Gentili ([@danog](https://github.com/danog)).  
+
 Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com)
 static site generator, written in the [Go](https://golang.org) programming
 language. It provides `build` and `serve` commands, with directory watch and
