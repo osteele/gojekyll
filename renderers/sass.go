@@ -14,7 +14,7 @@ import (
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/css"
 
-	libsass "github.com/wellington/go-libsass"
+	sass "github.com/bep/godartsass/v2"
 )
 
 const sassMIMEType = "text/css"
@@ -91,25 +91,26 @@ func (p *Manager) SassIncludePaths() []string {
 	return []string{p.sassTempDir}
 }
 
+// string filters
+var comp, compErr = sass.Start(sass.Options{})
+
 // WriteSass converts a SASS file and writes it to w.
 func (p *Manager) WriteSass(w io.Writer, b []byte) error {
 	s, err := cache.WithFile(fmt.Sprintf("sass: %s", p.sassHash), string(b), func() (s string, err error) {
-		buf := new(bytes.Buffer)
-		comp, err := libsass.New(buf, bytes.NewBuffer(b))
-		if err != nil {
-			return "", err
+		if compErr != nil {
+			return "", compErr
 		}
-		err = comp.Option(libsass.IncludePaths(p.SassIncludePaths()))
+		res, err := comp.Execute(sass.Args{
+			Source:       string(b),
+			IncludePaths: p.SassIncludePaths(),
+		})
 		if err != nil {
-			return "", err
-		}
-		if err = comp.Run(); err != nil {
 			return "", err
 		}
 		m := minify.New()
 		m.AddFunc(sassMIMEType, css.Minify)
-		min := bytes.NewBuffer(make([]byte, 0, buf.Len()))
-		if err := m.Minify(sassMIMEType, min, bytes.NewBuffer(buf.Bytes())); err != nil {
+		min := bytes.NewBuffer(make([]byte, 0, len(res.CSS)))
+		if err := m.Minify(sassMIMEType, min, bytes.NewBuffer([]byte(res.CSS))); err != nil {
 			return "", err
 		}
 		return min.String(), nil

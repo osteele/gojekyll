@@ -4,3 +4,6 @@ _site
 /gojekyll
 /gojekyll-race
 coverage.out
+
+dist/
+

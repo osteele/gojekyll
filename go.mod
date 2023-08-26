@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/alecthomas/kingpin/v2 v2.3.2
+	github.com/bep/godartsass/v2 v2.0.0
 	github.com/danog/blackfriday/v2 v2.1.6
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/google/go-github v17.0.0+incompatible
@@ -17,7 +18,6 @@ require (
 	github.com/radovskyb/watcher v1.0.7
 	github.com/stretchr/testify v1.8.4
 	github.com/tdewolff/minify v2.3.6+incompatible
-	github.com/wellington/go-libsass v0.9.3-0.20230226164013-e1cda027356e
 	golang.org/x/net v0.14.0
 	golang.org/x/oauth2 v0.11.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -25,6 +25,7 @@ require (
 
 require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
+	github.com/cli/safeexec v1.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

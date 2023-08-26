@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
+	sass "github.com/bep/godartsass/v2"
 	"github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
 	"github.com/osteele/liquid/expressions"
-	libsass "github.com/wellington/go-libsass"
 )
 
 // AddJekyllFilters adds the Jekyll filters to the Liquid engine.
@@ -285,19 +285,14 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 }
 
 // string filters
+var comp, compErr = sass.Start(sass.Options{})
 
 func scssifyFilter(s string) (string, error) {
-	// this doesn't try to share context or setup with the rendering manager,
-	// and it doesn't minify
-	buf := new(bytes.Buffer)
-	comp, err := libsass.New(buf, bytes.NewBufferString(s))
-	if err != nil {
-		return "", err
+	if compErr != nil {
+		return "", compErr
 	}
-	// err = comp.Option(libsass.WithSyntax(libsass.SassSyntax))
-	if err != nil {
-		return "", err
-	}
-	err = comp.Run()
-	return buf.String(), err
+	res, err := comp.Execute(sass.Args{
+		Source: s,
+	})
+	return res.CSS, err
 }
