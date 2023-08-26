@@ -10,15 +10,19 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.17.x]
-        os: [ubuntu-latest, macos-latest] # TODO: windows-latest
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
     - name: Install Go
       uses: actions/setup-go@v2
-      with:
-        go-version: ${{ matrix.go-version }}
+
+    - name: Install node
+      uses: actions/setup-node@v3
+
+    - name: Install SASS
+      # Using slower node version because it's easier to install in CI
+      run: npm install -g sass
 
     - name: Checkout
       uses: actions/checkout@v2
