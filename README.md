@@ -32,6 +32,7 @@ live reload.
 
 - [Usage](#usage)
 - [Installation](#installation)
+  - [Docker](#docker)
   - [Binary Downloads](#binary-downloads)
   - [From Source](#from-source)
 - [[Optional] Install command-line autocompletion](#optional-install-command-line-autocompletion)
@@ -58,6 +59,20 @@ gojekyll help build
 
 ## Installation
 
+### Docker
+
+You can use `gojekyll` with the official `danog/gojekyll` image, for example to build the site in the current directory into `_site`:
+
+```
+docker run -v $PWD:/app --rm -it danog/gojekyll build -s /app
+```
+
+Another example, serve the website in the current directory on `http://localhost:4040`, automatically reloading on changes:
+
+```
+docker run -v $PWD:/app --network host --rm -it danog/gojekyll serve -s /app
+```
+
 ### Binary Downloads
 
 1. Linux, Mac OS and Windows binaries for x86, amd64, armv6/v7, armv8, riscv64 are available from the [releases
@@ -75,7 +90,7 @@ Pre-requisites:
 
 1. **Install go** (1) via [Homebrew](https://brew.sh): `brew install go`; or (2)
    [download](https://golang.org/doc/install#tarball).
-2. See items (2-3) under **Binary Downloads**, above, for optional installations.
+2. See items (2-3) under **Binary Downloads**, above.
 
 First-time install:
 
@@ -110,7 +125,6 @@ about. It looks credible on a spot-check of other Jekyll sites.
 Missing features:
 
 - Pagination
-- Windows compatibility
 - Math
 - Plugin system. ([Some individual plugins](./docs/plugins.md) are emulated.)
 - Liquid filter `sassify` is not implemented
@@ -196,7 +210,7 @@ Muzukashii:
     - [ ] `--baseurl`, `--config`
     - [ ] `--detach`, `--ssl`-\* – not planned
   - [ ] `doctor`, `import`, `new`, `new-theme` – not planned
-- [ ] Windows
+- [x] Windows
 
 ## Troubleshooting
 

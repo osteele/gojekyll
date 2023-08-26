@@ -56,13 +56,7 @@ kos:
     - latest
     bare: true
     preserve_import_paths: false
+    base_image: ko.local/gojekyll_base
     platforms:
-    - darwin/amd64
-    - darwin/arm64
-    - linux/386
     - linux/amd64
-    - linux/riscv64
-    - linux/arm
     - linux/arm64
-    - windows/amd64
-    - windows/arm64
