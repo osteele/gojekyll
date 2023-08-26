@@ -63,7 +63,7 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ "The _config.yml file" | slugify: 'pretty' }}`, "the-_config.yml-file"},
 
 	// {`{{ "nav\n\tmargin: 0" | sassify }}`, "nav {\n  margin: 0; }"},
-	{`{{ "nav {margin: 0}" | scssify }}`, "nav {\n  margin: 0; }"},
+	{`{{ "nav {margin: 0}" | scssify }}`, "nav {\n  margin: 0;\n}"},
 
 	{`{{ "smartify single 'quotes' here" | smartify }}`, "smartify single ‘quotes’ here"},
 	{`{{ 'smartify double "quotes" here' | smartify }}`, "smartify double “quotes” here"},
