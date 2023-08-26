@@ -9,6 +9,10 @@ builds:
       - linux
       - windows
       - darwin
+    goarm:
+      - "5"
+      - "6"
+      - "7"
     goarch:
       - "amd64"
       - "386"
