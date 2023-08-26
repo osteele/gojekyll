@@ -25,7 +25,7 @@ live reload.
 | SASS                    | ✓                                         | ✓      | ✓                            |
 | Jekyll compatibility    | [partial](#current-limitations)           | ✓      |                              |
 | Plugins                 | [some](./docs/plugins.md)                 | yes    | shortcodes, theme components |
-| Windows support         |                                           | ✓      | ✓                            |
+| Windows support         | ✓                                         | ✓      | ✓                            |
 | Implementation language | Go                                        | Ruby   | Go                           |
 
 <!-- TOC -->
@@ -248,7 +248,7 @@ Gojekyll uses these libraries:
 | [github.com/danog/blackfriday](https://github.com/danog/blackfriday)           | Russ Ross, Daniil Gentili                        | Markdown processing                                        | Simplified BSD License                  |
 | [github.com/sass/dart-sass](https://github.com/sass/dart-sass)                 | Listed [here](https://github.com/sass/dart-sass) | The reference implementation of Sass, written in Dart.     | MIT License                             |
 | [github.com/tdewolff/minify](https://github.com/tdewolff/minify)               | Taco de Wolff                                    | CSS minimization                                           | MIT License                             |
-| [github.com/bep/godartsass](https://github.com/bep/godartsass)                 | Drew Wells                                       | Go API backed by the native Dart Sass Embedded executable. | MIT License                                     |
+| [github.com/bep/godartsass](https://github.com/bep/godartsass)                 | Drew Wells                                       | Go API backed by the native Dart Sass Embedded executable. | MIT License                             |
 | [github.com/alecthomas/kingpin/v2](https://github.com/alecthomas/kingpin)      | Alec Thomas                                      | command-line arguments                                     | MIT License                             |
 | [github.com/alecthomas/chroma](https://github.com/alecthomas/chroma)           | Alec Thomas                                      | Syntax highlighter                                         | MIT License                             |
 | [gopkg.in/yaml.v2](https://github.com/go-yaml/yaml)                            | Canonical                                        | YAML support                                               | Apache License 2.0                      |

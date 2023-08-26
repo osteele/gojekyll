@@ -8,3 +8,4 @@ gojekyll
 gojekyll-race
 coverage.out
 /Dockerfile
+.env
