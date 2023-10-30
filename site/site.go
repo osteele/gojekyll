@@ -211,5 +211,9 @@ func (s *Site) URLPage(urlpath string) (p Document, found bool) {
 	if !found {
 		p, found = s.Routes[filepath.Join(urlpath, "index.htm")]
 	}
+	if !found {
+		// Serve extensionless URL `/some-url` from file `/some-url.html`
+		p, found = s.Routes[filepath.Join(urlpath + ".html")]
+	}
 	return
 }
