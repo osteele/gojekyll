@@ -15,7 +15,7 @@ func TestRenderMarkdownWithHtml1(t *testing.T) {
 	require.Equal(t, "<p><div a=1><p><em>b</em></p>\n</div></p>\n", mustMarkdownString(`<div a=1 markdown="1">*b*</div>`))
 	require.Equal(t, "<p><div a=1><p><em>b</em></p>\n</div></p>\n", mustMarkdownString(`<div a=1 markdown='1'>*b*</div>`))
 	require.Equal(t, "<p><div a=1><p><em>b</em></p>\n</div></p>\n", mustMarkdownString(`<div a=1 markdown=1>*b*</div>`))
-	require.Equal(t, "<div a=1 markdown=1><p></div>", `<div a=1 markdown=1><p></div>`)
+	require.Equal(t, "<p><div a=1><p><p></div></p>\n</p>\n", mustMarkdownString(`<div a=1 markdown=1><p></div>`))
 }
 
 func TestRenderMarkdownWithHtml2(t *testing.T) {
