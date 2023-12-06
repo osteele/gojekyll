@@ -43,10 +43,15 @@ func SafeReplaceAllStringFunc(re *regexp.Regexp, src string, repl func(m string)
 }
 
 var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
+var leadingOrTrailingHyphenMatcher = regexp.MustCompile(`(^-|-$)`)
 
 // Slugify replaces each sequence of non-alphanumerics by a single hyphen
 func Slugify(s string) string {
-	return strings.ToLower(nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-"))
+	slug := strings.ToLower(nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-"))
+
+	// remove leading and trailing hyphen
+	slug = leadingOrTrailingHyphenMatcher.ReplaceAllString(slug, "")
+	return slug
 }
 
 // StringArrayToMap creates a map for use as a set.
