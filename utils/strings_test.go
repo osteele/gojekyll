@@ -35,6 +35,7 @@ func TestSlugify(t *testing.T) {
 	require.Equal(t, "ab-c", Slugify("ab-c"))
 	require.Equal(t, "ab-c", Slugify("ab()[]c"))
 	require.Equal(t, "ab123-cde-f-g", Slugify("ab123(cde)[]f.g"))
+	require.Equal(t, "abc", Slugify("abc?"))
 }
 
 func TestStringArrayToMap(t *testing.T) {
