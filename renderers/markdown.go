@@ -15,7 +15,8 @@ const blackfridayFlags = 0 |
 	blackfriday.Smartypants |
 	blackfriday.SmartypantsFractions |
 	blackfriday.SmartypantsDashes |
-	blackfriday.SmartypantsLatexDashes
+	blackfriday.SmartypantsLatexDashes |
+	blackfriday.FootnoteReturnLinks
 
 const blackfridayExtensions = 0 |
 	blackfriday.NoIntraEmphasis |
@@ -29,7 +30,8 @@ const blackfridayExtensions = 0 |
 	blackfriday.DefinitionLists |
 	blackfriday.NoEmptyLineBeforeBlock |
 	// added relative to commonExtensions
-	blackfriday.AutoHeadingIDs
+	blackfriday.AutoHeadingIDs |
+	blackfriday.Footnotes
 
 func renderMarkdown(md []byte) ([]byte, error) {
 	params := blackfriday.HTMLRendererParameters{
