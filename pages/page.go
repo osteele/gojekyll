@@ -66,7 +66,7 @@ type page struct {
 	firstLine int
 	raw       []byte
 
-	sync.RWMutex
+	m            sync.RWMutex
 	content      string
 	contentError error
 	contentOnce  sync.Once
@@ -181,8 +181,8 @@ func (p *page) Write(w io.Writer) error {
 	if err := p.Render(); err != nil {
 		return err
 	}
-	p.RLock()
-	defer p.RUnlock()
+	p.m.RLock()
+	defer p.m.RUnlock()
 	cn := p.content
 	lo, ok := p.fm["layout"].(string)
 	if ok && lo != "" {
@@ -202,8 +202,8 @@ func (p *page) Write(w io.Writer) error {
 func (p *page) Render() error {
 	p.contentOnce.Do(func() {
 		cn, ex, err := p.computeContent()
-		p.Lock()
-		defer p.Unlock()
+		p.m.Lock()
+		defer p.m.Unlock()
 		p.content = cn
 		p.contentError = utils.WrapPathError(err, p.filename)
 		p.excerpt = ex
@@ -213,8 +213,8 @@ func (p *page) Render() error {
 }
 
 func (p *page) SetContent(content string) {
-	p.Lock()
-	defer p.Unlock()
+	p.m.Lock()
+	defer p.m.Unlock()
 	p.content = content
 	p.contentError = nil
 }
@@ -239,8 +239,8 @@ func (p *page) Excerpt() interface{} {
 	if exc, ok := p.fm["excerpt"]; ok {
 		return exc
 	}
-	p.RLock()
-	defer p.RUnlock()
+	p.m.RLock()
+	defer p.m.RUnlock()
 	if p.rendered {
 		return p.excerpt
 	}

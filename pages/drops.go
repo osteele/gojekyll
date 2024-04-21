@@ -73,8 +73,8 @@ func (p *page) ToLiquid() interface{} {
 }
 
 func (p *page) maybeContent() interface{} {
-	p.RLock()
-	defer p.RUnlock()
+	p.m.RLock()
+	defer p.m.RUnlock()
 	if p.rendered {
 		return p.content
 	}

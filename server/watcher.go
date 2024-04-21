@@ -45,8 +45,8 @@ func (s *Server) watchReload() error {
 }
 
 func (s *Server) reload(change site.FilesEvent) {
-	s.Lock()
-	defer s.Unlock()
+	s.m.Lock()
+	defer s.m.Unlock()
 
 	// similar code to site.WatchRebuild
 	fmt.Printf("Re-reading: %v...", change)

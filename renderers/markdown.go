@@ -5,7 +5,7 @@ import (
 	"io"
 	"regexp"
 
-	"github.com/danog/blackfriday/v2"
+	blackfriday "github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/utils"
 	"golang.org/x/net/html"
 )

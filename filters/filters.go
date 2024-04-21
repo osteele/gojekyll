@@ -13,7 +13,7 @@ import (
 	"time"
 
 	sass "github.com/bep/godartsass/v2"
-	"github.com/danog/blackfriday/v2"
+	blackfriday "github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"

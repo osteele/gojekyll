@@ -19,7 +19,7 @@ import (
 
 // Server serves the site on HTTP.
 type Server struct {
-	sync.Mutex
+	m    sync.Mutex
 	Site *site.Site
 	lr   *lrserver.Server
 }
@@ -53,8 +53,8 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 }
 
 func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
-	s.Lock()
-	defer s.Unlock()
+	s.m.Lock()
+	defer s.m.Unlock()
 
 	var (
 		site     = s.Site
