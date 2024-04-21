@@ -1,11 +1,3 @@
-FROM golang:latest AS gojekyll
-
-ADD . /gojekyll
-
-WORKDIR /gojekyll
-
-RUN go build main.go
-
 FROM bufbuild/buf AS buf
 FROM dart:stable AS sass
 
@@ -16,6 +8,21 @@ RUN git clone https://github.com/sass/dart-sass.git /dart-sass && \
     dart pub get && \
     dart run grinder protobuf && \
     dart compile exe bin/sass.dart
+
+
+FROM golangci/golangci-lint:latest AS golangci-lint
+FROM golang:latest AS gojekyll
+
+ADD . /gojekyll
+
+COPY --from=golangci-lint /usr/bin/golangci-lint /usr/bin/golangci-lint
+COPY --from=sass /dart-sass/bin/sass.exe /usr/bin/sass
+
+WORKDIR /gojekyll
+
+RUN golangci-lint run
+RUN go test ./...
+RUN go build main.go
 
 FROM debian:stable-slim
 
