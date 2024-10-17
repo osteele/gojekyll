@@ -1,7 +1,6 @@
 package site
 
 import (
-	"fmt"
 	"path/filepath"
 	"sync"
 
@@ -160,7 +159,7 @@ func (s *Site) FilenameURLPath(relpath string) (string, bool) {
 // RendererManager returns the rendering manager.
 func (s *Site) RendererManager() renderers.Renderers {
 	if s.renderer == nil {
-		panic(fmt.Errorf("uninitialized rendering manager"))
+		panic("uninitialized rendering manager")
 	}
 	return s.renderer
 }
@@ -213,7 +212,7 @@ func (s *Site) URLPage(urlpath string) (p Document, found bool) {
 	}
 	if !found {
 		// Serve extensionless URL `/some-url` from file `/some-url.html`
-		p, found = s.Routes[filepath.Join(urlpath + ".html")]
+		p, found = s.Routes[filepath.Join(urlpath+".html")]
 	}
 	return
 }
