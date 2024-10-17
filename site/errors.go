@@ -1,7 +1,7 @@
 package site
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 )
 
@@ -16,6 +16,6 @@ func combineErrors(errs []error) error {
 		for i, e := range errs {
 			messages[i] = e.Error()
 		}
-		return fmt.Errorf(strings.Join(messages, "\n"))
+		return errors.New(strings.Join(messages, "\n"))
 	}
 }

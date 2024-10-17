@@ -50,6 +50,7 @@ func run(cmd string) error { // nolint: gocyclo
 	// labels will line up. And print it even if
 	// loading the site produced an error.
 	if *versionFlag {
+		//nolint:govet
 		logger.label("Version:", version.Version)
 	}
 	if err != nil {
