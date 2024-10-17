@@ -20,8 +20,8 @@ COPY --from=sass /dart-sass/bin/sass.exe /usr/bin/sass
 
 WORKDIR /gojekyll
 
-RUN golangci-lint run
 RUN go test ./...
+RUN golangci-lint run
 RUN go build main.go
 
 FROM debian:stable-slim
