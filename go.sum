@@ -52,8 +52,6 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/montanaflynn/stats v0.7.1 h1:etflOAAHORrCC44V+aR6Ftzort912ZU+YLiSTuV8eaE=
 github.com/montanaflynn/stats v0.7.1/go.mod h1:etXPPgVO6n31NxCd9KQUMvCM+ve0ruNzt6R8Bnaayow=
-github.com/osteele/liquid v1.5.0 h1:SJWUJQtNvmKXfYR4CL0iLavbdeYlEiaOjxPZlWFjqxs=
-github.com/osteele/liquid v1.5.0/go.mod h1:xU0Z2dn2hOQIEFEWNmeltOmCtfhtoW/2fCyiNQeNG+U=
 github.com/osteele/liquid v1.5.2 h1:XcV1oSzHPR4nEIqUYs8H2+7WWciB5WJzFjBRwwEvPxE=
 github.com/osteele/liquid v1.5.2/go.mod h1:xU0Z2dn2hOQIEFEWNmeltOmCtfhtoW/2fCyiNQeNG+U=
 github.com/osteele/tuesday v1.0.3 h1:SrCmo6sWwSgnvs1bivmXLvD7Ko9+aJvvkmDjB5G4FTU=
