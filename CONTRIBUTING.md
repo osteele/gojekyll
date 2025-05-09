@@ -30,6 +30,10 @@ go get -t ./...
 [Install golangci-lint](https://golangci-lint.run/usage/install/#local-installation).
 On macOS: `brew install golangci-lint`
 
+Install the Dart Sass executable (required for tests):
+- On macOS: `brew install sass/sass/sass`
+- On Linux: `wget -qO- https://github.com/sass/dart-sass/releases/download/1.66.1/dart-sass-1.66.1-linux-x64.tar.gz | tar -xz && sudo mv dart-sass/* /usr/bin/ && rmdir dart-sass`
+
 ### Test and Lint
 
 ```bash
