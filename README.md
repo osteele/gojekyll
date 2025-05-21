@@ -128,7 +128,6 @@ Missing features:
 - Liquid is run in strict mode: undefined filters and variables are errors.
 - Missing markdown features:
   - [attribute lists](https://kramdown.gettalong.org/syntax.html#attribute-list-definitions)
-  - [`markdown="span"`, `markdown="block"`](https://kramdown.gettalong.org/syntax.html#html-blocks)
   - Markdown configuration options
 
 Also see the [detailed status](#feature-checklist) below.
