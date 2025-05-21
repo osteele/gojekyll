@@ -27,7 +27,7 @@ func createPaginator(n, perPage int, posts []Page) map[string]interface{} {
 	pageCount := (len(posts) + perPage - 1) / perPage
 	paginatePath := "/blog/page:num/"
 	pagePath := func(n int) string {
-		return strings.Replace(paginatePath, ":num", fmt.Sprint(n), -1)
+		return strings.ReplaceAll(paginatePath, ":num", fmt.Sprint(n))
 	}
 	m := map[string]interface{}{
 		"page":               n,

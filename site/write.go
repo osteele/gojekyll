@@ -66,7 +66,6 @@ func (s *Site) WriteDoc(d Document) error {
 		// FIXME render the page, just don't write it
 		return nil
 	}
-	// nolint: gas
 	if err := os.MkdirAll(filepath.Dir(to), 0755); err != nil {
 		return err
 	}

@@ -184,7 +184,9 @@ func arrayToSentenceStringFilter(array []string, conjunction func(string) string
 
 func groupByExpFilter(array []map[string]interface{}, name string, expr expressions.Closure) ([]map[string]interface{}, error) {
 	rt := reflect.ValueOf(array)
-	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
+	// If input is a fixed-size array but not a slice, return nil to prevent errors
+	// This is a safety check to ensure we only operate on iterable collections
+	if rt.Kind() == reflect.Array && rt.Kind() != reflect.Slice {
 		return nil, nil
 	}
 	groups := map[interface{}][]interface{}{}
@@ -209,7 +211,9 @@ func groupByExpFilter(array []map[string]interface{}, name string, expr expressi
 
 func groupByFilter(array []map[string]interface{}, property string) []map[string]interface{} {
 	rt := reflect.ValueOf(array)
-	if !(rt.Kind() != reflect.Array || rt.Kind() == reflect.Slice) {
+	// If input is a fixed-size array but not a slice, return nil to prevent errors
+	// This is a safety check to ensure we only operate on iterable collections
+	if rt.Kind() == reflect.Array && rt.Kind() != reflect.Slice {
 		return nil
 	}
 	groups := map[interface{}][]interface{}{}

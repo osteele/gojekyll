@@ -18,7 +18,7 @@ func (p *StaticFile) Write(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close() // nolint: errcheck, gas
+	defer in.Close() // nolint: errcheck
 	_, err = io.Copy(w, in)
 	return err
 }

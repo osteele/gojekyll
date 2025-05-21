@@ -73,10 +73,7 @@ func TrimExt(name string) string {
 // URLPathClean removes internal // etc. Unlike path.Clean, it
 // leaves the final "/" intact.
 func URLPathClean(url string) string {
-	finalSlash := false
-	if strings.HasSuffix(url, "/") && len(url) > 1 {
-		finalSlash = true
-	}
+	finalSlash := strings.HasSuffix(url, "/") && len(url) > 1
 	cleaned := path.Clean(url)
 	if finalSlash && !strings.HasSuffix(cleaned, "/") {
 		cleaned += "/"

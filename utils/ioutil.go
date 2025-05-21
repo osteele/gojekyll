@@ -11,7 +11,6 @@ import (
 // CopyFileContents copies the file contents from src to dst.
 // It's not atomic and doesn't copy permissions or metadata.
 func CopyFileContents(dst, src string, perm os.FileMode) error {
-	// nolint: gas
 	if err := os.MkdirAll(filepath.Dir(dst), 0755); err != nil {
 		return err
 	}
@@ -19,13 +18,13 @@ func CopyFileContents(dst, src string, perm os.FileMode) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close() // nolint: errcheck, gas
+	defer in.Close() // nolint: errcheck
 	out, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
 	if _, err = io.Copy(out, in); err != nil {
-		_ = os.Remove(dst) // nolint: gas
+		_ = os.Remove(dst)
 		return err
 	}
 	return out.Close()

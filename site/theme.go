@@ -17,7 +17,7 @@ func (s *Site) findTheme() error {
 	if err != nil {
 		log.Fatal("bundle is not in your PATH", err)
 	}
-	cmd := exec.Command(exe, "show", s.cfg.Theme) // nolint: gas
+	cmd := exec.Command(exe, "show", s.cfg.Theme)
 	cmd.Dir = s.AbsDir()
 	out, err := cmd.CombinedOutput()
 	if err != nil {
