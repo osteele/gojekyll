@@ -14,7 +14,7 @@ func routesCommand(site *site.Site) error {
 	logger.label("Routes:", "")
 	var urls []string
 	for u, p := range site.Routes {
-		if !(*dynamicRoutes && p.IsStatic()) {
+		if !*dynamicRoutes || !p.IsStatic() {
 			urls = append(urls, u)
 		}
 	}

@@ -21,5 +21,5 @@ func (ss StringSet) AddStrings(a []string) {
 
 // Contains returns true iff the string is in the set.
 func (ss StringSet) Contains(s string) bool {
-		return ss[s]
+	return ss[s]
 }

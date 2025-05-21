@@ -47,7 +47,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	// Create a test date in UTC - this is the reference date for all tests
 	testDate, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
 	require.NoError(t, err)
-	
+
 	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
 		fm := frontmatter.Merge(data, FrontMatter{"permalink": pattern})
 		ext := filepath.Ext(path)
@@ -77,7 +77,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	// See https://github.com/osteele/gojekyll/issues/63 for the ongoing investigation
 	// about how Jekyll handles time zones and what approach we should standardize on.
 	localDate := testDate.In(time.Local)
-	
+
 	// Generate date-dependent tests with expected values based on the local date
 	dateTests := []pathTest{
 		{"base", "date", fmt.Sprintf("/a/b/%04d/%02d/%02d/base.html", localDate.Year(), localDate.Month(), localDate.Day())},
@@ -86,10 +86,10 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		// The code uses p.modTime.YearDay() directly, not the local date's year day
 		{"base", "ordinal", fmt.Sprintf("/a/b/%04d/%d/base.html", testDate.Year(), testDate.YearDay())},
 	}
-	
+
 	// Run the non-date-dependent tests
 	runTests(staticTests)
-	
+
 	// Run the date-dependent tests
 	runTests(dateTests)
 

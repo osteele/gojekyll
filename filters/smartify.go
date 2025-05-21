@@ -32,8 +32,8 @@ var smartifyReplaceSpans = map[string]string{
 
 // replace these only if bounded by space or word boundaries
 var smartifyReplaceWords = map[string]string{
-// "---": "–",
-// "--":  "—",
+	// "---": "–",
+	// "--":  "—",
 }
 
 var smartifyReplacements map[string]string

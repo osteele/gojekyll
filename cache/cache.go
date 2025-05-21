@@ -1,7 +1,7 @@
 package cache
 
 import (
-	"crypto/md5" // nolint: gas
+	"crypto/md5"
 	"fmt"
 	"io"
 	"os"
@@ -45,10 +45,10 @@ func Disable() {
 // header and content are distinct parameters to relieve the caller from
 // having to concatenate them.
 func WithFile(header string, content string, fn func() (string, error)) (string, error) {
-	h := md5.New()             // nolint: gas
-	io.WriteString(h, content) // nolint: errcheck, gas
-	io.WriteString(h, "\n")    // nolint: errcheck, gas
-	io.WriteString(h, header)  // nolint: errcheck, gas
+	h := md5.New()
+	io.WriteString(h, content) // nolint: errcheck
+	io.WriteString(h, "\n")    // nolint: errcheck
+	io.WriteString(h, header)  // nolint: errcheck
 	sum := h.Sum(nil)
 
 	// don't use ioutil.TempDir, because we want this to last across invocations

@@ -20,13 +20,13 @@ func (c *Config) IsSASSPath(name string) bool {
 
 // markdownExtensions returns a set of markdown extensions, without the initial dots.
 func (c *Config) markdownExtensions() map[string]bool {
-	exts := strings.SplitN(c.MarkdownExt, `,`, -1)
+	exts := strings.Split(c.MarkdownExt, `,`)
 	return utils.StringArrayToMap(exts)
 }
 
 // MarkdownExtensions returns a list of markdown extensions, with dotsa.
 func (c *Config) MarkdownExtensions() []string {
-	exts := strings.SplitN(c.MarkdownExt, `,`, -1)
+	exts := strings.Split(c.MarkdownExt, `,`)
 	for i, k := range exts {
 		exts[i] = "." + k
 	}

@@ -2,7 +2,7 @@ package renderers
 
 import (
 	"bytes"
-	"crypto/md5" // nolint: gas
+	"crypto/md5"
 	"fmt"
 	"io"
 	"os"
@@ -29,7 +29,7 @@ func (p *Manager) copySASSFileIncludes() error {
 	if err := p.makeSASSTempDir(); err != nil {
 		return err
 	}
-	h := md5.New() // nolint: gas
+	h := md5.New()
 	if p.ThemeDir != "" {
 		if err := p.copySASSFiles(filepath.Join(p.ThemeDir, sassDirName), p.sassTempDir, h); err != nil {
 			return err
@@ -74,7 +74,9 @@ func (p *Manager) copySASSFiles(src, dst string, h io.Writer) error {
 			return err
 		}
 		defer in.Close() // nolint: errcheck
-		fmt.Fprintf(h, "--- sass file: %s ---\n", rel)
+		if _, err = fmt.Fprintf(h, "--- sass file: %s ---\n", rel); err != nil {
+			return err
+		}
 		if _, err = io.Copy(h, in); err != nil {
 			return err
 		}

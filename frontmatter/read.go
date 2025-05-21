@@ -33,7 +33,7 @@ func Read(sourcePtr *[]byte, firstLine *int) (fm FrontMatter, err error) {
 		start  = 0
 	)
 	// Replace Windows line feeds. This allows the following regular expressions to work.
-	source = bytes.Replace(source, []byte("\r\n"), []byte("\n"), -1)
+	source = bytes.ReplaceAll(source, []byte("\r\n"), []byte("\n"))
 	if match := frontMatterMatcher.FindSubmatchIndex(source); match != nil {
 		start = match[1]
 		if err = yaml.Unmarshal(source[match[2]:match[3]], &fm); err != nil {
