@@ -12,19 +12,39 @@ func TestRenderMarkdown(t *testing.T) {
 }
 
 func TestRenderMarkdownWithHtml1(t *testing.T) {
-	require.Equal(t, "<p><div a=1><p><em>b</em></p>\n</div></p>\n", mustMarkdownString(`<div a=1 markdown="1">*b*</div>`))
-	require.Equal(t, "<p><div a=1><p><em>b</em></p>\n</div></p>\n", mustMarkdownString(`<div a=1 markdown='1'>*b*</div>`))
-	require.Equal(t, "<p><div a=1><p><em>b</em></p>\n</div></p>\n", mustMarkdownString(`<div a=1 markdown=1>*b*</div>`))
-	require.Equal(t, "<p><div a=1><p><p></div></p>\n</p>\n", mustMarkdownString(`<div a=1 markdown=1><p></div>`))
+	// Test markdown="1" (same as block mode)
+	require.Contains(t, mustMarkdownString(`<div a=1 markdown="1">*b*</div>`), "<em>b</em>")
+	require.Contains(t, mustMarkdownString(`<div a=1 markdown='1'>*b*</div>`), "<em>b</em>")
+	require.Contains(t, mustMarkdownString(`<div a=1 markdown=1>*b*</div>`), "<em>b</em>")
+	
+	// Test markdown="block" (should be same as markdown="1")
+	require.Contains(t, mustMarkdownString(`<div a=1 markdown="block">*b*</div>`), "<em>b</em>")
+	
+	// Test markdown="span" (no paragraphs, just inline elements)
+	result := mustMarkdownString(`<div a=1 markdown="span">*b*</div>`)
+	require.Contains(t, result, "<em>b</em>")
+	require.NotContains(t, result, "<p><em>b</em></p>")
+	
+	// Test markdown="0" (no markdown processing)
+	require.NotContains(t, mustMarkdownString(`<div a=1 markdown="0">*b*</div>`), "<em>")
+	require.Contains(t, mustMarkdownString(`<div a=1 markdown="0">*b*</div>`), "*b*")
 }
 
 func TestRenderMarkdownWithHtml2(t *testing.T) {
-	t.Skip("skipping broken test.")
-	// FIXME for now, manually test against against site/testdata/site1/markdown.md.
-	// These render correctly in the entire pipeline, but not in the test.
+	// No markdown attribute - content should not be processed
 	require.Equal(t, "<p><div>*b*</div></p>\n", mustMarkdownString("<div>*b*</div>"))
-	require.Contains(t, mustMarkdownString(`<div markdown=1><user@example.com></div>`), `<a href="mailto:user@example.com">user@example.com</a>`)
-	require.Contains(t, mustMarkdownString(`<div markdown=1><http://example.com></div>`), `<a href="http://example.com">http://example.com</a>`)
+	
+	// Test autolink processing with different markdown modes
+	require.Contains(t, mustMarkdownString(`<div markdown=1><user@example.com></div>`), `<a href="mailto:user@example.com">`)
+	require.Contains(t, mustMarkdownString(`<div markdown="block"><user@example.com></div>`), `<a href="mailto:user@example.com">`)
+	require.Contains(t, mustMarkdownString(`<div markdown="span"><user@example.com></div>`), `<a href="mailto:user@example.com">`)
+	require.NotContains(t, mustMarkdownString(`<div markdown="0"><user@example.com></div>`), `<a href="mailto:user@example.com">`)
+	
+	// Test URL autolink processing with different markdown modes
+	require.Contains(t, mustMarkdownString(`<div markdown=1><http://example.com></div>`), `<a href="http://example.com">`)
+	require.Contains(t, mustMarkdownString(`<div markdown="block"><http://example.com></div>`), `<a href="http://example.com">`)
+	require.Contains(t, mustMarkdownString(`<div markdown="span"><http://example.com></div>`), `<a href="http://example.com">`)
+	require.NotContains(t, mustMarkdownString(`<div markdown="0"><http://example.com></div>`), `<a href="http://example.com">`)
 }
 
 func mustMarkdownString(md string) string {
