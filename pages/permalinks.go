@@ -46,8 +46,19 @@ func (p *page) permalinkVariables() map[string]string {
 		name    = filepath.Base(root)
 		slug    = p.fm.String("slug", utils.Slugify(name))
 		// date      = p.fileModTime
-		date = p.PostDate().In(time.Local)
+		// date = p.PostDate().In(time.Local)
 	)
+	loc := time.Local
+	if tzName := p.site.Config.PermalinkTimezone; tzName != "" {
+		l, err := time.LoadLocation(tzName)
+		if err != nil {
+			// TODO: use a logger
+			fmt.Printf("Warning: Could not load timezone %q for permalink: %s. Using local time zone instead.\n", tzName, err)
+		} else {
+			loc = l
+		}
+	}
+	date := p.PostDate().In(loc)
 	vars := map[string]string{
 		"categories": strings.Join(p.Categories(), "/"),
 		"collection": p.fm.String("collection", ""),

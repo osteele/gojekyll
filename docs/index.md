@@ -13,3 +13,4 @@ This page exists mostly to dogfood site generation and themes, although it also 
 * [{{ p.name | remove: ".md" | capitalize }}]({{ p.url }})
 {% endif %}
 {% endfor %}
+* [Configuration](configuration.html)
