@@ -20,7 +20,7 @@ func init() {
 	if BuildDate != "" {
 		bd, err := time.Parse("2006-01-02T15:04:05-0700", BuildDate)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "invalid BuildDate", BuildDate) // nolint: gas
+			fmt.Fprintln(os.Stderr, "invalid BuildDate", BuildDate)
 		} else {
 			BuildTime = bd.In(time.UTC)
 		}

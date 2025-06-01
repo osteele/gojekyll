@@ -125,7 +125,7 @@ func getCurrentRepo(c *config.Config) (string, error) {
 	if s, ok := c.String("repository"); ok {
 		return s, nil
 	}
-	cmd := exec.Command("git", "remote", "-v") // nolint: gas
+	cmd := exec.Command("git", "remote", "-v")
 	cmd.Dir = c.SourceDir()
 	out, err := cmd.Output()
 	if err != nil {
@@ -139,7 +139,7 @@ func getCurrentRepo(c *config.Config) (string, error) {
 }
 
 func getBuildRevision(dir string) string {
-	cmd := exec.Command("git", "rev-parse", "HEAD") // nolint: gas
+	cmd := exec.Command("git", "rev-parse", "HEAD")
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
