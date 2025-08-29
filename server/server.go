@@ -66,7 +66,10 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 		p, found = site.Routes["/404.html"]
 	}
 	if !found {
-		fmt.Fprintf(rw, "404 page not found: %s\n", urlpath) // nolint: gas
+		_, err := fmt.Fprintf(rw, "404 page not found: %s\n", urlpath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error writing HTTP response: %s", err)
+		}
 		return
 	}
 	mimeType := mime.TypeByExtension(p.OutputExt())

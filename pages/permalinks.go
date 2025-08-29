@@ -49,7 +49,7 @@ func (p *page) permalinkVariables() map[string]string {
 		// date = p.PostDate().In(time.Local)
 	)
 	loc := time.Local
-	if tzName := p.site.Config.PermalinkTimezone; tzName != "" {
+	if tzName := p.site.Config().PermalinkTimezone; tzName != "" {
 		l, err := time.LoadLocation(tzName)
 		if err != nil {
 			// TODO: use a logger
