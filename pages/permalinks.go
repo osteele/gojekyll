@@ -66,10 +66,39 @@ func (p *page) permalinkVariables() map[string]string {
 }
 
 func (p *page) computePermalink(vars map[string]string) (src string, err error) {
-	pattern := p.fm.String("permalink", DefaultPermalinkPattern)
+	// First check for permalink in front matter
+	var pattern string
+	if permalink, hasFrontMatterPermalink := p.fm["permalink"]; hasFrontMatterPermalink {
+		pattern = fmt.Sprintf("%v", permalink)
+	} else {
+		// If no front matter permalink, check global config
+		if globalPermalink := p.site.Config().Permalink; globalPermalink != "" {
+			pattern = globalPermalink
+		} else {
+			pattern = DefaultPermalinkPattern
+		}
+	}
+	
+	// Apply built-in permalink styles
 	if pat, found := PermalinkStyles[pattern]; found {
 		pattern = pat
 	}
+	
+	// Special handling for "pretty" permalinks on regular pages (not in collections)
+	// For pages, "pretty" should create directories with index.html
+	if pattern == "/:categories/:year/:month/:day/:title/" {
+		// Check if this is a regular page (not in a collection) and has no categories
+		collection := p.fm.String("collection", "")
+		categories := p.Categories()
+		
+		// Only simplify the pattern for regular pages without categories
+		// Pages with categories should still use the full pretty pattern
+		if collection == "" && len(categories) == 0 {
+			// For regular pages without categories, use a simpler pattern
+			pattern = "/:path/"
+		}
+	}
+	
 	templateVariables := p.permalinkVariables()
 	s, err := utils.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
 		varname := m[1:]

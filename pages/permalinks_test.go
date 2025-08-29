@@ -103,3 +103,74 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		require.Zero(t, p)
 	})
 }
+
+func TestGlobalPermalinkConfiguration(t *testing.T) {
+	testDate, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
+	require.NoError(t, err)
+	
+	tests := []struct {
+		name           string
+		globalPermalink string
+		pagePath       string
+		frontMatter    map[string]interface{}
+		expected       string
+	}{
+		{
+			name:           "pretty permalink for regular page",
+			globalPermalink: "pretty",
+			pagePath:       "/bread.html",
+			frontMatter:    map[string]interface{}{"title": "Bread Page"},
+			expected:       "/bread/",
+		},
+		{
+			name:           "date permalink for regular page",
+			globalPermalink: "date",
+			pagePath:       "/about.html",
+			frontMatter:    map[string]interface{}{"title": "About"},
+			expected:       "/2006/02/03/about.html",
+		},
+		{
+			name:           "none permalink for regular page",
+			globalPermalink: "none",
+			pagePath:       "/contact.html",
+			frontMatter:    map[string]interface{}{"title": "Contact"},
+			expected:       "/contact.html",
+		},
+		{
+			name:           "front matter overrides global",
+			globalPermalink: "pretty",
+			pagePath:       "/special.html",
+			frontMatter:    map[string]interface{}{"permalink": "/custom/path/"},
+			expected:       "/custom/path/",
+		},
+		{
+			name:           "no global permalink uses default",
+			globalPermalink: "",
+			pagePath:       "/default.html",
+			frontMatter:    map[string]interface{}{"title": "Default"},
+			expected:       "/default.html",
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := config.Default()
+			cfg.Permalink = tt.globalPermalink
+			s := siteFake{t, cfg}
+			
+			p := page{
+				file: file{
+					site:      s,
+					relPath:   tt.pagePath,
+					outputExt: ".html",
+					fm:        tt.frontMatter,
+					modTime:   testDate,
+				},
+			}
+			
+			err := p.setPermalink()
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, p.URL())
+		})
+	}
+}
