@@ -63,14 +63,11 @@ func (p seoTag) TagBody() (string, error) {
 	)
 
 	// Check if page has a custom canonical_url in front matter
+	canonicalURL = fmt.Sprintf("%s%s", site["url"], page["url"])
 	if pageCanonical := page["canonical_url"]; pageCanonical != nil {
 		if s, ok := pageCanonical.(string); ok && s != "" {
 			canonicalURL = s
-		} else {
-			canonicalURL = fmt.Sprintf("%s%s", site["url"], page["url"])
 		}
-	} else {
-		canonicalURL = fmt.Sprintf("%s%s", site["url"], page["url"])
 	}
 	if siteTitle == nil {
 		siteTitle = site["name"]
