@@ -145,6 +145,70 @@ func TestPostPermalinkPatterns(t *testing.T) {
 	}
 }
 
+func TestPagePermalinkEdgeCases(t *testing.T) {
+	// Test edge cases for non-post permalink handling
+	var (
+		s = siteFake{t, config.Default()}
+		d = map[string]interface{}{
+			"title": "Test Page",
+		}
+	)
+
+	testDate, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
+	require.NoError(t, err)
+
+	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
+		fm := frontmatter.Merge(data, FrontMatter{"permalink": pattern})
+		ext := filepath.Ext(path)
+		switch ext {
+		case ".md", ".markdown":
+			ext = ".html"
+		}
+		f := file{site: s, relPath: path, fm: fm, outputExt: ext}
+		p := page{file: f}
+		p.modTime = testDate
+		return p.computePermalink(p.permalinkVariables())
+	}
+
+	tests := []struct {
+		name     string
+		pattern  string
+		path     string
+		expected string
+	}{
+		// Complex patterns with multiple placeholders
+		{"complex with categories", "/:categories/:year/:month/:day/:title/", "/test.md", "/test-page/"},
+		{"categories at end", "/blog/:categories", "/test.md", "/blog"},
+		{"categories in middle", "/prefix/:categories/suffix/:title", "/test.md", "/prefix/suffix/test-page"},
+		
+		// Date placeholders in various positions
+		{"year only", "/:year/:title", "/test.md", "/test-page"},
+		{"date at end", "/blog/:title/:year/:month/:day", "/test.md", "/blog/test-page"},
+		{"mixed dates", "/:i_month/:short_year/:title/:y_day", "/test.md", "/test-page"},
+		
+		// Edge cases for cleanup
+		{"multiple slashes", "/:categories//:year///:title", "/test.md", "/test-page"},
+		{"trailing dates", "/blog/:title/:year/", "/test.md", "/blog/test-page"},
+		
+		// Patterns that become empty or minimal
+		{"only categories", ":categories", "/test.md", "/test-page"},
+		{"only dates", ":year/:month/:day", "/test.md", "/test-page"},
+		{"dates and categories", ":categories/:year/:month/:day", "/test.md", "/test-page"},
+		
+		// Edge case specifically mentioned in PR review
+		{"categories with colon after", ":categories:slug", "/test.md", "/test"},
+		{"categories with multiple colons", "/prefix:categories:year:title", "/test.md", "/prefixtest-page"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p, err := testPermalinkPattern(test.pattern, test.path, d)
+			require.NoError(t, err)
+			require.Equal(t, test.expected, p, "Pattern: %s", test.pattern)
+		})
+	}
+}
+
 func TestGlobalPermalinkConfiguration(t *testing.T) {
 	testDate, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
 	require.NoError(t, err)
