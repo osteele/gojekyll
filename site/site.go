@@ -2,6 +2,7 @@ package site
 
 import (
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/osteele/gojekyll/collection"
@@ -213,6 +214,10 @@ func (s *Site) URLPage(urlpath string) (p Document, found bool) {
 	if !found {
 		// Serve extensionless URL `/some-url` from file `/some-url.html`
 		p, found = s.Routes[filepath.Join(urlpath+".html")]
+	}
+	if !found && !strings.HasSuffix(urlpath, "/") {
+		// Try with trailing slash for directory-style permalinks
+		p, found = s.Routes[urlpath+"/"]
 	}
 	return
 }
