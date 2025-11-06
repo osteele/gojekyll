@@ -103,6 +103,7 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 		pattern = removePostOnlyPlaceholders(pattern)
 	}
 
+
 	templateVariables := p.permalinkVariables()
 	s, err := utils.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
 		varname := m[1:]
