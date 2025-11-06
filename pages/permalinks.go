@@ -46,8 +46,19 @@ func (p *page) permalinkVariables() map[string]string {
 		name    = filepath.Base(root)
 		slug    = p.fm.String("slug", utils.Slugify(name))
 		// date      = p.fileModTime
-		date = p.PostDate().In(time.Local)
+		// date = p.PostDate().In(time.Local)
 	)
+	loc := time.Local
+	if tzName := p.site.Config().PermalinkTimezone; tzName != "" {
+		l, err := time.LoadLocation(tzName)
+		if err != nil {
+			// TODO: use a logger
+			fmt.Printf("Warning: Could not load timezone %q for permalink: %s. Using local time zone instead.\n", tzName, err)
+		} else {
+			loc = l
+		}
+	}
+	date := p.PostDate().In(loc)
 	vars := map[string]string{
 		"categories": strings.Join(p.Categories(), "/"),
 		"collection": p.fm.String("collection", ""),
@@ -78,27 +89,21 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 			pattern = DefaultPermalinkPattern
 		}
 	}
-	
+
 	// Apply built-in permalink styles
 	if pat, found := PermalinkStyles[pattern]; found {
 		pattern = pat
 	}
-	
-	// Special handling for "pretty" permalinks on regular pages (not in collections)
-	// For pages, "pretty" should create directories with index.html
-	if pattern == "/:categories/:year/:month/:day/:title/" {
-		// Check if this is a regular page (not in a collection) and has no categories
-		collection := p.fm.String("collection", "")
-		categories := p.Categories()
-		
-		// Only simplify the pattern for regular pages without categories
-		// Pages with categories should still use the full pretty pattern
-		if collection == "" && len(categories) == 0 {
-			// For regular pages without categories, use a simpler pattern
-			pattern = "/:path/"
-		}
+
+	// Jekyll Compatibility: Remove date/category placeholders for non-posts
+	// Posts use the full permalink pattern, while pages and other collections
+	// ignore date and category placeholders. This distinction is required for
+	// Jekyll compatibility. See docs/PERMALINKS.md for detailed explanation.
+	if !p.IsPost() {
+		pattern = removePostOnlyPlaceholders(pattern)
 	}
-	
+
+
 	templateVariables := p.permalinkVariables()
 	s, err := utils.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
 		varname := m[1:]
@@ -112,6 +117,58 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 		return "", err
 	}
 	return utils.URLPathClean("/" + s), nil
+}
+
+// removePostOnlyPlaceholders removes date and category placeholders from permalink patterns
+// for non-post documents (pages and non-post collections).
+// This matches Jekyll's behavior where these placeholders are ignored for non-posts.
+func removePostOnlyPlaceholders(pattern string) string {
+	originalPattern := pattern
+	
+	// Use regex to remove category placeholders more comprehensively  
+	// This handles :categories in various positions and contexts
+	categoryRegex := regexp.MustCompile(`:categories\b/?`)
+	pattern = categoryRegex.ReplaceAllString(pattern, "")
+	
+	// Remove date-related placeholders using regex for better coverage
+	// This handles all date placeholders regardless of position
+	dateRegex := regexp.MustCompile(`:(?:year|month|i_month|day|i_day|hour|minute|second|short_year|y_day)\b/?`)
+	pattern = dateRegex.ReplaceAllString(pattern, "")
+	
+	// Clean up any double slashes that might result
+	pattern = regexp.MustCompile(`/+`).ReplaceAllString(pattern, "/")
+	
+	// Remove trailing slash temporarily for processing
+	pattern = strings.TrimSuffix(pattern, "/")
+	
+	// Special case: if pattern becomes empty or just "/", use "/:title"
+	if pattern == "" || pattern == "/" {
+		pattern = "/:title"
+	}
+	
+	// Ensure pattern starts with /
+	if !strings.HasPrefix(pattern, "/") {
+		pattern = "/" + pattern
+	}
+	
+	// Preserve trailing slash if the original pattern ended with "/:title/" or similar
+	// non-date/category placeholder patterns, or if it was a plain "/"
+	if strings.HasSuffix(originalPattern, "/") {
+		// Check what comes before the trailing slash
+		beforeSlash := originalPattern[:len(originalPattern)-1]
+		// If it ends with :title, :slug, :name, :path, :output_ext, :collection, etc.
+		// (basically any placeholder that's not a date or category), keep the slash
+		if strings.HasSuffix(beforeSlash, ":title") ||
+		   strings.HasSuffix(beforeSlash, ":slug") ||
+		   strings.HasSuffix(beforeSlash, ":name") ||
+		   strings.HasSuffix(beforeSlash, ":path") ||
+		   strings.HasSuffix(beforeSlash, ":collection") ||
+		   !regexp.MustCompile(`:\w+$`).MatchString(beforeSlash) {
+			pattern += "/"
+		}
+	}
+	
+	return pattern
 }
 
 func (p *page) setPermalink() (err error) {
