@@ -73,13 +73,18 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	runLegacyTests(staticTests, defaultConfig, defaultFM)
 
 	// Date-dependent tests (legacy behavior - uses local time)
+	// These tests use posts to ensure date/category placeholders work
+	postFM := map[string]interface{}{
+		"categories": "b a",
+		"collection": "posts",
+	}
 	localLegacyDate := legacyTestDate.In(time.Local)
 	legacyDateTests := []pathTest{
 		{"base", "date", fmt.Sprintf("/a/b/%04d/%02d/%02d/base.html", localLegacyDate.Year(), localLegacyDate.Month(), localLegacyDate.Day())},
 		{"base", "pretty", fmt.Sprintf("/a/b/%04d/%02d/%02d/base/", localLegacyDate.Year(), localLegacyDate.Month(), localLegacyDate.Day())},
 		{"base", "ordinal", fmt.Sprintf("/a/b/%04d/%d/base.html", legacyTestDate.Year(), legacyTestDate.YearDay())}, // ordinal always used UTC yearDay
 	}
-	runLegacyTests(legacyDateTests, defaultConfig, defaultFM)
+	runLegacyTests(legacyDateTests, defaultConfig, postFM)
 
 	// Collection tests (legacy)
 	collectionFM := map[string]interface{}{"categories": "b a", "collection": "c"}
@@ -172,13 +177,15 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg := config.Default()
 			cfg.PermalinkTimezone = tc.permalinkTimezone
-			
+
 			// For these tests, we use a simple path and the "date" permalink style
 			// to make it easy to check the date components.
 			// Categories "testcat" and title "testpage" are arbitrary.
+			// IMPORTANT: Mark as a post so date/category placeholders are used
 			fm := map[string]interface{}{
 				"categories": "testcat",
 				"title":      "testpage", // title is used in date style if slug/name not present
+				"collection": "posts",    // Mark as post so date placeholders work
 			}
 			path := "/testcat/testpage.md" // Path provides categories if not in FM.
 			pattern := "date"              // /:categories/:year/:month/:day/:title.html
