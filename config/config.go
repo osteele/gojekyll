@@ -51,9 +51,10 @@ type Config struct {
 	BaseURL     string
 
 	// Outputting
-	Permalink string
-	Timezone  string
-	Verbose   bool
+	Permalink         string
+	PermalinkTimezone string `yaml:"permalink_timezone,omitempty"`
+	Timezone          string
+	Verbose           bool
 	Defaults  []struct {
 		Scope struct {
 			Path string
