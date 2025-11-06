@@ -23,8 +23,8 @@ var staticTests = []pathTest{
 	{"/a/b/base.html", "/prefix/:path/post", "/prefix/a/b/base/post"},
 	{"/a/b/base.html", "/prefix/:title", "/prefix/base"},
 	{"/a/b/base.html", "/prefix/:slug", "/prefix/base"},
-	{"base", "/:categories/:name:output_ext", "/a/b/base"},
-	{"base", "none", "/a/b/base.html"},
+	{"base", "/:categories/:name:output_ext", "/base"}, // categories ignored for non-posts
+	{"base", "none", "/base.html"},                     // categories ignored for non-posts
 }
 
 var collectionTests = []pathTest{
@@ -73,13 +73,18 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	runLegacyTests(staticTests, defaultConfig, defaultFM)
 
 	// Date-dependent tests (legacy behavior - uses local time)
+	// These tests use posts to ensure date/category placeholders work
+	postFM := map[string]interface{}{
+		"categories": "b a",
+		"collection": "posts",
+	}
 	localLegacyDate := legacyTestDate.In(time.Local)
 	legacyDateTests := []pathTest{
 		{"base", "date", fmt.Sprintf("/a/b/%04d/%02d/%02d/base.html", localLegacyDate.Year(), localLegacyDate.Month(), localLegacyDate.Day())},
 		{"base", "pretty", fmt.Sprintf("/a/b/%04d/%02d/%02d/base/", localLegacyDate.Year(), localLegacyDate.Month(), localLegacyDate.Day())},
 		{"base", "ordinal", fmt.Sprintf("/a/b/%04d/%d/base.html", legacyTestDate.Year(), legacyTestDate.YearDay())}, // ordinal always used UTC yearDay
 	}
-	runLegacyTests(legacyDateTests, defaultConfig, defaultFM)
+	runLegacyTests(legacyDateTests, defaultConfig, postFM)
 
 	// Collection tests (legacy)
 	collectionFM := map[string]interface{}{"categories": "b a", "collection": "c"}
@@ -172,13 +177,15 @@ func TestExpandPermalinkPattern(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			cfg := config.Default()
 			cfg.PermalinkTimezone = tc.permalinkTimezone
-			
+
 			// For these tests, we use a simple path and the "date" permalink style
 			// to make it easy to check the date components.
 			// Categories "testcat" and title "testpage" are arbitrary.
+			// IMPORTANT: Mark as a post so date/category placeholders are used
 			fm := map[string]interface{}{
 				"categories": "testcat",
 				"title":      "testpage", // title is used in date style if slug/name not present
+				"collection": "posts",    // Mark as post so date placeholders work
 			}
 			path := "/testcat/testpage.md" // Path provides categories if not in FM.
 			pattern := "date"              // /:categories/:year/:month/:day/:title.html
@@ -207,4 +214,209 @@ func TestExpandPermalinkPattern(t *testing.T) {
 	}
 	// Ensure that the NewYork location loaded correctly for subsequent tests if any
 	_ = locNewYork
+}
+
+func TestPostPermalinkPatterns(t *testing.T) {
+	// Test that posts correctly use date and category placeholders
+	var (
+		s = siteFake{t, config.Default()}
+		d = map[string]interface{}{
+			"categories": "blog tech",
+			"collection": "posts", // Mark as post
+			"title":      "My Post",
+		}
+	)
+
+	testDate, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
+	require.NoError(t, err)
+	localDate := testDate.In(time.Local)
+
+	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
+		fm := frontmatter.Merge(data, FrontMatter{"permalink": pattern})
+		ext := filepath.Ext(path)
+		switch ext {
+		case ".md", ".markdown":
+			ext = ".html"
+		}
+		f := file{site: s, relPath: path, fm: fm, outputExt: ext}
+		p := page{file: f}
+		p.modTime = testDate
+		return p.computePermalink(p.permalinkVariables())
+	}
+
+	tests := []struct {
+		pattern  string
+		expected string
+	}{
+		{"date", fmt.Sprintf("/blog/tech/%04d/%02d/%02d/my-post.html", localDate.Year(), localDate.Month(), localDate.Day())},
+		{"pretty", fmt.Sprintf("/blog/tech/%04d/%02d/%02d/my-post/", localDate.Year(), localDate.Month(), localDate.Day())},
+		{"ordinal", fmt.Sprintf("/blog/tech/%04d/%d/my-post.html", testDate.Year(), testDate.YearDay())},
+		{"none", "/blog/tech/my-post.html"},
+		{"/:categories/:year/:month/:title/", fmt.Sprintf("/blog/tech/%04d/%02d/my-post/", localDate.Year(), localDate.Month())},
+	}
+
+	for _, test := range tests {
+		t.Run(test.pattern, func(t *testing.T) {
+			p, err := testPermalinkPattern(test.pattern, "/_posts/2006-02-03-my-post.md", d)
+			require.NoError(t, err)
+			require.Equal(t, test.expected, p)
+		})
+	}
+}
+
+func TestPagePermalinkEdgeCases(t *testing.T) {
+	// Test edge cases for non-post permalink handling
+	var (
+		s = siteFake{t, config.Default()}
+		d = map[string]interface{}{
+			"title": "Test Page",
+		}
+	)
+
+	testDate, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
+	require.NoError(t, err)
+
+	testPermalinkPattern := func(pattern, path string, data map[string]interface{}) (string, error) {
+		fm := frontmatter.Merge(data, FrontMatter{"permalink": pattern})
+		ext := filepath.Ext(path)
+		switch ext {
+		case ".md", ".markdown":
+			ext = ".html"
+		}
+		f := file{site: s, relPath: path, fm: fm, outputExt: ext}
+		p := page{file: f}
+		p.modTime = testDate
+		return p.computePermalink(p.permalinkVariables())
+	}
+
+	tests := []struct {
+		name     string
+		pattern  string
+		path     string
+		expected string
+	}{
+		// Complex patterns with multiple placeholders
+		{"complex with categories", "/:categories/:year/:month/:day/:title/", "/test.md", "/test-page/"},
+		{"categories at end", "/blog/:categories", "/test.md", "/blog"},
+		{"categories in middle", "/prefix/:categories/suffix/:title", "/test.md", "/prefix/suffix/test-page"},
+		
+		// Date placeholders in various positions
+		{"year only", "/:year/:title", "/test.md", "/test-page"},
+		{"date at end", "/blog/:title/:year/:month/:day", "/test.md", "/blog/test-page"},
+		{"mixed dates", "/:i_month/:short_year/:title/:y_day", "/test.md", "/test-page"},
+		
+		// Edge cases for cleanup
+		{"multiple slashes", "/:categories//:year///:title", "/test.md", "/test-page"},
+		{"trailing dates", "/blog/:title/:year/", "/test.md", "/blog/test-page"},
+		
+		// Patterns that become empty or minimal
+		{"only categories", ":categories", "/test.md", "/test-page"},
+		{"only dates", ":year/:month/:day", "/test.md", "/test-page"},
+		{"dates and categories", ":categories/:year/:month/:day", "/test.md", "/test-page"},
+		
+		// Edge case specifically mentioned in PR review
+		{"categories with colon after", ":categories:slug", "/test.md", "/test"},
+		{"categories with multiple colons", "/prefix:categories:year:title", "/test.md", "/prefixtest-page"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			p, err := testPermalinkPattern(test.pattern, test.path, d)
+			require.NoError(t, err)
+			require.Equal(t, test.expected, p, "Pattern: %s", test.pattern)
+		})
+	}
+}
+
+func TestGlobalPermalinkConfiguration(t *testing.T) {
+	testDate, err := time.Parse(time.RFC3339, "2006-02-03T15:04:05Z")
+	require.NoError(t, err)
+	localDate := testDate.In(time.Local)
+
+	tests := []struct {
+		name            string
+		globalPermalink string
+		pagePath        string
+		frontMatter     map[string]interface{}
+		expected        string
+	}{
+		{
+			name:            "pretty permalink for regular page",
+			globalPermalink: "pretty",
+			pagePath:        "/bread.html",
+			frontMatter:     map[string]interface{}{"title": "Bread Page"},
+			expected:        "/bread-page/", // Jekyll ignores dates/categories for pages
+		},
+		{
+			name:            "date permalink for regular page",
+			globalPermalink: "date",
+			pagePath:        "/about.html",
+			frontMatter:     map[string]interface{}{"title": "About"},
+			expected:        "/about.html", // Date placeholders ignored for pages
+		},
+		{
+			name:            "none permalink for regular page",
+			globalPermalink: "none",
+			pagePath:        "/contact.html",
+			frontMatter:     map[string]interface{}{"title": "Contact"},
+			expected:        "/contact.html",
+		},
+		{
+			name:            "pretty permalink for post",
+			globalPermalink: "pretty",
+			pagePath:        "/_posts/2006-02-03-hello.html",
+			frontMatter:     map[string]interface{}{"title": "Hello World", "collection": "posts"},
+			expected:        fmt.Sprintf("/%04d/%02d/%02d/hello-world/", localDate.Year(), localDate.Month(), localDate.Day()),
+		},
+		{
+			name:            "date permalink for post",
+			globalPermalink: "date",
+			pagePath:        "/_posts/2006-02-03-hello.html",
+			frontMatter:     map[string]interface{}{"title": "Hello World", "collection": "posts"},
+			expected:        fmt.Sprintf("/%04d/%02d/%02d/hello-world.html", localDate.Year(), localDate.Month(), localDate.Day()),
+		},
+		{
+			name:            "front matter overrides global",
+			globalPermalink: "pretty",
+			pagePath:        "/special.html",
+			frontMatter:     map[string]interface{}{"permalink": "/custom/path/"},
+			expected:        "/custom/path/",
+		},
+		{
+			name:            "no global permalink uses default",
+			globalPermalink: "",
+			pagePath:        "/default.html",
+			frontMatter:     map[string]interface{}{"title": "Default"},
+			expected:        "/default.html",
+		},
+		{
+			name:            "collection document with pretty permalink",
+			globalPermalink: "pretty",
+			pagePath:        "/_authors/john.html",
+			frontMatter:     map[string]interface{}{"title": "John Doe", "collection": "authors"},
+			expected:        "/john-doe/", // Date/categories ignored for non-post collections
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cfg := config.Default()
+			cfg.Permalink = tt.globalPermalink
+			s := siteFake{t, cfg}
+
+			p := page{
+				file: file{
+					site:      s,
+					relPath:   tt.pagePath,
+					outputExt: ".html",
+					fm:        tt.frontMatter,
+					modTime:   testDate,
+				},
+			}
+
+			err := p.setPermalink()
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, p.URL())
+		})
+	}
 }
