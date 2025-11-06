@@ -1,6 +1,7 @@
 package site
 
 import (
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -206,14 +207,14 @@ func (s *Site) RelativePath(path string) string {
 func (s *Site) URLPage(urlpath string) (p Document, found bool) {
 	p, found = s.Routes[urlpath]
 	if !found {
-		p, found = s.Routes[filepath.Join(urlpath, "index.html")]
+		p, found = s.Routes[path.Join(urlpath, "index.html")]
 	}
 	if !found {
-		p, found = s.Routes[filepath.Join(urlpath, "index.htm")]
+		p, found = s.Routes[path.Join(urlpath, "index.htm")]
 	}
 	if !found {
 		// Serve extensionless URL `/some-url` from file `/some-url.html`
-		p, found = s.Routes[filepath.Join(urlpath+".html")]
+		p, found = s.Routes[urlpath+".html"]
 	}
 	if !found && !strings.HasSuffix(urlpath, "/") {
 		// Try with trailing slash for directory-style permalinks

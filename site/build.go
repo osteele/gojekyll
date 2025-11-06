@@ -11,6 +11,11 @@ import (
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty directories.
 func (s *Site) Clean() error {
+	// If destination directory doesn't exist, there's nothing to clean
+	if _, err := os.Stat(s.DestDir()); os.IsNotExist(err) {
+		return nil
+	}
+
 	// TODO PERF when called as part of build, keep files that will be re-generated
 	removeFiles := func(filename string, info os.FileInfo, err error) error {
 		if s.cfg.Verbose {

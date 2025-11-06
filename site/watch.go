@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -66,17 +67,53 @@ func (s *Site) makeEventWatcher() (<-chan string, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Add all subdirectories recursively since fsnotify doesn't watch recursively
+	addRecursive := func(dir string) error {
+		return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				// Skip excluded directories and destination directory
+				rel := utils.MustRel(sourceDir, path)
+				for _, excl := range s.cfg.Exclude {
+					if rel == excl || strings.HasPrefix(rel, excl+string(filepath.Separator)) {
+						return filepath.SkipDir
+					}
+				}
+				if path == s.DestDir() {
+					return filepath.SkipDir
+				}
+				if err := w.Add(path); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	}
+
+	if err := addRecursive(sourceDir); err != nil {
+		return nil, err
+	}
+
 	go func() {
 		for {
 			select {
 			case event := <-w.Events:
+				// When a directory is created, add it to the watcher
+				if event.Op&fsnotify.Create != 0 {
+					if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
+						addRecursive(event.Name)
+					}
+				}
 				filenames <- utils.MustRel(sourceDir, event.Name)
 			case err := <-w.Errors:
 				fmt.Fprintln(os.Stderr, "error:", err)
 			}
 		}
 	}()
-	return filenames, w.Add(sourceDir)
+	return filenames, nil
 }
 
 func (s *Site) makePollingWatcher() (<-chan string, error) {

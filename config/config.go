@@ -205,9 +205,9 @@ func (c *Config) Variables() map[string]interface{} {
 // This does not update the corresponding value in the Config struct.
 func (c *Config) Set(key string, val interface{}) {
 	c.m[key] = val
-	for _, item := range c.ms {
-		if item.Key == key {
-			item.Value = val
+	for i := range c.ms {
+		if c.ms[i].Key == key {
+			c.ms[i].Value = val
 			return
 		}
 	}
