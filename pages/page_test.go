@@ -53,6 +53,24 @@ func TestPage_Write(t *testing.T) {
 		require.True(t, ok)
 		require.Equal(t, "testdata/liquid_error.md", pe.Path())
 	})
+
+	t.Run("layout: none", func(t *testing.T) {
+		p := requirePageFromFile(t, "page_with_none_layout.md")
+		buf := new(bytes.Buffer)
+		require.NoError(t, p.Write(buf))
+		require.Contains(t, buf.String(), "Page content without layout")
+		// Should not try to apply a layout named "none"
+		require.NotContains(t, buf.String(), "no template for none")
+	})
+
+	t.Run("layout: null", func(t *testing.T) {
+		p := requirePageFromFile(t, "page_with_null_layout.md")
+		buf := new(bytes.Buffer)
+		require.NoError(t, p.Write(buf))
+		require.Contains(t, buf.String(), "Page content with null layout")
+		// Should not try to apply a layout named "null"
+		require.NotContains(t, buf.String(), "no template for null")
+	})
 }
 
 func fakePageFromFile(t *testing.T, file string) (Document, error) {
