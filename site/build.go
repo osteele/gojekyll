@@ -1,20 +1,21 @@
 package site
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/utils"
 )
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty directories.
 func (s *Site) Clean() error {
 	// TODO PERF when called as part of build, keep files that will be re-generated
+	log := logger.Default()
 	removeFiles := func(filename string, info os.FileInfo, err error) error {
 		if s.cfg.Verbose {
-			fmt.Println("rm", filename)
+			log.Info("rm %s", filename)
 		}
 		switch {
 		case err != nil && os.IsNotExist(err):
@@ -39,9 +40,10 @@ func (s *Site) Clean() error {
 }
 
 func (s *Site) setTimeZone() error {
+	log := logger.Default()
 	if tz := s.cfg.Timezone; tz != "" {
 		if _, err := time.LoadLocation(tz); err != nil {
-			fmt.Fprintf(os.Stderr, "%s; using local time zone\n", err)
+			log.Error("%s; using local time zone", err)
 		} else if err := os.Setenv("TZ", tz); err != nil {
 			return err
 		}

@@ -46,7 +46,7 @@ func (s *Server) Run(open bool, logger func(label, value string)) error {
 	logger("Server running...", "press ctrl-c to stop.")
 	if open {
 		if err := browser.OpenURL("http://" + address); err != nil {
-			fmt.Println("Error opening page:", err)
+			fmt.Fprintln(os.Stderr, "Error opening page:", err)
 		}
 	}
 	return <-c

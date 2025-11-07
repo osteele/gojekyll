@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/montanaflynn/stats"
@@ -28,10 +27,10 @@ func benchmarkCommand() (err error) {
 		dur := time.Since(sampleStart).Seconds()
 		samples = append(samples, dur)
 		quiet = true
-		fmt.Printf("Run #%d; %.1fs elapsed\n", i+1, time.Since(commandStartTime).Seconds())
+		log.Printf("Run #%d; %.1fs elapsed\n", i+1, time.Since(commandStartTime).Seconds())
 	}
 	median, _ := stats.Median(samples)
 	stddev, _ := stats.StandardDeviationSample(samples)
-	fmt.Printf("%d samples @ %.2fs ± %.2fs\n", len(samples), median, stddev)
+	log.Printf("%d samples @ %.2fs ± %.2fs\n", len(samples), median, stddev)
 	return nil
 }

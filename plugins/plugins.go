@@ -6,12 +6,12 @@
 package plugins
 
 import (
-	"fmt"
 	"regexp"
 	"sort"
 
 	"github.com/kyokomi/emoji"
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
@@ -49,13 +49,14 @@ func Lookup(name string) (Plugin, bool) {
 
 // Install installs a registered plugin.
 func Install(names []string, site Site) error {
+	log := logger.Default()
 	for _, name := range names {
 		if p, found := directory[name]; found {
 			if err := p.AfterInitSite(site); err != nil {
 				return err
 			}
 		} else {
-			fmt.Printf("warning: gojekyll does not emulate the %s plugin.\n", name)
+			log.Warn("gojekyll does not emulate the %s plugin.", name)
 		}
 	}
 	return nil

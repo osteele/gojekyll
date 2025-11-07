@@ -15,6 +15,7 @@ import (
 	sass "github.com/bep/godartsass/v2"
 	blackfriday "github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/evaluator"
@@ -153,9 +154,10 @@ func requireNonEmptyArray(fn func([]interface{}) interface{}) func([]interface{}
 
 func unimplementedFilter(name string) func(value interface{}) interface{} {
 	warned := false
+	log := logger.Default()
 	return func(value interface{}) interface{} {
 		if !warned {
-			fmt.Println("warning: unimplemented filter:", name)
+			log.Warn("unimplemented filter: %s", name)
 			warned = true
 		}
 		return value

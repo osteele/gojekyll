@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"fmt"
-	"os"
 	"time"
 
 	"github.com/osteele/gojekyll/site"
@@ -20,15 +18,15 @@ func init() {
 func buildCommand(site *site.Site) error {
 	watch := site.Config().Watch
 
-	logger.path("Destination:", site.DestDir())
-	logger.label("Generating...", "")
+	bannerLog.path("Destination:", site.DestDir())
+	bannerLog.label("Generating...", "")
 	count, err := site.Write()
 	switch {
 	case err == nil:
 		elapsed := time.Since(commandStartTime)
-		logger.label("", "wrote %d files in %.2fs.", count, elapsed.Seconds())
+		bannerLog.label("", "wrote %d files in %.2fs.", count, elapsed.Seconds())
 	case watch:
-		fmt.Fprintln(os.Stderr, err)
+		log.Error(err.Error())
 	default:
 		return err
 	}
@@ -41,12 +39,12 @@ func buildCommand(site *site.Site) error {
 		if err != nil {
 			return err
 		}
-		logger.label("Auto-regeneration:", "enabled for %q", site.SourceDir())
+		bannerLog.label("Auto-regeneration:", "enabled for %q", site.SourceDir())
 		for event := range events {
-			fmt.Print(event)
+			log.Printf("%s", event)
 		}
 	} else {
-		logger.label("Auto-regeneration:", "disabled. Use --watch to enable.")
+		bannerLog.label("Auto-regeneration:", "disabled. Use --watch to enable.")
 	}
 	return nil
 }

@@ -2,11 +2,11 @@ package site
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/utils"
 )
@@ -60,7 +60,8 @@ func (s *Site) WriteDoc(d Document) error {
 	}
 	to := filepath.Join(s.DestDir(), rel)
 	if s.cfg.Verbose {
-		fmt.Println("create", to, "from", d.Source())
+		log := logger.Default()
+		log.Info("create %s from %s", to, d.Source())
 	}
 	if s.cfg.DryRun {
 		// FIXME render the page, just don't write it

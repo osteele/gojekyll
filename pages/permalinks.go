@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/utils"
 )
 
@@ -52,8 +53,8 @@ func (p *page) permalinkVariables() map[string]string {
 	if tzName := p.site.Config().PermalinkTimezone; tzName != "" {
 		l, err := time.LoadLocation(tzName)
 		if err != nil {
-			// TODO: use a logger
-			fmt.Printf("Warning: Could not load timezone %q for permalink: %s. Using local time zone instead.\n", tzName, err)
+			log := logger.Default()
+			log.Warn("Could not load timezone %q for permalink: %s. Using local time zone instead.", tzName, err)
 		} else {
 			loc = l
 		}
