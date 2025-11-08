@@ -50,12 +50,74 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 }
 
 func (s *Site) makeFileWatcher() (<-chan string, error) {
-	switch {
-	case s.cfg.ForcePolling:
+	if s.cfg.ForcePolling {
 		return s.makePollingWatcher()
-	default:
-		return s.makeEventWatcher()
 	}
+
+	// Try fsnotify first, but fall back to polling if too many directories
+	filenames, err := s.tryEventWatcher()
+	if err != nil {
+		if s.cfg.Verbose {
+			fmt.Fprintf(os.Stderr, "Event watcher unavailable (%v), using polling watcher\n", err)
+		}
+		return s.makePollingWatcher()
+	}
+	return filenames, nil
+}
+
+// shouldIgnoreDir returns true for directories that should never be watched
+func (s *Site) shouldIgnoreDir(rel string) bool {
+	// Always ignore version control directories
+	if rel == ".git" || rel == ".svn" || rel == ".hg" || rel == ".bzr" {
+		return true
+	}
+
+	// Check configured excludes
+	for _, excl := range s.cfg.Exclude {
+		if rel == excl || strings.HasPrefix(rel, excl+string(filepath.Separator)) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// tryEventWatcher attempts to create an fsnotify watcher, returning an error
+// if there are too many directories (to avoid exhausting file descriptors)
+func (s *Site) tryEventWatcher() (<-chan string, error) {
+	sourceDir := s.SourceDir()
+
+	// Count directories first to avoid exhausting watches
+	dirCount := 0
+	err := filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			return nil
+		}
+
+		rel := utils.MustRel(sourceDir, path)
+		if path == s.DestDir() || s.shouldIgnoreDir(rel) {
+			return filepath.SkipDir
+		}
+
+		dirCount++
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Conservative limit to avoid exhausting inotify watches
+	// (default limit is often 8192, but other programs use them too)
+	const maxDirs = 500
+	if dirCount > maxDirs {
+		return nil, fmt.Errorf("directory count %d exceeds safe limit %d for fsnotify", dirCount, maxDirs)
+	}
+
+	return s.makeEventWatcher()
 }
 
 func (s *Site) makeEventWatcher() (<-chan string, error) {
@@ -77,12 +139,7 @@ func (s *Site) makeEventWatcher() (<-chan string, error) {
 			if info.IsDir() {
 				// Skip excluded directories and destination directory
 				rel := utils.MustRel(sourceDir, path)
-				for _, excl := range s.cfg.Exclude {
-					if rel == excl || strings.HasPrefix(rel, excl+string(filepath.Separator)) {
-						return filepath.SkipDir
-					}
-				}
-				if path == s.DestDir() {
+				if path == s.DestDir() || s.shouldIgnoreDir(rel) {
 					return filepath.SkipDir
 				}
 				if err := w.Add(path); err != nil {
