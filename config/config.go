@@ -203,6 +203,13 @@ func (c *Config) Variables() map[string]interface{} {
 
 // Set sets a value in the Liquid variable map.
 // This does not update the corresponding value in the Config struct.
+//
+// Note: Iterates by index rather than value to modify c.ms in place.
+// Range-over-value creates copies, so `item.Value = val` would modify
+// the copy instead of the original slice element.
+//
+// Thread safety: This method is called during site initialization and reload.
+// Reload is protected by Server.m mutex, so concurrent calls don't occur.
 func (c *Config) Set(key string, val interface{}) {
 	c.m[key] = val
 	for i := range c.ms {

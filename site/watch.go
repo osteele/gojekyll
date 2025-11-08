@@ -161,7 +161,21 @@ func (s *Site) makeEventWatcher() (<-chan string, error) {
 				// When a directory is created, add it to the watcher
 				if event.Op&fsnotify.Create != 0 {
 					if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
-						addRecursive(event.Name)
+						if err := addRecursive(event.Name); err != nil {
+							fmt.Fprintf(os.Stderr, "error adding directory to watcher: %v\n", err)
+						}
+					}
+				}
+				// When a directory is removed or renamed, remove it from the watcher
+				// to avoid accumulating stale watches and exhausting file descriptors
+				if event.Op&(fsnotify.Remove|fsnotify.Rename) != 0 {
+					// Note: fsnotify automatically removes the watch when a file/directory
+					// is deleted, but we explicitly call Remove for clarity and to handle
+					// edge cases on different platforms
+					if err := w.Remove(event.Name); err != nil {
+						// Ignore "can't remove non-existent watch" errors as fsnotify
+						// may have already cleaned it up
+						fmt.Fprintf(os.Stderr, "error removing watch: %v\n", err)
 					}
 				}
 				filenames <- utils.MustRel(sourceDir, event.Name)
