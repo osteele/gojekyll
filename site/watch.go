@@ -166,18 +166,7 @@ func (s *Site) makeEventWatcher() (<-chan string, error) {
 						}
 					}
 				}
-				// When a directory is removed or renamed, remove it from the watcher
-				// to avoid accumulating stale watches and exhausting file descriptors
-				if event.Op&(fsnotify.Remove|fsnotify.Rename) != 0 {
-					// Note: fsnotify automatically removes the watch when a file/directory
-					// is deleted, but we explicitly call Remove for clarity and to handle
-					// edge cases on different platforms
-					if err := w.Remove(event.Name); err != nil {
-						// Ignore "can't remove non-existent watch" errors as fsnotify
-						// may have already cleaned it up
-						fmt.Fprintf(os.Stderr, "error removing watch: %v\n", err)
-					}
-				}
+				// Note: fsnotify automatically removes watches when directories are deleted
 				filenames <- utils.MustRel(sourceDir, event.Name)
 			case err := <-w.Errors:
 				fmt.Fprintln(os.Stderr, "error:", err)
