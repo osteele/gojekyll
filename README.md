@@ -79,7 +79,7 @@ docker run --user $UID:$GID -v $PWD:/app --pull always --network host --rm -it d
 
 1. Linux, Mac OS and Windows binaries for x86, amd64, armv6/v7, armv8, riscv64 are available from the [releases
    page](https://github.com/osteele/gojekyll/releases).
-2. Download the latest version of [dart-sass](https://github.com/sass/dart-sass/releases) and [add it to your PATH](https://katiek2.github.io/path-doc/), or see the [Sass website](https://katiek2.github.io/path-doc/) for full installation instructions.
+2. Download the latest version of [dart-sass](https://github.com/sass/dart-sass/releases) and [add it to your PATH](https://katiek2.github.io/path-doc/), or see the [Sass website](https://sass-lang.com/install/) for full installation instructions.
 3. [Optional] **Themes**. To use a theme, you need to install Ruby and
    [bundler](http://bundler.io/). Create a `Gemfile` that lists the theme., and
    run `bundle install`. The [Jekyll theme
@@ -131,7 +131,7 @@ Missing features:
   - [`markdown="span"`, `markdown="block"`](https://kramdown.gettalong.org/syntax.html#html-blocks)
   - Markdown configuration options
 
-Also see the [detailed status](#feature-status) below.
+Also see the [detailed status](#feature-checklist) below.
 
 ### Other Differences
 

@@ -73,14 +73,19 @@ When testing permalink behavior:
 3. Test all built-in permalink styles
 4. Test custom patterns with various placeholders
 
-## Maintenance Notes
+---
+
+## For Maintainers
+
+### Implementation Notes
 
 ⚠️ **DO NOT REMOVE** the distinction between posts and pages in permalink processing. It's required for Jekyll compatibility.
 
-## References
-The Jekyll documentation at https://jekyllrb.com/docs/permalinks/.
+### References
 
-## Related Files
+- The Jekyll documentation at https://jekyllrb.com/docs/permalinks/
+
+### Related Files
 
 - `pages/permalinks.go` - Core permalink processing logic
 - `pages/permalinks_test.go` - Comprehensive tests
