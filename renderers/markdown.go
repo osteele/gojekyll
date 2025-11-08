@@ -135,7 +135,14 @@ loop:
 		tt := z.Next()
 		switch tt {
 		case html.ErrorToken:
-			return z.Err()
+			err := z.Err()
+			if err == io.EOF {
+				return utils.WrapError(err,
+					"unexpected EOF while processing markdown=\"1\" attribute. "+
+					"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+					"or mismatched opening/closing tags")
+			}
+			return err
 		case html.StartTagToken:
 			if !notATagRE.Match(z.Raw()) {
 				depth++
