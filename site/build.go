@@ -27,6 +27,9 @@ func (s *Site) Clean() error {
 			return nil
 		case err != nil:
 			return err
+		case filename == s.DestDir():
+			// Never remove the destination directory itself, even if it's a symlink
+			return nil
 		case info.IsDir():
 			return nil
 		case s.KeepFile(utils.MustRel(s.DestDir(), filename)):

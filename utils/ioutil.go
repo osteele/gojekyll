@@ -80,8 +80,23 @@ func NewPathError(op, name, text string) *os.PathError {
 }
 
 // RemoveEmptyDirectories recursively removes empty directories.
+// It will not remove the root directory itself, only subdirectories within it.
 func RemoveEmptyDirectories(root string) error {
+	// Get the absolute path to ensure consistent comparison
+	rootAbs, absErr := filepath.Abs(root)
+	if absErr != nil {
+		return absErr
+	}
+
+	// Normalize the root path
+	root = filepath.Clean(root)
+	rootAbs = filepath.Clean(rootAbs)
+
 	walkFn := func(name string, info os.FileInfo, err error) error {
+		cleanName := filepath.Clean(name)
+		cleanNameAbs, _ := filepath.Abs(name)
+		cleanNameAbs = filepath.Clean(cleanNameAbs)
+
 		switch {
 		case err != nil && os.IsNotExist(err):
 			// It's okay to call this on a directory that doesn't exist.
@@ -90,6 +105,12 @@ func RemoveEmptyDirectories(root string) error {
 		case err != nil:
 			return err
 		case info.IsDir():
+			// Don't remove the root directory itself, even if it's empty
+			// This preserves symlinks and prevents the destination directory from being removed
+			// We compare using absolute paths to handle both relative and absolute path cases
+			if cleanName == root || cleanNameAbs == rootAbs {
+				return nil
+			}
 			err := os.Remove(name)
 			switch {
 			case err == nil:
