@@ -104,7 +104,6 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 		pattern = removePostOnlyPlaceholders(pattern)
 	}
 
-
 	templateVariables := p.permalinkVariables()
 	s, err := utils.SafeReplaceAllStringFunc(templateVariableMatcher, pattern, func(m string) (string, error) {
 		varname := m[1:]
@@ -125,33 +124,33 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 // This matches Jekyll's behavior where these placeholders are ignored for non-posts.
 func removePostOnlyPlaceholders(pattern string) string {
 	originalPattern := pattern
-	
-	// Use regex to remove category placeholders more comprehensively  
+
+	// Use regex to remove category placeholders more comprehensively
 	// This handles :categories in various positions and contexts
 	categoryRegex := regexp.MustCompile(`:categories\b/?`)
 	pattern = categoryRegex.ReplaceAllString(pattern, "")
-	
+
 	// Remove date-related placeholders using regex for better coverage
 	// This handles all date placeholders regardless of position
 	dateRegex := regexp.MustCompile(`:(?:year|month|i_month|day|i_day|hour|minute|second|short_year|y_day)\b/?`)
 	pattern = dateRegex.ReplaceAllString(pattern, "")
-	
+
 	// Clean up any double slashes that might result
 	pattern = regexp.MustCompile(`/+`).ReplaceAllString(pattern, "/")
-	
+
 	// Remove trailing slash temporarily for processing
 	pattern = strings.TrimSuffix(pattern, "/")
-	
+
 	// Special case: if pattern becomes empty or just "/", use "/:title"
 	if pattern == "" || pattern == "/" {
 		pattern = "/:title"
 	}
-	
+
 	// Ensure pattern starts with /
 	if !strings.HasPrefix(pattern, "/") {
 		pattern = "/" + pattern
 	}
-	
+
 	// Preserve trailing slash if the original pattern ended with "/:title/" or similar
 	// non-date/category placeholder patterns, or if it was a plain "/"
 	if strings.HasSuffix(originalPattern, "/") {
@@ -160,15 +159,15 @@ func removePostOnlyPlaceholders(pattern string) string {
 		// If it ends with :title, :slug, :name, :path, :output_ext, :collection, etc.
 		// (basically any placeholder that's not a date or category), keep the slash
 		if strings.HasSuffix(beforeSlash, ":title") ||
-		   strings.HasSuffix(beforeSlash, ":slug") ||
-		   strings.HasSuffix(beforeSlash, ":name") ||
-		   strings.HasSuffix(beforeSlash, ":path") ||
-		   strings.HasSuffix(beforeSlash, ":collection") ||
-		   !regexp.MustCompile(`:\w+$`).MatchString(beforeSlash) {
+			strings.HasSuffix(beforeSlash, ":slug") ||
+			strings.HasSuffix(beforeSlash, ":name") ||
+			strings.HasSuffix(beforeSlash, ":path") ||
+			strings.HasSuffix(beforeSlash, ":collection") ||
+			!regexp.MustCompile(`:\w+$`).MatchString(beforeSlash) {
 			pattern += "/"
 		}
 	}
-	
+
 	return pattern
 }
 

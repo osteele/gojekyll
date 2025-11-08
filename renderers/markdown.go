@@ -139,8 +139,8 @@ loop:
 			if err == io.EOF {
 				return utils.WrapError(err,
 					"unexpected EOF while processing markdown=\"1\" attribute. "+
-					"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
-					"or mismatched opening/closing tags")
+						"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+						"or mismatched opening/closing tags")
 			}
 			return err
 		case html.StartTagToken:

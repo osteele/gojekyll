@@ -147,10 +147,10 @@ func TestExpandPermalinkPattern(t *testing.T) {
 			name:              "America/New_York Timezone (Date change)",
 			permalinkTimezone: "America/New_York",
 			// 2023-11-21 02:00:00 UTC is 2023-11-20 21:00:00 ET (previous day in ET)
-			pageDate:          time.Date(2023, 11, 21, 2, 0, 0, 0, time.UTC),
-			expectedYear:      2023,
-			expectedMonth:     time.November,
-			expectedDay:       20,
+			pageDate:      time.Date(2023, 11, 21, 2, 0, 0, 0, time.UTC),
+			expectedYear:  2023,
+			expectedMonth: time.November,
+			expectedDay:   20,
 		},
 		{
 			name:              "Europe/Berlin Timezone (Date change)",
@@ -158,10 +158,10 @@ func TestExpandPermalinkPattern(t *testing.T) {
 			// 2023-11-20 22:00:00 UTC is 2023-11-20 23:00:00 CET (same day)
 			// Let's use a time that will be next day in Berlin
 			// 2023-11-20 23:30:00 UTC is 2023-11-21 00:30:00 CET
-			pageDate:          time.Date(2023, 11, 20, 23, 30, 0, 0, time.UTC),
-			expectedYear:      2023,
-			expectedMonth:     time.November,
-			expectedDay:       21,
+			pageDate:      time.Date(2023, 11, 20, 23, 30, 0, 0, time.UTC),
+			expectedYear:  2023,
+			expectedMonth: time.November,
+			expectedDay:   21,
 		},
 		{
 			name:              "Invalid Timezone (Fallback to Local)",
@@ -197,7 +197,7 @@ func TestExpandPermalinkPattern(t *testing.T) {
 			// Note: categories in permalink are slugified and ordered. "testcat" -> "testcat"
 			// title in permalink is slugified. "testpage" -> "testpage"
 			expectedPermalink := fmt.Sprintf("/testcat/%04d/%02d/%02d/testpage.html", tc.expectedYear, tc.expectedMonth, tc.expectedDay)
-			
+
 			// If categories were more complex, e.g., "b a", they'd be "/a/b/..."
 			// If title had spaces/special chars, it would be slugified.
 
@@ -299,21 +299,21 @@ func TestPagePermalinkEdgeCases(t *testing.T) {
 		{"complex with categories", "/:categories/:year/:month/:day/:title/", "/test.md", "/test-page/"},
 		{"categories at end", "/blog/:categories", "/test.md", "/blog"},
 		{"categories in middle", "/prefix/:categories/suffix/:title", "/test.md", "/prefix/suffix/test-page"},
-		
+
 		// Date placeholders in various positions
 		{"year only", "/:year/:title", "/test.md", "/test-page"},
 		{"date at end", "/blog/:title/:year/:month/:day", "/test.md", "/blog/test-page"},
 		{"mixed dates", "/:i_month/:short_year/:title/:y_day", "/test.md", "/test-page"},
-		
+
 		// Edge cases for cleanup
 		{"multiple slashes", "/:categories//:year///:title", "/test.md", "/test-page"},
 		{"trailing dates", "/blog/:title/:year/", "/test.md", "/blog/test-page"},
-		
+
 		// Patterns that become empty or minimal
 		{"only categories", ":categories", "/test.md", "/test-page"},
 		{"only dates", ":year/:month/:day", "/test.md", "/test-page"},
 		{"dates and categories", ":categories/:year/:month/:day", "/test.md", "/test-page"},
-		
+
 		// Edge case specifically mentioned in PR review
 		{"categories with colon after", ":categories:slug", "/test.md", "/test"},
 		{"categories with multiple colons", "/prefix:categories:year:title", "/test.md", "/prefixtest-page"},
