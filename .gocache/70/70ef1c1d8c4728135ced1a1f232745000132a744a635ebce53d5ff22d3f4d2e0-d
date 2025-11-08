@@ -1,0 +1,8 @@
+./ast.go
+./config.go
+./error.go
+./grammar.go
+./parser.go
+./scanner.go
+./token.go
+./tokentype_string.go

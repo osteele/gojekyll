@@ -1,0 +1,5 @@
+./config.go
+./default.go
+./flags.go
+./pathnames.go
+./config_test.go

@@ -1,0 +1,17 @@
+./tablegen.go
+./tasm.go
+./tcl.go
+./tcsh.go
+./termcap.go
+./terminfo.go
+./terraform.go
+./tex.go
+./thrift.go
+./toml.go
+./tradingview.go
+./transactsql.go
+./turing.go
+./turtle.go
+./twig.go
+./typescript.go
+./typoscript.go

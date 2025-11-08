@@ -1,0 +1,6 @@
+./layouts.go
+./markdown.go
+./renderers.go
+./sass.go
+./markdown_test.go
+./pipeline_test.go

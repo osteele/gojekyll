@@ -1,0 +1,3 @@
+./lighttpd.go
+./llvm.go
+./lua.go

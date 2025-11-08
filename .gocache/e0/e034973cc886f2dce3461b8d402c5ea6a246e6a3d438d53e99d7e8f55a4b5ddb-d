@@ -1,0 +1,4 @@
+./livereload.go
+./server.go
+./taginjector.go
+./watcher.go

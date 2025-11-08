@@ -1,0 +1,5 @@
+./collection.go
+./read.go
+./sort.go
+./strategies.go
+./collection_test.go

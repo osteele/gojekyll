@@ -1,0 +1,3 @@
+./filters.go
+./smartify.go
+./filters_test.go

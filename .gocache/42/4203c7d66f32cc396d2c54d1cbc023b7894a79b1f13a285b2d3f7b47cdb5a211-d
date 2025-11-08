@@ -1,0 +1,14 @@
+./avatar.go
+./default_layout.go
+./feed.go
+./gist.go
+./github_metadata.go
+./github_pages.go
+./paginate.go
+./plugins.go
+./redirect_from.go
+./seo_tag.go
+./sitemap.go
+./avatar_test.go
+./gist_test.go
+./seo_tag_test.go

@@ -1,0 +1,13 @@
+./coalesce.go
+./colour.go
+./delegate.go
+./doc.go
+./formatter.go
+./iterator.go
+./lexer.go
+./mutators.go
+./regexp.go
+./remap.go
+./style.go
+./tokentype_string.go
+./types.go

@@ -1,0 +1,17 @@
+./actions.go
+./app.go
+./args.go
+./cmd.go
+./completions.go
+./doc.go
+./envar.go
+./flags.go
+./global.go
+./guesswidth_unix.go
+./model.go
+./parser.go
+./parsers.go
+./templates.go
+./usage.go
+./values.go
+./values_generated.go

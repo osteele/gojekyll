@@ -1,0 +1,17 @@
+# test log
+getenv PWD
+getenv TMPDIR
+open /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T/ioutil-test1972907833
+stat /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T
+open testdata/test.txt
+open /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T/ioutil-test1972907833
+open /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T/ioutil-test1972907833
+stat /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T
+open testdata/missing.txt
+open testdata/test.txt
+open testdata/empty.txt
+open testdata/missing.txt
+getenv TMPDIR
+open /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T/ioutil-test2214863359
+open /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T/ioutil-test2214863359
+open /var/folders/l5/2vxynsln12z1sf2cw99_jvh00000gp/T/ioutil-test2214863359

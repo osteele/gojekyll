@@ -1,0 +1,13 @@
+./arrays.go
+./call.go
+./compare.go
+./convert.go
+./docs.go
+./drop.go
+./mapslicevalue.go
+./parsedate.go
+./predicates.go
+./range.go
+./sort.go
+./structvalue.go
+./value.go

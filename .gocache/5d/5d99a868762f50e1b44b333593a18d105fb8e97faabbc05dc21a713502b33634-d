@@ -1,0 +1,8 @@
+./highlight.go
+./include.go
+./parseargs.go
+./tags.go
+./highlight_test.go
+./include_test.go
+./parseargs_test.go
+./tags_test.go

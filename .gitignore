@@ -8,3 +8,14 @@ coverage.out
 dist/
 
 .env
+
+# Go build cache
+.gocache/
+
+# macOS
+.DS_Store
+
+# Editor files
+*~
+*.swp
+*.swo

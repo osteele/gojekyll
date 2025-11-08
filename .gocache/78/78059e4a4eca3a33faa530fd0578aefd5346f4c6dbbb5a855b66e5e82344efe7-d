@@ -1,0 +1,5 @@
+./livereload.go
+./server.go
+./taginjector.go
+./watcher.go
+./taginjector_test.go

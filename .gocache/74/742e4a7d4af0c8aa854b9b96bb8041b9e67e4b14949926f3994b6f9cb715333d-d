@@ -1,0 +1,4 @@
+# test log
+open testdata/empty_fm.md
+open testdata/some_fm.md
+open testdata/no_fm.md

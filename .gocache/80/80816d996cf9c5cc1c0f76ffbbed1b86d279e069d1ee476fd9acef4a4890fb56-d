@@ -1,0 +1,18 @@
+# test log
+open testdata/static.html
+stat testdata/static.html
+open testdata/excerpt.md
+stat testdata/excerpt.md
+open testdata/excerpt.md
+getenv JEKYLL_ENV
+getenv JEKYLL_ENV
+getenv JEKYLL_ENV
+open testdata/page_with_layout.md
+stat testdata/page_with_layout.md
+open testdata/page_with_layout.md
+getenv JEKYLL_ENV
+getenv JEKYLL_ENV
+open testdata/liquid_error.md
+stat testdata/liquid_error.md
+open testdata/liquid_error.md
+getenv JEKYLL_ENV

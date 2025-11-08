@@ -1,0 +1,4 @@
+./highlight.go
+./include.go
+./parseargs.go
+./tags.go

@@ -1,0 +1,11 @@
+./arrays.go
+./errors.go
+./filepath.go
+./html.go
+./ioutil.go
+./liquid.go
+./maps.go
+./string_set.go
+./strings.go
+./urls.go
+./yaml.go

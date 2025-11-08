@@ -1,0 +1,6 @@
+./document.go
+./drops.go
+./file.go
+./page.go
+./permalinks.go
+./static_file.go
