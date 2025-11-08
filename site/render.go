@@ -8,17 +8,18 @@ import (
 
 // render renders the site's pages.
 func (s *Site) render() error {
+	var errs []error
 	for _, c := range s.sortedCollections() {
 		if err := c.Render(); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 	for _, c := range s.nonCollectionPages {
 		if err := c.Render(); err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
-	return nil
+	return combineErrors(errs)
 }
 
 func (s *Site) ensureRendered() (err error) {

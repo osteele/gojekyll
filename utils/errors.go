@@ -74,3 +74,32 @@ func WrapPathError(err error, path string) error {
 		return &pathError{path: path, cause: err}
 	}
 }
+
+// CombineErrors combines multiple errors into a single error.
+// Returns nil if there are no errors, the single error if there's only one,
+// or a combined error with all error messages joined by newlines.
+func CombineErrors(errs []error) error {
+	// Filter out nil errors
+	var nonNilErrs []error
+	for _, err := range errs {
+		if err != nil {
+			nonNilErrs = append(nonNilErrs, err)
+		}
+	}
+
+	switch len(nonNilErrs) {
+	case 0:
+		return nil
+	case 1:
+		return nonNilErrs[0]
+	default:
+		var msg string
+		for i, e := range nonNilErrs {
+			if i > 0 {
+				msg += "\n"
+			}
+			msg += e.Error()
+		}
+		return fmt.Errorf("%s", msg)
+	}
+}
