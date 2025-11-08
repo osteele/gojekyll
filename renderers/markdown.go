@@ -84,7 +84,7 @@ outer:
 				if err != nil {
 					return nil, err
 				}
-				
+
 				if shouldProcess {
 					// Only process if the mode is one that enables processing
 					if err := processInnerMarkdown(buf, z, mode); err != nil {
@@ -98,7 +98,7 @@ outer:
 						return nil, err
 					}
 				}
-				continue // Skip the buf.Write(z.Raw()) below since we've already written
+				// fall through to write the end tag
 			}
 		}
 		_, err := buf.Write(z.Raw())
@@ -159,9 +159,9 @@ loop:
 			err := z.Err()
 			if err == io.EOF {
 				return utils.WrapError(err,
-					"unexpected EOF while processing markdown=\"1\" attribute. "+
-						"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
-						"or mismatched opening/closing tags")
+					"unexpected EOF while processing markdown attribute. "+
+					"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+					"or mismatched opening/closing tags")
 			}
 			return err
 		case html.StartTagToken:
@@ -240,7 +240,14 @@ loop:
 		tt := z.Next()
 		switch tt {
 		case html.ErrorToken:
-			return z.Err()
+			err := z.Err()
+			if err == io.EOF {
+				return utils.WrapError(err,
+					"unexpected EOF while processing markdown=\"0\" attribute. "+
+					"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+					"or mismatched opening/closing tags")
+			}
+			return err
 		case html.StartTagToken:
 			if !notATagRE.Match(z.Raw()) {
 				depth++

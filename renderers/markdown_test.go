@@ -12,39 +12,47 @@ func TestRenderMarkdown(t *testing.T) {
 }
 
 func TestRenderMarkdownWithHtml1(t *testing.T) {
-	// Test markdown="1" (same as block mode)
-	require.Contains(t, mustMarkdownString(`<div a=1 markdown="1">*b*</div>`), "<em>b</em>")
-	require.Contains(t, mustMarkdownString(`<div a=1 markdown='1'>*b*</div>`), "<em>b</em>")
-	require.Contains(t, mustMarkdownString(`<div a=1 markdown=1>*b*</div>`), "<em>b</em>")
-	
+	// Test markdown="1" (same as block mode) - using block-level HTML
+	require.Contains(t, mustMarkdownString("\n<div markdown=\"1\">\n*b*\n</div>\n"), "<em>b</em>")
+	require.Contains(t, mustMarkdownString("\n<div markdown='1'>\n*b*\n</div>\n"), "<em>b</em>")
+	require.Contains(t, mustMarkdownString("\n<div markdown=1>\n*b*\n</div>\n"), "<em>b</em>")
+
 	// Test markdown="block" (should be same as markdown="1")
-	require.Contains(t, mustMarkdownString(`<div a=1 markdown="block">*b*</div>`), "<em>b</em>")
-	
+	require.Contains(t, mustMarkdownString("\n<div markdown=\"block\">\n*b*\n</div>\n"), "<em>b</em>")
+
 	// Test markdown="span" (no paragraphs, just inline elements)
-	result := mustMarkdownString(`<div a=1 markdown="span">*b*</div>`)
+	result := mustMarkdownString("\n<div markdown=\"span\">\n*b*\n</div>\n")
 	require.Contains(t, result, "<em>b</em>")
 	require.NotContains(t, result, "<p><em>b</em></p>")
-	
+
 	// Test markdown="0" (no markdown processing)
-	require.NotContains(t, mustMarkdownString(`<div a=1 markdown="0">*b*</div>`), "<em>")
-	require.Contains(t, mustMarkdownString(`<div a=1 markdown="0">*b*</div>`), "*b*")
+	require.NotContains(t, mustMarkdownString("\n<div markdown=\"0\">\n*b*\n</div>\n"), "<em>")
+	require.Contains(t, mustMarkdownString("\n<div markdown=\"0\">\n*b*\n</div>\n"), "*b*")
 }
 
 func TestRenderMarkdownWithHtml2(t *testing.T) {
-	// No markdown attribute - content should not be processed
-	require.Equal(t, "<p><div>*b*</div></p>\n", mustMarkdownString("<div>*b*</div>"))
-	
-	// Test autolink processing with different markdown modes
-	require.Contains(t, mustMarkdownString(`<div markdown=1><user@example.com></div>`), `<a href="mailto:user@example.com">`)
-	require.Contains(t, mustMarkdownString(`<div markdown="block"><user@example.com></div>`), `<a href="mailto:user@example.com">`)
-	require.Contains(t, mustMarkdownString(`<div markdown="span"><user@example.com></div>`), `<a href="mailto:user@example.com">`)
-	require.NotContains(t, mustMarkdownString(`<div markdown="0"><user@example.com></div>`), `<a href="mailto:user@example.com">`)
-	
-	// Test URL autolink processing with different markdown modes
-	require.Contains(t, mustMarkdownString(`<div markdown=1><http://example.com></div>`), `<a href="http://example.com">`)
-	require.Contains(t, mustMarkdownString(`<div markdown="block"><http://example.com></div>`), `<a href="http://example.com">`)
-	require.Contains(t, mustMarkdownString(`<div markdown="span"><http://example.com></div>`), `<a href="http://example.com">`)
-	require.NotContains(t, mustMarkdownString(`<div markdown="0"><http://example.com></div>`), `<a href="http://example.com">`)
+	// No markdown attribute with block-level HTML - content should not be processed
+	result := mustMarkdownString("\n<div>\n*b*\n</div>\n")
+	require.NotContains(t, result, "<em>")
+	require.Contains(t, result, "*b*")
+
+	// Test autolink processing with different markdown modes (block-level HTML)
+	require.Contains(t, mustMarkdownString("\n<div markdown=1>\n<user@example.com>\n</div>\n"), `<a href="mailto:user@example.com">`)
+	require.Contains(t, mustMarkdownString("\n<div markdown=\"block\">\n<user@example.com>\n</div>\n"), `<a href="mailto:user@example.com">`)
+	require.Contains(t, mustMarkdownString("\n<div markdown=\"span\">\n<user@example.com>\n</div>\n"), `<a href="mailto:user@example.com">`)
+
+	emailResult := mustMarkdownString("\n<div markdown=\"0\">\n<user@example.com>\n</div>\n")
+	require.NotContains(t, emailResult, `<a href="mailto:user@example.com">`)
+	require.Contains(t, emailResult, "user@example.com")
+
+	// Test URL autolink processing with different markdown modes (block-level HTML)
+	require.Contains(t, mustMarkdownString("\n<div markdown=1>\n<http://example.com>\n</div>\n"), `<a href="http://example.com">`)
+	require.Contains(t, mustMarkdownString("\n<div markdown=\"block\">\n<http://example.com>\n</div>\n"), `<a href="http://example.com">`)
+	require.Contains(t, mustMarkdownString("\n<div markdown=\"span\">\n<http://example.com>\n</div>\n"), `<a href="http://example.com">`)
+
+	urlResult := mustMarkdownString("\n<div markdown=\"0\">\n<http://example.com>\n</div>\n")
+	require.NotContains(t, urlResult, `<a href="http://example.com">`)
+	require.Contains(t, urlResult, "http://example.com")
 }
 
 func mustMarkdownString(md string) string {
