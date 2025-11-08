@@ -64,7 +64,10 @@ func (s *Site) WriteDoc(d Document) error {
 		log.Info("create %s from %s", to, d.Source())
 	}
 	if s.cfg.DryRun {
-		// FIXME render the page, just don't write it
+		// Render non-static documents to catch errors, but don't write anything
+		if !d.IsStatic() {
+			return s.WriteDocument(io.Discard, d)
+		}
 		return nil
 	}
 	if err := os.MkdirAll(filepath.Dir(to), 0755); err != nil {

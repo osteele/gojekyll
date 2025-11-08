@@ -26,7 +26,13 @@ const sassDirName = "_sass"
 func (p *Manager) copySASSFileIncludes() error {
 	// TODO delete the temp directory when done?
 	// TODO use libsass.ImportsOption instead?
-	// FIXME this doesn't delete stale css files
+	// Clean up any existing temp directory to remove stale files
+	if p.sassTempDir != "" {
+		if err := os.RemoveAll(p.sassTempDir); err != nil {
+			return err
+		}
+		p.sassTempDir = ""
+	}
 	if err := p.makeSASSTempDir(); err != nil {
 		return err
 	}
