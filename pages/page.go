@@ -185,7 +185,8 @@ func (p *page) Write(w io.Writer) error {
 	defer p.m.RUnlock()
 	cn := p.content
 	lo, ok := p.fm["layout"].(string)
-	if ok && lo != "" {
+	// Jekyll compatibility: "none" and "null" are special values that disable layout
+	if ok && lo != "" && lo != "none" && lo != "null" {
 		rm := p.site.RendererManager()
 		b, err := rm.ApplyLayout(lo, []byte(cn), p.TemplateContext())
 		if err != nil {

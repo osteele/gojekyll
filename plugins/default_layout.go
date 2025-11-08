@@ -28,6 +28,7 @@ func (p jekyllDefaultLayout) layoutNames(s Site) map[string]string {
 
 func (p jekyllDefaultLayout) PostInitPage(s Site, pg Page) error {
 	fm := pg.FrontMatter()
+	// Don't override if layout is explicitly set (including "none" or "null")
 	if fm["layout"] != nil {
 		return nil
 	}
