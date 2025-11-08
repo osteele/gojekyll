@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -49,12 +50,74 @@ func (s *Site) WatchFiles() (<-chan FilesEvent, error) {
 }
 
 func (s *Site) makeFileWatcher() (<-chan string, error) {
-	switch {
-	case s.cfg.ForcePolling:
+	if s.cfg.ForcePolling {
 		return s.makePollingWatcher()
-	default:
-		return s.makeEventWatcher()
 	}
+
+	// Try fsnotify first, but fall back to polling if too many directories
+	filenames, err := s.tryEventWatcher()
+	if err != nil {
+		if s.cfg.Verbose {
+			fmt.Fprintf(os.Stderr, "Event watcher unavailable (%v), using polling watcher\n", err)
+		}
+		return s.makePollingWatcher()
+	}
+	return filenames, nil
+}
+
+// shouldIgnoreDir returns true for directories that should never be watched
+func (s *Site) shouldIgnoreDir(rel string) bool {
+	// Always ignore version control directories
+	if rel == ".git" || rel == ".svn" || rel == ".hg" || rel == ".bzr" {
+		return true
+	}
+
+	// Check configured excludes
+	for _, excl := range s.cfg.Exclude {
+		if rel == excl || strings.HasPrefix(rel, excl+string(filepath.Separator)) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// tryEventWatcher attempts to create an fsnotify watcher, returning an error
+// if there are too many directories (to avoid exhausting file descriptors)
+func (s *Site) tryEventWatcher() (<-chan string, error) {
+	sourceDir := s.SourceDir()
+
+	// Count directories first to avoid exhausting watches
+	dirCount := 0
+	err := filepath.Walk(sourceDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.IsDir() {
+			return nil
+		}
+
+		rel := utils.MustRel(sourceDir, path)
+		if path == s.DestDir() || s.shouldIgnoreDir(rel) {
+			return filepath.SkipDir
+		}
+
+		dirCount++
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Conservative limit to avoid exhausting inotify watches
+	// (default limit is often 8192, but other programs use them too)
+	const maxDirs = 500
+	if dirCount > maxDirs {
+		return nil, fmt.Errorf("directory count %d exceeds safe limit %d for fsnotify", dirCount, maxDirs)
+	}
+
+	return s.makeEventWatcher()
 }
 
 func (s *Site) makeEventWatcher() (<-chan string, error) {
@@ -66,17 +129,51 @@ func (s *Site) makeEventWatcher() (<-chan string, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Add all subdirectories recursively since fsnotify doesn't watch recursively
+	addRecursive := func(dir string) error {
+		return filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				// Skip excluded directories and destination directory
+				rel := utils.MustRel(sourceDir, path)
+				if path == s.DestDir() || s.shouldIgnoreDir(rel) {
+					return filepath.SkipDir
+				}
+				if err := w.Add(path); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	}
+
+	if err := addRecursive(sourceDir); err != nil {
+		return nil, err
+	}
+
 	go func() {
 		for {
 			select {
 			case event := <-w.Events:
+				// When a directory is created, add it to the watcher
+				if event.Op&fsnotify.Create != 0 {
+					if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
+						if err := addRecursive(event.Name); err != nil {
+							fmt.Fprintf(os.Stderr, "error adding directory to watcher: %v\n", err)
+						}
+					}
+				}
+				// Note: fsnotify automatically removes watches when directories are deleted
 				filenames <- utils.MustRel(sourceDir, event.Name)
 			case err := <-w.Errors:
 				fmt.Fprintln(os.Stderr, "error:", err)
 			}
 		}
 	}()
-	return filenames, w.Add(sourceDir)
+	return filenames, nil
 }
 
 func (s *Site) makePollingWatcher() (<-chan string, error) {
