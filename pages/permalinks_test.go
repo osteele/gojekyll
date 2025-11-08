@@ -396,6 +396,27 @@ func TestGlobalPermalinkConfiguration(t *testing.T) {
 			frontMatter:     map[string]interface{}{"title": "John Doe", "collection": "authors"},
 			expected:        "/john-doe/", // Date/categories ignored for non-post collections
 		},
+		{
+			name:            "custom permalink pattern for page (issue #81)",
+			globalPermalink: "/blog/:slug/",
+			pagePath:        "/index.html",
+			frontMatter:     map[string]interface{}{"title": "Home"},
+			expected:        "/index.html", // Custom patterns don't apply to pages, use default
+		},
+		{
+			name:            "custom permalink pattern for post",
+			globalPermalink: "/blog/:slug/",
+			pagePath:        "/_posts/2006-02-03-hello.html",
+			frontMatter:     map[string]interface{}{"title": "Hello", "collection": "posts"},
+			expected:        "/blog/2006-02-03-hello/", // Custom patterns apply to posts (slug from filename)
+		},
+		{
+			name:            "custom permalink with :path for page",
+			globalPermalink: "/custom/:path/",
+			pagePath:        "/about.html",
+			frontMatter:     map[string]interface{}{},
+			expected:        "/about.html", // Custom patterns don't apply to pages
+		},
 	}
 
 	for _, tt := range tests {

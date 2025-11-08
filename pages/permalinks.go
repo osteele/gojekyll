@@ -85,7 +85,20 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 	} else {
 		// If no front matter permalink, check global config
 		if globalPermalink := p.site.Config().Permalink; globalPermalink != "" {
-			pattern = globalPermalink
+			// For non-posts (pages and collections), only apply built-in permalink styles
+			// Custom patterns should only affect posts
+			if !p.IsPost() {
+				if _, isBuiltInStyle := PermalinkStyles[globalPermalink]; !isBuiltInStyle {
+					// Not a built-in style, use default pattern for pages
+					pattern = DefaultPermalinkPattern
+				} else {
+					// Built-in style, apply it
+					pattern = globalPermalink
+				}
+			} else {
+				// Posts use the global permalink regardless of whether it's built-in or custom
+				pattern = globalPermalink
+			}
 		} else {
 			pattern = DefaultPermalinkPattern
 		}
