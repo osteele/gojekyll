@@ -5,6 +5,7 @@ import (
 	"path"
 
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/render"
 )
@@ -33,9 +34,10 @@ type tagContext struct {
 // time it's rendered, and otherwise does nothing.
 func CreateUnimplementedTag() liquid.Renderer {
 	warned := false
+	log := logger.Default()
 	return func(rc render.Context) (string, error) {
 		if !warned {
-			fmt.Printf("The %q tag has not been implemented. It is being ignored.\n", rc.TagName())
+			log.Warn("The %q tag has not been implemented. It is being ignored.", rc.TagName())
 			warned = true
 		}
 		return "", nil

@@ -15,9 +15,9 @@ func renderCommand(site *site.Site) error {
 	if err != nil {
 		return err
 	}
-	logger.path("Render:", filepath.Join(site.SourceDir(), p.Source()))
+	bannerLog.path("Render:", filepath.Join(site.SourceDir(), p.Source()))
 	//nolint:govet
-	logger.label("URL:", p.URL())
-	logger.label("Content:", "")
+	bannerLog.label("URL:", p.URL())
+	bannerLog.label("Content:", "")
 	return site.WriteDocument(os.Stdout, p)
 }

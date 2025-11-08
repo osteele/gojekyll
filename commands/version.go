@@ -1,8 +1,6 @@
 package commands
 
 import (
-	"fmt"
-
 	"github.com/osteele/gojekyll/version"
 )
 
@@ -13,6 +11,6 @@ func versionCommand() error {
 	if !version.BuildTime.IsZero() {
 		d = version.BuildTime.Format(" (Build time: 2006-01-02T15:04)")
 	}
-	fmt.Printf("gojekyll version %s%s\n", version.Version, d)
+	log.Printf("gojekyll version %s%s\n", version.Version, d)
 	return nil
 }

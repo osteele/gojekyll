@@ -34,7 +34,7 @@ func variablesCommand(site *site.Site) (err error) {
 	}
 	data = liquid.FromDrop(data)
 	bytesToStrings(data)
-	logger.label("Variables:", "")
+	bannerLog.label("Variables:", "")
 	_, err = pp.Print(data)
 	return err
 }

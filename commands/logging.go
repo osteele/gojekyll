@@ -1,25 +1,24 @@
 package commands
 
 import (
-	"fmt"
-
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/utils"
 )
 
-type bannerLogger struct{ labelWidth int }
+// log is the logger instance used by commands
+var log = logger.Default()
 
-var logger = bannerLogger{}
+type bannerLogger struct{}
+
+var bannerLog = bannerLogger{}
 
 func (l *bannerLogger) Info(a ...interface{}) {
-	fmt.Println(a...)
+	log.Println(a...)
 }
 
 func (l *bannerLogger) label(label string, msg string, a ...interface{}) {
-	if len(label) > l.labelWidth {
-		l.labelWidth = len(label)
-	}
 	if !quiet {
-		fmt.Printf("%s %s\n", utils.LeftPad(label, l.labelWidth), fmt.Sprintf(msg, a...))
+		log.Label(label, msg, a...)
 	}
 }
 

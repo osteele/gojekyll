@@ -32,6 +32,9 @@ func ParseAndRun(args []string) error {
 
 func run(cmd string) error { // nolint: gocyclo
 	// dispatcher gets to ignore cyclo threshold ^
+	// Set quiet mode on logger
+	log.SetQuiet(quiet)
+
 	if profile || cmd == benchmark.FullCommand() {
 		defer setupProfiling()()
 	}
@@ -51,7 +54,7 @@ func run(cmd string) error { // nolint: gocyclo
 	// loading the site produced an error.
 	if *versionFlag {
 		//nolint:govet
-		logger.label("Version:", version.Version)
+		bannerLog.label("Version:", version.Version)
 	}
 	if err != nil {
 		return err
@@ -85,18 +88,18 @@ func loadSite(source string, flags config.Flags) (*site.Site, error) {
 	}
 	const configurationFileLabel = "Configuration file:"
 	if cf := site.Config().ConfigFile; cf != "" {
-		logger.path(configurationFileLabel, cf)
+		bannerLog.path(configurationFileLabel, cf)
 	} else {
-		logger.label(configurationFileLabel, "none")
+		bannerLog.label(configurationFileLabel, "none")
 	}
-	logger.path("Source:", site.SourceDir())
+	bannerLog.path("Source:", site.SourceDir())
 	err = site.Read()
 	return site, err
 }
 
 func setupProfiling() func() {
 	profilePath := "gojekyll.prof"
-	logger.label("Profiling...", "")
+	bannerLog.label("Profiling...", "")
 	f, err := os.Create(profilePath)
 	app.FatalIfError(err, "")
 	err = pprof.StartCPUProfile(f)
@@ -105,6 +108,6 @@ func setupProfiling() func() {
 		pprof.StopCPUProfile()
 		err = f.Close()
 		app.FatalIfError(err, "")
-		logger.Info("Wrote", profilePath)
+		bannerLog.Info("Wrote", profilePath)
 	}
 }

@@ -2,9 +2,9 @@ package server
 
 import (
 	"fmt"
-	"os"
 	"time"
 
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/site"
 )
 
@@ -49,16 +49,17 @@ func (s *Server) reload(change site.FilesEvent) {
 	defer s.m.Unlock()
 
 	// similar code to site.WatchRebuild
-	fmt.Printf("Re-reading: %v...", change)
+	log := logger.Default()
+	log.Printf("Re-reading: %v...", change)
 	start := time.Now()
 	site, err := s.Site.Reloaded(change.Paths)
 	if err != nil {
-		fmt.Println()
-		fmt.Fprintln(os.Stderr, err.Error())
+		log.Println()
+		log.Error(err.Error())
 		s.lr.Alert(fmt.Sprintf("Error reading site configuration: %s", err))
 		return
 	}
 	s.Site = site
 	s.Site.SetAbsoluteURL("")
-	fmt.Printf("done (%.2fs)\n", time.Since(start).Seconds())
+	log.Printf("done (%.2fs)\n", time.Since(start).Seconds())
 }

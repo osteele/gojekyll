@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/osteele/gojekyll/cache"
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/css"
@@ -46,7 +47,8 @@ func (p *Manager) makeSASSTempDir() error {
 	if p.sassTempDir == "" {
 		dir, err := os.MkdirTemp(os.TempDir(), "_sass")
 		if p.cfg.Verbose {
-			fmt.Println("create", dir)
+			log := logger.Default()
+			log.Info("create %s", dir)
 		}
 		if err != nil {
 			return err
@@ -57,8 +59,9 @@ func (p *Manager) makeSASSTempDir() error {
 }
 
 func (p *Manager) copySASSFiles(src, dst string, h io.Writer) error {
+	log := logger.Default()
 	if p.cfg.Verbose {
-		fmt.Printf("copy sass directory %s to %s\n", src, dst)
+		log.Info("copy sass directory %s to %s", src, dst)
 	}
 	err := filepath.Walk(src, func(from string, info os.FileInfo, err error) error {
 		if err != nil || info.IsDir() {
@@ -67,7 +70,7 @@ func (p *Manager) copySASSFiles(src, dst string, h io.Writer) error {
 		rel := utils.MustRel(src, from)
 		to := filepath.Join(dst, strings.TrimPrefix(rel, "_"))
 		if p.cfg.Verbose {
-			fmt.Printf("copy sass file %s to %s\n", src, to)
+			log.Info("copy sass file %s to %s", src, to)
 		}
 		in, err := os.Open(from)
 		if err != nil {

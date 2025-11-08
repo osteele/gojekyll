@@ -2,9 +2,9 @@ package site
 
 import (
 	"fmt"
-	"os"
 	"time"
 
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/utils"
 )
 
@@ -44,12 +44,13 @@ func (s *Site) Reloaded(paths []string) (*Site, error) {
 
 func (s *Site) processFilesEvent(fileset FilesEvent, messages chan<- interface{}) *Site {
 	// similar code to server.reload
+	log := logger.Default()
 	messages <- fmt.Sprintf("Regenerating: %s...", fileset)
 	start := time.Now()
 	r, count, err := s.rebuild(fileset.Paths)
 	if err != nil {
-		fmt.Println()
-		fmt.Fprintln(os.Stderr, err)
+		log.Println()
+		log.Error(err.Error())
 		return s
 	}
 	elapsed := time.Since(start)
