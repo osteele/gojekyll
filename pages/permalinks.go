@@ -85,23 +85,51 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 	} else {
 		// If no front matter permalink, check global config
 		if globalPermalink := p.site.Config().Permalink; globalPermalink != "" {
-			pattern = globalPermalink
+			// For non-posts (pages and collections), only apply built-in permalink styles
+			// Custom patterns should only affect posts
+			if !p.IsPost() {
+				if _, isBuiltInStyle := PermalinkStyles[globalPermalink]; !isBuiltInStyle {
+					// Not a built-in style, use default pattern for pages
+					pattern = DefaultPermalinkPattern
+				} else {
+					// Built-in style, apply it
+					pattern = globalPermalink
+				}
+			} else {
+				// Posts use the global permalink regardless of whether it's built-in or custom
+				pattern = globalPermalink
+			}
 		} else {
 			pattern = DefaultPermalinkPattern
 		}
 	}
 
-	// Apply built-in permalink styles
+	// Check if pattern is a built-in style
+	isBuiltInStyle := false
 	if pat, found := PermalinkStyles[pattern]; found {
 		pattern = pat
+		isBuiltInStyle = true
 	}
 
-	// Jekyll Compatibility: Remove date/category placeholders for non-posts
-	// Posts use the full permalink pattern, while pages and other collections
-	// ignore date and category placeholders. This distinction is required for
-	// Jekyll compatibility. See docs/PERMALINKS.md for detailed explanation.
+	// Jekyll Compatibility: Custom patterns (non-built-in styles) should only
+	// apply to posts when set globally. Pages and other collections should use
+	// the default pattern when a custom pattern is configured globally.
+	//
+	// However, custom patterns explicitly set in a page's front matter should
+	// still be honored (with date/category placeholders removed).
+	//
+	// Built-in styles (pretty, date, ordinal, none) apply to all document types,
+	// but date/category placeholders are removed for non-posts.
 	if !p.IsPost() {
-		pattern = removePostOnlyPlaceholders(pattern)
+		_, hasFrontMatterPermalink := p.fm["permalink"]
+
+		if !isBuiltInStyle && !hasFrontMatterPermalink {
+			// Custom global patterns don't apply to pages - use default pattern
+			pattern = DefaultPermalinkPattern
+		} else {
+			// Built-in styles or explicit front matter permalinks: remove date/category placeholders
+			pattern = removePostOnlyPlaceholders(pattern)
+		}
 	}
 
 	templateVariables := p.permalinkVariables()

@@ -396,6 +396,56 @@ func TestGlobalPermalinkConfiguration(t *testing.T) {
 			frontMatter:     map[string]interface{}{"title": "John Doe", "collection": "authors"},
 			expected:        "/john-doe/", // Date/categories ignored for non-post collections
 		},
+		// Issue #81: Custom global patterns should NOT apply to pages
+		{
+			name:            "custom pattern /blog/:slug/ for page (issue #81)",
+			globalPermalink: "/blog/:slug/",
+			pagePath:        "/about.html",
+			frontMatter:     map[string]interface{}{"title": "About"},
+			expected:        "/about.html", // Pages ignore custom global patterns
+		},
+		{
+			name:            "custom pattern /blog/:slug/ for post (issue #81)",
+			globalPermalink: "/blog/:slug/",
+			pagePath:        "/_posts/2006-02-03-hello-world.html",
+			frontMatter:     map[string]interface{}{"title": "Hello World", "collection": "posts"},
+			expected:        "/blog/2006-02-03-hello-world/", // Posts use custom global patterns (slug is from filename)
+		},
+		{
+			name:            "custom pattern /:year/:month/:slug/ for page (issue #81)",
+			globalPermalink: "/:year/:month/:slug/",
+			pagePath:        "/contact.html",
+			frontMatter:     map[string]interface{}{"title": "Contact"},
+			expected:        "/contact.html", // Pages ignore custom global patterns
+		},
+		{
+			name:            "custom pattern /:year/:month/:slug/ for post (issue #81)",
+			globalPermalink: "/:year/:month/:slug/",
+			pagePath:        "/_posts/2006-02-03-test-post.html",
+			frontMatter:     map[string]interface{}{"title": "Test Post", "collection": "posts"},
+			expected:        fmt.Sprintf("/%04d/%02d/2006-02-03-test-post/", localDate.Year(), localDate.Month()), // Posts use custom patterns with dates
+		},
+		{
+			name:            "custom pattern with categories for page (issue #81)",
+			globalPermalink: "/:categories/:title/",
+			pagePath:        "/services.html",
+			frontMatter:     map[string]interface{}{"title": "Services", "categories": "web design"},
+			expected:        "/services.html", // Pages ignore custom global patterns
+		},
+		{
+			name:            "custom pattern with categories for post (issue #81)",
+			globalPermalink: "/:categories/:title/",
+			pagePath:        "/_posts/2006-02-03-news.html",
+			frontMatter:     map[string]interface{}{"title": "News", "categories": "tech announcements", "collection": "posts"},
+			expected:        "/announcements/tech/news/", // Posts use custom patterns with categories
+		},
+		{
+			name:            "custom pattern with :path for page (issue #81)",
+			globalPermalink: "/custom/:path/",
+			pagePath:        "/about.html",
+			frontMatter:     map[string]interface{}{},
+			expected:        "/about.html", // Custom patterns don't apply to pages
+		},
 	}
 
 	for _, tt := range tests {

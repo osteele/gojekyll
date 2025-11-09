@@ -59,11 +59,22 @@ This makes sense because:
 | Post | `_posts/2024-03-15-hello.md` | `/2024/03/15/hello.html` | `/:year/:month/:day/:title:output_ext` |
 | Page | `about.md` | `/about.html` | `/:title:output_ext` |
 
+### Config: `permalink: /blog/:slug/` (Custom Pattern)
+
+| Document Type | Source File | Jekyll URL | Notes |
+|--------------|-------------|------------|-------|
+| Post | `_posts/2024-03-15-hello.md` | `/blog/2024-03-15-hello/` | Custom patterns apply to posts |
+| Page | `index.md` | `/index.html` | Custom patterns ignored for pages (uses default) |
+| Page | `about.md` | `/about.html` | Custom patterns ignored for pages (uses default) |
+
+**Important**: Custom permalink patterns (non-built-in styles) only apply to posts. Pages will use the default `/:path:output_ext` pattern instead. To set custom permalinks for individual pages, use the `permalink` field in the page's front matter.
+
 ## Common Pitfalls
 
 1. **Expecting dates in page URLs**: Pages don't have dates, even if you set `date` in front matter
 2. **Categories on pages**: Categories are ignored for pages, only work for posts
 3. **Front matter permalink in global config**: Built-in styles (pretty, date, etc.) only work in `_config.yml`, not in front matter
+4. **Custom permalink patterns on pages**: Custom patterns like `/blog/:slug/` only apply to posts, not pages (see issue #81)
 
 ## Testing
 
