@@ -23,7 +23,6 @@ linters:
     - unparam       # Report unused function parameters
     - gocyclo       # Check cyclomatic complexity
     - gocritic      # Comprehensive Go linter
-    - shadow        # Check for shadowed variables (replaces govet.check-shadowing)
 
   disable:
     - depguard      # Can be too restrictive for general use
