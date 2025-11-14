@@ -2,26 +2,90 @@ name: Build Status
 
 on:
   push:
-    branches: [ main, master, build-action ]
+    branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
 
 jobs:
-  test-ubuntu:
-    runs-on: ubuntu-latest
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Install Go
-      uses: actions/setup-go@v2
-
-    - name: Install SASS
-      run: "wget -qO- https://github.com/sass/dart-sass/releases/download/1.66.1/dart-sass-1.66.1-linux-x64.tar.gz | tar -xz && sudo mv dart-sass/* /usr/bin/ && rmdir dart-sass"
-
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.x'
+        cache: true
+
+    - name: Install Dart Sass
+      run: |
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          wget -qO- https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-linux-x64.tar.gz | tar -xz
+          echo "$GITHUB_WORKSPACE/dart-sass" >> $GITHUB_PATH
+        elif [ "$RUNNER_OS" = "macOS" ]; then
+          wget -qO- https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-macos-x64.tar.gz | tar -xz
+          echo "$GITHUB_WORKSPACE/dart-sass" >> $GITHUB_PATH
+        elif [ "$RUNNER_OS" = "Windows" ]; then
+          curl -LO https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-windows-x64.zip
+          unzip -q dart-sass-1.80.7-windows-x64.zip
+          echo "$GITHUB_WORKSPACE/dart-sass" >> $GITHUB_PATH
+        fi
+      shell: bash
 
     - name: Build
       run: go build main.go
 
     - name: Test
       run: go test ./...
+
+  # format-check:
+  #   name: Format Check
+  #   runs-on: ubuntu-latest
+  #
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v4
+  #
+  #   - name: Install Go
+  #     uses: actions/setup-go@v5
+  #     with:
+  #       go-version: '1.24.x'
+  #
+  #   - name: Check formatting
+  #     run: |
+  #       go fmt ./...
+  #       if [ -n "$(git status --porcelain)" ]; then
+  #         echo "Code is not formatted. Please run 'go fmt ./...'"
+  #         git diff
+  #         exit 1
+  #       fi
+  #
+  # TODO: Re-enable after formatting code in separate PR
+
+  verify-mod:
+    name: Verify go.mod
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.x'
+
+    - name: Check go.mod and go.sum
+      run: |
+        go mod tidy
+        if [ -n "$(git status --porcelain go.mod go.sum)" ]; then
+          echo "go.mod or go.sum is not up to date. Please run 'go mod tidy'"
+          git diff go.mod go.sum
+          exit 1
+        fi

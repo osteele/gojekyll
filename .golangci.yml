@@ -1,0 +1,60 @@
+run:
+  timeout: 30m
+  tests: true
+  build-tags: []
+
+linters:
+  enable:
+    # Enabled by default
+    - errcheck      # Check for unchecked errors
+    - gosimple      # Simplify code
+    - govet         # Reports suspicious constructs
+    - ineffassign   # Detect ineffectual assignments
+    - staticcheck   # Static analysis
+    - unused        # Check for unused code
+
+    # Additional recommended linters
+    - gofmt         # Check whether code was gofmt-ed
+    - goimports     # Check import statements are formatted
+    - misspell      # Find commonly misspelled English words
+    - revive        # Fast, configurable, extensible linter
+    - stylecheck    # Replacement for golint
+    - unconvert     # Remove unnecessary type conversions
+    - unparam       # Report unused function parameters
+    - gocyclo       # Check cyclomatic complexity
+    - gocritic      # Comprehensive Go linter
+
+  disable:
+    - depguard      # Can be too restrictive for general use
+
+linters-settings:
+  gocyclo:
+    # Maximum cyclomatic complexity of a function
+    min-complexity: 15
+
+  misspell:
+    locale: US
+
+  revive:
+    # Minimal config - can be expanded based on project needs
+    rules:
+      - name: exported
+        disabled: false
+      - name: package-comments
+        disabled: true  # Not all packages need comments
+
+issues:
+  # Maximum issues count per linter
+  max-issues-per-linter: 0
+
+  # Maximum count of issues with the same text
+  max-same-issues: 0
+
+  # Exclude some linters from running on tests files
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
