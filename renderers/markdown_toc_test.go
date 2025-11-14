@@ -316,3 +316,70 @@ func TestTOCLevelsParsing(t *testing.T) {
 		})
 	}
 }
+
+func TestTOCReplacesListItem(t *testing.T) {
+	// Test for issue #89: TOC should replace the preceding list item
+	tests := []struct {
+		name     string
+		markdown string
+		shouldNotContain string
+	}{
+		{
+			name: "List item with toc marker inline",
+			markdown: `# Title
+
+* this list replaced by toc
+{:toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "this list replaced by toc",
+		},
+		{
+			name: "List item with toc marker block",
+			markdown: `# Title
+
+* placeholder text
+{::toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "placeholder text",
+		},
+		{
+			name: "List item with different text",
+			markdown: `# Title
+
+* Contents
+{:toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "Contents",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			html, err := renderMarkdown([]byte(tt.markdown))
+			if err != nil {
+				t.Fatalf("Error rendering markdown: %v", err)
+			}
+
+			htmlStr := string(html)
+
+			// The TOC should have been generated
+			if !containsString(htmlStr, "<div class=\"toc\">") {
+				t.Error("Expected output to contain TOC div")
+			}
+
+			// The list item text should NOT appear in the output
+			if containsString(htmlStr, tt.shouldNotContain) {
+				t.Errorf("Output should not contain '%s', but it does.\nOutput:\n%s", tt.shouldNotContain, htmlStr)
+			}
+		})
+	}
+}
