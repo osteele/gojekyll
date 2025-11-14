@@ -2,8 +2,6 @@ module github.com/osteele/gojekyll
 
 go 1.23.0
 
-toolchain go1.24.3
-
 require (
 	github.com/alecthomas/chroma v0.10.0
 	github.com/alecthomas/kingpin/v2 v2.4.0

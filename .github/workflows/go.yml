@@ -20,21 +20,21 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
+        go-version: '1.23'
         cache: true
 
     - name: Install Dart Sass
       run: |
         if [ "$RUNNER_OS" = "Linux" ]; then
           wget -qO- https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-linux-x64.tar.gz | tar -xz
-          echo "$PWD/dart-sass" >> $GITHUB_PATH
+          echo "$GITHUB_WORKSPACE/dart-sass" >> $GITHUB_PATH
         elif [ "$RUNNER_OS" = "macOS" ]; then
           wget -qO- https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-macos-x64.tar.gz | tar -xz
-          echo "$PWD/dart-sass" >> $GITHUB_PATH
+          echo "$GITHUB_WORKSPACE/dart-sass" >> $GITHUB_PATH
         elif [ "$RUNNER_OS" = "Windows" ]; then
           curl -LO https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-windows-x64.zip
           unzip -q dart-sass-1.80.7-windows-x64.zip
-          echo "$PWD/dart-sass" >> $GITHUB_PATH
+          echo "$GITHUB_WORKSPACE/dart-sass" >> $GITHUB_PATH
         fi
       shell: bash
 
