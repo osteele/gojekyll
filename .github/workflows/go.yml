@@ -24,7 +24,19 @@ jobs:
         cache: true
 
     - name: Install Dart Sass
-      uses: sasstools/sass-cli-action@v1
+      run: |
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          wget -qO- https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-linux-x64.tar.gz | tar -xz
+          echo "$PWD/dart-sass" >> $GITHUB_PATH
+        elif [ "$RUNNER_OS" = "macOS" ]; then
+          wget -qO- https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-macos-x64.tar.gz | tar -xz
+          echo "$PWD/dart-sass" >> $GITHUB_PATH
+        elif [ "$RUNNER_OS" = "Windows" ]; then
+          curl -LO https://github.com/sass/dart-sass/releases/download/1.80.7/dart-sass-1.80.7-windows-x64.zip
+          unzip -q dart-sass-1.80.7-windows-x64.zip
+          echo "$PWD/dart-sass" >> $GITHUB_PATH
+        fi
+      shell: bash
 
     - name: Build
       run: go build main.go

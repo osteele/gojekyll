@@ -21,5 +21,6 @@ jobs:
         with:
           # Pinned to specific version for consistency
           # Update periodically to get new linters and fixes
-          version: v1.62
+          # v1.63+ is built with Go 1.24, required for this project's toolchain
+          version: v1.63
           args: --timeout=30m --issues-exit-code=1
