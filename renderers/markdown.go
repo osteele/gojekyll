@@ -46,7 +46,38 @@ var (
 	noTocPattern = regexp.MustCompile(`\{:\s*\.no_toc\s*\}`)
 )
 
+// TOCOptions configures TOC generation behavior
+type TOCOptions struct {
+	MinLevel int  // Minimum heading level to include (1-6)
+	MaxLevel int  // Maximum heading level to include (1-6)
+	UseJekyllHTML bool // Use Jekyll-compatible HTML structure
+}
+
 func renderMarkdown(md []byte) ([]byte, error) {
+	return renderMarkdownWithOptions(md, nil)
+}
+
+func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
+	// Set default options if not provided
+	if opts == nil {
+		opts = &TOCOptions{
+			MinLevel: 1,
+			MaxLevel: 6,
+			UseJekyllHTML: false,
+		}
+	}
+	// Ensure valid level ranges
+	if opts.MinLevel < 1 {
+		opts.MinLevel = 1
+	}
+	if opts.MaxLevel > 6 {
+		opts.MaxLevel = 6
+	}
+	if opts.MinLevel > opts.MaxLevel {
+		opts.MinLevel = 1
+		opts.MaxLevel = 6
+	}
+
 	params := blackfriday.HTMLRendererParameters{
 		Flags: blackfridayFlags,
 	}
@@ -63,7 +94,7 @@ func renderMarkdown(md []byte) ([]byte, error) {
 
 	// Process TOC markers if they exist
 	if tocPatternInline.Match(html) || tocPatternBlock.Match(html) {
-		html, err = processTOC(html)
+		html, err = processTOC(html, opts)
 		if err != nil {
 			return nil, utils.WrapError(err, "toc generation")
 		}
@@ -169,9 +200,9 @@ type TOCEntry struct {
 }
 
 // processTOC parses HTML content and replaces TOC markers with generated table of contents
-func processTOC(content []byte) ([]byte, error) {
+func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
 	// Generate the TOC HTML
-	toc, err := generateTOC(content)
+	toc, err := generateTOC(content, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +218,7 @@ func processTOC(content []byte) ([]byte, error) {
 }
 
 // generateTOC parses HTML content and creates a table of contents
-func generateTOC(content []byte) (string, error) {
+func generateTOC(content []byte, opts *TOCOptions) (string, error) {
 	// Parse the HTML document
 	doc, err := html.Parse(bytes.NewReader(content))
 	if err != nil {
@@ -196,8 +227,24 @@ func generateTOC(content []byte) (string, error) {
 
 	// Extract headings
 	headings := extractHeadings(doc)
+
+	// Filter headings by level if opts is provided
+	if opts != nil {
+		filtered := make([]*TOCEntry, 0, len(headings))
+		for _, h := range headings {
+			if h.Level >= opts.MinLevel && h.Level <= opts.MaxLevel {
+				filtered = append(filtered, h)
+			}
+		}
+		headings = filtered
+	}
+
 	if len(headings) == 0 {
-		return "<div class=\"toc\"><ul class=\"section-nav\"><li>No headings found</li></ul></div>", nil
+		emptyMsg := "<div class=\"toc\"><ul class=\"section-nav\"><li>No headings found</li></ul></div>"
+		if opts != nil && opts.UseJekyllHTML {
+			emptyMsg = "<ul id=\"markdown-toc\"><li>No headings found</li></ul>"
+		}
+		return emptyMsg, nil
 	}
 
 	// Create a nested TOC structure
@@ -205,9 +252,17 @@ func generateTOC(content []byte) (string, error) {
 
 	// Render the TOC as HTML
 	var buf bytes.Buffer
-	buf.WriteString("<div class=\"toc\"><ul class=\"section-nav\">")
+	if opts != nil && opts.UseJekyllHTML {
+		buf.WriteString("<ul id=\"markdown-toc\">")
+	} else {
+		buf.WriteString("<div class=\"toc\"><ul class=\"section-nav\">")
+	}
 	renderTOCEntries(&buf, tocEntries)
-	buf.WriteString("</ul></div>")
+	if opts != nil && opts.UseJekyllHTML {
+		buf.WriteString("</ul>")
+	} else {
+		buf.WriteString("</ul></div>")
+	}
 
 	return buf.String(), nil
 }
