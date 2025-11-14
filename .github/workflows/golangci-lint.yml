@@ -13,14 +13,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.23'
+          go-version: '1.24'
           # Cache disabled because golangci-lint-action has its own caching
           cache: false
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          # Pinned to specific version for consistency
-          # Update periodically to get new linters and fixes
-          # v1.63+ is built with Go 1.24, required for this project's toolchain
-          version: v1.63
+          # Use latest to automatically get versions built with newer Go
+          version: latest
           args: --timeout=30m --issues-exit-code=1
