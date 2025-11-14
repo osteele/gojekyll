@@ -1,5 +1,10 @@
 name: golangci-lint
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
 jobs:
   golangci:
     name: lint
@@ -9,12 +14,12 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: '1.23'
+          # Cache disabled because golangci-lint-action has its own caching
           cache: false
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          # Require: The version of golangci-lint to use.
-          # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
-          # When `install-mode` is `goinstall` the value can be v1.2.3, `latest`, or the hash of a commit.
-          version: latest
+          # Pinned to specific version for consistency
+          # Update periodically to get new linters and fixes
+          version: v1.62
           args: --timeout=30m --issues-exit-code=1
