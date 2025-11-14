@@ -20,7 +20,7 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
+        go-version: '1.24.x'
         cache: true
 
     - name: Install Dart Sass
@@ -43,3 +43,47 @@ jobs:
 
     - name: Test
       run: go test ./...
+
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.x'
+
+    - name: Check formatting
+      run: |
+        go fmt ./...
+        if [ -n "$(git status --porcelain)" ]; then
+          echo "Code is not formatted. Please run 'go fmt ./...'"
+          git diff
+          exit 1
+        fi
+
+  verify-mod:
+    name: Verify go.mod
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.x'
+
+    - name: Check go.mod and go.sum
+      run: |
+        go mod tidy
+        if [ -n "$(git status --porcelain go.mod go.sum)" ]; then
+          echo "go.mod or go.sum is not up to date. Please run 'go mod tidy'"
+          git diff go.mod go.sum
+          exit 1
+        fi
