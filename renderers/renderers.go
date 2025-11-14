@@ -3,6 +3,7 @@ package renderers
 import (
 	"io"
 	"path/filepath"
+	"strings"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
@@ -64,13 +65,85 @@ func (p *Manager) Render(w io.Writer, src []byte, vars liquid.Bindings, filename
 		return err
 	}
 	if p.cfg.IsMarkdown(filename) {
-		src, err = renderMarkdown(src)
+		src, err = renderMarkdownWithOptions(src, p.getTOCOptions())
 		if err != nil {
 			return err
 		}
 	}
 	_, err = w.Write(src)
 	return err
+}
+
+// getTOCOptions extracts TOC configuration from kramdown settings in _config.yml
+func (p *Manager) getTOCOptions() *TOCOptions {
+	opts := &TOCOptions{
+		MinLevel: 1,
+		MaxLevel: 6,
+		UseJekyllHTML: false,
+	}
+
+	// Check for kramdown configuration
+	if kramdown, ok := p.cfg.Map("kramdown"); ok {
+		// Parse toc_levels (e.g., "1..6" or "2..3")
+		if tocLevels, ok := kramdown["toc_levels"]; ok {
+			minLevel, maxLevel := parseTOCLevels(tocLevels)
+			if minLevel > 0 && maxLevel > 0 {
+				opts.MinLevel = minLevel
+				opts.MaxLevel = maxLevel
+			}
+		}
+	}
+
+	return opts
+}
+
+// parseTOCLevels parses Jekyll's toc_levels format (e.g., "1..6", "2..3", [1, 2, 3])
+func parseTOCLevels(value interface{}) (int, int) {
+	switch v := value.(type) {
+	case string:
+		// Parse "1..6" format
+		parts := strings.Split(v, "..")
+		if len(parts) == 2 {
+			minLevel := parseInt(parts[0], 1)
+			maxLevel := parseInt(parts[1], 6)
+			return minLevel, maxLevel
+		}
+	case []interface{}:
+		// Parse array format [1, 2, 3, 4]
+		if len(v) > 0 {
+			minLevel := 6
+			maxLevel := 1
+			for _, item := range v {
+				if level, ok := item.(int); ok {
+					if level < minLevel {
+						minLevel = level
+					}
+					if level > maxLevel {
+						maxLevel = level
+					}
+				}
+			}
+			if minLevel <= maxLevel {
+				return minLevel, maxLevel
+			}
+		}
+	}
+	return 1, 6
+}
+
+// parseInt parses a string to int with a default value
+func parseInt(s string, defaultVal int) int {
+	s = strings.TrimSpace(s)
+	val := 0
+	for _, c := range s {
+		if c >= '0' && c <= '9' {
+			val = val*10 + int(c-'0')
+		}
+	}
+	if val == 0 {
+		return defaultVal
+	}
+	return val
 }
 
 // RenderTemplate renders a Liquid template
