@@ -77,7 +77,7 @@ func (s *Server) handler(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Set("Content-Type", mimeType)
 	}
 	var w io.Writer = rw
-	if strings.HasPrefix(mimeType, "text/html;") {
+	if strings.HasPrefix(mimeType, "text/html;") && site.Config().Watch {
 		w = NewLiveReloadInjector(w)
 	}
 	err := site.WriteDocument(w, p)
