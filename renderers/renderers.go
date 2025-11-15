@@ -6,12 +6,12 @@ import (
 	"strings"
 	"sync"
 
+	sass "github.com/bep/godartsass/v2"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
 	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
-	sass "github.com/bep/godartsass/v2"
 )
 
 // Renderers applies transformations to a document.
@@ -82,8 +82,8 @@ func (p *Manager) Render(w io.Writer, src []byte, vars liquid.Bindings, filename
 // getTOCOptions extracts TOC configuration from kramdown settings in _config.yml
 func (p *Manager) getTOCOptions() *TOCOptions {
 	opts := &TOCOptions{
-		MinLevel: 1,
-		MaxLevel: 6,
+		MinLevel:      1,
+		MaxLevel:      6,
 		UseJekyllHTML: false,
 	}
 
