@@ -4,12 +4,14 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
 	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
+	sass "github.com/bep/godartsass/v2"
 )
 
 // Renderers applies transformations to a document.
@@ -22,10 +24,13 @@ type Renderers interface {
 // Manager applies a rendering transformation to a file.
 type Manager struct {
 	Options
-	cfg          config.Config
-	liquidEngine *liquid.Engine
-	sassTempDir  string
-	sassHash     string
+	cfg            config.Config
+	liquidEngine   *liquid.Engine
+	sassTempDir    string
+	sassHash       string
+	sassTranspiler *sass.Transpiler
+	sassInitOnce   sync.Once
+	sassInitErr    error
 }
 
 // Options configures a rendering manager.
@@ -168,4 +173,14 @@ func (p *Manager) makeLiquidEngine() *liquid.Engine {
 	filters.AddJekyllFilters(engine, &p.cfg)
 	tags.AddJekyllTags(engine, &p.cfg, dirs, p.RelativeFilenameToURL)
 	return engine
+}
+
+// getSassTranspiler returns the SASS transpiler, initializing it if necessary.
+// This uses lazy initialization to avoid creating the transpiler at package load time,
+// which can cause "connection is shut down" errors in CI/CD environments.
+func (p *Manager) getSassTranspiler() (*sass.Transpiler, error) {
+	p.sassInitOnce.Do(func() {
+		p.sassTranspiler, p.sassInitErr = sass.Start(sass.Options{})
+	})
+	return p.sassTranspiler, p.sassInitErr
 }
