@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/osteele/gojekyll/config"
@@ -20,7 +21,7 @@ func TestNewCollection(t *testing.T) {
 
 	c1 := New(site, "c", map[string]interface{}{"output": true})
 	require.Equal(t, true, c1.Output())
-	require.Equal(t, "_c/", c1.PathPrefix())
+	require.Equal(t, "_c/", filepath.ToSlash(c1.PathPrefix()))
 
 	c2 := New(site, "c", map[string]interface{}{})
 	require.Equal(t, false, c2.Output())

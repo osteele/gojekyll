@@ -68,8 +68,13 @@ func PostfixWalk(root string, walkFn filepath.WalkFunc) error {
 
 // IsNotEmpty returns a boolean indicating whether the error is known to report that a directory is not empty.
 func IsNotEmpty(err error) bool {
-	if err, ok := err.(*os.PathError); ok {
-		return err.Err.(syscall.Errno) == syscall.ENOTEMPTY
+	if pathErr, ok := err.(*os.PathError); ok {
+		if errno, ok := pathErr.Err.(syscall.Errno); ok {
+			// Check for platform-specific "directory not empty" errors
+			// Unix/Linux/macOS: ENOTEMPTY
+			// Windows: ERROR_DIR_NOT_EMPTY (checked via platform-specific helper)
+			return errno == syscall.ENOTEMPTY || isWindowsDirNotEmpty(errno)
+		}
 	}
 	return false
 }

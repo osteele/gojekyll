@@ -1,6 +1,7 @@
 package config
 
 import (
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -9,7 +10,7 @@ import (
 
 func TestConfig_SourceDir(t *testing.T) {
 	c := Default()
-	require.True(t, strings.HasPrefix(c.SourceDir(), "/"))
+	require.True(t, filepath.IsAbs(c.SourceDir()) || strings.HasPrefix(c.SourceDir(), "/"))
 }
 func TestDefaultConfig(t *testing.T) {
 	c := Default()
