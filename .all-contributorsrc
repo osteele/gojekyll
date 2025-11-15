@@ -62,6 +62,33 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "sirwart",
+      "name": "Brian Smith",
+      "avatar_url": "https://avatars.githubusercontent.com/u/830101?v=4",
+      "profile": "https://github.com/sirwart",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "chimbori",
+      "name": "Chimbori",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24304662?v=4",
+      "profile": "https://chimbori.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "tekknolagi",
+      "name": "Max Bernstein",
+      "avatar_url": "https://avatars.githubusercontent.com/u/401167?v=4",
+      "profile": "https://bernsteinbear.com/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7

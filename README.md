@@ -1,9 +1,7 @@
 # Gojekyll
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![go badge][go-svg]][go-url]
@@ -11,8 +9,6 @@
 [![Coveralls badge][coveralls-svg]][coveralls-url]
 [![Go Report Card badge][go-report-card-svg]][go-report-card-url]
 [![MIT License][license-svg]][license-url]
-
-This project was created by Oliver Steele ([@osteele](https://github.com/osteele)), and is currently maintained by Daniil Gentili ([@danog](https://github.com/danog)).  
 
 Gojekyll is a partially-compatible clone of the [Jekyll](https://jekyllrb.com)
 static site generator, written in the [Go](https://golang.org) programming
@@ -232,6 +228,11 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://tqdev.com/"><img src="https://avatars.githubusercontent.com/u/1288217?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Maurits van der Schee</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=mevdschee" title="Code">💻</a></td>
     <td align="center"><a href="https://daniil.it/"><img src="https://avatars.githubusercontent.com/u/7339644?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniil Gentili</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=danog" title="Code">💻</a></td>
     <td align="center"><a href="http://cameronelliott.com/"><img src="https://avatars.githubusercontent.com/u/868689?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cameron Elliott</b></sub></a><br /><a href="#ideas-cameronelliott" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/sirwart"><img src="https://avatars.githubusercontent.com/u/830101?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brian Smith</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=sirwart" title="Code">💻</a></td>
+    <td align="center"><a href="https://chimbori.com/"><img src="https://avatars.githubusercontent.com/u/24304662?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chimbori</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=chimbori" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://bernsteinbear.com/"><img src="https://avatars.githubusercontent.com/u/401167?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Max Bernstein</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Atekknolagi" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
