@@ -1,0 +1,17 @@
+---
+---
+/* Test SCSS file for issue #90 regression testing */
+body {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .header {
+    font-size: 2em;
+    font-weight: bold;
+  }
+}
