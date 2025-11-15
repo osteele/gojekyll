@@ -102,14 +102,12 @@ func (p *Manager) SassIncludePaths() []string {
 	return []string{p.sassTempDir}
 }
 
-// string filters
-var comp, compErr = sass.Start(sass.Options{})
-
 // WriteSass converts a SASS file and writes it to w.
 func (p *Manager) WriteSass(w io.Writer, b []byte) error {
 	s, err := cache.WithFile(fmt.Sprintf("sass: %s", p.sassHash), string(b), func() (s string, err error) {
-		if compErr != nil {
-			return "", compErr
+		comp, err := p.getSassTranspiler()
+		if err != nil {
+			return "", err
 		}
 		res, err := comp.Execute(sass.Args{
 			Source:       string(b),

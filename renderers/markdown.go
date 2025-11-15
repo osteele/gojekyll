@@ -41,7 +41,7 @@ var (
 	// Match {:toc} with optional whitespace
 	tocPatternInline = regexp.MustCompile(`\{:\s*toc\s*\}`)
 	// Match {::toc} with optional whitespace
-	tocPatternBlock  = regexp.MustCompile(`\{::\s*toc\s*\}`)
+	tocPatternBlock = regexp.MustCompile(`\{::\s*toc\s*\}`)
 	// Match {:.no_toc} with optional whitespace - used to exclude headings from TOC
 	noTocPattern = regexp.MustCompile(`\{:\s*\.no_toc\s*\}`)
 	// Match <ul> list containing inline TOC marker {:toc} (Jekyll behavior)
@@ -52,8 +52,8 @@ var (
 
 // TOCOptions configures TOC generation behavior
 type TOCOptions struct {
-	MinLevel int  // Minimum heading level to include (1-6)
-	MaxLevel int  // Maximum heading level to include (1-6)
+	MinLevel      int  // Minimum heading level to include (1-6)
+	MaxLevel      int  // Maximum heading level to include (1-6)
 	UseJekyllHTML bool // Use Jekyll-compatible HTML structure
 }
 
@@ -65,8 +65,8 @@ func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
 	// Set default options if not provided
 	if opts == nil {
 		opts = &TOCOptions{
-			MinLevel: 1,
-			MaxLevel: 6,
+			MinLevel:      1,
+			MaxLevel:      6,
 			UseJekyllHTML: false,
 		}
 	}
@@ -298,7 +298,7 @@ func extractHeadings(n *html.Node) []*TOCEntry {
 
 				// Extract the heading text and check for no_toc marker
 				html := renderNodeToString(n)
-				
+
 				// Skip headings with the no_toc marker
 				if noTocPattern.MatchString(html) {
 					return
@@ -446,8 +446,8 @@ loop:
 			if err == io.EOF {
 				return utils.WrapError(err,
 					"unexpected EOF while processing markdown attribute. "+
-					"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
-					"or mismatched opening/closing tags")
+						"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+						"or mismatched opening/closing tags")
 			}
 			return err
 		case html.StartTagToken:
@@ -495,13 +495,13 @@ func _renderMarkdownSpan(md []byte) ([]byte, error) {
 		Flags: blackfridayFlags,
 	}
 	renderer := blackfriday.NewHTMLRenderer(params)
-	
+
 	// Use only inline-level extensions for span mode
 	inlineExtensions := blackfriday.NoIntraEmphasis |
 		blackfriday.Autolink |
 		blackfriday.Strikethrough |
 		blackfriday.BackslashLineBreak
-	
+
 	// Process the content without creating paragraphs - we're handling inline elements
 	content := bytes.TrimSpace(md)
 	html := blackfriday.Run(
@@ -509,11 +509,11 @@ func _renderMarkdownSpan(md []byte) ([]byte, error) {
 		blackfriday.WithRenderer(renderer),
 		blackfriday.WithExtensions(inlineExtensions),
 	)
-	
+
 	// Remove any potential wrapping paragraph tags that blackfriday might add
 	html = bytes.TrimPrefix(html, []byte("<p>"))
 	html = bytes.TrimSuffix(html, []byte("</p>\n"))
-	
+
 	return html, nil
 }
 
@@ -530,8 +530,8 @@ loop:
 			if err == io.EOF {
 				return utils.WrapError(err,
 					"unexpected EOF while processing markdown=\"0\" attribute. "+
-					"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
-					"or mismatched opening/closing tags")
+						"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+						"or mismatched opening/closing tags")
 			}
 			return err
 		case html.StartTagToken:

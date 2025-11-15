@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	sass "github.com/bep/godartsass/v2"
@@ -290,12 +291,25 @@ func whereFilter(array []map[string]interface{}, key string, value interface{}) 
 	return result
 }
 
-// string filters
-var comp, compErr = sass.Start(sass.Options{})
+// SASS transpiler management for scssify filter
+// Uses lazy initialization to avoid "connection is shut down" errors in CI/CD environments
+var (
+	scssifyTranspiler     *sass.Transpiler
+	scssifyTranspilerErr  error
+	scssifyTranspilerOnce sync.Once
+)
+
+func getScssifyTranspiler() (*sass.Transpiler, error) {
+	scssifyTranspilerOnce.Do(func() {
+		scssifyTranspiler, scssifyTranspilerErr = sass.Start(sass.Options{})
+	})
+	return scssifyTranspiler, scssifyTranspilerErr
+}
 
 func scssifyFilter(s string) (string, error) {
-	if compErr != nil {
-		return "", compErr
+	comp, err := getScssifyTranspiler()
+	if err != nil {
+		return "", err
 	}
 	res, err := comp.Execute(sass.Args{
 		Source: s,
