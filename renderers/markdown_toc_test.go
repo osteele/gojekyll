@@ -127,23 +127,23 @@ func TestTOCGeneration(t *testing.T) {
 
 func TestMarkdownTOCIntegration(t *testing.T) {
 	tests := []struct {
-		name     string
-		markdown string
+		name        string
+		markdown    string
 		containsTOC bool
 	}{
 		{
-			name: "Markdown with TOC inline",
-			markdown: "# Title\n\n{:toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
+			name:        "Markdown with TOC inline",
+			markdown:    "# Title\n\n{:toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
 			containsTOC: true,
 		},
 		{
-			name: "Markdown with TOC block",
-			markdown: "# Title\n\n{::toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
+			name:        "Markdown with TOC block",
+			markdown:    "# Title\n\n{::toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
 			containsTOC: true,
 		},
 		{
-			name: "Markdown without TOC",
-			markdown: "# Title\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
+			name:        "Markdown without TOC",
+			markdown:    "# Title\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
 			containsTOC: false,
 		},
 	}
@@ -157,11 +157,11 @@ func TestMarkdownTOCIntegration(t *testing.T) {
 
 			containsTOC := tocPatternInline.Match([]byte(tt.markdown)) || tocPatternBlock.Match([]byte(tt.markdown))
 			containsTOCDiv := containsString(string(html), "<div class=\"toc\">")
-			
+
 			if containsTOC != tt.containsTOC {
 				t.Errorf("Input markdown should %s contain TOC markers", map[bool]string{true: "", false: "not"}[tt.containsTOC])
 			}
-			
+
 			if containsTOCDiv != tt.containsTOC {
 				t.Errorf("Output HTML should %s contain TOC div", map[bool]string{true: "", false: "not"}[tt.containsTOC])
 			}
@@ -264,10 +264,10 @@ func TestTOCLevelsFiltering(t *testing.T) {
 
 func TestTOCLevelsParsing(t *testing.T) {
 	tests := []struct {
-		name        string
-		input       interface{}
-		expectMin   int
-		expectMax   int
+		name      string
+		input     interface{}
+		expectMin int
+		expectMax int
 	}{
 		{
 			name:      "String range 1..6",
@@ -314,5 +314,163 @@ func TestTOCLevelsParsing(t *testing.T) {
 				t.Errorf("Expected (%d, %d), got (%d, %d)", tt.expectMin, tt.expectMax, min, max)
 			}
 		})
+	}
+}
+
+func TestTOCReplacesListItem(t *testing.T) {
+	// Test for issue #89: TOC should replace the preceding list item
+	tests := []struct {
+		name             string
+		markdown         string
+		shouldNotContain string
+		shouldContainTOC bool
+	}{
+		{
+			name: "List item with {:toc} marker (should replace)",
+			markdown: `# Title
+
+* this list replaced by toc
+{:toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "this list replaced by toc",
+			shouldContainTOC: true,
+		},
+		{
+			name: "List item with {::toc} marker (should NOT replace - Jekyll doesn't support this)",
+			markdown: `# Title
+
+* placeholder text
+{::toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "",   // We expect the text to remain
+			shouldContainTOC: true, // But TOC should still be generated from standalone marker
+		},
+		{
+			name: "Ordered list with {:toc} (should NOT replace - Jekyll doesn't support this)",
+			markdown: `# Title
+
+1. This will be replaced
+{:toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "",   // We expect the text to remain
+			shouldContainTOC: true, // But TOC should still be generated from standalone marker
+		},
+		{
+			name: "List item with different text",
+			markdown: `# Title
+
+* Contents
+{:toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "Contents",
+			shouldContainTOC: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			html, err := renderMarkdown([]byte(tt.markdown))
+			if err != nil {
+				t.Fatalf("Error rendering markdown: %v", err)
+			}
+
+			htmlStr := string(html)
+
+			// Check if TOC should be generated
+			if tt.shouldContainTOC {
+				if !containsString(htmlStr, "<div class=\"toc\">") {
+					t.Error("Expected output to contain TOC div")
+				}
+			}
+
+			// The list item text should NOT appear in the output (if specified)
+			if tt.shouldNotContain != "" && containsString(htmlStr, tt.shouldNotContain) {
+				t.Errorf("Output should not contain '%s', but it does.\nOutput:\n%s", tt.shouldNotContain, htmlStr)
+			}
+		})
+	}
+}
+
+func TestTOCMultipleMarkersInOneDocument(t *testing.T) {
+	// Test that multiple TOC markers don't interfere with each other or delete content
+	markdown := `# Test Variations
+
+## Test 1: Block syntax
+
+* Contents
+{::toc}
+
+### Section A
+### Section B
+
+---
+
+## Test 2: Different placeholder text
+
+* Table of Contents
+{:toc}
+
+### Section C
+### Section D
+
+---
+
+## Test 3: Ordered list
+
+1. This will be replaced
+{:toc}
+
+### Section E
+### Section F`
+
+	html, err := renderMarkdown([]byte(markdown))
+	if err != nil {
+		t.Fatalf("Error rendering markdown: %v", err)
+	}
+
+	htmlStr := string(html)
+
+	// All section headings should be present (none should be deleted by overly greedy regex)
+	requiredHeadings := []string{
+		"Test 1: Block syntax",
+		"Test 2: Different placeholder text",
+		"Test 3: Ordered list",
+		"Section A",
+		"Section B",
+		"Section C",
+		"Section D",
+		"Section E",
+		"Section F",
+	}
+
+	for _, heading := range requiredHeadings {
+		if !containsString(htmlStr, heading) {
+			t.Errorf("Output should contain heading '%s', but it doesn't.\nOutput:\n%s", heading, htmlStr)
+		}
+	}
+
+	// Only Test 2 should have its placeholder text removed (Jekyll only supports {:toc} in unordered lists)
+	if containsString(htmlStr, "Table of Contents") {
+		t.Error("Output should not contain 'Table of Contents' (should be replaced by TOC)")
+	}
+
+	// Test 1 and Test 3 placeholders should remain (Jekyll doesn't support these patterns)
+	if !containsString(htmlStr, "Contents") {
+		t.Error("Output should contain 'Contents' (Jekyll doesn't replace {::toc} in lists)")
+	}
+	if !containsString(htmlStr, "This will be replaced") {
+		t.Error("Output should contain 'This will be replaced' (Jekyll doesn't replace {:toc} in ordered lists)")
 	}
 }

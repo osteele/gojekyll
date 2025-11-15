@@ -44,6 +44,10 @@ var (
 	tocPatternBlock  = regexp.MustCompile(`\{::\s*toc\s*\}`)
 	// Match {:.no_toc} with optional whitespace - used to exclude headings from TOC
 	noTocPattern = regexp.MustCompile(`\{:\s*\.no_toc\s*\}`)
+	// Match <ul> list containing inline TOC marker {:toc} (Jekyll behavior)
+	// Jekyll ONLY supports {:toc} (not {::toc}) in unordered lists (not ordered lists)
+	// We use [^<]* to match only text before the marker, avoiding matching across elements
+	tocUlListPatternInline = regexp.MustCompile(`<ul>\s*<li>[^<]*\{:\s*toc\s*\}\s*</li>\s*</ul>`)
 )
 
 // TOCOptions configures TOC generation behavior
@@ -207,8 +211,13 @@ func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
 		return nil, err
 	}
 
-	// Replace TOC markers with the generated TOC
-	result := tocPatternInline.ReplaceAll(content, []byte(toc))
+	// First, replace unordered list elements containing {:toc} markers (Jekyll behavior)
+	// This handles the pattern: <ul><li>text{:toc}</li></ul>
+	// Jekyll ONLY supports this for {:toc} in <ul>, not {::toc} or <ol>
+	result := tocUlListPatternInline.ReplaceAll(content, []byte(toc))
+
+	// Then replace any remaining standalone TOC markers
+	result = tocPatternInline.ReplaceAll(result, []byte(toc))
 	result = tocPatternBlock.ReplaceAll(result, []byte(toc))
 
 	// Remove no_toc markers from the final output
