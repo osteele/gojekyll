@@ -21,8 +21,10 @@ type TagInjector struct {
 func (i TagInjector) Write(b []byte) (n int, err error) {
 	n = len(b)
 	if !bytes.Contains(b, i.insertion) && bytes.Contains(b, closeHeadTag) {
-		r := append(i.insertion, closeHeadTag...)
-		b = bytes.Replace(b, closeHeadTag, r, 1)
+		replacement := make([]byte, 0, len(i.insertion)+len(closeHeadTag))
+		replacement = append(replacement, i.insertion...)
+		replacement = append(replacement, closeHeadTag...)
+		b = bytes.Replace(b, closeHeadTag, replacement, 1)
 	}
 	if !bytes.Contains(b, i.insertion) {
 		b = append(i.insertion, b...)

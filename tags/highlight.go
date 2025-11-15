@@ -31,7 +31,7 @@ func highlightTag(rc render.Context) (string, error) {
 	// Determine lexer.
 	l := lexers.Get(args[1])
 	if l == nil {
-		l = lexers.Analyse(source)
+		l = lexers.Analyse(source) // nolint: misspell // British spelling from chroma library
 	}
 	if l == nil {
 		l = lexers.Fallback
