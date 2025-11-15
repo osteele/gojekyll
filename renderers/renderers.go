@@ -14,6 +14,16 @@ import (
 	"github.com/osteele/liquid"
 )
 
+// Global Sass transpiler singleton, shared across all Manager instances.
+// This avoids race conditions and resource leaks when Sites are reloaded during watch mode.
+// The transpiler is thread-safe and stateless (include paths are passed to Execute()),
+// so a single instance can safely serve all Managers throughout the process lifetime.
+var (
+	globalSassTranspiler     *sass.Transpiler
+	globalSassTranspilerOnce sync.Once
+	globalSassTranspilerErr  error
+)
+
 // Renderers applies transformations to a document.
 type Renderers interface {
 	ApplyLayout(string, []byte, liquid.Bindings) ([]byte, error)
@@ -24,13 +34,10 @@ type Renderers interface {
 // Manager applies a rendering transformation to a file.
 type Manager struct {
 	Options
-	cfg            config.Config
-	liquidEngine   *liquid.Engine
-	sassTempDir    string
-	sassHash       string
-	sassTranspiler *sass.Transpiler
-	sassInitOnce   sync.Once
-	sassInitErr    error
+	cfg          config.Config
+	liquidEngine *liquid.Engine
+	sassTempDir  string
+	sassHash     string
 }
 
 // Options configures a rendering manager.
@@ -175,12 +182,12 @@ func (p *Manager) makeLiquidEngine() *liquid.Engine {
 	return engine
 }
 
-// getSassTranspiler returns the SASS transpiler, initializing it if necessary.
-// This uses lazy initialization to avoid creating the transpiler at package load time,
-// which can cause "connection is shut down" errors in CI/CD environments.
+// getSassTranspiler returns the global SASS transpiler singleton, initializing it if necessary.
+// Using a global singleton avoids race conditions when Sites are reloaded during watch mode,
+// and matches the godartsass recommendation to "create one and use that for all SCSS processing."
 func (p *Manager) getSassTranspiler() (*sass.Transpiler, error) {
-	p.sassInitOnce.Do(func() {
-		p.sassTranspiler, p.sassInitErr = sass.Start(sass.Options{})
+	globalSassTranspilerOnce.Do(func() {
+		globalSassTranspiler, globalSassTranspilerErr = sass.Start(sass.Options{})
 	})
-	return p.sassTranspiler, p.sassInitErr
+	return globalSassTranspiler, globalSassTranspilerErr
 }
