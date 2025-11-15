@@ -323,9 +323,10 @@ func TestTOCReplacesListItem(t *testing.T) {
 		name     string
 		markdown string
 		shouldNotContain string
+		shouldContainTOC bool
 	}{
 		{
-			name: "List item with toc marker inline",
+			name: "List item with {:toc} marker (should replace)",
 			markdown: `# Title
 
 * this list replaced by toc
@@ -335,9 +336,10 @@ func TestTOCReplacesListItem(t *testing.T) {
 
 ## Section 2`,
 			shouldNotContain: "this list replaced by toc",
+			shouldContainTOC: true,
 		},
 		{
-			name: "List item with toc marker block",
+			name: "List item with {::toc} marker (should NOT replace - Jekyll doesn't support this)",
 			markdown: `# Title
 
 * placeholder text
@@ -346,7 +348,21 @@ func TestTOCReplacesListItem(t *testing.T) {
 ## Section 1
 
 ## Section 2`,
-			shouldNotContain: "placeholder text",
+			shouldNotContain: "",  // We expect the text to remain
+			shouldContainTOC: true, // But TOC should still be generated from standalone marker
+		},
+		{
+			name: "Ordered list with {:toc} (should NOT replace - Jekyll doesn't support this)",
+			markdown: `# Title
+
+1. This will be replaced
+{:toc}
+
+## Section 1
+
+## Section 2`,
+			shouldNotContain: "",  // We expect the text to remain
+			shouldContainTOC: true, // But TOC should still be generated from standalone marker
 		},
 		{
 			name: "List item with different text",
@@ -359,6 +375,7 @@ func TestTOCReplacesListItem(t *testing.T) {
 
 ## Section 2`,
 			shouldNotContain: "Contents",
+			shouldContainTOC: true,
 		},
 	}
 
@@ -371,15 +388,89 @@ func TestTOCReplacesListItem(t *testing.T) {
 
 			htmlStr := string(html)
 
-			// The TOC should have been generated
-			if !containsString(htmlStr, "<div class=\"toc\">") {
-				t.Error("Expected output to contain TOC div")
+			// Check if TOC should be generated
+			if tt.shouldContainTOC {
+				if !containsString(htmlStr, "<div class=\"toc\">") {
+					t.Error("Expected output to contain TOC div")
+				}
 			}
 
-			// The list item text should NOT appear in the output
-			if containsString(htmlStr, tt.shouldNotContain) {
+			// The list item text should NOT appear in the output (if specified)
+			if tt.shouldNotContain != "" && containsString(htmlStr, tt.shouldNotContain) {
 				t.Errorf("Output should not contain '%s', but it does.\nOutput:\n%s", tt.shouldNotContain, htmlStr)
 			}
 		})
+	}
+}
+
+func TestTOCMultipleMarkersInOneDocument(t *testing.T) {
+	// Test that multiple TOC markers don't interfere with each other or delete content
+	markdown := `# Test Variations
+
+## Test 1: Block syntax
+
+* Contents
+{::toc}
+
+### Section A
+### Section B
+
+---
+
+## Test 2: Different placeholder text
+
+* Table of Contents
+{:toc}
+
+### Section C
+### Section D
+
+---
+
+## Test 3: Ordered list
+
+1. This will be replaced
+{:toc}
+
+### Section E
+### Section F`
+
+	html, err := renderMarkdown([]byte(markdown))
+	if err != nil {
+		t.Fatalf("Error rendering markdown: %v", err)
+	}
+
+	htmlStr := string(html)
+
+	// All section headings should be present (none should be deleted by overly greedy regex)
+	requiredHeadings := []string{
+		"Test 1: Block syntax",
+		"Test 2: Different placeholder text",
+		"Test 3: Ordered list",
+		"Section A",
+		"Section B",
+		"Section C",
+		"Section D",
+		"Section E",
+		"Section F",
+	}
+
+	for _, heading := range requiredHeadings {
+		if !containsString(htmlStr, heading) {
+			t.Errorf("Output should contain heading '%s', but it doesn't.\nOutput:\n%s", heading, htmlStr)
+		}
+	}
+
+	// Only Test 2 should have its placeholder text removed (Jekyll only supports {:toc} in unordered lists)
+	if containsString(htmlStr, "Table of Contents") {
+		t.Error("Output should not contain 'Table of Contents' (should be replaced by TOC)")
+	}
+
+	// Test 1 and Test 3 placeholders should remain (Jekyll doesn't support these patterns)
+	if !containsString(htmlStr, "Contents") {
+		t.Error("Output should contain 'Contents' (Jekyll doesn't replace {::toc} in lists)")
+	}
+	if !containsString(htmlStr, "This will be replaced") {
+		t.Error("Output should contain 'This will be replaced' (Jekyll doesn't replace {:toc} in ordered lists)")
 	}
 }
