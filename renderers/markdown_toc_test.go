@@ -127,23 +127,23 @@ func TestTOCGeneration(t *testing.T) {
 
 func TestMarkdownTOCIntegration(t *testing.T) {
 	tests := []struct {
-		name     string
-		markdown string
+		name        string
+		markdown    string
 		containsTOC bool
 	}{
 		{
-			name: "Markdown with TOC inline",
-			markdown: "# Title\n\n{:toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
+			name:        "Markdown with TOC inline",
+			markdown:    "# Title\n\n{:toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
 			containsTOC: true,
 		},
 		{
-			name: "Markdown with TOC block",
-			markdown: "# Title\n\n{::toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
+			name:        "Markdown with TOC block",
+			markdown:    "# Title\n\n{::toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
 			containsTOC: true,
 		},
 		{
-			name: "Markdown without TOC",
-			markdown: "# Title\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
+			name:        "Markdown without TOC",
+			markdown:    "# Title\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
 			containsTOC: false,
 		},
 	}
@@ -157,11 +157,11 @@ func TestMarkdownTOCIntegration(t *testing.T) {
 
 			containsTOC := tocPatternInline.Match([]byte(tt.markdown)) || tocPatternBlock.Match([]byte(tt.markdown))
 			containsTOCDiv := containsString(string(html), "<div class=\"toc\">")
-			
+
 			if containsTOC != tt.containsTOC {
 				t.Errorf("Input markdown should %s contain TOC markers", map[bool]string{true: "", false: "not"}[tt.containsTOC])
 			}
-			
+
 			if containsTOCDiv != tt.containsTOC {
 				t.Errorf("Output HTML should %s contain TOC div", map[bool]string{true: "", false: "not"}[tt.containsTOC])
 			}
@@ -264,10 +264,10 @@ func TestTOCLevelsFiltering(t *testing.T) {
 
 func TestTOCLevelsParsing(t *testing.T) {
 	tests := []struct {
-		name        string
-		input       interface{}
-		expectMin   int
-		expectMax   int
+		name      string
+		input     interface{}
+		expectMin int
+		expectMax int
 	}{
 		{
 			name:      "String range 1..6",
@@ -320,8 +320,8 @@ func TestTOCLevelsParsing(t *testing.T) {
 func TestTOCReplacesListItem(t *testing.T) {
 	// Test for issue #89: TOC should replace the preceding list item
 	tests := []struct {
-		name     string
-		markdown string
+		name             string
+		markdown         string
 		shouldNotContain string
 		shouldContainTOC bool
 	}{
@@ -348,7 +348,7 @@ func TestTOCReplacesListItem(t *testing.T) {
 ## Section 1
 
 ## Section 2`,
-			shouldNotContain: "",  // We expect the text to remain
+			shouldNotContain: "",   // We expect the text to remain
 			shouldContainTOC: true, // But TOC should still be generated from standalone marker
 		},
 		{
@@ -361,7 +361,7 @@ func TestTOCReplacesListItem(t *testing.T) {
 ## Section 1
 
 ## Section 2`,
-			shouldNotContain: "",  // We expect the text to remain
+			shouldNotContain: "",   // We expect the text to remain
 			shouldContainTOC: true, // But TOC should still be generated from standalone marker
 		},
 		{
