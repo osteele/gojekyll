@@ -9,7 +9,7 @@ import (
 var routes = app.Command("routes", "Display site permalinks and associated files")
 var dynamicRoutes = routes.Flag("dynamic", "Only show routes to non-static files").Bool()
 
-func routesCommand(site *site.Site) error {
+func routesCommand(site *site.Site) {
 	bannerLog.label("Routes:", "")
 	var urls []string
 	for u, p := range site.Routes {
@@ -22,5 +22,4 @@ func routesCommand(site *site.Site) error {
 		filename := site.Routes[u].Source()
 		log.Printf("  %s -> %s\n", u, filename)
 	}
-	return nil
 }

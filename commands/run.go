@@ -43,7 +43,8 @@ func run(cmd string) error { // nolint: gocyclo
 	case benchmark.FullCommand():
 		return benchmarkCommand()
 	case pluginsApp.FullCommand():
-		return pluginsCommand()
+		pluginsCommand()
+		return nil
 	case versionCmd.FullCommand():
 		return versionCommand()
 	}
@@ -69,7 +70,8 @@ func run(cmd string) error { // nolint: gocyclo
 	case render.FullCommand():
 		return renderCommand(site)
 	case routes.FullCommand():
-		return routesCommand(site)
+		routesCommand(site)
+		return nil
 	case serve.FullCommand():
 		return serveCommand(site)
 	case variables.FullCommand():

@@ -20,12 +20,12 @@ linters:
     - revive        # Fast, configurable, extensible linter
     - stylecheck    # Replacement for golint
     - unconvert     # Remove unnecessary type conversions
-    - unparam       # Report unused function parameters
     - gocyclo       # Check cyclomatic complexity
     - gocritic      # Comprehensive Go linter
 
   disable:
     - depguard      # Can be too restrictive for general use
+    - unparam       # Too many false positives for functions keeping params for consistency
 
 linters-settings:
   gocyclo:
