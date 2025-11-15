@@ -51,7 +51,7 @@ func TestPage_Write(t *testing.T) {
 		require.Contains(t, err.Error(), "render error")
 		pe, ok := err.(utils.PathError)
 		require.True(t, ok)
-		require.Equal(t, "testdata/liquid_error.md", pe.Path())
+		require.Equal(t, "testdata/liquid_error.md", filepath.ToSlash(pe.Path()))
 	})
 
 	t.Run("layout: none", func(t *testing.T) {

@@ -29,7 +29,10 @@ func TestCopyFileContents(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	require.Equal(t, "content\n", string(b))
+	// Normalize line endings for cross-platform compatibility
+	content := string(b)
+	// Accept either Unix or Windows line endings
+	require.True(t, content == "content\n" || content == "content\r\n", "expected 'content\\n' or 'content\\r\\n', got %q", content)
 
 	err = CopyFileContents(f.Name(), testFile("missing.txt"), 0x644)
 	require.Error(t, err)

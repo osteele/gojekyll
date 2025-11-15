@@ -39,9 +39,11 @@ jobs:
         echo "$env:GITHUB_WORKSPACE\dart-sass" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       shell: pwsh
 
+    - name: Set timezone
+      run: tzutil /s "Eastern Standard Time"
+
     - name: Build
       run: go build main.go
 
     - name: Test
       run: go test ./...
-      continue-on-error: true  # Allow failures until Windows-specific bugs are fixed
