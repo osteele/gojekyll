@@ -1,0 +1,9 @@
+title: TOC Test Site
+description: Testing TOC behavior
+
+# Exclude files we don't need
+exclude:
+  - plugins.md
+  - _posts
+  - c1
+  - c2
