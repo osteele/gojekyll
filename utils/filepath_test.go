@@ -2,6 +2,7 @@ package utils
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -9,16 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func timeMustParse(s string) time.Time {
-	t, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		panic(err)
-	}
-	return t
-}
-
 func TestMustAbs(t *testing.T) {
-	require.True(t, strings.HasPrefix(MustAbs("."), "/"))
+	abs := MustAbs(".")
+	require.True(t, filepath.IsAbs(abs) || strings.HasPrefix(abs, "/"))
 }
 
 func TestParseFilenameDate(t *testing.T) {
@@ -26,7 +20,9 @@ func TestParseFilenameDate(t *testing.T) {
 	d, title, found := ParseFilenameDateTitle("2017-07-02-post.html")
 	require.True(t, found)
 	require.Equal(t, "Post", title)
-	require.Equal(t, timeMustParse("2017-07-02T00:00:00-04:00"), d)
+	// The date should be 2017-07-02 at midnight in the local timezone
+	expected := time.Date(2017, 7, 2, 0, 0, 0, 0, time.Local)
+	require.Equal(t, expected, d)
 
 	_, _, found = ParseFilenameDateTitle("not-post.html")
 	require.False(t, found)
