@@ -3,7 +3,6 @@ package site
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,7 +14,7 @@ func (s *Site) findTheme() error {
 	}
 	exe, err := exec.LookPath("bundle")
 	if err != nil {
-		log.Fatal("bundle is not in your PATH", err)
+		return fmt.Errorf("bundle is not in your PATH: %w", err)
 	}
 	cmd := exec.Command(exe, "show", s.cfg.Theme)
 	cmd.Dir = s.AbsDir()

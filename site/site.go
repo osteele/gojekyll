@@ -34,6 +34,7 @@ type Site struct {
 
 	drop     map[string]interface{} // cached drop value
 	dropOnce sync.Once
+	dropErr  error // error from initializeDrop, if any
 }
 
 // Document is in package pages.

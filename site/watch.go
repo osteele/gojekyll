@@ -2,7 +2,6 @@ package site
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -207,7 +206,7 @@ func (s *Site) makePollingWatcher() (<-chan string, error) {
 	}()
 	go func() {
 		if err := w.Start(time.Millisecond * 250); err != nil {
-			log.Fatal(err)
+			panic(fmt.Sprintf("file watcher failed to start: %s", err))
 		}
 	}()
 	return filenames, nil
