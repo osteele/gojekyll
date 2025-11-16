@@ -1,7 +1,6 @@
 package renderers
 
 import (
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -58,7 +57,7 @@ func TestRenderMarkdownWithHtml2(t *testing.T) {
 func mustMarkdownString(md string) string {
 	s, err := renderMarkdown([]byte(md))
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return string(s)
 }

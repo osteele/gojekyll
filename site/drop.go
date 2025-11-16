@@ -1,7 +1,7 @@
 package site
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/osteele/gojekyll/pages"
@@ -13,10 +13,11 @@ import (
 // ToLiquid returns the site variable for template evaluation.
 func (s *Site) ToLiquid() interface{} {
 	s.dropOnce.Do(func() {
-		if err := s.initializeDrop(); err != nil {
-			log.Fatalf("ToLiquid failed: %s\n", err)
-		}
+		s.dropErr = s.initializeDrop()
 	})
+	if s.dropErr != nil {
+		panic(fmt.Sprintf("site drop initialization failed: %s", s.dropErr))
+	}
 	return liquid.IterationKeyedMap(s.drop)
 }
 
