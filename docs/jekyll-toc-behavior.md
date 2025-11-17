@@ -1,134 +1,167 @@
-# Jekyll TOC Behavior Investigation
+# Jekyll TOC Behavior - Empirical Findings
 
-## Summary
+This document records the actual behavior of Jekyll's TOC generation, based on testing with real Jekyll (not documentation or assumptions).
 
-Investigation of actual Ruby Jekyll 4.4.1 behavior vs gojekyll implementation for TOC markers.
+**Test Environment:**
+- Jekyll version: 4.4.1
+- Markdown processor: Kramdown (Jekyll's default)
 
 ## Key Finding
 
 **`{::toc}` is NOT a valid kramdown syntax and is NOT processed by Jekyll at all.**
 
-## Official Kramdown Documentation
+## TOC Marker Processing
 
-### Valid TOC Syntax
+### Where `{:toc}` is Processed (Replaced with TOC)
 
-From https://kramdown.gettalong.org/converter/html.html:
-
-> Just assign the reference name 'toc' to an ordered or unordered list by using an IAL and the list will be replaced with the actual table of contents.
-
-**Syntax:**
+✅ **Unordered lists only**
 ```markdown
-* placeholder text
+* TOC
 {:toc}
 ```
+Result: Entire `<ul>` is replaced with `<ul id="markdown-toc">...</ul>` containing the table of contents.
 
-The `{:toc}` must be placed immediately after a list item (either `*` or `1.`).
+### Where `{:toc}` is NOT Processed (Remains Literal or Removed)
 
-### Block Syntax `{::}`
+❌ **Ordered lists**
+```markdown
+1. TOC
+{:toc}
+```
+Result: Renders as `<ol><li>TOC</li></ol>` - the `{:toc}` marker is completely removed by Kramdown's IAL processing, but NO TOC is generated.
 
-From https://kramdown.gettalong.org/syntax.html:
+❌ **Standalone paragraphs**
+```markdown
+{:toc}
+```
+Result: Completely removed from output (Kramdown IAL processing removes IAL-only paragraphs)
 
-The `{::}` syntax is for **kramdown extensions only**. Valid extensions are:
+✅ **Inside heading text**
+```markdown
+## How to use {:toc}
+```
+Result: Renders as `<h2>How to use {:toc}</h2>` - kept literally in heading text
+
+✅ **Inside paragraph text**
+```markdown
+Some text about {:toc} markers.
+```
+Result: Renders as `<p>Some text about {:toc} markers.</p>` - kept literally
+
+### `{::toc}` Block Syntax (Invalid)
+
+❌ **All contexts**
+```markdown
+{::toc}
+```
+Result: Remains as literal text `{::toc}` - this is NOT valid kramdown syntax.
+
+From https://kramdown.gettalong.org/syntax.html, the `{::}` syntax is for **kramdown extensions only**. Valid extensions are:
 - `{::comment}` - creates ignored comments
 - `{::nomarkdown}` - outputs body as-is without processing
 - `{::options}` - sets global processor options
 
 **`{::toc}` is NOT documented** as a valid kramdown extension.
 
-## Actual Jekyll Behavior (Tested with Jekyll 4.4.1)
+## `.no_toc` Marker Behavior
 
-Test file: `toc-variations.md`
+### Working `.no_toc` (Excludes from TOC)
 
-### Test Results
+✅ **As IAL on line after heading**
+```markdown
+## Excluded Heading
+{:.no_toc}
+```
+Result: Heading appears in document as `<h2 class="no_toc">Excluded Heading</h2>` but is **excluded from TOC**.
 
-| Marker | Context | Jekyll Output | Expected Behavior |
-|--------|---------|---------------|-------------------|
-| `{:toc}` | In `<ul>` | TOC generated, replaces `<ul>` | ✅ Correct |
-| `{:toc}` | In `<ol>` | **Marker remains as text** | ✅ Correct (not supported) |
-| `{::toc}` | Standalone | **Marker remains as `{::toc}`** | ✅ Correct (invalid syntax) |
-| `{::toc}` | In `<ul>` | **Marker remains as `{::toc}`** | ✅ Correct (invalid syntax) |
+### Non-Working `.no_toc` (Does NOT Exclude)
 
-### Jekyll HTML Output Excerpt
+❌ **Inline with heading text**
+```markdown
+## Excluded Heading {:.no_toc}
+```
+Result: Renders as `<h2>Excluded Heading {:.no_toc}</h2>` with literal `{:.no_toc}` text, and **appears in TOC** including the literal text!
 
+## TOC HTML Structure
+
+Jekyll generates this structure:
 ```html
-<!-- Test 2: {:toc} in ordered list -->
-<ol>
-  <li>This should remain</li>
-</ol>
-
-<!-- Test 3: {::toc} standalone -->
-<p>{::toc}</p>
-
-<!-- Test 4: {::toc} in list -->
-<ul>
-  <li>This should remain
-{::toc}</li>
+<ul id="markdown-toc">
+  <li><a href="#section-1" id="markdown-toc-section-1">Section 1</a>
+    <ul>
+      <li><a href="#subsection" id="markdown-toc-subsection">Subsection</a></li>
+    </ul>
+  </li>
+  <li><a href="#section-2" id="markdown-toc-section-2">Section 2</a></li>
 </ul>
 ```
 
-## gojekyll Current Behavior (INCORRECT)
+Key properties:
+- Root `<ul>` has `id="markdown-toc"`
+- Each TOC entry has:
+  - `<a href="#heading-id" id="markdown-toc-heading-id">Heading Text</a>`
+  - Nested `<ul>` for child headings (no `id` on nested lists)
+- Always uses `<ul>`, never `<ol>`, even if the marker was in an ordered list
 
-Test file: `toc-syntax-variations-test.html`
+## Key Differences from Kramdown Alone
 
-| Marker | Context | gojekyll Output | Status |
-|--------|---------|-----------------|--------|
-| `{:toc}` | In `<ul>` | TOC generated | ✅ Correct |
-| `{:toc}` | In `<ol>` | Marker remains | ✅ Correct |
-| `{::toc}` | Standalone | **TOC generated** | ❌ Should remain as text |
-| `{::toc}` | In `<ul>` | Marker remains | ✅ Correct |
+1. **TOC Generation is Jekyll Plugin Behavior**
+   - Kramdown just processes IAL markers `{:...}` as attributes
+   - Jekyll's TOC plugin specifically looks for `{:toc}` in unordered lists and replaces them
+   - This is why `{:toc}` in ordered lists gets removed (Kramdown IAL) but doesn't generate a TOC (Jekyll plugin)
 
-### Additional Issues Found
+2. **Standalone IAL Removal**
+   - Kramdown removes IAL-only paragraphs (paragraphs containing only `{:something}`)
+   - This is why standalone `{:toc}` disappears completely
 
-1. **HTML Corruption**: TOC divs appearing inside `<h2>` tags (lines 7, 13, 22, 30)
-2. **{:.no_toc} not fully working**: Heading "This heading should be excluded" appears in TOC (line 45-46)
-3. **{::toc} processed as standalone**: Should NOT be processed at all
+3. **IAL Application Rules**
+   - IAL on its own line applies to the **following** block element
+   - IAL at end of line (with space) would apply to that element (but Kramdown doesn't parse `## Heading {:.class}` as IAL - it treats it as literal text)
 
-## Conclusion
+## Emulation Challenges for Blackfriday
 
-### What Needs to be Fixed in gojekyll
+Blackfriday (our markdown processor) differs from Kramdown:
 
-1. **Remove `{::toc}` processing entirely**
-   - It's not valid kramdown syntax
-   - Jekyll doesn't process it
-   - Should remain as literal text in output
+1. **No IAL support** - Blackfriday doesn't understand `{:...}` syntax at all
+2. **IALs render as literal text** - `{:toc}` appears in output as literal text
+3. **Must process HTML output** - We must:
+   - Parse Blackfriday's HTML output
+   - Find `{:toc}` text nodes
+   - Determine context (in `<ul>`, `<ol>`, `<p>`, `<h2>`, etc.)
+   - Only replace if in unordered list
+   - Leave literal everywhere else
 
-2. **Fix HTML corruption**
-   - TOC should not appear inside heading tags
-   - This is likely a bug in the DOM replacement logic
+## Implementation Details
 
-3. **Fix {:.no_toc} handling**
-   - Currently including headings that should be excluded
-   - The marker is being removed but heading still appears in TOC
+### How We Handle `{:.no_toc}`
 
-### What the Tests Got Wrong
+1. **Sibling paragraph detection**: Check if heading has a next sibling `<p>` containing only `{:.no_toc}`
+2. **Removal**: If found, remove that paragraph from DOM (matching Kramdown's IAL processing)
+3. **Exclusion**: Mark heading for exclusion from TOC
+4. **Literal preservation**: `{:.no_toc}` inside heading text is NOT removed and does NOT exclude
 
-The test file `/Users/osteele/code/gojekyll-toc/commands/testdata/site/toc-variations.md` incorrectly states:
+This matches Jekyll/Kramdown behavior where IAL markers are only processed when on their own line after an element.
 
-> **{::toc} standalone**: Inserts TOC at that location
+## Test Coverage
 
-This is **incorrect**. Jekyll does not process `{::toc}` at all.
+Tests added to verify Jekyll-compatible behavior:
+- ✅ `{:toc}` in headings remains literal
+- ✅ `{:toc}` in paragraph text remains literal
+- ✅ `{:toc}` in ordered lists remains literal (removed by our IAL-like processing)
+- ✅ `{:toc}` in unordered lists generates TOC
+- ✅ `{:.no_toc}` as sibling paragraph excludes heading from TOC
+- ✅ `{:.no_toc}` inline in heading text remains literal and does NOT exclude
 
-### Correct Behavior Summary
+Note: We cannot test standalone `{:toc}` removal because Blackfriday renders it as `<p>{:toc}</p>`, not as an empty IAL like Kramdown does.
 
-**Only `{:toc}` in an unordered list is valid TOC syntax in Jekyll/kramdown:**
+## Unresolved Questions
 
-```markdown
-# My Page
+- [ ] What happens with `{:toc}` in other contexts (tables, blockquotes, definition lists)?
+- [ ] Does TOC respect `toc_levels` configuration?
+- [ ] What happens with multiple `{:toc}` markers in the same document?
+- [ ] Edge case: What if `{:toc}` is in an unordered list inside a blockquote?
 
-* Table of Contents
-{:toc}
-
-## Section 1
-## Section 2
-```
-
-All other uses of TOC markers should:
-- `{:toc}` in `<ol>` → remain as literal text
-- `{::toc}` anywhere → remain as literal text (invalid syntax)
-- `{:.no_toc}` after heading → exclude that heading from TOC
-
-## References
+## Official Kramdown Documentation References
 
 1. Kramdown HTML Converter: https://kramdown.gettalong.org/converter/html.html
 2. Kramdown Syntax: https://kramdown.gettalong.org/syntax.html
-3. Jekyll 4.4.1 tested with: `commands/testdata/site/toc-variations.md`

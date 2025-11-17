@@ -86,16 +86,6 @@ kramdown:
   toc_levels: 1..6
 ```
 
-## Known Issues (as of test creation)
-
-See [TOC-TEST-RESULTS.md](../../../TOC-TEST-RESULTS.md) for detailed findings.
-
-Key issues:
-1. Recursive TOC generation causing corrupted output
-2. H1 headings included when they shouldn't be
-3. {:.no_toc} markers not working
-4. Incorrect behavior for {:toc} in ordered lists
-
 ## References
 
 - [Kramdown TOC Documentation](https://kramdown.gettalong.org/converter/html.html#toc)

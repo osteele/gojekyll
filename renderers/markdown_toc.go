@@ -48,20 +48,28 @@ const (
 // MarkerContext describes a TOC marker's location and context in the DOM
 type MarkerContext struct {
 	Type       MarkerType
-	Node       *html.Node  // The text node containing the marker
-	ParentList *html.Node  // The <ul> or <ol> node if in a list
-	MarkerText string      // The actual marker text: "{:toc}" or "{::toc}"
-	IsBlock    bool        // true for {::toc}, false for {:toc}
+	Node       *html.Node // The text node containing the marker
+	ParentList *html.Node // The <ul> or <ol> node if in a list
+	MarkerText string     // The actual marker text: "{:toc}" or "{::toc}"
+	IsBlock    bool       // true for {::toc}, false for {:toc}
 }
 
 // processTOC parses HTML content and replaces TOC markers with generated table of contents
 // Uses DOM-based approach for robust handling of all marker contexts
 // Note: Only {:toc} is valid kramdown syntax; {::toc} is not processed
 func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
+	// Set default options if not provided
+	if opts == nil {
+		opts = &TOCOptions{
+			MinLevel:      2,
+			MaxLevel:      6,
+			UseJekyllHTML: true, // Use Jekyll-compatible HTML structure by default
+		}
+	}
+
 	// Quick check: if no TOC markers exist, skip processing
 	if !tocPatternInline.Match(content) {
-		// Still need to remove {:.no_toc} markers even if no TOC
-		return noTocPattern.ReplaceAll(content, []byte("")), nil
+		return content, nil
 	}
 
 	// Parse the HTML into a DOM tree
@@ -75,8 +83,7 @@ func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
 
 	// If no markers found (e.g., all in code blocks), return original content
 	if len(markers) == 0 {
-		// Remove {:.no_toc} markers and return
-		return noTocPattern.ReplaceAll(content, []byte("")), nil
+		return content, nil
 	}
 
 	// Generate the TOC HTML
@@ -104,10 +111,67 @@ func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
 	// Extract the body content (html.Render wraps in <html><head></head><body>...</body></html>)
 	result := extractBodyContent(buf.Bytes())
 
-	// Remove {:.no_toc} markers from the final output
-	result = noTocPattern.ReplaceAll(result, []byte(""))
+	// Note: We don't remove {:.no_toc} markers from the final output
+	// They remain as literal text when inside headings/paragraphs
+	// Only {:.no_toc} in sibling paragraphs (IAL markers) are removed during TOC generation
 
 	return result, nil
+}
+
+// removeTOCMarkers removes {:toc} markers from HTML without processing them
+// This matches Jekyll's behavior of removing standalone markers
+func removeTOCMarkers(content []byte) []byte {
+	// Parse the HTML into a DOM tree
+	doc, err := html.Parse(bytes.NewReader(content))
+	if err != nil {
+		return content // Return original content if parsing fails
+	}
+
+	// Find all TOC markers
+	markers := findTOCMarkersInDOM(doc)
+
+	// Remove each marker from the DOM (except those in code blocks)
+	for i := len(markers) - 1; i >= 0; i-- {
+		marker := markers[i]
+		// Don't remove markers in code blocks
+		if marker.Type == MarkerInCodeBlock {
+			continue
+		}
+		if marker.Node != nil && marker.Node.Parent != nil {
+			// Remove the text node containing the marker
+			marker.Node.Parent.RemoveChild(marker.Node)
+		}
+	}
+
+	// Render the modified DOM back to HTML
+	var buf bytes.Buffer
+	if err := html.Render(&buf, doc); err != nil {
+		return content // Return original if rendering fails
+	}
+
+	// Extract body content
+	return extractBodyContent(buf.Bytes())
+}
+
+// shouldProcessTOC checks if any TOC markers are in valid contexts (i.e., in unordered lists)
+// Jekyll only processes {:toc} when it appears in an unordered list, not standalone
+func shouldProcessTOC(content []byte) bool {
+	// Parse the HTML into a DOM tree
+	doc, err := html.Parse(bytes.NewReader(content))
+	if err != nil {
+		return false
+	}
+
+	// Find all TOC markers and check if any are in valid contexts
+	markers := findTOCMarkersInDOM(doc)
+	for _, marker := range markers {
+		// Only process if marker is in an unordered list
+		if marker.Type == MarkerInUnorderedList {
+			return true
+		}
+	}
+
+	return false
 }
 
 // generateTOC parses HTML content and creates a table of contents
@@ -180,44 +244,17 @@ func extractHeadings(n *html.Node) []*TOCEntry {
 					}
 				}
 
-				// Extract the heading text and check for no_toc marker
-				htmlStr := renderNodeToString(n)
-
-				// Check for {:.no_toc} marker in the heading's text content
-				// The marker could be:
-				// 1. In the heading text itself (before blackfriday strips it)
-				// 2. In a following paragraph/text node (Jekyll behavior)
-				if noTocPattern.MatchString(htmlStr) {
+				// Check for {:.no_toc} marker in sibling paragraph
+				// Kramdown places IAL markers on the line after headings, which
+				// Blackfriday renders as a sibling <p> element
+				// Note: {:.no_toc} INSIDE heading text is literal and does NOT exclude
+				if hasNoTocSibling(n) {
 					return
 				}
 
-				// Also check the next sibling element for a no_toc marker
-				// Jekyll allows the marker on the line after the heading
-				// Skip over whitespace text nodes to find the next actual element
-				nextElem := n.NextSibling
-				for nextElem != nil {
-					if nextElem.Type == html.ElementNode {
-						// Found the next element, check if it contains {:.no_toc}
-						nextHTML := renderNodeToString(nextElem)
-						if noTocPattern.MatchString(nextHTML) {
-							return
-						}
-						break
-					} else if nextElem.Type == html.TextNode {
-						// Skip whitespace-only text nodes
-						text := strings.TrimSpace(nextElem.Data)
-						if text != "" {
-							// Found non-whitespace text, stop searching
-							break
-						}
-					}
-					nextElem = nextElem.NextSibling
-				}
-
-				// Extract the heading text (removing any remaining markers)
+				// Extract the heading text
+				// Note: We keep literal {:.no_toc} text if it's inside the heading
 				text := extractTextContent(n)
-				// Remove any {:.no_toc} markers from the text
-				text = noTocPattern.ReplaceAllString(text, "")
 				text = strings.TrimSpace(text)
 
 				// Create a TOC entry
@@ -409,15 +446,10 @@ func classifyMarkerContext(textNode *html.Node, text string) *MarkerContext {
 	}
 
 	// Default: standalone marker (not in any list)
-	// Jekyll supports standalone {:toc} markers when they appear as IAL on their own line,
-	// but Blackfriday doesn't preserve this distinction - it renders {:toc} as plain text
-	// in all contexts. We can't reliably distinguish between:
-	// - {:toc} in heading text like "## Test with {:toc}" (should be literal)
-	// - {:toc} as a standalone IAL marker (should be processed in Jekyll)
-	// Therefore, we DON'T process standalone markers to avoid false positives.
-	// This matches Jekyll's most common pattern (:{toc} in unordered lists).
+	// Process standalone {:toc} markers - this handles the common case where
+	// {:toc} appears in a paragraph on its own line
 	return &MarkerContext{
-		Type:       MarkerInCodeBlock, // Use CodeBlock type to mean "don't process"
+		Type:       MarkerStandalone,
 		Node:       textNode,
 		ParentList: nil,
 		MarkerText: text,
@@ -475,22 +507,17 @@ func isEmptyOrContainsNode(elem *html.Node, target *html.Node) bool {
 // replaceTOCMarkerInDOM replaces a TOC marker in the DOM with the generated TOC HTML
 func replaceTOCMarkerInDOM(ctx *MarkerContext, tocHTML string) error {
 	switch ctx.Type {
-	case MarkerInCodeBlock:
-		// Don't replace markers in code blocks - they should be displayed literally
+	case MarkerInCodeBlock, MarkerStandalone, MarkerInOrderedList:
+		// Don't replace these markers - they should be displayed literally
+		// - MarkerInCodeBlock: markers in code blocks remain literal
+		// - MarkerStandalone: Jekyll doesn't process {:toc} outside of lists
+		// - MarkerInOrderedList: Jekyll doesn't support {:toc} in <ol>
 		return nil
 
 	case MarkerInUnorderedList:
 		// Replace the entire <ul> parent with the TOC
-		// This is the primary Jekyll-compatible TOC replacement pattern
+		// This is the ONLY Jekyll-compatible TOC replacement pattern
 		return replaceUnorderedListWithTOC(ctx, tocHTML)
-
-	case MarkerInOrderedList, MarkerStandalone:
-		// Replace just the marker text with the TOC
-		// This handles:
-		// - {:toc} and {::toc} outside of any list (MarkerStandalone)
-		// - {:toc} in <ol> (MarkerInOrderedList)
-		// - {::toc} in any list (classified as MarkerInOrderedList for simplicity)
-		return replaceStandaloneMarkerWithTOC(ctx, tocHTML)
 
 	default:
 		return fmt.Errorf("unknown marker type: %d", ctx.Type)

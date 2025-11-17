@@ -39,7 +39,7 @@ func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
 		opts = &TOCOptions{
 			MinLevel:      2,
 			MaxLevel:      6,
-			UseJekyllHTML: false,
+			UseJekyllHTML: true, // Use Jekyll-compatible HTML structure by default
 		}
 	}
 	// Ensure valid level ranges
@@ -70,7 +70,8 @@ func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
 
 	// Process TOC markers if they exist
 	// Note: Only {:toc} is valid kramdown syntax; {::toc} is not processed
-	if tocPatternInline.Match(html) {
+	// Jekyll only processes {:toc} in unordered lists, leaving literals elsewhere
+	if tocPatternInline.Match(html) && shouldProcessTOC(html) {
 		html, err = processTOC(html, opts)
 		if err != nil {
 			return nil, utils.WrapError(err, "toc generation")

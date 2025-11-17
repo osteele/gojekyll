@@ -113,3 +113,43 @@ func extractTextContent(n *html.Node) string {
 	extract(n)
 	return strings.TrimSpace(text)
 }
+
+// hasNoTocSibling checks if a heading has a sibling paragraph containing {:.no_toc}
+// Kramdown syntax allows IAL markers on the line after a heading, which Blackfriday
+// renders as a sibling <p> element
+// If found, the sibling paragraph is removed from the DOM (matching Kramdown behavior)
+func hasNoTocSibling(heading *html.Node) bool {
+	// Walk forward through siblings, skipping whitespace text nodes
+	for sibling := heading.NextSibling; sibling != nil; sibling = sibling.NextSibling {
+		// Skip whitespace-only text nodes
+		if sibling.Type == html.TextNode {
+			if strings.TrimSpace(sibling.Data) == "" {
+				continue
+			}
+			// Non-whitespace text means no more siblings to check
+			break
+		}
+
+		// Check if this is a <p> element
+		if sibling.Type == html.ElementNode && sibling.Data == "p" {
+			// Check if the paragraph contains {:.no_toc}
+			pText := extractTextContent(sibling)
+			if strings.TrimSpace(pText) == "{:.no_toc}" {
+				// Remove the IAL marker paragraph (matching Kramdown behavior)
+				if sibling.Parent != nil {
+					sibling.Parent.RemoveChild(sibling)
+				}
+				return true
+			}
+			// Found a non-marker paragraph, stop checking
+			break
+		}
+
+		// Found a non-paragraph element, stop checking
+		if sibling.Type == html.ElementNode {
+			break
+		}
+	}
+
+	return false
+}
