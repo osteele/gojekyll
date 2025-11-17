@@ -160,8 +160,8 @@ func TestMarkdownTOCIntegration(t *testing.T) {
 				t.Fatalf("Error rendering markdown: %v", err)
 			}
 
-			// Check if output contains TOC div
-			containsTOCDiv := containsString(string(html), "<div class=\"toc\">")
+			// Check if output contains TOC (Jekyll uses <ul id="markdown-toc">)
+			containsTOCDiv := containsString(string(html), "<ul id=\"markdown-toc\">")
 
 			if containsTOCDiv != tt.containsTOC {
 				t.Errorf("Output HTML should %s contain TOC div", map[bool]string{true: "", false: "not"}[tt.containsTOC])
@@ -389,9 +389,9 @@ func TestTOCReplacesListItem(t *testing.T) {
 
 			htmlStr := string(html)
 
-			// Check if TOC should be generated
+			// Check if TOC should be generated (Jekyll uses <ul id="markdown-toc">)
 			if tt.shouldContainTOC {
-				if !containsString(htmlStr, "<div class=\"toc\">") {
+				if !containsString(htmlStr, "<ul id=\"markdown-toc\">") {
 					t.Error("Expected output to contain TOC div")
 				}
 			}
@@ -498,14 +498,14 @@ func TestTOCInCodeBlocks(t *testing.T) {
 		{
 			name: "Real TOC marker outside code",
 			markdown: "# Heading\n\n{:toc}\n\n## Section 1",
-			shouldContainTOCDiv: true,
-			shouldContainLiteralMarker: false,
+			shouldContainTOCDiv: false, // Standalone {:toc} is not processed by Jekyll
+			shouldContainLiteralMarker: false, // The marker is removed but not replaced
 		},
 		{
 			name: "Both code and real TOC marker",
 			markdown: "# Heading\n\nExample: `{:toc}`\n\n{:toc}\n\n## Section 1",
-			shouldContainTOCDiv: true,
-			shouldContainLiteralMarker: true,
+			shouldContainTOCDiv: false, // Standalone {:toc} is not processed by Jekyll
+			shouldContainLiteralMarker: true, // Code block marker remains
 		},
 	}
 
@@ -583,17 +583,17 @@ func TestTOCWithUnusualHierarchy(t *testing.T) {
 	}{
 		{
 			name: "Starting with H3 (skipping H1, H2)",
-			markdown: "{:toc}\n\n### Section 1\n\n#### Subsection",
+			markdown: "* TOC\n{:toc}\n\n### Section 1\n\n#### Subsection",
 			shouldWork: true,
 		},
 		{
 			name: "Multiple H1 headings",
-			markdown: "# First\n\n{:toc}\n\n# Second\n\n## Under Second",
+			markdown: "# First\n\n* TOC\n{:toc}\n\n# Second\n\n## Under Second",
 			shouldWork: true,
 		},
 		{
 			name: "Gaps in heading levels",
-			markdown: "# H1\n\n{:toc}\n\n### H3\n\n###### H6",
+			markdown: "# H1\n\n* TOC\n{:toc}\n\n### H3\n\n###### H6",
 			shouldWork: true,
 		},
 	}
@@ -606,8 +606,9 @@ func TestTOCWithUnusualHierarchy(t *testing.T) {
 			}
 
 			// Just verify it doesn't crash and produces TOC
-			if !containsString(string(html), "<div class=\"toc\">") {
-				t.Error("Should contain TOC div")
+			// Use Jekyll's HTML structure (<ul id="markdown-toc">)
+			if !containsString(string(html), "<ul id=\"markdown-toc\">") {
+				t.Error("Should contain TOC ul")
 			}
 		})
 	}
@@ -621,17 +622,17 @@ func TestTOCEmptyOrMinimalDocuments(t *testing.T) {
 	}{
 		{
 			name: "TOC with no headings",
-			markdown: "{:toc}\n\nJust some text",
+			markdown: "* TOC\n{:toc}\n\nJust some text",
 			expectedMessage: "No headings found",
 		},
 		{
 			name: "Empty document with TOC",
-			markdown: "{:toc}",
+			markdown: "* TOC\n{:toc}",
 			expectedMessage: "No headings found",
 		},
 		{
 			name: "Single heading",
-			markdown: "# Only One\n\n{:toc}",
+			markdown: "# Only One\n\n* TOC\n{:toc}",
 			expectedMessage: "", // Should work, not show error
 		},
 	}
@@ -707,6 +708,7 @@ func TestTOCConfigurationEdgeCases(t *testing.T) {
 func TestTOCDuplicateHeadings(t *testing.T) {
 	markdown := `# Title
 
+* TOC
 {:toc}
 
 ## Section
@@ -723,7 +725,7 @@ func TestTOCDuplicateHeadings(t *testing.T) {
 
 	// Both "Section" headings should appear
 	// Count occurrences - should be at least 2 in the TOC
-	if !containsString(htmlStr, "<div class=\"toc\">") {
+	if !containsString(htmlStr, "<ul id=\"markdown-toc\">") {
 		t.Error("Should contain TOC")
 	}
 }
@@ -736,12 +738,12 @@ func TestTOCNoTocPlacement(t *testing.T) {
 	}{
 		{
 			name: "no_toc after heading",
-			markdown: "# Title\n\n{:toc}\n\n## Excluded\n{:.no_toc}\n\n## Included",
+			markdown: "# Title\n\n* TOC\n{:toc}\n\n## Excluded\n{:.no_toc}\n\n## Included",
 			shouldExclude: "Excluded",
 		},
 		{
 			name: "no_toc with whitespace",
-			markdown: "# Title\n\n{:toc}\n\n## Excluded\n{: .no_toc }\n\n## Included",
+			markdown: "# Title\n\n* TOC\n{:toc}\n\n## Excluded\n{: .no_toc }\n\n## Included",
 			shouldExclude: "Excluded",
 		},
 	}
@@ -758,7 +760,7 @@ func TestTOCNoTocPlacement(t *testing.T) {
 			// The excluded heading should not appear in TOC
 			// But should still appear as a heading in the document
 			// This is tricky to test - need to check TOC specifically
-			if !containsString(htmlStr, "<div class=\"toc\">") {
+			if !containsString(htmlStr, "<ul id=\"markdown-toc\">") {
 				t.Error("Should contain TOC")
 			}
 		})

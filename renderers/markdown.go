@@ -64,7 +64,7 @@ func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
 		opts = &TOCOptions{
 			MinLevel:      2,
 			MaxLevel:      6,
-			UseJekyllHTML: false,
+			UseJekyllHTML: true, // Use Jekyll-compatible HTML structure by default
 		}
 	}
 	// Ensure valid level ranges
@@ -95,10 +95,17 @@ func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
 
 	// Process TOC markers if they exist
 	// Note: Only {:toc} is valid kramdown syntax; {::toc} is not processed
+	// Jekyll only processes {:toc} in unordered lists, not standalone
 	if tocPatternInline.Match(html) {
-		html, err = processTOC(html, opts)
-		if err != nil {
-			return nil, utils.WrapError(err, "toc generation")
+		// Check if any TOC markers are in valid contexts (i.e., in lists)
+		if shouldProcessTOC(html) {
+			html, err = processTOC(html, opts)
+			if err != nil {
+				return nil, utils.WrapError(err, "toc generation")
+			}
+		} else {
+			// Remove TOC markers even if not processed (Jekyll behavior)
+			html = removeTOCMarkers(html)
 		}
 	}
 	return html, nil
@@ -191,6 +198,62 @@ func stripMarkdownAttr(tag []byte) []byte {
 	tag = markdownAttrRE.ReplaceAll(tag, []byte(" "))
 	tag = bytes.Replace(tag, []byte(" >"), []byte(">"), 1)
 	return tag
+}
+
+// removeTOCMarkers removes {:toc} markers from HTML without processing them
+// This matches Jekyll's behavior of removing standalone markers
+func removeTOCMarkers(content []byte) []byte {
+	// Parse the HTML into a DOM tree
+	doc, err := html.Parse(bytes.NewReader(content))
+	if err != nil {
+		return content // Return original content if parsing fails
+	}
+
+	// Find all TOC markers
+	markers := findTOCMarkersInDOM(doc)
+
+	// Remove each marker from the DOM (except those in code blocks)
+	for i := len(markers) - 1; i >= 0; i-- {
+		marker := markers[i]
+		// Don't remove markers in code blocks
+		if marker.Type == MarkerInCodeBlock {
+			continue
+		}
+		if marker.Node != nil && marker.Node.Parent != nil {
+			// Remove the text node containing the marker
+			marker.Node.Parent.RemoveChild(marker.Node)
+		}
+	}
+
+	// Render the modified DOM back to HTML
+	var buf bytes.Buffer
+	if err := html.Render(&buf, doc); err != nil {
+		return content // Return original if rendering fails
+	}
+
+	// Extract body content
+	return extractBodyContent(buf.Bytes())
+}
+
+// shouldProcessTOC checks if any TOC markers are in valid contexts (i.e., in unordered lists)
+// Jekyll only processes {:toc} when it appears in an unordered list, not standalone
+func shouldProcessTOC(content []byte) bool {
+	// Parse the HTML into a DOM tree
+	doc, err := html.Parse(bytes.NewReader(content))
+	if err != nil {
+		return false
+	}
+
+	// Find all TOC markers and check if any are in valid contexts
+	markers := findTOCMarkersInDOM(doc)
+	for _, marker := range markers {
+		// Only process if marker is in an unordered list
+		if marker.Type == MarkerInUnorderedList {
+			return true
+		}
+	}
+
+	return false
 }
 
 // TOCEntry represents a heading in the table of contents
@@ -320,15 +383,10 @@ func classifyMarkerContext(textNode *html.Node, text string) *MarkerContext {
 	}
 
 	// Default: standalone marker (not in any list)
-	// Jekyll supports standalone {:toc} markers when they appear as IAL on their own line,
-	// but Blackfriday doesn't preserve this distinction - it renders {:toc} as plain text
-	// in all contexts. We can't reliably distinguish between:
-	// - {:toc} in heading text like "## Test with {:toc}" (should be literal)
-	// - {:toc} as a standalone IAL marker (should be processed in Jekyll)
-	// Therefore, we DON'T process standalone markers to avoid false positives.
-	// This matches Jekyll's most common pattern (:{toc} in unordered lists).
+	// Process standalone {:toc} markers - this handles the common case where
+	// {:toc} appears in a paragraph on its own line
 	return &MarkerContext{
-		Type:       MarkerInCodeBlock, // Use CodeBlock type to mean "don't process"
+		Type:       MarkerStandalone,
 		Node:       textNode,
 		ParentList: nil,
 		MarkerText: text,
@@ -727,34 +785,9 @@ func extractHeadings(n *html.Node) []*TOCEntry {
 				htmlStr := renderNodeToString(n)
 
 				// Check for {:.no_toc} marker in the heading's text content
-				// The marker could be:
-				// 1. In the heading text itself (before blackfriday strips it)
-				// 2. In a following paragraph/text node (Jekyll behavior)
+				// The marker should be inside the heading element itself
 				if noTocPattern.MatchString(htmlStr) {
 					return
-				}
-
-				// Also check the next sibling element for a no_toc marker
-				// Jekyll allows the marker on the line after the heading
-				// Skip over whitespace text nodes to find the next actual element
-				nextElem := n.NextSibling
-				for nextElem != nil {
-					if nextElem.Type == html.ElementNode {
-						// Found the next element, check if it contains {:.no_toc}
-						nextHTML := renderNodeToString(nextElem)
-						if noTocPattern.MatchString(nextHTML) {
-							return
-						}
-						break
-					} else if nextElem.Type == html.TextNode {
-						// Skip whitespace-only text nodes
-						text := strings.TrimSpace(nextElem.Data)
-						if text != "" {
-							// Found non-whitespace text, stop searching
-							break
-						}
-					}
-					nextElem = nextElem.NextSibling
 				}
 
 				// Extract the heading text (removing any remaining markers)
