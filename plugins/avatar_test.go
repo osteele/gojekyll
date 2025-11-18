@@ -21,6 +21,9 @@ func (s siteFake) HasLayout(string) bool                         { return true }
 func (s siteFake) Pages() []Page                                 { return nil }
 func (s siteFake) Posts() []Page                                 { return nil }
 func (s siteFake) TemplateEngine() *liquid.Engine                { return s.e }
+func (s siteFake) ToLiquid() interface{} {
+	return liquid.IterationKeyedMap(s.c.Variables())
+}
 
 func TestAvatarTag(t *testing.T) {
 	engine := liquid.NewEngine()
