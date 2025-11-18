@@ -16,6 +16,7 @@ import (
 	sass "github.com/bep/godartsass/v2"
 	blackfriday "github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/internal/sasserrors"
 	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
@@ -302,6 +303,7 @@ var (
 func getScssifyTranspiler() (*sass.Transpiler, error) {
 	scssifyTranspilerOnce.Do(func() {
 		scssifyTranspiler, scssifyTranspilerErr = sass.Start(sass.Options{})
+		scssifyTranspilerErr = sasserrors.Enhance(scssifyTranspilerErr)
 	})
 	return scssifyTranspiler, scssifyTranspilerErr
 }

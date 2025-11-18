@@ -9,6 +9,7 @@ import (
 	sass "github.com/bep/godartsass/v2"
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
+	"github.com/osteele/gojekyll/internal/sasserrors"
 	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
@@ -188,6 +189,7 @@ func (p *Manager) makeLiquidEngine() *liquid.Engine {
 func (p *Manager) getSassTranspiler() (*sass.Transpiler, error) {
 	globalSassTranspilerOnce.Do(func() {
 		globalSassTranspiler, globalSassTranspilerErr = sass.Start(sass.Options{})
+		globalSassTranspilerErr = sasserrors.Enhance(globalSassTranspilerErr)
 	})
 	return globalSassTranspiler, globalSassTranspilerErr
 }
