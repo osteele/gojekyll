@@ -98,6 +98,20 @@ func (c *Config) FromDirectory(dir string) error {
 	return nil
 }
 
+// FromFile updates the config from a specific configuration file.
+func (c *Config) FromFile(path string) error {
+	bytes, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	if err = Unmarshal(bytes, c); err != nil {
+		return utils.WrapPathError(err, path)
+	}
+	c.ConfigFile = path
+	// Note: Source directory is set by FromDirectory, not by the config file location
+	return nil
+}
+
 type configCompat struct {
 	Gems []string
 }
