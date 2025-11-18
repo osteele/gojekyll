@@ -33,6 +33,7 @@ func (m *mockSite) HasLayout(name string) bool {
 	}
 	return m.layouts[name]
 }
+func (m *mockSite) FilenameURLPath(string) (string, bool) { return "", false }
 
 // mockPage implements the Page interface for testing
 type mockPage struct {
