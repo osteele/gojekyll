@@ -100,6 +100,7 @@ func init() {
 	register("jemoji", jemojiPlugin{})
 	register("jekyll-mentions", jekyllMentionsPlugin{})
 	register("jekyll-optional-front-matter", jekyllOptionalFrontMatterPlugin{})
+	register("kramdown-math", mathPlugin{})
 
 	// Gojekyll behaves as though the following plugins are always loaded.
 	// Define them here so we don't see warnings that they aren't defined.
