@@ -13,7 +13,9 @@ import (
 // ToLiquid returns the site variable for template evaluation.
 func (s *Site) ToLiquid() interface{} {
 	s.dropOnce.Do(func() {
-		s.dropErr = s.initializeDrop()
+		if err := s.initializeDrop(); err != nil {
+			s.dropErr = err
+		}
 	})
 	if s.dropErr != nil {
 		panic(fmt.Sprintf("site drop initialization failed: %s", s.dropErr))
