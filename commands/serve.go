@@ -15,7 +15,6 @@ var (
 func serveCommand(site *site.Site) error {
 	server := server.Server{Site: site}
 	return server.Run(*open, func(label, value string) {
-		//nolint:govet
-		bannerLog.label(label, value)
+		bannerLog.label(label, "%s", value)
 	})
 }

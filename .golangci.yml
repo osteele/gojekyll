@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   timeout: 30m
   tests: true
@@ -7,18 +9,13 @@ linters:
   enable:
     # Enabled by default
     - errcheck      # Check for unchecked errors
-    - gosimple      # Simplify code
     - govet         # Reports suspicious constructs
     - ineffassign   # Detect ineffectual assignments
     - staticcheck   # Static analysis
     - unused        # Check for unused code
 
     # Additional recommended linters
-    - gofmt         # Check whether code was gofmt-ed
-    - goimports     # Check import statements are formatted
     - misspell      # Find commonly misspelled English words
-    - revive        # Fast, configurable, extensible linter
-    - stylecheck    # Replacement for golint
     - unconvert     # Remove unnecessary type conversions
     - gocyclo       # Check cyclomatic complexity
     - gocritic      # Comprehensive Go linter
@@ -27,21 +24,38 @@ linters:
     - depguard      # Can be too restrictive for general use
     - unparam       # Too many false positives for functions keeping params for consistency
 
-linters-settings:
-  gocyclo:
-    # Maximum cyclomatic complexity of a function
-    min-complexity: 15
-
-  misspell:
-    locale: US
-
-  revive:
-    # Minimal config - can be expanded based on project needs
+  exclusions:
     rules:
-      - name: exported
-        disabled: false
-      - name: package-comments
-        disabled: true  # Not all packages need comments
+      # Common false positives - fmt print functions and deferred cleanup don't need error checking
+      - text: "Error return value of .((os\\.RemoveAll|fmt\\.(Fprint|Fprintf|Fprintln)|.*\\.Close|.*\\.Write|.*\\.Flush)). is not checked"
+        linters: [errcheck]
+
+      # Exclude some linters from running on tests files
+      - path: _test\.go
+        linters:
+          - gocyclo
+          - errcheck
+          - dupl
+          - gosec
+
+  settings:
+    gocyclo:
+      min-complexity: 15
+
+    misspell:
+      locale: US
+
+    revive:
+      rules:
+        - name: exported
+          disabled: false
+        - name: package-comments
+          disabled: true
+
+formatters:
+  enable:
+    - gofmt         # Check whether code was gofmt-ed
+    - goimports     # Check import statements are formatted
 
 issues:
   # Maximum issues count per linter
@@ -49,12 +63,3 @@ issues:
 
   # Maximum count of issues with the same text
   max-same-issues: 0
-
-  # Exclude some linters from running on tests files
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
-        - errcheck
-        - dupl
-        - gosec

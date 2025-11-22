@@ -26,7 +26,7 @@ func buildCommand(site *site.Site) error {
 		elapsed := time.Since(commandStartTime)
 		bannerLog.label("", "wrote %d files in %.2fs.", count, elapsed.Seconds())
 	case watch:
-		log.Error(err.Error())
+		log.Error("%s", err.Error())
 	default:
 		return err
 	}

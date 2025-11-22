@@ -50,7 +50,7 @@ func (s *Site) processFilesEvent(fileset FilesEvent, messages chan<- interface{}
 	r, count, err := s.rebuild(fileset.Paths)
 	if err != nil {
 		log.Println()
-		log.Error(err.Error())
+		log.Error("%s", err.Error())
 		return s
 	}
 	elapsed := time.Since(start)

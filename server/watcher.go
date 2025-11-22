@@ -57,7 +57,7 @@ func (s *Server) reload(change site.FilesEvent) {
 	site, err := s.Site.Reloaded(change.Paths)
 	if err != nil {
 		log.Println()
-		log.Error(err.Error())
+		log.Error("%s", err.Error())
 		s.lr.Alert(fmt.Sprintf("Error reading site configuration: %s", err))
 		return
 	}

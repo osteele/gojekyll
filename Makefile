@@ -42,7 +42,7 @@ install:
 	go install ${LDFLAGS} ${PACKAGE}
 
 lint:
-	golangci-lint run
+	go tool golangci-lint run
 
 test:
 	go test ./...

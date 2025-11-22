@@ -2,7 +2,6 @@ package filters
 
 import (
 	"fmt"
-	"math/rand"
 	"strings"
 	"testing"
 	"time"
@@ -22,7 +21,6 @@ var filterTests = []struct{ in, expected string }{
 
 	// arrays
 	{`{{ array | array_to_sentence_string }}`, "first, second, and third"},
-	{`{{ array | sample }}`, "third"},
 
 	{`{{ site.members | group_by: "graduation_year" | map: "name" | sort | join }}`, "2013 2014 2015"},
 	{`{{ site.members | group_by_exp: "item", "item.graduation_year" | size }}`, "4"},
@@ -107,13 +105,25 @@ var filterTestBindings = liquid.Bindings{
 }
 
 func TestFilters(t *testing.T) {
-	//nolint:staticcheck // Ignore this for now
-	rand.Seed(1)
 	for i, test := range filterTests {
 		t.Run(fmt.Sprintf("%02d", i+1), func(t *testing.T) {
 			requireTemplateRender(t, test.in, filterTestBindings, test.expected)
 		})
 	}
+}
+
+func TestSampleFilter(t *testing.T) {
+	engine := liquid.NewEngine()
+	cfg := config.Default()
+	AddJekyllFilters(engine, &cfg)
+
+	// Test that sample returns one of the array elements
+	data, err := engine.ParseAndRender([]byte(`{{ array | sample }}`), filterTestBindings)
+	require.NoError(t, err)
+	result := strings.TrimSpace(string(data))
+
+	validResults := []string{"first", "second", "third"}
+	require.Contains(t, validResults, result, "sample should return one of the array elements")
 }
 
 // func TestXMLEscapeFilter(t *testing.T) {

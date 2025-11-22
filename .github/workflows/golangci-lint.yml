@@ -22,10 +22,9 @@ jobs:
           # Cache disabled because golangci-lint-action has its own caching
           cache: false
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
-          # Use latest to automatically get versions built with newer Go
-          version: latest
+          version: v2.6.2
           # On PRs, only check new issues introduced by the PR
           only-new-issues: ${{ github.event_name == 'pull_request' }}
           args: --timeout=30m

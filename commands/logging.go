@@ -23,6 +23,5 @@ func (l *bannerLogger) label(label string, msg string, a ...interface{}) {
 }
 
 func (l *bannerLogger) path(label string, filename string) {
-	//nolint:govet
-	l.label(label, utils.MustAbs(filename))
+	l.label(label, "%s", utils.MustAbs(filename))
 }

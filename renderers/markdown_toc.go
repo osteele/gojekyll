@@ -453,11 +453,12 @@ func isEmptyOrContainsNode(elem *html.Node, target *html.Node) bool {
 		if c == target {
 			return true
 		}
-		if c.Type == html.ElementNode {
+		switch c.Type {
+		case html.ElementNode:
 			if isEmptyOrContainsNode(c, target) {
 				return true
 			}
-		} else if c.Type == html.TextNode {
+		case html.TextNode:
 			if strings.TrimSpace(c.Data) != "" && c != target {
 				return false
 			}
