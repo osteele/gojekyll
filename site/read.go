@@ -16,8 +16,16 @@ import (
 // FromDirectory reads the configuration file, if it exists.
 func FromDirectory(dir string, flags config.Flags) (*Site, error) {
 	s := New(flags)
-	if err := s.cfg.FromDirectory(dir); err != nil {
-		return nil, utils.WrapError(err, "reading site")
+	if flags.ConfigFile != "" {
+		if err := s.cfg.FromFile(flags.ConfigFile); err != nil {
+			return nil, utils.WrapError(err, "reading site")
+		}
+		// Set source directory explicitly when using custom config
+		s.cfg.Source = dir
+	} else {
+		if err := s.cfg.FromDirectory(dir); err != nil {
+			return nil, utils.WrapError(err, "reading site")
+		}
 	}
 	s.cfg.ApplyFlags(s.flags)
 	return s, nil
