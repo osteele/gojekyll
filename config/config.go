@@ -32,6 +32,7 @@ type Config struct {
 	Drafts      bool `yaml:"show_drafts"`
 	Future      bool
 	Unpublished bool
+	LSI         bool // Use Latent Semantic Indexing for related posts
 
 	// Plugins
 	Plugins []string

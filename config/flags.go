@@ -12,6 +12,7 @@ type Flags struct {
 	Destination, Host, BaseURL  *string
 	Drafts, Future, Unpublished *bool
 	Incremental, Verbose        *bool
+	LSI                         *bool
 	Port                        *int
 
 	// these aren't in the config file, so make them actual values
@@ -67,6 +68,8 @@ func toLiquidKey(fieldName string) string {
 		return "incremental"
 	case "Destination":
 		return "destination"
+	case "LSI":
+		return "lsi"
 	default:
 		return ""
 	}

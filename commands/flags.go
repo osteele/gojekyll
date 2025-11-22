@@ -19,6 +19,7 @@ var (
 	_           = app.Flag("drafts", "Render posts in the _drafts folder").Short('D').Action(boolVar("drafts", &options.Drafts)).Bool()
 	_           = app.Flag("future", "Publishes posts with a future date").Action(boolVar("future", &options.Future)).Bool()
 	_           = app.Flag("unpublished", "Render posts that were marked as unpublished").Action(boolVar("unpublished", &options.Unpublished)).Bool()
+	_           = app.Flag("lsi", "Use LSI for improved related posts").Action(boolVar("lsi", &options.LSI)).Bool()
 	_           = app.Flag("baseurl", "Serve the website from the given base URL").Action(stringVar("baseurl", &options.BaseURL)).String()
 	versionFlag = app.Flag("version", "Print the name and version").Short('v').Bool()
 )

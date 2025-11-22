@@ -32,6 +32,10 @@ type Site struct {
 	renderer   *renderers.Manager
 	renderOnce sync.Once
 
+	lsiDocs  []Document       // LSI document cache when LSI is enabled
+	lsiOnce  sync.Once        // ensures LSI is calculated once
+	lsiCache map[Page][]Page  // cached related posts per page
+
 	drop     map[string]interface{} // cached drop value
 	dropOnce sync.Once
 	dropErr  error // error from initializeDrop, if any
