@@ -165,9 +165,8 @@ func convertMathDelimitersWithContext(text, fullText string, allowDisplay bool) 
 		// 1. Content contains newlines (multiline expressions are always display)
 		// 2. The match is the only content in the full paragraph text (standalone)
 		// 3. allowDisplay is true (we're in a paragraph context)
-		isDisplay := allowDisplay && (
-			strings.Contains(content, "\n") ||
-				isStandaloneInText(fullText, match))
+		isDisplay := allowDisplay && (strings.Contains(content, "\n") ||
+			isStandaloneInText(fullText, match))
 
 		if isDisplay {
 			// Display math: \[...\]
@@ -195,9 +194,8 @@ func convertMathDelimiters(text string, allowDisplay bool) string {
 		// 1. Content contains newlines (multiline expressions are always display)
 		// 2. The match is the only content in the text (standalone in paragraph)
 		// 3. allowDisplay is true (we're in a paragraph context)
-		isDisplay := allowDisplay && (
-			strings.Contains(content, "\n") ||
-				isStandaloneInText(text, match))
+		isDisplay := allowDisplay && (strings.Contains(content, "\n") ||
+			isStandaloneInText(text, match))
 
 		if isDisplay {
 			// Display math: \[...\]
