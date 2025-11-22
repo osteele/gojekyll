@@ -18,6 +18,25 @@ var markdownAttrRE = regexp.MustCompile(`\s*markdown\s*=[^\s>]*\s*`)
 // count the div depth.
 var notATagRE = regexp.MustCompile(`@|(https?|ftp):`)
 
+// voidElements is the set of HTML5 void elements that don't have closing tags
+// See: https://html.spec.whatwg.org/multipage/syntax.html#void-elements
+var voidElements = map[string]bool{
+	"area":   true,
+	"base":   true,
+	"br":     true,
+	"col":    true,
+	"embed":  true,
+	"hr":     true,
+	"img":    true,
+	"input":  true,
+	"link":   true,
+	"meta":   true,
+	"param":  true,
+	"source": true,
+	"track":  true,
+	"wbr":    true,
+}
+
 // renderInnerMarkdown searches HTML for markdown attributes, and processes them if found
 func renderInnerMarkdown(b []byte) ([]byte, error) {
 	z := html.NewTokenizer(bytes.NewReader(b))
@@ -93,6 +112,13 @@ func stripMarkdownAttr(tag []byte) []byte {
 	return tag
 }
 
+// isVoidElement checks if a tokenizer is currently on a void element (e.g., <br>, <hr>, <img>)
+// Void elements don't have closing tags in HTML5
+func isVoidElement(z *html.Tokenizer) bool {
+	tagName, _ := z.TagName()
+	return voidElements[string(tagName)]
+}
+
 // processInnerMarkdown is called once a markdown attribute is detected.
 // Collects the HTML tokens into a string, applies markdown to them,
 // and writes the result
@@ -113,7 +139,9 @@ loop:
 			}
 			return err
 		case html.StartTagToken:
-			if !notATagRE.Match(z.Raw()) {
+			// Only increment depth for non-void elements
+			// Void elements like <br>, <hr>, <img> don't have closing tags
+			if !notATagRE.Match(z.Raw()) && !isVoidElement(z) {
 				depth++
 			}
 		case html.EndTagToken:
@@ -198,7 +226,9 @@ loop:
 			}
 			return err
 		case html.StartTagToken:
-			if !notATagRE.Match(z.Raw()) {
+			// Only increment depth for non-void elements
+			// Void elements like <br>, <hr>, <img> don't have closing tags
+			if !notATagRE.Match(z.Raw()) && !isVoidElement(z) {
 				depth++
 			}
 		case html.EndTagToken:

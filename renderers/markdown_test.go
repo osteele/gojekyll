@@ -54,6 +54,43 @@ func TestRenderMarkdownWithHtml2(t *testing.T) {
 	require.Contains(t, urlResult, "http://example.com")
 }
 
+func TestRenderMarkdownWithVoidElements(t *testing.T) {
+	// Test issue #66: non-self-closing br tags should not cause EOF error
+	// Test with <br> tags (non-self-closing)
+	result := mustMarkdownString("<div markdown=\"1\">\n<br>\n<br>\n</div>\n")
+	require.Contains(t, result, "<br>")
+
+	// Test with self-closing <br/> tags (should also work)
+	result = mustMarkdownString("<div markdown=\"1\">\n<br/>\n<br/>\n</div>\n")
+	require.Contains(t, result, "<br")
+
+	// Test with text and br tags mixed
+	result = mustMarkdownString("<div markdown=\"1\">\nSome text\n<br>\nMore text\n<br>\nEnd\n</div>\n")
+	require.Contains(t, result, "Some text")
+	require.Contains(t, result, "More text")
+	require.Contains(t, result, "<br>")
+
+	// Test with other void elements
+	result = mustMarkdownString("<div markdown=\"1\">\n<hr>\nText\n</div>\n")
+	require.Contains(t, result, "<hr>")
+	require.Contains(t, result, "Text")
+
+	result = mustMarkdownString("<div markdown=\"1\">\n<img src=\"test.png\" alt=\"test\">\nCaption\n</div>\n")
+	require.Contains(t, result, "<img")
+	require.Contains(t, result, "Caption")
+
+	// Test with markdown="0" and br tags
+	result = mustMarkdownString("<div markdown=\"0\">\n<br>\n*not italic*\n<br>\n</div>\n")
+	require.Contains(t, result, "<br>")
+	require.Contains(t, result, "*not italic*")
+	require.NotContains(t, result, "<em>")
+
+	// Test with markdown="span" and br tags
+	result = mustMarkdownString("<div markdown=\"span\">\n*italic*<br>text\n</div>\n")
+	require.Contains(t, result, "<em>italic</em>")
+	require.Contains(t, result, "<br>")
+}
+
 func mustMarkdownString(md string) string {
 	s, err := renderMarkdown([]byte(md))
 	if err != nil {
