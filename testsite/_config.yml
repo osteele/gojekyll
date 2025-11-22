@@ -1,0 +1,15 @@
+title: Test Site
+author: Test Author
+description: Test site for CI reproduction
+baseurl: ""
+url: "https://example.com"
+
+markdown: kramdown
+highlighter: rouge
+
+sass:
+  style: compressed
+
+collections:
+  posts:
+    output: true
