@@ -60,7 +60,7 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ "The _config.yml file" | slugify: 'default' }}`, "the-config-yml-file"},
 	{`{{ "The _config.yml file" | slugify: 'pretty' }}`, "the-_config.yml-file"},
 
-	// {`{{ "nav\n\tmargin: 0" | sassify }}`, "nav {\n  margin: 0; }"},
+	{`{{ sass_code | sassify }}`, "nav {\n  margin: 0;\n}"},
 	{`{{ "nav {margin: 0}" | scssify }}`, "nav {\n  margin: 0;\n}"},
 
 	{`{{ "smartify single 'quotes' here" | smartify }}`, "smartify single ‘quotes’ here"},
@@ -86,6 +86,7 @@ var filterTestBindings = liquid.Bindings{
 	"page": map[string]interface{}{
 		"tags": []string{"Seattle", "Tacoma"},
 	},
+	"sass_code": "nav\n  margin: 0",
 	"site": map[string]interface{}{
 		"members": []map[string]interface{}{
 			{"name": "Alonzo", "graduation_year": 2013},
