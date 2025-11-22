@@ -216,10 +216,10 @@ Content here.`,
 // TestNoTocSiblingParagraph tests that {:.no_toc} in sibling paragraphs excludes headings
 func TestNoTocSiblingParagraph(t *testing.T) {
 	tests := []struct {
-		name             string
-		markdown         string
-		shouldExclude    string // heading text that should be excluded from TOC
-		shouldStayInDoc  string // heading text that should remain in document
+		name            string
+		markdown        string
+		shouldExclude   string // heading text that should be excluded from TOC
+		shouldStayInDoc string // heading text that should remain in document
 	}{
 		{
 			name: "no_toc in sibling paragraph - EXCLUDED from TOC",

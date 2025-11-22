@@ -16,8 +16,6 @@ var (
 	// Match {:toc} with optional whitespace - ONLY valid TOC syntax in kramdown
 	// Note: {::toc} is NOT valid kramdown syntax and should not be processed
 	tocPatternInline = regexp.MustCompile(`\{:\s*toc\s*\}`)
-	// Match {:.no_toc} with optional whitespace - used to exclude headings from TOC
-	noTocPattern = regexp.MustCompile(`\{:\s*\.no_toc\s*\}`)
 )
 
 // TOCOptions configures TOC generation behavior
@@ -116,41 +114,6 @@ func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
 	// Only {:.no_toc} in sibling paragraphs (IAL markers) are removed during TOC generation
 
 	return result, nil
-}
-
-// removeTOCMarkers removes {:toc} markers from HTML without processing them
-// This matches Jekyll's behavior of removing standalone markers
-func removeTOCMarkers(content []byte) []byte {
-	// Parse the HTML into a DOM tree
-	doc, err := html.Parse(bytes.NewReader(content))
-	if err != nil {
-		return content // Return original content if parsing fails
-	}
-
-	// Find all TOC markers
-	markers := findTOCMarkersInDOM(doc)
-
-	// Remove each marker from the DOM (except those in code blocks)
-	for i := len(markers) - 1; i >= 0; i-- {
-		marker := markers[i]
-		// Don't remove markers in code blocks
-		if marker.Type == MarkerInCodeBlock {
-			continue
-		}
-		if marker.Node != nil && marker.Node.Parent != nil {
-			// Remove the text node containing the marker
-			marker.Node.Parent.RemoveChild(marker.Node)
-		}
-	}
-
-	// Render the modified DOM back to HTML
-	var buf bytes.Buffer
-	if err := html.Render(&buf, doc); err != nil {
-		return content // Return original if rendering fails
-	}
-
-	// Extract body content
-	return extractBodyContent(buf.Bytes())
 }
 
 // shouldProcessTOC checks if any TOC markers are in valid contexts (i.e., in unordered lists)
@@ -549,88 +512,6 @@ func replaceUnorderedListWithTOC(ctx *MarkerContext, tocHTML string) error {
 
 	// Remove the original <ul>
 	parent.RemoveChild(ctx.ParentList)
-
-	return nil
-}
-
-// replaceStandaloneMarkerWithTOC replaces just the marker text with the TOC HTML
-func replaceStandaloneMarkerWithTOC(ctx *MarkerContext, tocHTML string) error {
-	if ctx.Node == nil {
-		return fmt.Errorf("no node for standalone marker")
-	}
-
-	// Parse the TOC HTML into nodes
-	tocNodes, err := parseHTMLFragment(tocHTML)
-	if err != nil {
-		return err
-	}
-
-	// Remove the marker text from the text node
-	// If the marker is the only content, replace the entire text node
-	// Otherwise, split the text node and insert TOC in between
-	markerText := ctx.MarkerText
-	nodeText := ctx.Node.Data
-
-	if strings.TrimSpace(nodeText) == strings.TrimSpace(markerText) {
-		// Marker is the only content - replace the text node with TOC nodes
-		parent := ctx.Node.Parent
-		if parent == nil {
-			return fmt.Errorf("text node has no parent")
-		}
-
-		// Insert TOC nodes before the text node
-		for _, tocNode := range tocNodes {
-			parent.InsertBefore(tocNode, ctx.Node)
-		}
-
-		// Remove the original text node
-		parent.RemoveChild(ctx.Node)
-	} else {
-		// Marker is part of larger text - split the text node
-		parent := ctx.Node.Parent
-		if parent == nil {
-			return fmt.Errorf("text node has no parent")
-		}
-
-		// Find the marker position
-		markerIdx := strings.Index(nodeText, markerText)
-		if markerIdx == -1 {
-			// Try with regex to handle whitespace variations
-			// Only {:toc} is processed (no {::toc} support)
-			indices := tocPatternInline.FindStringIndex(nodeText)
-			if indices != nil {
-				markerIdx = indices[0]
-			}
-		}
-
-		if markerIdx >= 0 {
-			// Split text: before | marker | after
-			before := nodeText[:markerIdx]
-			after := nodeText[markerIdx+len(markerText):]
-
-			// Replace current node with before text
-			if before != "" {
-				ctx.Node.Data = before
-			} else {
-				parent.RemoveChild(ctx.Node)
-			}
-
-			// Insert TOC nodes
-			insertPoint := ctx.Node.NextSibling
-			for _, tocNode := range tocNodes {
-				parent.InsertBefore(tocNode, insertPoint)
-			}
-
-			// Insert after text if any
-			if after != "" {
-				afterNode := &html.Node{
-					Type: html.TextNode,
-					Data: after,
-				}
-				parent.InsertBefore(afterNode, insertPoint)
-			}
-		}
-	}
 
 	return nil
 }

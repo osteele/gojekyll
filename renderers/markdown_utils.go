@@ -85,16 +85,6 @@ func extractBodyContent(htmlBytes []byte) []byte {
 	return htmlBytes[bodyStart:bodyEnd]
 }
 
-// renderNodeToString converts an HTML node to a string
-func renderNodeToString(n *html.Node) string {
-	var buf bytes.Buffer
-	err := html.Render(&buf, n)
-	if err != nil {
-		return ""
-	}
-	return buf.String()
-}
-
 // extractTextContent gets the plain text from an HTML node
 func extractTextContent(n *html.Node) string {
 	var text string
