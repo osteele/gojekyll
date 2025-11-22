@@ -27,8 +27,7 @@ make setup
 go get -t ./...
 ```
 
-[Install golangci-lint](https://golangci-lint.run/usage/install/#local-installation).
-On macOS: `brew install golangci-lint`
+golangci-lint is managed as a project dependency via Go's tool system. It will be automatically available after running `go get -t ./...`
 
 Install the Dart Sass executable (required for tests):
 - On macOS: `brew install sass/sass/sass`
