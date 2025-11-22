@@ -88,8 +88,9 @@ func (p *Manager) Render(w io.Writer, src []byte, vars liquid.Bindings, filename
 
 // getTOCOptions extracts TOC configuration from kramdown settings in _config.yml
 func (p *Manager) getTOCOptions() *TOCOptions {
+	// Jekyll's default toc_levels is "2..6" to exclude H1 headings
 	opts := &TOCOptions{
-		MinLevel:      1,
+		MinLevel:      2,
 		MaxLevel:      6,
 		UseJekyllHTML: false,
 	}

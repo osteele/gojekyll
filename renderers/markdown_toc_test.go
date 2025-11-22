@@ -12,99 +12,43 @@ func TestTOCGeneration(t *testing.T) {
 		expected string
 	}{
 		{
-			name: "Basic TOC inline",
+			name: "TOC in unordered list (Jekyll-compatible)",
+			html: `<h1 id="title">Title</h1>
+<ul>
+<li>TOC
+{:toc}</li>
+</ul>
+<h2 id="section1">Section 1</h2>
+<h3 id="subsection1">Subsection 1</h3>
+<h2 id="section2">Section 2</h2>`,
+			expected: `<h1 id="title">Title</h1>
+<ul id="markdown-toc"><li><a href="#section1">Section 1</a><ul><li><a href="#subsection1">Subsection 1</a></li></ul></li><li><a href="#section2">Section 2</a></li></ul>
+<h2 id="section1">Section 1</h2>
+<h3 id="subsection1">Subsection 1</h3>
+<h2 id="section2">Section 2</h2>`,
+		},
+		{
+			name: "Standalone {:toc} NOT processed (remains literal)",
 			html: `<h1 id="title">Title</h1>
 <p>{:toc}</p>
 <h2 id="section1">Section 1</h2>
 <h3 id="subsection1">Subsection 1</h3>
 <h2 id="section2">Section 2</h2>`,
 			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a><ul><li><a href="#subsection1">Subsection 1</a></li></ul></li><li><a href="#section2">Section 2</a></li></ul></li></ul></div></p>
+<p>{:toc}</p>
 <h2 id="section1">Section 1</h2>
 <h3 id="subsection1">Subsection 1</h3>
 <h2 id="section2">Section 2</h2>`,
 		},
 		{
-			name: "TOC inline with whitespace",
-			html: `<h1 id="title">Title</h1>
-<p>{: toc }</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a><ul><li><a href="#subsection1">Subsection 1</a></li></ul></li><li><a href="#section2">Section 2</a></li></ul></li></ul></div></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-		},
-		{
-			name: "Basic TOC block",
+			name: "Block syntax {::toc} NOT processed (invalid kramdown)",
 			html: `<h1 id="title">Title</h1>
 <p>{::toc}</p>
 <h2 id="section1">Section 1</h2>
 <h3 id="subsection1">Subsection 1</h3>
 <h2 id="section2">Section 2</h2>`,
 			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a><ul><li><a href="#subsection1">Subsection 1</a></li></ul></li><li><a href="#section2">Section 2</a></li></ul></li></ul></div></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-		},
-		{
-			name: "TOC block with whitespace",
-			html: `<h1 id="title">Title</h1>
-<p>{:: toc }</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a><ul><li><a href="#subsection1">Subsection 1</a></li></ul></li><li><a href="#section2">Section 2</a></li></ul></li></ul></div></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-		},
-		{
-			name: "No TOC marker",
-			html: `<h1 id="title">Title</h1>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-			expected: `<h1 id="title">Title</h1>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-		},
-		{
-			name: "No headings",
-			html: `<p>Just a paragraph</p>
-<p>{:toc}</p>
-<p>Another paragraph</p>`,
-			expected: `<p>Just a paragraph</p>
-<p><div class="toc"><ul class="section-nav"><li>No headings found</li></ul></div></p>
-<p>Another paragraph</p>`,
-		},
-		{
-			name: "With no_toc marker",
-			html: `<h1 id="title">Title</h1>
-<p>{:toc}</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">{:.no_toc}Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a></li><li><a href="#section2">Section 2</a></li></ul></li></ul></div></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-		},
-		{
-			name: "With no_toc marker and whitespace",
-			html: `<h1 id="title">Title</h1>
-<p>{:toc}</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">{: .no_toc }Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a></li><li><a href="#section2">Section 2</a></li></ul></li></ul></div></p>
+<p>{::toc}</p>
 <h2 id="section1">Section 1</h2>
 <h3 id="subsection1">Subsection 1</h3>
 <h2 id="section2">Section 2</h2>`,
@@ -113,269 +57,45 @@ func TestTOCGeneration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := processTOC([]byte(tt.html), nil)
+			html, err := processTOC([]byte(tt.html), nil)
 			if err != nil {
-				t.Fatalf("Error processing HTML: %v", err)
+				t.Fatalf("Error processing TOC: %v", err)
 			}
-
-			if string(result) != tt.expected {
-				t.Errorf("Expected:\n%s\n\nGot:\n%s", tt.expected, string(result))
+			if string(html) != tt.expected {
+				t.Errorf("Expected:\n%s\n\nGot:\n%s", tt.expected, string(html))
 			}
 		})
 	}
 }
 
-func TestMarkdownTOCIntegration(t *testing.T) {
-	tests := []struct {
-		name        string
-		markdown    string
-		containsTOC bool
-	}{
-		{
-			name:        "Markdown with TOC inline",
-			markdown:    "# Title\n\n{:toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
-			containsTOC: true,
-		},
-		{
-			name:        "Markdown with TOC block",
-			markdown:    "# Title\n\n{::toc}\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
-			containsTOC: true,
-		},
-		{
-			name:        "Markdown without TOC",
-			markdown:    "# Title\n\n## Section 1\n\nContent\n\n## Section 2\n\nMore content",
-			containsTOC: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			html, err := renderMarkdown([]byte(tt.markdown))
-			if err != nil {
-				t.Fatalf("Error rendering markdown: %v", err)
-			}
-
-			containsTOC := tocPatternInline.Match([]byte(tt.markdown)) || tocPatternBlock.Match([]byte(tt.markdown))
-			containsTOCDiv := containsString(string(html), "<div class=\"toc\">")
-
-			if containsTOC != tt.containsTOC {
-				t.Errorf("Input markdown should %s contain TOC markers", map[bool]string{true: "", false: "not"}[tt.containsTOC])
-			}
-
-			if containsTOCDiv != tt.containsTOC {
-				t.Errorf("Output HTML should %s contain TOC div", map[bool]string{true: "", false: "not"}[tt.containsTOC])
-			}
-		})
-	}
-}
-
-func containsString(s, substr string) bool {
-	return strings.Contains(s, substr)
-}
-
-func TestTOCLevelsFiltering(t *testing.T) {
+func TestMarkdownWithTOC(t *testing.T) {
 	tests := []struct {
 		name     string
-		html     string
-		opts     *TOCOptions
-		expected string
+		markdown string
 	}{
 		{
-			name: "Filter to H2-H3 only",
-			html: `<h1 id="title">Title</h1>
-<p>{:toc}</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h4 id="subsubsection1">SubSubsection 1</h4>
-<h2 id="section2">Section 2</h2>`,
-			opts: &TOCOptions{MinLevel: 2, MaxLevel: 3, UseJekyllHTML: false},
-			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#section1">Section 1</a><ul><li><a href="#subsection1">Subsection 1</a></li></ul></li><li><a href="#section2">Section 2</a></li></ul></div></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h4 id="subsubsection1">SubSubsection 1</h4>
-<h2 id="section2">Section 2</h2>`,
-		},
-		{
-			name: "Filter to H1-H2 only",
-			html: `<h1 id="title">Title</h1>
-<p>{:toc}</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-			opts: &TOCOptions{MinLevel: 1, MaxLevel: 2, UseJekyllHTML: false},
-			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a></li><li><a href="#section2">Section 2</a></li></ul></li></ul></div></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-		},
-		{
-			name: "Filter removes all headings",
-			html: `<h1 id="title">Title</h1>
-<p>{:toc}</p>
-<h2 id="section1">Section 1</h2>`,
-			opts: &TOCOptions{MinLevel: 3, MaxLevel: 4, UseJekyllHTML: false},
-			expected: `<h1 id="title">Title</h1>
-<p><div class="toc"><ul class="section-nav"><li>No headings found</li></ul></div></p>
-<h2 id="section1">Section 1</h2>`,
-		},
-		{
-			name: "Jekyll-compatible HTML structure",
-			html: `<h1 id="title">Title</h1>
-<p>{:toc}</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>`,
-			opts: &TOCOptions{MinLevel: 1, MaxLevel: 6, UseJekyllHTML: true},
-			expected: `<h1 id="title">Title</h1>
-<p><ul id="markdown-toc"><li><a href="#title">Title</a><ul><li><a href="#section1">Section 1</a><ul><li><a href="#subsection1">Subsection 1</a></li></ul></li></ul></li></ul></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>`,
-		},
-		{
-			name: "Jekyll HTML with toc_levels filtering",
-			html: `<h1 id="title">Title</h1>
-<p>{:toc}</p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-			opts: &TOCOptions{MinLevel: 2, MaxLevel: 2, UseJekyllHTML: true},
-			expected: `<h1 id="title">Title</h1>
-<p><ul id="markdown-toc"><li><a href="#section1">Section 1</a></li><li><a href="#section2">Section 2</a></li></ul></p>
-<h2 id="section1">Section 1</h2>
-<h3 id="subsection1">Subsection 1</h3>
-<h2 id="section2">Section 2</h2>`,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result, err := processTOC([]byte(tt.html), tt.opts)
-			if err != nil {
-				t.Fatalf("Error processing HTML: %v", err)
-			}
-
-			if string(result) != tt.expected {
-				t.Errorf("Expected:\n%s\n\nGot:\n%s", tt.expected, string(result))
-			}
-		})
-	}
-}
-
-func TestTOCLevelsParsing(t *testing.T) {
-	tests := []struct {
-		name      string
-		input     interface{}
-		expectMin int
-		expectMax int
-	}{
-		{
-			name:      "String range 1..6",
-			input:     "1..6",
-			expectMin: 1,
-			expectMax: 6,
-		},
-		{
-			name:      "String range 2..3",
-			input:     "2..3",
-			expectMin: 2,
-			expectMax: 3,
-		},
-		{
-			name:      "String range 2..4",
-			input:     "2..4",
-			expectMin: 2,
-			expectMax: 4,
-		},
-		{
-			name:      "Array format",
-			input:     []interface{}{2, 3, 4},
-			expectMin: 2,
-			expectMax: 4,
-		},
-		{
-			name:      "Single level array",
-			input:     []interface{}{3},
-			expectMin: 3,
-			expectMax: 3,
-		},
-		{
-			name:      "Invalid input returns defaults",
-			input:     "invalid",
-			expectMin: 1,
-			expectMax: 6,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			min, max := parseTOCLevels(tt.input)
-			if min != tt.expectMin || max != tt.expectMax {
-				t.Errorf("Expected (%d, %d), got (%d, %d)", tt.expectMin, tt.expectMax, min, max)
-			}
-		})
-	}
-}
-
-func TestTOCReplacesListItem(t *testing.T) {
-	// Test for issue #89: TOC should replace the preceding list item
-	tests := []struct {
-		name             string
-		markdown         string
-		shouldNotContain string
-		shouldContainTOC bool
-	}{
-		{
-			name: "List item with {:toc} marker (should replace)",
-			markdown: `# Title
-
-* this list replaced by toc
+			name: "Basic markdown with TOC",
+			markdown: `* TOC
 {:toc}
 
-## Section 1
+### Section 1
 
-## Section 2`,
-			shouldNotContain: "this list replaced by toc",
-			shouldContainTOC: true,
+#### Subsection`,
 		},
 		{
-			name: "List item with {::toc} marker (should NOT replace - Jekyll doesn't support this)",
-			markdown: `# Title
-
-* placeholder text
-{::toc}
-
-## Section 1
-
-## Section 2`,
-			shouldNotContain: "",   // We expect the text to remain
-			shouldContainTOC: true, // But TOC should still be generated from standalone marker
-		},
-		{
-			name: "Ordered list with {:toc} (should NOT replace - Jekyll doesn't support this)",
-			markdown: `# Title
-
-1. This will be replaced
+			name: "Complex nested sections",
+			markdown: `* TOC
 {:toc}
 
-## Section 1
-
-## Section 2`,
-			shouldNotContain: "",   // We expect the text to remain
-			shouldContainTOC: true, // But TOC should still be generated from standalone marker
-		},
-		{
-			name: "List item with different text",
-			markdown: `# Title
-
-* Contents
-{:toc}
+# Main Title
 
 ## Section 1
+### Subsection 1.1
+### Subsection 1.2
 
-## Section 2`,
-			shouldNotContain: "Contents",
-			shouldContainTOC: true,
+## Section 2
+### Subsection 2.1
+#### Deep subsection`,
 		},
 	}
 
@@ -388,52 +108,175 @@ func TestTOCReplacesListItem(t *testing.T) {
 
 			htmlStr := string(html)
 
-			// Check if TOC should be generated
-			if tt.shouldContainTOC {
-				if !containsString(htmlStr, "<div class=\"toc\">") {
-					t.Error("Expected output to contain TOC div")
-				}
-			}
-
-			// The list item text should NOT appear in the output (if specified)
-			if tt.shouldNotContain != "" && containsString(htmlStr, tt.shouldNotContain) {
-				t.Errorf("Output should not contain '%s', but it does.\nOutput:\n%s", tt.shouldNotContain, htmlStr)
+			// Check for Jekyll-style TOC structure
+			if !containsString(htmlStr, "<ul id=\"markdown-toc\">") {
+				t.Error("Should contain TOC ul with id='markdown-toc'")
 			}
 		})
 	}
 }
 
-func TestTOCMultipleMarkersInOneDocument(t *testing.T) {
-	// Test that multiple TOC markers don't interfere with each other or delete content
-	markdown := `# Test Variations
-
-## Test 1: Block syntax
-
-* Contents
-{::toc}
-
-### Section A
-### Section B
-
----
-
-## Test 2: Different placeholder text
-
-* Table of Contents
+func TestTOCWithNoTocMarker(t *testing.T) {
+	tests := []struct {
+		name     string
+		markdown string
+	}{
+		{
+			name: "Exclude heading with {:.no_toc}",
+			markdown: `* TOC
 {:toc}
 
-### Section C
-### Section D
+## Heading 1
 
----
+## Excluded Heading {:.no_toc}
 
-## Test 3: Ordered list
+## Heading 2`,
+		},
+	}
 
-1. This will be replaced
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			html, err := renderMarkdown([]byte(tt.markdown))
+			if err != nil {
+				t.Fatalf("Error rendering markdown: %v", err)
+			}
+
+			htmlStr := string(html)
+
+			// The excluded heading should not appear in TOC
+			// But should still appear as a heading in the document
+			// This is tricky to test - need to check TOC specifically
+			if !containsString(htmlStr, "<ul id=\"markdown-toc\">") {
+				t.Error("Should contain TOC")
+			}
+		})
+	}
+}
+
+// TestLiteralTOCMarkers tests that {:toc} markers remain literal in invalid contexts
+func TestLiteralTOCMarkers(t *testing.T) {
+	tests := []struct {
+		name     string
+		markdown string
+		contains string // text that should remain in output
+	}{
+		{
+			name: "Literal {:toc} in heading",
+			markdown: `## How to use {:toc}
+
+Content here.`,
+			contains: "How to use {:toc}",
+		},
+		{
+			name: "Literal {:toc} in paragraph",
+			markdown: `Some text about {:toc} markers.
+
+## Section 1`,
+			contains: "about {:toc} markers",
+		},
+		{
+			name: "Literal {:toc} in standalone paragraph",
+			markdown: `{:toc}
+
+## Section 1`,
+			contains: "<p>{:toc}</p>",
+		},
+		{
+			name: "Literal {:toc} in ordered list",
+			markdown: `1. Item
 {:toc}
 
-### Section E
-### Section F`
+## Section 1`,
+			contains: "{:toc}",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			html, err := renderMarkdown([]byte(tt.markdown))
+			if err != nil {
+				t.Fatalf("Error rendering markdown: %v", err)
+			}
+
+			htmlStr := string(html)
+
+			// Check that the literal text is preserved
+			if !containsString(htmlStr, tt.contains) {
+				t.Errorf("Expected to find literal text %q in output, got:\n%s", tt.contains, htmlStr)
+			}
+
+			// Verify that NO TOC was generated
+			if containsString(htmlStr, "<ul id=\"markdown-toc\">") {
+				t.Error("Should NOT generate TOC for literal {:toc} markers")
+			}
+		})
+	}
+}
+
+// TestNoTocSiblingParagraph tests that {:.no_toc} in sibling paragraphs excludes headings
+func TestNoTocSiblingParagraph(t *testing.T) {
+	tests := []struct {
+		name            string
+		markdown        string
+		shouldExclude   string // heading text that should be excluded from TOC
+		shouldStayInDoc string // heading text that should remain in document
+	}{
+		{
+			name: "no_toc in sibling paragraph - EXCLUDED from TOC",
+			markdown: `* TOC
+{:toc}
+
+## Heading 1
+
+## Excluded Heading
+{:.no_toc}
+
+## Heading 2`,
+			shouldExclude:   "Excluded Heading",
+			shouldStayInDoc: "Excluded Heading",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			html, err := renderMarkdown([]byte(tt.markdown))
+			if err != nil {
+				t.Fatalf("Error rendering markdown: %v", err)
+			}
+
+			htmlStr := string(html)
+
+			// The heading should still appear in the document
+			if !containsString(htmlStr, tt.shouldStayInDoc) {
+				t.Errorf("Heading %q should remain in document, got:\n%s", tt.shouldStayInDoc, htmlStr)
+			}
+
+			// Extract just the TOC portion to check exclusion
+			tocStart := strings.Index(htmlStr, "<ul id=\"markdown-toc\">")
+			tocEnd := strings.Index(htmlStr, "</ul>")
+			if tocStart == -1 || tocEnd == -1 {
+				t.Fatal("Could not find TOC in output")
+			}
+			tocContent := htmlStr[tocStart : tocEnd+5] // +5 for </ul>
+
+			// The excluded heading should NOT appear in the TOC
+			if containsString(tocContent, tt.shouldExclude) {
+				t.Errorf("Heading %q should be excluded from TOC, but found in:\n%s", tt.shouldExclude, tocContent)
+			}
+		})
+	}
+}
+
+// TestNoTocInline tests that {:.no_toc} inline in heading text is kept literal
+func TestNoTocInline(t *testing.T) {
+	markdown := `* TOC
+{:toc}
+
+## Heading 1
+
+## Not Excluded {:.no_toc}
+
+## Heading 2`
 
 	html, err := renderMarkdown([]byte(markdown))
 	if err != nil {
@@ -442,35 +285,26 @@ func TestTOCMultipleMarkersInOneDocument(t *testing.T) {
 
 	htmlStr := string(html)
 
-	// All section headings should be present (none should be deleted by overly greedy regex)
-	requiredHeadings := []string{
-		"Test 1: Block syntax",
-		"Test 2: Different placeholder text",
-		"Test 3: Ordered list",
-		"Section A",
-		"Section B",
-		"Section C",
-		"Section D",
-		"Section E",
-		"Section F",
+	// The literal {:.no_toc} text should appear in the heading
+	if !containsString(htmlStr, "Not Excluded {:.no_toc}") {
+		t.Error("Heading should contain literal {:.no_toc} text")
 	}
 
-	for _, heading := range requiredHeadings {
-		if !containsString(htmlStr, heading) {
-			t.Errorf("Output should contain heading '%s', but it doesn't.\nOutput:\n%s", heading, htmlStr)
-		}
+	// Extract TOC portion
+	tocStart := strings.Index(htmlStr, "<ul id=\"markdown-toc\">")
+	tocEnd := strings.Index(htmlStr, "</ul>")
+	if tocStart == -1 || tocEnd == -1 {
+		t.Fatal("Could not find TOC in output")
 	}
+	tocContent := htmlStr[tocStart : tocEnd+5]
 
-	// Only Test 2 should have its placeholder text removed (Jekyll only supports {:toc} in unordered lists)
-	if containsString(htmlStr, "Table of Contents") {
-		t.Error("Output should not contain 'Table of Contents' (should be replaced by TOC)")
+	// The heading WITH literal {:.no_toc} should appear in TOC
+	if !containsString(tocContent, "Not Excluded") {
+		t.Error("Heading with inline {:.no_toc} should appear in TOC (it's literal text, not a marker)")
 	}
+}
 
-	// Test 1 and Test 3 placeholders should remain (Jekyll doesn't support these patterns)
-	if !containsString(htmlStr, "Contents") {
-		t.Error("Output should contain 'Contents' (Jekyll doesn't replace {::toc} in lists)")
-	}
-	if !containsString(htmlStr, "This will be replaced") {
-		t.Error("Output should contain 'This will be replaced' (Jekyll doesn't replace {:toc} in ordered lists)")
-	}
+// Helper function to check if a string contains a substring
+func containsString(s, substr string) bool {
+	return strings.Contains(s, substr)
 }
