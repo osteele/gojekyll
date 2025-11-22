@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Jekyll Timezone Compatibility** (#63): Fixed permalink generation to honor standard Jekyll `timezone` config first before falling back to `permalink_timezone`, ensuring full Jekyll compatibility
+
 - **TOC List Replacement** (#93, #89): Fixed TOC to replace adjacent lists correctly, matching Jekyll's exact behavior. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
 - **SCSS Compilation Error** (#92, #90): Fixed "connection is shut down" error when compiling SCSS. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
 - **Custom Permalink Handling** (#82, #81): Fixed issue where `index.md` was not being rendered when custom permalink patterns were set in `_config.yml`. Custom permalink patterns now only apply to posts, not pages. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting

@@ -212,6 +212,73 @@ func TestExpandPermalinkPattern(t *testing.T) {
 
 		})
 	}
+
+	// Test that standard Jekyll timezone config is honored (issue #63)
+	t.Run("Standard timezone config (Jekyll compatibility)", func(t *testing.T) {
+		cfg := config.Default()
+		cfg.Timezone = "UTC" // Standard Jekyll config
+		// permalink_timezone not set
+
+		fm := map[string]interface{}{
+			"categories": "testcat",
+			"title":      "testpage",
+			"collection": "posts",
+		}
+		path := "/testcat/testpage.md"
+		pattern := "date"
+
+		actualPermalink, err := testPermalinkPatternHelper(t, cfg, permalinkTestDateUTC, pattern, path, fm)
+		require.NoError(t, err)
+
+		// Should use UTC timezone from standard config
+		expectedPermalink := "/testcat/2023/11/20/testpage.html"
+		require.Equal(t, expectedPermalink, actualPermalink)
+	})
+
+	// Test that timezone config takes precedence over permalink_timezone (issue #63)
+	t.Run("Standard timezone takes precedence over permalink_timezone", func(t *testing.T) {
+		cfg := config.Default()
+		cfg.Timezone = "UTC"                        // Standard Jekyll config
+		cfg.PermalinkTimezone = "America/New_York" // Gojekyll-specific config
+
+		fm := map[string]interface{}{
+			"categories": "testcat",
+			"title":      "testpage",
+			"collection": "posts",
+		}
+		path := "/testcat/testpage.md"
+		pattern := "date"
+
+		actualPermalink, err := testPermalinkPatternHelper(t, cfg, permalinkTestDateUTC, pattern, path, fm)
+		require.NoError(t, err)
+
+		// Should use UTC from standard config, not New_York from permalink_timezone
+		expectedPermalink := "/testcat/2023/11/20/testpage.html"
+		require.Equal(t, expectedPermalink, actualPermalink)
+	})
+
+	// Test that permalink_timezone is used as fallback when timezone is not set
+	t.Run("Fallback to permalink_timezone when timezone not set", func(t *testing.T) {
+		cfg := config.Default()
+		// cfg.Timezone not set (empty)
+		cfg.PermalinkTimezone = "America/New_York"
+
+		fm := map[string]interface{}{
+			"categories": "testcat",
+			"title":      "testpage",
+			"collection": "posts",
+		}
+		path := "/testcat/testpage.md"
+		pattern := "date"
+
+		actualPermalink, err := testPermalinkPatternHelper(t, cfg, permalinkTestDateUTC, pattern, path, fm)
+		require.NoError(t, err)
+
+		// Should use America/New_York from permalink_timezone
+		// 2023-11-20 22:00:00 UTC = 2023-11-20 17:00:00 ET (same day)
+		expectedPermalink := "/testcat/2023/11/20/testpage.html"
+		require.Equal(t, expectedPermalink, actualPermalink)
+	})
 	// Ensure that the NewYork location loaded correctly for subsequent tests if any
 	_ = locNewYork
 }

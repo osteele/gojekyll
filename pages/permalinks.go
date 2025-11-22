@@ -50,7 +50,13 @@ func (p *page) permalinkVariables() map[string]string {
 		// date = p.PostDate().In(time.Local)
 	)
 	loc := time.Local
-	if tzName := p.site.Config().PermalinkTimezone; tzName != "" {
+	// Check standard Jekyll timezone config first for compatibility
+	tzName := p.site.Config().Timezone
+	// Fall back to permalink_timezone if standard timezone is not set
+	if tzName == "" {
+		tzName = p.site.Config().PermalinkTimezone
+	}
+	if tzName != "" {
 		l, err := time.LoadLocation(tzName)
 		if err != nil {
 			log := logger.Default()
