@@ -5,7 +5,6 @@ import (
 	"io"
 	"regexp"
 
-	blackfriday "github.com/danog/blackfriday/v2"
 	"github.com/osteele/gojekyll/utils"
 	"golang.org/x/net/html"
 )
@@ -152,30 +151,17 @@ loop:
 
 // _renderMarkdownSpan processes inline markdown without creating block-level elements
 func _renderMarkdownSpan(md []byte) ([]byte, error) {
-	// For span-level processing, we don't want to create block-level elements like paragraphs
-	// Instead, we just want inline formatting (bold, italic, links, etc.)
-	params := blackfriday.HTMLRendererParameters{
-		Flags: blackfridayFlags,
+	// For span-level processing with Goldmark, we just render normally
+	// and then strip the wrapping paragraph tags that Goldmark adds
+	html, err := _renderMarkdown(md)
+	if err != nil {
+		return nil, err
 	}
-	renderer := blackfriday.NewHTMLRenderer(params)
 
-	// Use only inline-level extensions for span mode
-	inlineExtensions := blackfriday.NoIntraEmphasis |
-		blackfriday.Autolink |
-		blackfriday.Strikethrough |
-		blackfriday.BackslashLineBreak
-
-	// Process the content without creating paragraphs - we're handling inline elements
-	content := bytes.TrimSpace(md)
-	html := blackfriday.Run(
-		content,
-		blackfriday.WithRenderer(renderer),
-		blackfriday.WithExtensions(inlineExtensions),
-	)
-
-	// Remove any potential wrapping paragraph tags that blackfriday might add
+	// Remove wrapping paragraph tags that Goldmark adds
+	html = bytes.TrimSpace(html)
 	html = bytes.TrimPrefix(html, []byte("<p>"))
-	html = bytes.TrimSuffix(html, []byte("</p>\n"))
+	html = bytes.TrimSuffix(html, []byte("</p>"))
 
 	return html, nil
 }

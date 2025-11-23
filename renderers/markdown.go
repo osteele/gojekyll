@@ -1,32 +1,45 @@
 package renderers
 
 import (
-	blackfriday "github.com/danog/blackfriday/v2"
+	"bytes"
+
+	"github.com/gohugoio/hugo-goldmark-extensions/passthrough"
 	"github.com/osteele/gojekyll/utils"
+	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer/html"
 )
 
-const blackfridayFlags = 0 |
-	blackfriday.UseXHTML |
-	blackfriday.Smartypants |
-	blackfriday.SmartypantsFractions |
-	blackfriday.SmartypantsDashes |
-	blackfriday.SmartypantsLatexDashes |
-	blackfriday.FootnoteReturnLinks
-
-const blackfridayExtensions = 0 |
-	blackfriday.NoIntraEmphasis |
-	blackfriday.Tables |
-	blackfriday.FencedCode |
-	blackfriday.Autolink |
-	blackfriday.Strikethrough |
-	blackfriday.SpaceHeadings |
-	blackfriday.HeadingIDs |
-	blackfriday.BackslashLineBreak |
-	blackfriday.DefinitionLists |
-	blackfriday.NoEmptyLineBeforeBlock |
-	// added relative to commonExtensions
-	blackfriday.AutoHeadingIDs |
-	blackfriday.Footnotes
+// createGoldmarkConverter creates a Goldmark markdown converter configured
+// to match Jekyll/kramdown behavior as closely as possible
+func createGoldmarkConverter() goldmark.Markdown {
+	return goldmark.New(
+		goldmark.WithExtensions(
+			extension.GFM,            // GitHub Flavored Markdown (includes tables, strikethrough, autolinks)
+			extension.Footnote,       // Footnotes support
+			extension.DefinitionList, // Definition lists
+			extension.Typographer,    // Smart quotes and dashes (like Smartypants)
+			passthrough.New(passthrough.Config{ // Math delimiters passthrough
+				// Inline math: $$...$$ → preserved as-is for client-side rendering
+				InlineDelimiters: []passthrough.Delimiters{
+					{Open: "$$", Close: "$$"},
+				},
+				// Block/display math: $$...$$ on separate lines
+				BlockDelimiters: []passthrough.Delimiters{
+					{Open: "$$", Close: "$$"},
+				},
+			}),
+		),
+		goldmark.WithParserOptions(
+			parser.WithAutoHeadingID(), // Automatic heading IDs
+		),
+		goldmark.WithRendererOptions(
+			html.WithXHTML(),  // Use XHTML tags (like Blackfriday's UseXHTML)
+			html.WithUnsafe(), // Allow raw HTML (Jekyll/kramdown compatibility)
+		),
+	)
+}
 
 func renderMarkdown(md []byte) ([]byte, error) {
 	return renderMarkdownWithOptions(md, nil)
@@ -54,15 +67,15 @@ func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
 		opts.MaxLevel = 6
 	}
 
-	params := blackfriday.HTMLRendererParameters{
-		Flags: blackfridayFlags,
+	// Create Goldmark converter and render markdown to HTML
+	converter := createGoldmarkConverter()
+	var buf bytes.Buffer
+	if err := converter.Convert(md, &buf); err != nil {
+		return nil, utils.WrapError(err, "markdown conversion")
 	}
-	renderer := blackfriday.NewHTMLRenderer(params)
-	html := blackfriday.Run(
-		md,
-		blackfriday.WithRenderer(renderer),
-		blackfriday.WithExtensions(blackfridayExtensions),
-	)
+	html := buf.Bytes()
+
+	// Process inner markdown (for nested markdown rendering)
 	html, err := renderInnerMarkdown(html)
 	if err != nil {
 		return nil, utils.WrapError(err, "markdown")
@@ -81,14 +94,10 @@ func renderMarkdownWithOptions(md []byte, opts *TOCOptions) ([]byte, error) {
 }
 
 func _renderMarkdown(md []byte) ([]byte, error) {
-	params := blackfriday.HTMLRendererParameters{
-		Flags: blackfridayFlags,
+	converter := createGoldmarkConverter()
+	var buf bytes.Buffer
+	if err := converter.Convert(md, &buf); err != nil {
+		return nil, err
 	}
-	renderer := blackfriday.NewHTMLRenderer(params)
-	html := blackfriday.Run(
-		md,
-		blackfriday.WithRenderer(renderer),
-		blackfriday.WithExtensions(blackfridayExtensions),
-	)
-	return html, nil
+	return buf.Bytes(), nil
 }
