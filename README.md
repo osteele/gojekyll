@@ -113,12 +113,32 @@ eval "$(gojekyll --completion-script-zsh)"
 This project works on the GitHub Pages sites that I and other contributors care
 about. It looks credible on a spot-check of other Jekyll sites.
 
+### Math Support
+
+gojekyll supports mathematical expressions using MathJax or KaTeX, compatible with Jekyll/kramdown syntax:
+
+- Use `$$...$$` delimiters for both inline and display math
+- Math expressions are preserved in the HTML output for client-side rendering
+- Works with both MathJax 3 and KaTeX
+
+**Example usage:**
+
+```markdown
+Inline math: The equation $$E=mc^2$$ is famous.
+
+Display math:
+$$
+\int_0^\infty e^{-x} dx = 1
+$$
+```
+
+**Setup:** Add MathJax or KaTeX scripts to your layout templates. See `example/_layouts/math.html` and `example/math-example.md` for complete examples.
+
 ### Current Limitations
 
 Missing features:
 
 - Pagination
-- Math
 - Plugin system. ([Some individual plugins](./docs/plugins.md) are emulated.)
 - Liquid is run in strict mode: undefined filters and variables are errors.
 - Missing markdown features:

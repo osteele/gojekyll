@@ -10,6 +10,7 @@ require (
 	github.com/bep/godartsass/v2 v2.5.0
 	github.com/danog/blackfriday/v2 v2.1.6
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/gohugoio/hugo-goldmark-extensions/passthrough v0.3.1
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/jaschaephraim/lrserver v0.0.0-20240306232639-afed386b3640
 	github.com/k0kubun/pp v3.0.1+incompatible
@@ -20,6 +21,7 @@ require (
 	github.com/radovskyb/watcher v1.0.7
 	github.com/stretchr/testify v1.11.1
 	github.com/tdewolff/minify v2.3.6+incompatible
+	github.com/yuin/goldmark v1.7.13
 	golang.org/x/net v0.46.0
 	golang.org/x/oauth2 v0.30.0
 	gopkg.in/yaml.v2 v2.4.0
