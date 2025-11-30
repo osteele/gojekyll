@@ -304,6 +304,62 @@ func TestNoTocInline(t *testing.T) {
 	}
 }
 
+// TestNoTocParagraphRemoval tests that {:.no_toc} sibling paragraphs are removed from output
+// This is a regression test for issue #100
+func TestNoTocParagraphRemoval(t *testing.T) {
+	markdown := `* TOC
+{:toc}
+
+## White/wheat loaf
+
+## Should not appear
+{:.no_toc}
+
+## Focaccia
+
+## Ciabatta`
+
+	html, err := renderMarkdown([]byte(markdown))
+	if err != nil {
+		t.Fatalf("Error rendering markdown: %v", err)
+	}
+
+	htmlStr := string(html)
+
+	// The {:.no_toc} paragraph should be completely removed from output
+	if containsString(htmlStr, "{:.no_toc}") {
+		t.Error("{:.no_toc} marker should be removed from output, but found it")
+	}
+
+	// The excluded heading should NOT appear in the TOC
+	tocStart := strings.Index(htmlStr, "<ul id=\"markdown-toc\">")
+	tocEnd := strings.Index(htmlStr, "</ul>")
+	if tocStart == -1 || tocEnd == -1 {
+		t.Fatal("Could not find TOC in output")
+	}
+	tocContent := htmlStr[tocStart : tocEnd+5]
+
+	if containsString(tocContent, "Should not appear") {
+		t.Error("Heading marked with {:.no_toc} should not appear in TOC")
+	}
+
+	// But the excluded heading should still appear in the document body
+	if !containsString(htmlStr, "<h2") || !containsString(htmlStr, "Should not appear") {
+		t.Error("Heading should still appear in document body, just not in TOC")
+	}
+
+	// Other headings should appear in TOC
+	if !containsString(tocContent, "White/wheat loaf") {
+		t.Error("White/wheat loaf should appear in TOC")
+	}
+	if !containsString(tocContent, "Focaccia") {
+		t.Error("Focaccia should appear in TOC")
+	}
+	if !containsString(tocContent, "Ciabatta") {
+		t.Error("Ciabatta should appear in TOC")
+	}
+}
+
 // Helper function to check if a string contains a substring
 func containsString(s, substr string) bool {
 	return strings.Contains(s, substr)
