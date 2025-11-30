@@ -84,8 +84,10 @@ func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
 		return content, nil
 	}
 
-	// Generate the TOC HTML
-	toc, err := generateTOC(content, opts)
+	// Generate the TOC HTML from the same DOM tree
+	// This ensures that {:.no_toc} paragraphs removed by extractHeadings()
+	// are also removed from the final output
+	toc, err := generateTOCFromDoc(doc, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -109,9 +111,8 @@ func processTOC(content []byte, opts *TOCOptions) ([]byte, error) {
 	// Extract the body content (html.Render wraps in <html><head></head><body>...</body></html>)
 	result := extractBodyContent(buf.Bytes())
 
-	// Note: We don't remove {:.no_toc} markers from the final output
-	// They remain as literal text when inside headings/paragraphs
-	// Only {:.no_toc} in sibling paragraphs (IAL markers) are removed during TOC generation
+	// Note: {:.no_toc} in sibling paragraphs (IAL markers) are removed by extractHeadings()
+	// during TOC generation. Literal {:.no_toc} text inside headings remains in the output.
 
 	return result, nil
 }
@@ -137,15 +138,11 @@ func shouldProcessTOC(content []byte) bool {
 	return false
 }
 
-// generateTOC parses HTML content and creates a table of contents
-func generateTOC(content []byte, opts *TOCOptions) (string, error) {
-	// Parse the HTML document
-	doc, err := html.Parse(bytes.NewReader(content))
-	if err != nil {
-		return "", err
-	}
-
-	// Extract headings
+// generateTOCFromDoc creates a table of contents from an already-parsed HTML document
+// This allows the caller to reuse the DOM and benefit from any modifications made
+// during heading extraction (e.g., removal of {:.no_toc} paragraphs)
+func generateTOCFromDoc(doc *html.Node, opts *TOCOptions) (string, error) {
+	// Extract headings (this also removes {:.no_toc} sibling paragraphs from the DOM)
 	headings := extractHeadings(doc)
 
 	// Filter headings by level if opts is provided

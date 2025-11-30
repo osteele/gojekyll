@@ -93,7 +93,7 @@ func (p *Manager) getTOCOptions() *TOCOptions {
 	opts := &TOCOptions{
 		MinLevel:      2,
 		MaxLevel:      6,
-		UseJekyllHTML: false,
+		UseJekyllHTML: true,
 	}
 
 	// Check for kramdown configuration
