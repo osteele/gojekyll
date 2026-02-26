@@ -54,6 +54,54 @@ func TestRenderMarkdownWithHtml2(t *testing.T) {
 	require.Contains(t, urlResult, "http://example.com")
 }
 
+func TestRenderMarkdownIndentedHTML(t *testing.T) {
+	// Regression test for issue #113: indented HTML inside HTML blocks
+	// should not be rendered as code blocks
+	input := "<ul>\n    <li class=\"post-item\">\n        <a href=\"/post1/\">Post 1</a>\n    </li>\n</ul>\n"
+	result := mustMarkdownString(input)
+	require.NotContains(t, result, "<pre>", "indented HTML should not become a code block")
+	require.NotContains(t, result, "<code>", "indented HTML should not become a code block")
+	require.Contains(t, result, "<li", "list items should be preserved")
+}
+
+func TestDeIndentHTMLBlocks(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		check func(t *testing.T, result string)
+	}{
+		{
+			name:  "indented HTML block",
+			input: "<ul>\n    <li>item</li>\n</ul>\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "<li>item</li>")
+				require.NotContains(t, result, "    <li>")
+			},
+		},
+		{
+			name:  "non-HTML content preserved",
+			input: "regular paragraph\n\n    indented code\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "    indented code")
+			},
+		},
+		{
+			name:  "HTML block ends at blank line",
+			input: "<div>\n    inside\n\n    outside\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "inside")
+				require.Contains(t, result, "    outside")
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := string(deIndentHTMLBlocks([]byte(tt.input)))
+			tt.check(t, result)
+		})
+	}
+}
+
 func mustMarkdownString(md string) string {
 	s, err := renderMarkdown([]byte(md))
 	if err != nil {
