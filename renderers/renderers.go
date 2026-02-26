@@ -179,6 +179,7 @@ func (p *Manager) makeLiquidEngine() *liquid.Engine {
 		dirs = append(dirs, filepath.Join(p.ThemeDir, "_includes"))
 	}
 	engine := liquid.NewEngine()
+	engine.EnableJekyllExtensions()
 	filters.AddJekyllFilters(engine, &p.cfg)
 	tags.AddJekyllTags(engine, &p.cfg, dirs, p.RelativeFilenameToURL)
 	return engine
