@@ -45,9 +45,7 @@ func (p *page) permalinkVariables() map[string]string {
 		relpath = p.relPath
 		root    = utils.TrimExt(relpath)
 		name    = filepath.Base(root)
-		slug    = p.fm.String("slug", utils.Slugify(name))
-		// date      = p.fileModTime
-		// date = p.PostDate().In(time.Local)
+		slug    = p.fm.String("slug", utils.SlugifyPermalink(name))
 	)
 	loc := time.Local
 	if tzName := p.site.Config().PermalinkTimezone; tzName != "" {
@@ -63,7 +61,7 @@ func (p *page) permalinkVariables() map[string]string {
 	vars := map[string]string{
 		"categories": strings.Join(p.Categories(), "/"),
 		"collection": p.fm.String("collection", ""),
-		"name":       utils.Slugify(name),
+		"name":       utils.SlugifyPermalink(name),
 		"path":       "/" + root, // TODO are we removing and then adding this?
 		"slug":       slug,
 		"title":      slug,
@@ -82,54 +80,22 @@ func (p *page) computePermalink(vars map[string]string) (src string, err error) 
 	var pattern string
 	if permalink, hasFrontMatterPermalink := p.fm["permalink"]; hasFrontMatterPermalink {
 		pattern = fmt.Sprintf("%v", permalink)
+	} else if globalPermalink := p.site.Config().Permalink; globalPermalink != "" {
+		pattern = globalPermalink
 	} else {
-		// If no front matter permalink, check global config
-		if globalPermalink := p.site.Config().Permalink; globalPermalink != "" {
-			// For non-posts (pages and collections), only apply built-in permalink styles
-			// Custom patterns should only affect posts
-			if !p.IsPost() {
-				if _, isBuiltInStyle := PermalinkStyles[globalPermalink]; !isBuiltInStyle {
-					// Not a built-in style, use default pattern for pages
-					pattern = DefaultPermalinkPattern
-				} else {
-					// Built-in style, apply it
-					pattern = globalPermalink
-				}
-			} else {
-				// Posts use the global permalink regardless of whether it's built-in or custom
-				pattern = globalPermalink
-			}
-		} else {
-			pattern = DefaultPermalinkPattern
-		}
+		pattern = DefaultPermalinkPattern
 	}
 
-	// Check if pattern is a built-in style
-	isBuiltInStyle := false
+	// Expand built-in style names
 	if pat, found := PermalinkStyles[pattern]; found {
 		pattern = pat
-		isBuiltInStyle = true
 	}
 
-	// Jekyll Compatibility: Custom patterns (non-built-in styles) should only
-	// apply to posts when set globally. Pages and other collections should use
-	// the default pattern when a custom pattern is configured globally.
-	//
-	// However, custom patterns explicitly set in a page's front matter should
-	// still be honored (with date/category placeholders removed).
-	//
-	// Built-in styles (pretty, date, ordinal, none) apply to all document types,
-	// but date/category placeholders are removed for non-posts.
+	// For non-posts, strip date and category placeholders from the pattern.
+	// This matches Ruby Jekyll: custom patterns like /:title/ apply to pages,
+	// but date/category placeholders are simply removed.
 	if !p.IsPost() {
-		_, hasFrontMatterPermalink := p.fm["permalink"]
-
-		if !isBuiltInStyle && !hasFrontMatterPermalink {
-			// Custom global patterns don't apply to pages - use default pattern
-			pattern = DefaultPermalinkPattern
-		} else {
-			// Built-in styles or explicit front matter permalinks: remove date/category placeholders
-			pattern = removePostOnlyPlaceholders(pattern)
-		}
+		pattern = removePostOnlyPlaceholders(pattern)
 	}
 
 	templateVariables := p.permalinkVariables()
