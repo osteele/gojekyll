@@ -4,10 +4,33 @@ import (
 	"bytes"
 	"io"
 	"regexp"
+	"strings"
 
 	"github.com/osteele/gojekyll/utils"
 	"golang.org/x/net/html"
 )
+
+// HTML void elements that are self-closing and never have an end tag.
+// See https://html.spec.whatwg.org/multipage/syntax.html#void-elements
+var htmlVoidElements = map[string]bool{
+	"area": true, "base": true, "br": true, "col": true,
+	"embed": true, "hr": true, "img": true, "input": true,
+	"link": true, "meta": true, "param": true, "source": true,
+	"track": true, "wbr": true,
+}
+
+// isVoidElement returns true if the raw token bytes represent a void element.
+func isVoidElement(raw []byte) bool {
+	s := strings.TrimLeft(string(raw), "< ")
+	// Extract tag name (up to space, /, or >)
+	for i, c := range s {
+		if c == ' ' || c == '/' || c == '>' || c == '\t' || c == '\n' {
+			s = s[:i]
+			break
+		}
+	}
+	return htmlVoidElements[strings.ToLower(s)]
+}
 
 var markdownAttrRE = regexp.MustCompile(`\s*markdown\s*=[^\s>]*\s*`)
 
@@ -107,12 +130,12 @@ loop:
 			if err == io.EOF {
 				return utils.WrapError(err,
 					"unexpected EOF while processing markdown attribute. "+
-						"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+						"Common causes: unclosed HTML tags, "+
 						"or mismatched opening/closing tags")
 			}
 			return err
 		case html.StartTagToken:
-			if !notATagRE.Match(z.Raw()) {
+			if !notATagRE.Match(z.Raw()) && !isVoidElement(z.Raw()) {
 				depth++
 			}
 		case html.EndTagToken:
@@ -179,12 +202,12 @@ loop:
 			if err == io.EOF {
 				return utils.WrapError(err,
 					"unexpected EOF while processing markdown=\"0\" attribute. "+
-						"Common causes: unclosed HTML tags (use <br/> instead of <br>), "+
+						"Common causes: unclosed HTML tags, "+
 						"or mismatched opening/closing tags")
 			}
 			return err
 		case html.StartTagToken:
-			if !notATagRE.Match(z.Raw()) {
+			if !notATagRE.Match(z.Raw()) && !isVoidElement(z.Raw()) {
 				depth++
 			}
 		case html.EndTagToken:
