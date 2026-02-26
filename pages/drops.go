@@ -47,7 +47,6 @@ func (p *page) ToLiquid() interface{} {
 	data := map[string]interface{}{
 		"categories":    p.Categories(),
 		"content":       p.maybeContent(),
-		"date":          fm.Get("date", p.modTime),
 		"excerpt":       p.Excerpt(),
 		"id":            utils.TrimExt(p.URL()),
 		"path":          siteRelPath,
@@ -58,6 +57,13 @@ func (p *page) ToLiquid() interface{} {
 
 		// de facto
 		"ext": ext,
+	}
+	// In Jekyll, page.date is only defined for posts and collection documents.
+	// For regular pages, it's only present if explicitly set in frontmatter.
+	if _, hasDate := fm["date"]; hasDate {
+		data["date"] = fm["date"]
+	} else if p.IsPost() {
+		data["date"] = p.modTime
 	}
 	for k, v := range p.fm {
 		switch k {
