@@ -23,7 +23,7 @@ builds:
       - "arm64"
       - "arm"
       - "riscv64"
-    ldflags: -s -w -X gojekyll/cmd.Version={{.Version}} -X gojekyll/cmd.BuildDate={{.Date}}
+    ldflags: -s -w -X github.com/osteele/gojekyll/version.Version={{.Version}} -X github.com/osteele/gojekyll/version.BuildDate={{.Date}}
 
 archives:
   - format: tar.gz
