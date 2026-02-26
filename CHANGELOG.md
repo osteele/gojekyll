@@ -9,12 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Table of Contents (TOC) Support** (#76, #62): Added Kramdown-style TOC generation with `{:toc}` and `{::toc}` markers, including support for Jekyll's `toc_levels` configuration and heading exclusion with `{:.no_toc}`. Thanks [@tekknolagi](https://github.com/tekknolagi) for requesting
+- **Math Support** (#110): Added MathJax/KaTeX compatibility for mathematical expressions using `$$...$$` delimiters, compatible with Jekyll/kramdown syntax
+- **`jekyll-relative-links` Plugin** (#104, #25): Converts relative markdown links to their rendered equivalents
+- **`jekyll-readme-index` Plugin** (#106, #29): Remaps README files to index pages
+- **`jekyll-gist` Noscript** (#105, #27): Added `noscript` option for the `jekyll-gist` plugin
+- **`--baseurl` and `--config` CLI Flags** (#103, #17, #18): Added support for `--baseurl` to override the site base URL and `--config` to specify alternate config files
+- **`sassify` Filter** (#109): Implemented the `sassify` Liquid filter for converting indented Sass syntax to CSS
+- **Table of Contents (TOC) Support** (#76, #101, #62): Added Kramdown-style TOC generation with `{:toc}` and `{::toc}` markers, including support for Jekyll's `toc_levels` configuration and heading exclusion with `{:.no_toc}`. Thanks [@tekknolagi](https://github.com/tekknolagi) for requesting
 - **Permalink Timezone Configuration** (#67): Added `permalink_timezone` configuration option to control timezone for permalink date generation
 - **Markdown Attributes Support** (#85, #64): Added support for full Kramdown markdown attribute syntax (`markdown=1`, `markdown=0`, `markdown=block`, `markdown=span`) in HTML blocks
 
 ### Fixed
 
+- **`page.date` for Non-Posts** (#116, #115): `page.date` is now only defined for posts and collection documents, or when explicitly set in frontmatter; previously it was unconditionally set to the file modification time. Thanks [@sampsyo](https://github.com/sampsyo) for reporting
+- **Indented HTML Rendered as Code** (#117, #113): Fixed indented HTML block-level elements inside list items being erroneously rendered as code blocks after the switch to Goldmark. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
+- **`{:.no_toc}` Paragraphs** (#112): Fixed `{:.no_toc}` attribute markers being left as visible paragraphs in the HTML output instead of being removed
+- **Sass Error Handling** (#99, #95): Fixed "connection is shut down" error when compiling SCSS by using a global singleton for the Sass transpiler; added helpful error message when wrong Sass package is installed
 - **TOC List Replacement** (#93, #89): Fixed TOC to replace adjacent lists correctly, matching Jekyll's exact behavior. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
 - **SCSS Compilation Error** (#92, #90): Fixed "connection is shut down" error when compiling SCSS. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
 - **Custom Permalink Handling** (#82, #81): Fixed issue where `index.md` was not being rendered when custom permalink patterns were set in `_config.yml`. Custom permalink patterns now only apply to posts, not pages. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
@@ -26,19 +36,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **URL Routing** (#74, #52): Fixed server to correctly handle URLs without trailing slashes for directory-style permalinks. Thanks [@abhijeetbodas2001](https://github.com/abhijeetbodas2001) for reporting
 - **Layout Handling** (#78): Fixed pages with `layout: none` or `layout: null` in front matter to skip layout rendering instead of causing errors
 - **First Build Crash**: Fixed Clean function crash when destination directory doesn't exist on first run
-- **Windows Routing**: Fixed URL routing on Windows by using forward slashes consistently in path handling
+- **Windows Support** (#96): Fixed URL routing, path handling, and test failures on Windows
 - **Nested Directory Watching**: Fixed file watcher to recursively watch nested directories and detect changes in subdirectories
 - **Config Updates**: Fixed `Config.Set` to properly update YAML MapSlice so template changes are observed correctly
 
 ### Changed
 
+- **Error Handling** (#97): Replaced `log.Fatal` calls with `panic` and `fmt.Errorf` for proper error propagation
 - **Logging System** (#75, #35): Replaced scattered `fmt.Printf` statements with centralized logging package supporting proper log levels (Debug, Info, Warning, Error) and quiet mode
 - **File Watcher**: Improved file watcher with automatic fallback to polling when directory count exceeds 500, preventing file descriptor exhaustion on large sites
 - **Error Messages**: Enhanced markdown renderer error messages for common issues (e.g., suggesting `<br/>` instead of `<br>`)
 
 ### Maintenance
 
-- **GitHub Actions** (#87): Updated CI workflows to test on Ubuntu, macOS, and Windows; updated actions to latest versions; added golangci-lint configuration
+- **Go 1.25/1.26** (#119): Updated CI to test against Go 1.25 and 1.26; updated minimum Go version to 1.25
+- **golangci-lint v2** (#108): Updated golangci-lint configuration for v2
+- **GitHub Actions** (#87): Updated CI workflows to test on Ubuntu, macOS, and Windows; updated actions to latest versions
+- **Tests** (#102): Added tests for `jekyll-default-layout` plugin
 - **Code Quality**: Fixed lint issues, ran go fmt for consistent formatting
 - **Documentation**: Improved documentation structure and clarity, added configuration documentation
 - **.gitignore**: Updated to exclude Go build cache and macOS-specific files
