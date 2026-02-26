@@ -1,6 +1,7 @@
 package site
 
 import (
+	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
@@ -35,6 +36,33 @@ type Site struct {
 	drop     map[string]interface{} // cached drop value
 	dropOnce sync.Once
 	dropErr  error // error from initializeDrop, if any
+
+	// Build diagnostics
+	diag BuildDiagnostics
+}
+
+// BuildDiagnostics tracks statistics about files processed during a build.
+type BuildDiagnostics struct {
+	FilesFound       int // total files walked
+	FilesExcluded    int // excluded by config
+	FilesUnderscored int // skipped due to leading underscore
+	FilesStaticNoFM  int // became static files (no frontmatter, requires frontmatter)
+	FilesUnpublished int // skipped due to published: false
+	FilesOutput      int // files actually written
+}
+
+// DiagSummary returns a human-readable summary of the build diagnostics.
+func (d BuildDiagnostics) DiagSummary() string {
+	return fmt.Sprintf(
+		"%d files found, %d output (%d excluded, %d no frontmatter, %d unpublished, %d underscore-prefixed)",
+		d.FilesFound, d.FilesOutput,
+		d.FilesExcluded, d.FilesStaticNoFM, d.FilesUnpublished, d.FilesUnderscored,
+	)
+}
+
+// Diagnostics returns the build diagnostics for this site.
+func (s *Site) Diagnostics() BuildDiagnostics {
+	return s.diag
 }
 
 // Document is in package pages.

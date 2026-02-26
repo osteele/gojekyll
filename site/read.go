@@ -8,6 +8,7 @@ import (
 
 	"github.com/osteele/gojekyll/collection"
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/pages"
 	"github.com/osteele/gojekyll/plugins"
 	"github.com/osteele/gojekyll/utils"
@@ -68,6 +69,7 @@ func (s *Site) Read() error {
 
 // readFiles scans the source directory and creates pages and collection.
 func (s *Site) readFiles(dir, base string) error {
+	log := logger.Default()
 	return filepath.Walk(dir, func(filename string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -79,14 +81,31 @@ func (s *Site) readFiles(dir, base string) error {
 		case info.IsDir():
 			return nil
 		case s.Exclude(rel):
+			s.diag.FilesFound++
+			s.diag.FilesExcluded++
+			if s.cfg.Verbose {
+				log.Info("skip (excluded): %s", rel)
+			}
 			return nil
 		case strings.HasPrefix(rel, "_"):
+			s.diag.FilesFound++
+			s.diag.FilesUnderscored++
+			if s.cfg.Verbose {
+				log.Info("skip (underscore): %s", rel)
+			}
 			return nil
 		}
+		s.diag.FilesFound++
 		defaultFrontmatter := s.cfg.GetFrontMatterDefaults("", rel)
 		d, err := pages.NewFile(s, filename, filepath.ToSlash(rel), defaultFrontmatter)
 		if err != nil {
 			return utils.WrapPathError(err, filename)
+		}
+		if d.IsStatic() {
+			s.diag.FilesStaticNoFM++
+			if s.cfg.Verbose {
+				log.Info("skip (no frontmatter → static file): %s", rel)
+			}
 		}
 		s.AddDocument(d, true)
 		if p, ok := d.(Page); ok {
@@ -103,6 +122,12 @@ func (s *Site) AddDocument(d Document, output bool) {
 		s.docs = append(s.docs, d)
 		if output {
 			s.Routes[d.URL()] = d
+		}
+	} else {
+		s.diag.FilesUnpublished++
+		if s.cfg.Verbose {
+			log := logger.Default()
+			log.Info("skip (unpublished): %s", d.Source())
 		}
 	}
 }
