@@ -217,13 +217,16 @@ func TestExpandPermalinkPattern(t *testing.T) {
 }
 
 func TestPostPermalinkPatterns(t *testing.T) {
-	// Test that posts correctly use date and category placeholders
+	// Test that posts correctly use date and category placeholders.
+	// In real usage, collection.parseFilename sets "slug" from the filename title
+	// (stripping the date prefix). We simulate that here.
 	var (
 		s = siteFake{t, config.Default()}
 		d = map[string]interface{}{
 			"categories": "blog tech",
 			"collection": "posts", // Mark as post
 			"title":      "My Post",
+			"slug":       "my-post", // Set by parseFilename from filename "2006-02-03-my-post"
 		}
 	)
 
@@ -296,27 +299,28 @@ func TestPagePermalinkEdgeCases(t *testing.T) {
 		expected string
 	}{
 		// Complex patterns with multiple placeholders
-		{"complex with categories", "/:categories/:year/:month/:day/:title/", "/test.md", "/test-page/"},
+		// Note: :title uses the filename slug, not the frontmatter title
+		{"complex with categories", "/:categories/:year/:month/:day/:title/", "/test.md", "/test/"},
 		{"categories at end", "/blog/:categories", "/test.md", "/blog"},
-		{"categories in middle", "/prefix/:categories/suffix/:title", "/test.md", "/prefix/suffix/test-page"},
+		{"categories in middle", "/prefix/:categories/suffix/:title", "/test.md", "/prefix/suffix/test"},
 
 		// Date placeholders in various positions
-		{"year only", "/:year/:title", "/test.md", "/test-page"},
-		{"date at end", "/blog/:title/:year/:month/:day", "/test.md", "/blog/test-page"},
-		{"mixed dates", "/:i_month/:short_year/:title/:y_day", "/test.md", "/test-page"},
+		{"year only", "/:year/:title", "/test.md", "/test"},
+		{"date at end", "/blog/:title/:year/:month/:day", "/test.md", "/blog/test"},
+		{"mixed dates", "/:i_month/:short_year/:title/:y_day", "/test.md", "/test"},
 
 		// Edge cases for cleanup
-		{"multiple slashes", "/:categories//:year///:title", "/test.md", "/test-page"},
-		{"trailing dates", "/blog/:title/:year/", "/test.md", "/blog/test-page"},
+		{"multiple slashes", "/:categories//:year///:title", "/test.md", "/test"},
+		{"trailing dates", "/blog/:title/:year/", "/test.md", "/blog/test"},
 
 		// Patterns that become empty or minimal
-		{"only categories", ":categories", "/test.md", "/test-page"},
-		{"only dates", ":year/:month/:day", "/test.md", "/test-page"},
-		{"dates and categories", ":categories/:year/:month/:day", "/test.md", "/test-page"},
+		{"only categories", ":categories", "/test.md", "/test"},
+		{"only dates", ":year/:month/:day", "/test.md", "/test"},
+		{"dates and categories", ":categories/:year/:month/:day", "/test.md", "/test"},
 
 		// Edge case specifically mentioned in PR review
 		{"categories with colon after", ":categories:slug", "/test.md", "/test"},
-		{"categories with multiple colons", "/prefix:categories:year:title", "/test.md", "/prefixtest-page"},
+		{"categories with multiple colons", "/prefix:categories:year:title", "/test.md", "/prefixtest"},
 	}
 
 	for _, test := range tests {
@@ -345,7 +349,7 @@ func TestGlobalPermalinkConfiguration(t *testing.T) {
 			globalPermalink: "pretty",
 			pagePath:        "/bread.html",
 			frontMatter:     map[string]interface{}{"title": "Bread Page"},
-			expected:        "/bread-page/", // Jekyll ignores dates/categories for pages
+			expected:        "/bread/", // :title uses filename slug, not frontmatter title
 		},
 		{
 			name:            "date permalink for regular page",
@@ -365,15 +369,15 @@ func TestGlobalPermalinkConfiguration(t *testing.T) {
 			name:            "pretty permalink for post",
 			globalPermalink: "pretty",
 			pagePath:        "/_posts/2006-02-03-hello.html",
-			frontMatter:     map[string]interface{}{"title": "Hello World", "collection": "posts"},
-			expected:        fmt.Sprintf("/%04d/%02d/%02d/hello-world/", localDate.Year(), localDate.Month(), localDate.Day()),
+			frontMatter:     map[string]interface{}{"title": "Hello World", "collection": "posts", "slug": "hello"},
+			expected:        fmt.Sprintf("/%04d/%02d/%02d/hello/", localDate.Year(), localDate.Month(), localDate.Day()),
 		},
 		{
 			name:            "date permalink for post",
 			globalPermalink: "date",
 			pagePath:        "/_posts/2006-02-03-hello.html",
-			frontMatter:     map[string]interface{}{"title": "Hello World", "collection": "posts"},
-			expected:        fmt.Sprintf("/%04d/%02d/%02d/hello-world.html", localDate.Year(), localDate.Month(), localDate.Day()),
+			frontMatter:     map[string]interface{}{"title": "Hello World", "collection": "posts", "slug": "hello"},
+			expected:        fmt.Sprintf("/%04d/%02d/%02d/hello.html", localDate.Year(), localDate.Month(), localDate.Day()),
 		},
 		{
 			name:            "front matter overrides global",
@@ -394,7 +398,7 @@ func TestGlobalPermalinkConfiguration(t *testing.T) {
 			globalPermalink: "pretty",
 			pagePath:        "/_authors/john.html",
 			frontMatter:     map[string]interface{}{"title": "John Doe", "collection": "authors"},
-			expected:        "/john-doe/", // Date/categories ignored for non-post collections
+			expected:        "/john/", // :title uses filename slug, not frontmatter title
 		},
 		// Issue #81: Custom global patterns should NOT apply to pages
 		{
@@ -436,7 +440,7 @@ func TestGlobalPermalinkConfiguration(t *testing.T) {
 			name:            "custom pattern with categories for post (issue #81)",
 			globalPermalink: "/:categories/:title/",
 			pagePath:        "/_posts/2006-02-03-news.html",
-			frontMatter:     map[string]interface{}{"title": "News", "categories": "tech announcements", "collection": "posts"},
+			frontMatter:     map[string]interface{}{"title": "News", "categories": "tech announcements", "collection": "posts", "slug": "news"},
 			expected:        "/announcements/tech/news/", // Posts use custom patterns with categories
 		},
 		{

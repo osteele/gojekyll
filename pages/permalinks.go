@@ -66,7 +66,7 @@ func (p *page) permalinkVariables() map[string]string {
 		"name":       utils.Slugify(name),
 		"path":       "/" + root, // TODO are we removing and then adding this?
 		"slug":       slug,
-		"title":      utils.Slugify(p.fm.String("title", name)),
+		"title":      slug,
 		"y_day":      strconv.Itoa(p.modTime.YearDay()),
 		// Undocumented but evident:
 		"output_ext": p.OutputExt(),
