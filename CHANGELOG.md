@@ -7,41 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-27
+
 ### Added
 
 - **Table of Contents (TOC) Support** (#76, #62): Added Kramdown-style TOC generation with `{:toc}` and `{::toc}` markers, including support for Jekyll's `toc_levels` configuration and heading exclusion with `{:.no_toc}`. Thanks [@tekknolagi](https://github.com/tekknolagi) for requesting
 - **Permalink Timezone Configuration** (#67): Added `permalink_timezone` configuration option to control timezone for permalink date generation
 - **Markdown Attributes Support** (#85, #64): Added support for full Kramdown markdown attribute syntax (`markdown=1`, `markdown=0`, `markdown=block`, `markdown=span`) in HTML blocks
+- **CLI Flags** (#103, #17, #18): Added `--baseurl` and `--config` command-line flags for overriding site configuration
+- **Math Support** (#110): Added MathJax/KaTeX compatibility for rendering math expressions in markdown
+- **Sassify Filter**: Implemented `sassify` Liquid filter for indented Sass syntax
+- **jekyll-relative-links Plugin** (#25): Implemented plugin to convert relative markdown links to site URLs
+- **README Page Remapping Plugin** (#106): Added plugin to remap README pages to index URLs
+- **jekyll-gist Noscript Option**: Implemented noscript fallback for jekyll-gist plugin
+- **Build Diagnostics** (#118): Added diagnostic output for skipped files during site builds
 
 ### Fixed
 
+- **Unicode Slugs** (#122, #125): Fixed `Slugify` to use Unicode-aware regex, preserving Chinese characters, accented letters, and other non-ASCII text in permalinks
+- **Permalink Case Preservation** (#123, #125): Permalink slugs now preserve filename case, matching Ruby Jekyll behavior
+- **Page Permalinks** (#124, #125): Custom global permalink patterns (e.g., `/:title/`) now apply to non-post pages with date/category placeholders stripped, matching Ruby Jekyll
+- **HTML Void Elements in Markdown** (#66, #126): Fixed `<br>`, `<hr>`, `<img>`, and other void elements inside `markdown="1"` blocks causing "unexpected EOF" errors
+- **Permalink :title Variable** (#114, #121): Fixed `:title` in permalink patterns to use the filename slug instead of the frontmatter title
+- **{:.no_toc} Paragraphs** (#112): Fixed removal of `{:.no_toc}` marker paragraphs from HTML output
+- **Indented HTML Rendering** (#117): Fixed indented HTML inside HTML blocks being incorrectly rendered as code blocks
+- **page.date for Non-Posts** (#116): Fixed `page.date` to be undefined for non-post pages instead of returning a zero date
 - **TOC List Replacement** (#93, #89): Fixed TOC to replace adjacent lists correctly, matching Jekyll's exact behavior. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
 - **SCSS Compilation Error** (#92, #90): Fixed "connection is shut down" error when compiling SCSS. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
-- **Custom Permalink Handling** (#82, #81): Fixed issue where `index.md` was not being rendered when custom permalink patterns were set in `_config.yml`. Custom permalink patterns now only apply to posts, not pages. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
+- **Custom Permalink Handling** (#82, #81): Fixed issue where `index.md` was not being rendered when custom permalink patterns were set in `_config.yml`. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
 - **Canonical URL in SEO Plugin** (#72, #70): Fixed jekyll-seo-tag plugin to respect page's `canonical_url` front matter instead of always auto-generating. Thanks [@tekknolagi](https://github.com/tekknolagi) for reporting
 - **Page Permalink Configuration** (#73, #71, #74, #61): Fixed pages to respect global permalink configuration from `_config.yml`, with proper handling of directory-style permalinks and URL routing without trailing slashes. Thanks [@tekknolagi](https://github.com/tekknolagi) for requesting
 - **File Watching Issues** (#84): Fixed multiple critical bugs in file watching, dry-run mode, and live-reload including stale site references, missing render during dry-run, stale Sass partials, and spurious live-reload with `--no-watch`
-- **First Parse Error Handling** (#79, #51): Changed build and serve commands to collect all rendering errors instead of stopping at the first error, making it easier to identify and fix all issues at once. Thanks [@manastungare](https://github.com/manastungare) for reporting
-- **Symlink Preservation** (#80, #48): Fixed issue where `_site` directory symlinks were replaced with regular directories instead of following the symlink target. Thanks [@edgan](https://github.com/edgan) for reporting
+- **First Parse Error Handling** (#79, #51): Changed build and serve commands to collect all rendering errors instead of stopping at the first error. Thanks [@manastungare](https://github.com/manastungare) for reporting
+- **Symlink Preservation** (#80, #48): Fixed issue where `_site` directory symlinks were replaced with regular directories. Thanks [@edgan](https://github.com/edgan) for reporting
 - **URL Routing** (#74, #52): Fixed server to correctly handle URLs without trailing slashes for directory-style permalinks. Thanks [@abhijeetbodas2001](https://github.com/abhijeetbodas2001) for reporting
 - **Layout Handling** (#78): Fixed pages with `layout: none` or `layout: null` in front matter to skip layout rendering instead of causing errors
-- **First Build Crash**: Fixed Clean function crash when destination directory doesn't exist on first run
-- **Windows Routing**: Fixed URL routing on Windows by using forward slashes consistently in path handling
-- **Nested Directory Watching**: Fixed file watcher to recursively watch nested directories and detect changes in subdirectories
-- **Config Updates**: Fixed `Config.Set` to properly update YAML MapSlice so template changes are observed correctly
+- **Windows Test Failures** (#96): Resolved remaining Windows test failures
 
 ### Changed
 
 - **Logging System** (#75, #35): Replaced scattered `fmt.Printf` statements with centralized logging package supporting proper log levels (Debug, Info, Warning, Error) and quiet mode
 - **File Watcher**: Improved file watcher with automatic fallback to polling when directory count exceeds 500, preventing file descriptor exhaustion on large sites
-- **Error Messages**: Enhanced markdown renderer error messages for common issues (e.g., suggesting `<br/>` instead of `<br>`)
+- **Error Handling** (#97): Replaced `log.Fatal` with `panic` and `fmt.Errorf` for better error propagation
 
 ### Maintenance
 
-- **GitHub Actions** (#87): Updated CI workflows to test on Ubuntu, macOS, and Windows; updated actions to latest versions; added golangci-lint configuration
+- **Go Version** (#119): Updated supported Go versions to 1.25+; configured golangci-lint v2
+- **GitHub Actions** (#87): Updated CI workflows to test on Ubuntu, macOS, and Windows; updated actions to latest versions
 - **Code Quality**: Fixed lint issues, ran go fmt for consistent formatting
 - **Documentation**: Improved documentation structure and clarity, added configuration documentation
-- **.gitignore**: Updated to exclude Go build cache and macOS-specific files
 
 ## [0.2.16] - 2025-06-01
 
@@ -156,7 +170,8 @@ Notable earlier releases:
 - **v0.1.1** (2017-07-19): Updated goreleaser version varname target
 - **v0.1.0** (2017-07-17): Push site build errors to open web pages
 
-[Unreleased]: https://github.com/osteele/gojekyll/compare/v0.2.16...HEAD
+[Unreleased]: https://github.com/osteele/gojekyll/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/osteele/gojekyll/compare/v0.2.16...v0.3.0
 [0.2.16]: https://github.com/osteele/gojekyll/compare/v0.2.15...v0.2.16
 [0.2.15]: https://github.com/osteele/gojekyll/compare/v0.2.14...v0.2.15
 [0.2.14]: https://github.com/osteele/gojekyll/compare/v0.2.13...v0.2.14
