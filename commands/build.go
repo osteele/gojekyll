@@ -25,6 +25,11 @@ func buildCommand(site *site.Site) error {
 	case err == nil:
 		elapsed := time.Since(commandStartTime)
 		bannerLog.label("", "wrote %d files in %.2fs.", count, elapsed.Seconds())
+		diag := site.Diagnostics()
+		diag.FilesOutput = count
+		if site.Config().Verbose || diag.FilesExcluded+diag.FilesStaticNoFM+diag.FilesUnpublished > 0 {
+			bannerLog.label("Diagnostics:", "%s", diag.DiagSummary())
+		}
 	case watch:
 		log.Error("%s", err.Error())
 	default:
