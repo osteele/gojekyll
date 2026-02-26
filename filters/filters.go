@@ -101,8 +101,8 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 		}
 		p := map[string]string{
 			"raw":     `\s+`,
-			"default": `[^[:alnum:]]+`,
-			"pretty":  `[^[:alnum:]\._~!$&'()+,;=@]+`,
+			"default": `[^\p{L}\p{N}]+`,
+			"pretty":  `[^\p{L}\p{N}\._~!$&'()+,;=@]+`,
 		}[mode]
 		if p != "" {
 			s = regexp.MustCompile(p).ReplaceAllString(s, "-")

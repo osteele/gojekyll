@@ -1,6 +1,7 @@
 package collection
 
 import (
+	"path/filepath"
 	"time"
 
 	"github.com/osteele/gojekyll/config"
@@ -39,7 +40,10 @@ func (s postsStrategy) parseFilename(filename string, fm map[string]interface{})
 	if t, title, found := utils.ParseFilenameDateTitle(filename); found {
 		fm["date"] = t
 		fm["title"] = title
-		fm["slug"] = utils.Slugify(title)
+		// Use the raw filename portion after the date prefix as the slug,
+		// preserving Unicode characters and case (matching Ruby Jekyll)
+		base := utils.TrimExt(filepath.Base(filename))
+		fm["slug"] = base[len("2006-01-02-"):]
 	}
 }
 

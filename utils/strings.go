@@ -42,14 +42,24 @@ func SafeReplaceAllStringFunc(re *regexp.Regexp, src string, repl func(m string)
 	}), nil
 }
 
-var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^[:alnum:]]+`)
+var nonAlphanumericSequenceMatcher = regexp.MustCompile(`[^\p{L}\p{N}]+`)
 var leadingOrTrailingHyphenMatcher = regexp.MustCompile(`(^-|-$)`)
 
-// Slugify replaces each sequence of non-alphanumerics by a single hyphen
+// Slugify replaces each sequence of non-alphanumerics by a single hyphen,
+// and lowercases the result. This matches the Liquid `slugify` filter behavior.
 func Slugify(s string) string {
 	slug := strings.ToLower(nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-"))
 
 	// remove leading and trailing hyphen
+	slug = leadingOrTrailingHyphenMatcher.ReplaceAllString(slug, "")
+	return slug
+}
+
+// SlugifyPermalink replaces each sequence of non-alphanumerics by a single hyphen,
+// but preserves the original case. Used for permalink :title and :name variables
+// to match Ruby Jekyll's behavior.
+func SlugifyPermalink(s string) string {
+	slug := nonAlphanumericSequenceMatcher.ReplaceAllString(s, "-")
 	slug = leadingOrTrailingHyphenMatcher.ReplaceAllString(slug, "")
 	return slug
 }
