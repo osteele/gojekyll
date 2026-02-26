@@ -102,6 +102,30 @@ func TestDeIndentHTMLBlocks(t *testing.T) {
 	}
 }
 
+func TestRenderMarkdownVoidElements(t *testing.T) {
+	// Issue #66: <br> tags inside markdown="1" blocks should not cause EOF errors.
+	// Void elements like <br>, <hr>, <img> don't have end tags, so the depth
+	// tracker must not increment for them.
+
+	// These should not panic or error (the main fix for #66)
+	result := mustMarkdownString("\n<div markdown=\"1\">\n<br>\n<br>\n</div>\n")
+	require.Contains(t, result, "<br")
+
+	result = mustMarkdownString("\n<div markdown=\"1\">\n<hr>\n</div>\n")
+	require.Contains(t, result, "<hr")
+
+	result = mustMarkdownString("\n<div markdown=\"1\">\n<img src=\"test.png\">\n</div>\n")
+	require.Contains(t, result, "img")
+
+	// Self-closing variants should also work
+	result = mustMarkdownString("\n<div markdown=\"1\">\n<br/>\n</div>\n")
+	require.Contains(t, result, "<br")
+
+	// markdown="0" with void elements should also not error
+	result = mustMarkdownString("\n<div markdown=\"0\">\n<br>\n<br>\ntext\n</div>\n")
+	require.Contains(t, result, "text")
+}
+
 func mustMarkdownString(md string) string {
 	s, err := renderMarkdown([]byte(md))
 	if err != nil {
