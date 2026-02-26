@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Liquid Engine**: Updated liquid template engine from v1.6.0 to v1.8.0. This brings Unicode identifier support, `LaxFilters` option, date timestamp support, and Jekyll-specific extensions including dot notation in assign tags.
+
 ### Added
 
 - **Math Support** (#110): Added MathJax/KaTeX compatibility for mathematical expressions using `$$...$$` delimiters, compatible with Jekyll/kramdown syntax

@@ -1,8 +1,6 @@
 module github.com/osteele/gojekyll
 
-go 1.24.0
-
-toolchain go1.24.3
+go 1.25.0
 
 require (
 	github.com/alecthomas/chroma v0.10.0
@@ -16,7 +14,7 @@ require (
 	github.com/k0kubun/pp v3.0.1+incompatible
 	github.com/kyokomi/emoji v2.2.4+incompatible
 	github.com/montanaflynn/stats v0.7.1
-	github.com/osteele/liquid v1.6.0
+	github.com/osteele/liquid v1.8.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/radovskyb/watcher v1.0.7
 	github.com/stretchr/testify v1.11.1
@@ -164,7 +162,7 @@ require (
 	github.com/nishanths/exhaustive v0.12.0 // indirect
 	github.com/nishanths/predeclared v0.2.2 // indirect
 	github.com/nunnatsa/ginkgolinter v0.21.2 // indirect
-	github.com/osteele/tuesday v1.0.3 // indirect
+	github.com/osteele/tuesday v1.0.4 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
