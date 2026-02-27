@@ -12,6 +12,9 @@ dist/
 # Go build cache
 .gocache/
 
+# Benchmark generated site
+benchmarks/testsite/
+
 # macOS
 .DS_Store
 

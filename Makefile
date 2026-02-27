@@ -12,7 +12,7 @@ OS := $(shell uname)
 LDFLAGS=-ldflags "-X ${PACKAGE}/version.Version=${VERSION} -X ${PACKAGE}/version.BuildDate=${BUILD_DATE}"
 
 .DEFAULT_GOAL: build
-.PHONY: build clean deps setup install lint release test help
+.PHONY: build clean deps setup install lint release test bench-generate bench bench-clean help
 
 $(BINARY): $(SOURCES)
 	go build ${LDFLAGS} -o ${BINARY} ${PACKAGE}
@@ -46,3 +46,12 @@ lint:
 
 test:
 	go test ./...
+
+bench-generate: ## Generate the benchmark site
+	go run ./benchmarks/generate
+
+bench: $(BINARY) bench-generate ## Build + generate + benchmark
+	./$(BINARY) benchmark -s benchmarks/testsite
+
+bench-clean: ## Remove generated benchmark site
+	rm -rf benchmarks/testsite
