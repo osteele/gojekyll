@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/osteele/gojekyll/config"
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/liquid"
 	"golang.org/x/oauth2"
 )
@@ -23,6 +24,7 @@ func init() {
 type jekyllGithubMetadataPlugin struct{ plugin }
 
 func (p jekyllGithubMetadataPlugin) ModifySiteDrop(s Site, d map[string]interface{}) error {
+	log := logger.Default()
 	var (
 		cfg        = s.Config()
 		isUserPage = false
@@ -30,11 +32,13 @@ func (p jekyllGithubMetadataPlugin) ModifySiteDrop(s Site, d map[string]interfac
 	)
 	nwo, err := getCurrentRepo(cfg)
 	if err != nil {
-		return err
+		log.Warn("jekyll-github-metadata: can't determine current repository: %s", err)
+		return nil
 	}
 	repo, err := getGitHubRepo(nwo)
 	if err != nil {
-		return err
+		log.Warn("jekyll-github-metadata: can't fetch repository %q from GitHub: %s", nwo, err)
+		return nil
 	}
 	if *repo.Name == fmt.Sprintf("%s.github.com", strings.ToLower(*repo.Owner.Login)) {
 		isUserPage = true
