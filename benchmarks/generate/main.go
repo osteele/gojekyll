@@ -156,7 +156,6 @@ url: "http://example.com"
 baseurl: ""
 permalink: /:categories/:year/:month/:day/:title/
 
-collections_dir: .
 defaults:
   - scope:
       path: ""
@@ -293,9 +292,8 @@ var includes = map[string]string{
   <a href="/">Home</a>
   {% for crumb in crumbs %}
     {% if crumb != "" %}
-      {% assign path = crumbs | slice: 0, forloop.index | join: "/" %}
       <span>/</span>
-      <a href="/{{ path }}/">{{ crumb | replace: "-", " " | capitalize }}</a>
+      <a href="/{{ crumb }}/">{{ crumb | replace: "-", " " | capitalize }}</a>
     {% endif %}
   {% endfor %}
 </nav>

@@ -18,7 +18,7 @@ live reload.
 | &nbsp;                  | Gojekyll                                  | Jekyll | Hugo                         |
 | ----------------------- | ----------------------------------------- | ------ | ---------------------------- |
 | Stable                  |                                           | ✓      | ✓                            |
-| Fast                    | ✓<br>([~20×Jekyll](./docs/benchmarks.md)) |        | ✓                            |
+| Fast                    | ✓<br>([~3×Jekyll](./docs/benchmarks.md))  |        | ✓                            |
 | Template language       | Liquid                                    | Liquid | Go, Ace and Amber templates  |
 | SASS                    | ✓                                         | ✓      | ✓                            |
 | Jekyll compatibility    | [partial](#current-limitations)           | ✓      |                              |
