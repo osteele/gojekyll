@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-02-27
+
+### Fixed
+
+- **Pop/Shift Filters Swapped**: `pop` now correctly returns the last element and `shift` returns the first, matching Ruby/Jekyll semantics
+- **ReadCollections Error Handling**: Fixed `ReadCollections` silently discarding errors instead of propagating them
+- **Tags vs Categories**: Fixed `site.tags` incorrectly containing categories instead of tags due to `groupPagesBy` ignoring its getter argument
+- **Data File Reading**: Fixed `readDataFiles` stopping at the first subdirectory, skipping data files that followed it alphabetically
+- **Liquid String-to-Number Conversion**: Updated liquid engine to v1.8.1, fixing a string-to-number conversion regression briefly introduced in v1.8.0
+
+### Changed
+
+- **Liquid Engine Performance**: Updated liquid template engine from v1.6.0 to v1.8.1, which includes performance improvements
+- **GoReleaser Config**: Updated `.goreleaser.yaml` to v2 format; fixed ldflags to correctly set version at build time
+
 ## [0.3.0] - 2026-02-27
 
 ### Added
@@ -170,7 +185,8 @@ Notable earlier releases:
 - **v0.1.1** (2017-07-19): Updated goreleaser version varname target
 - **v0.1.0** (2017-07-17): Push site build errors to open web pages
 
-[Unreleased]: https://github.com/osteele/gojekyll/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/osteele/gojekyll/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/osteele/gojekyll/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/osteele/gojekyll/compare/v0.2.16...v0.3.0
 [0.2.16]: https://github.com/osteele/gojekyll/compare/v0.2.15...v0.2.16
 [0.2.15]: https://github.com/osteele/gojekyll/compare/v0.2.14...v0.2.15
