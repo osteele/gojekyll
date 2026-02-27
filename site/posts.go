@@ -33,7 +33,7 @@ func (s *Site) setPostVariables() {
 func (s *Site) groupPagesBy(getter func(Page) []string) map[string][]Page {
 	categories := map[string][]Page{}
 	for _, p := range s.Pages() {
-		for _, k := range p.Categories() {
+		for _, k := range getter(p) {
 			ps, found := categories[k]
 			if !found {
 				ps = []Page{}

@@ -21,7 +21,7 @@ func (s *Site) readDataFiles() error {
 	}
 	for _, f := range files {
 		if f.IsDir() {
-			break
+			continue
 		}
 		var (
 			filename  = filepath.Join(dataDir, f.Name())

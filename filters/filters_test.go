@@ -37,8 +37,8 @@ var filterTests = []struct{ in, expected string }{
 	{`{{ site.members | where_exp: "item", "item.name contains 'Al'" | map: "name" | join }}`, "Alonzo Alan"},
 
 	{`{{ page.tags | push: 'Spokane' | join }}`, "Seattle Tacoma Spokane"},
-	{`{{ page.tags | pop }}`, "Seattle"},
-	{`{{ page.tags | shift }}`, "Tacoma"},
+	{`{{ page.tags | pop }}`, "Tacoma"},
+	{`{{ page.tags | shift }}`, "Seattle"},
 	{`{{ page.tags | unshift: "Olympia" | join }}`, "Olympia Seattle Tacoma"},
 
 	// strings
@@ -111,6 +111,20 @@ func TestFilters(t *testing.T) {
 			requireTemplateRender(t, test.in, filterTestBindings, test.expected)
 		})
 	}
+}
+
+func TestPopShiftFilters(t *testing.T) {
+	// pop returns the last element, shift returns the first
+	bindings := liquid.Bindings{
+		"arr": []string{"alpha", "beta", "gamma"},
+	}
+	requireTemplateRender(t, `{{ arr | pop }}`, bindings, "gamma")
+	requireTemplateRender(t, `{{ arr | shift }}`, bindings, "alpha")
+
+	// single-element array
+	single := liquid.Bindings{"arr": []string{"only"}}
+	requireTemplateRender(t, `{{ arr | pop }}`, single, "only")
+	requireTemplateRender(t, `{{ arr | shift }}`, single, "only")
 }
 
 func TestSampleFilter(t *testing.T) {

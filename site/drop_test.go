@@ -59,6 +59,40 @@ func TestSite_ToLiquid_related_posts(t *testing.T) {
 	require.Len(t, posts, 1)
 }
 
+func TestSite_readDataFiles_skips_directories(t *testing.T) {
+	// Regression test: readDataFiles should skip directories and continue
+	// reading subsequent files (previously used break instead of continue)
+	site, err := FromDirectory("testdata/site1", config.Flags{})
+	require.NoError(t, err)
+	require.NoError(t, site.Read())
+
+	// The _data dir has: alpha.json, subdir/, zulu.json
+	// Both alpha and zulu should be loaded despite subdir/ between them
+	require.Contains(t, site.data, "alpha", "data file before directory should be loaded")
+	require.Contains(t, site.data, "zulu", "data file after directory should be loaded")
+}
+
+func TestSite_ToLiquid_tags_vs_categories(t *testing.T) {
+	drop := readTestSiteDrop(t)
+
+	// tags and categories should be distinct groupings
+	tags, ok := drop["tags"].(map[string][]Page)
+	require.True(t, ok, fmt.Sprintf("tags has type %T", drop["tags"]))
+
+	categories, ok := drop["categories"].(map[string][]Page)
+	require.True(t, ok, fmt.Sprintf("categories has type %T", drop["categories"]))
+
+	// The test post has tags: ["go", "jekyll"] and categories: ["dev"]
+	// tags should contain "go" and "jekyll" keys
+	require.Contains(t, tags, "go", "tags should contain 'go'")
+	require.Contains(t, tags, "jekyll", "tags should contain 'jekyll'")
+	require.NotContains(t, tags, "dev", "tags should not contain category 'dev'")
+
+	// categories should contain "dev" key
+	require.Contains(t, categories, "dev", "categories should contain 'dev'")
+	require.NotContains(t, categories, "go", "categories should not contain tag 'go'")
+}
+
 func TestSite_ToLiquid_static_files(t *testing.T) {
 	drop := readTestSiteDrop(t)
 	files, ok := drop["static_files"].([]*pages.StaticFile)

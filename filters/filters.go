@@ -54,10 +54,10 @@ func AddJekyllFilters(e *liquid.Engine, c *config.Config) {
 		return append(array, evaluator.MustConvertItem(item, array))
 	})
 	e.RegisterFilter("pop", requireNonEmptyArray(func(array []interface{}) interface{} {
-		return array[0]
+		return array[len(array)-1]
 	}))
 	e.RegisterFilter("shift", requireNonEmptyArray(func(array []interface{}) interface{} {
-		return array[len(array)-1]
+		return array[0]
 	}))
 	e.RegisterFilter("unshift", func(array []interface{}, item interface{}) interface{} {
 		return append([]interface{}{evaluator.MustConvertItem(item, array)}, array...)
