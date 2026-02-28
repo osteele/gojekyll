@@ -35,7 +35,6 @@ func (p *Manager) ApplyLayout(name string, content []byte, vars liquid.Bindings)
 
 // FindLayout returns a template for the named layout.
 func (p *Manager) FindLayout(base string, fmp *map[string]interface{}) (tpl *liquid.Template, err error) {
-	// not cached, but the time here is negligible
 	exts := []string{"", ".html"}
 	for _, ext := range strings.Split(p.cfg.MarkdownExt, `,`) {
 		exts = append(exts, "."+ext)

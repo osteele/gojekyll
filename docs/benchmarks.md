@@ -78,6 +78,55 @@ Measured by building gojekyll with both liquid versions (all other code identica
 The liquid v1.8.1 release claims ~25% faster template rendering. The improvement
 is diluted in end-to-end builds because file I/O dominates wall-clock time.
 
+## Performance analysis
+
+### CPU profile breakdown
+
+Profiling `gojekyll build` on the generated 2000-post site (GOMAXPROCS=1) shows:
+
+| Category | % CPU | Notes |
+| -------- | ----- | ----- |
+| syscall (file I/O) | ~59% | Dominated by output file creation (`os.Create`, `os.OpenFile`) |
+| Liquid template rendering | ~20% | `liquid.Template.Render` |
+| Liquid template parsing | ~1% | `ParseTemplateLocation` — only ~15 unique templates |
+| Markdown rendering | ~5% | `blackfriday` |
+| Other | ~15% | YAML, path manipulation, GC |
+
+### Caching investigations
+
+**Liquid template parse caching**: Not worthwhile. Template parsing is <1% of CPU
+because there are only ~15 unique templates (4 layouts + 10 includes + index).
+Even with 2000 posts each triggering ~10 parses, the parse cost is negligible
+compared to rendering and I/O.
+See [liquid#21](https://github.com/osteele/liquid/issues/21).
+
+**File content pre-fetch cache**: Tested an in-memory cache that pre-loads all
+include and layout files at startup, avoiding repeated `read()` syscalls during
+rendering. Results:
+
+| Configuration | Effect |
+| ------------- | ------ |
+| Single-threaded (GOMAXPROCS=1) | ~17% faster (7.9s → 9.5s baseline) |
+| Multi-threaded (default) | No improvement |
+
+The single-core improvement is real but misleading for the important case.
+The OS page cache already serves repeated file reads from memory, so the
+userspace cache mainly avoids syscall overhead rather than disk I/O. On
+multi-core builds, read latency is hidden by parallelism (other goroutines
+compute while one blocks on a read), and the write side — creating ~2000
+output files — dominates wall-clock time. The cache was dropped because it
+adds complexity (90 lines, mutex, path normalization) without helping the
+primary use case: interactive multi-core rebuilds during development.
+
+### Bottleneck summary
+
+The main bottleneck is **output file I/O** (~59% of CPU in syscalls, mostly
+writes). Strategies that would meaningfully improve build speed:
+
+- Incremental builds (skip unchanged pages)
+- Reducing output file creation overhead
+- Parallel rendering pipeline (currently sequential read → render → concurrent write)
+
 ## MadelineProto Docs (historical, 2022)
 
 `[go]jekyll build` on an Intel Xeon E5620 @ 2.40GHz, running current versions of
