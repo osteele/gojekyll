@@ -93,6 +93,56 @@ func TestDeIndentHTMLBlocks(t *testing.T) {
 				require.Contains(t, result, "    outside")
 			},
 		},
+		{
+			name:  "HTML inside backtick code fence untouched",
+			input: "```\n<ul>\n    <li>item</li>\n</ul>\n```\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "    <li>item</li>")
+			},
+		},
+		{
+			name:  "HTML inside tilde code fence untouched",
+			input: "~~~\n<div>\n    indented\n</div>\n~~~\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "    indented")
+			},
+		},
+		{
+			name:  "longer outer fence containing shorter fence lines",
+			input: "````html\n```\n<ul>\n    <li>item</li>\n</ul>\n```\n````\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "    <li>item</li>")
+			},
+		},
+		{
+			name:  "backtick fence containing tilde fence lines",
+			input: "```\n~~~\n<ul>\n    <li>item</li>\n</ul>\n~~~\n```\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "    <li>item</li>")
+			},
+		},
+		{
+			name:  "fence-like content with trailing text does not close",
+			input: "```\n```not-a-close\n<ul>\n    <li>item</li>\n</ul>\n```\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "    <li>item</li>")
+			},
+		},
+		{
+			name:  "closing fence allows whitespace",
+			input: "```\r\ncode\r\n``` \t\r\n<ul>\r\n    <li>item</li>\r\n</ul>\r\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "\r\n<li>item</li>")
+			},
+		},
+		{
+			name:  "HTML block after code fence still de-indented",
+			input: "```\n<p>    code</p>\n```\n\n<ul>\n    <li>item</li>\n</ul>\n",
+			check: func(t *testing.T, result string) {
+				require.Contains(t, result, "\n<li>item</li>")
+				require.Contains(t, result, "<p>    code</p>")
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -100,6 +150,15 @@ func TestDeIndentHTMLBlocks(t *testing.T) {
 			tt.check(t, result)
 		})
 	}
+}
+
+func TestRenderMarkdownCodeFenceIndentation(t *testing.T) {
+	// HTML code samples inside fenced code blocks must keep their
+	// indentation; deIndentHTMLBlocks previously stripped it.
+	input := "```html\n<ul>\n    <li>item</li>\n</ul>\n```\n"
+	result := mustMarkdownString(input)
+	require.Contains(t, result, "    &lt;li&gt;item&lt;/li&gt;",
+		"code sample should keep its indentation")
 }
 
 func TestRenderMarkdownVoidElements(t *testing.T) {

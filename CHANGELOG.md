@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **GitHub Metadata Cache** (#43): Reuse successful GitHub repository metadata requests for ten minutes and coalesce concurrent requests
 
+### Fixed
+
+- **HTML De-indenting in Code Fences**: `deIndentHTMLBlocks` no longer strips indentation from HTML-looking lines inside fenced code blocks, which mangled indented HTML code samples
+
 ## [0.3.1] - 2026-02-27
 
 ### Fixed
