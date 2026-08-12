@@ -76,20 +76,23 @@ func TestPage_Write(t *testing.T) {
 func TestPageReloadReplacesFrontMatterAndPermalink(t *testing.T) {
 	dir := t.TempDir()
 	filename := filepath.Join(dir, "page.md")
-	require.NoError(t, os.WriteFile(filename, []byte("---\npermalink: /old/\nremoved: value\n---\nold\n"), 0o644))
+	require.NoError(t, os.WriteFile(filename, []byte("---\npermalink: /old/\nslug: old-slug\nremoved: value\n---\nold\n"), 0o644))
 	cfg := config.Default()
 	cfg.Source = dir
 	doc, err := NewFile(siteFake{t, cfg}, filename, "page.md", FrontMatter{"default_only": "value"})
 	require.NoError(t, err)
-	page := doc.(Page)
-	require.Equal(t, "/old/", page.URL())
-	require.Equal(t, "value", page.FrontMatter()["removed"])
+	pg := doc.(Page)
+	concretePage := doc.(*page)
+	require.Equal(t, "/old/", pg.URL())
+	require.Equal(t, "value", pg.FrontMatter()["removed"])
+	require.Equal(t, "old-slug", concretePage.stableDropData().slug)
 
-	require.NoError(t, os.WriteFile(filename, []byte("---\npermalink: /new/\n---\nnew\n"), 0o644))
-	require.NoError(t, page.Reload())
-	require.Equal(t, "/new/", page.URL())
-	require.NotContains(t, page.FrontMatter(), "removed")
-	require.Equal(t, "value", page.FrontMatter()["default_only"])
+	require.NoError(t, os.WriteFile(filename, []byte("---\npermalink: /new/\nslug: new-slug\n---\nnew\n"), 0o644))
+	require.NoError(t, pg.Reload())
+	require.Equal(t, "/new/", pg.URL())
+	require.NotContains(t, pg.FrontMatter(), "removed")
+	require.Equal(t, "value", pg.FrontMatter()["default_only"])
+	require.Equal(t, "new-slug", concretePage.stableDropData().slug)
 }
 
 func fakePageFromFile(t *testing.T, file string) (Document, error) {

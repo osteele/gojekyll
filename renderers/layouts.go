@@ -2,6 +2,7 @@ package renderers
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +12,12 @@ import (
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
 )
+
+type layoutCacheEntry struct {
+	template    *liquid.Template
+	frontMatter map[string]interface{}
+	err         error
+}
 
 // ApplyLayout applies the named layout to the content.
 func (p *Manager) ApplyLayout(name string, content []byte, vars liquid.Bindings) ([]byte, error) {
@@ -35,6 +42,23 @@ func (p *Manager) ApplyLayout(name string, content []byte, vars liquid.Bindings)
 
 // FindLayout returns a template for the named layout.
 func (p *Manager) FindLayout(base string, fmp *map[string]interface{}) (tpl *liquid.Template, err error) {
+	if cached, ok := p.layoutCache.Load(base); ok {
+		entry := cached.(layoutCacheEntry)
+		if fmp != nil {
+			*fmp = maps.Clone(entry.frontMatter)
+		}
+		return entry.template, entry.err
+	}
+	tpl, fm, err := p.findLayout(base)
+	entry := layoutCacheEntry{template: tpl, frontMatter: fm, err: err}
+	p.layoutCache.Store(base, entry)
+	if fmp != nil {
+		*fmp = maps.Clone(fm)
+	}
+	return tpl, err
+}
+
+func (p *Manager) findLayout(base string) (tpl *liquid.Template, fm map[string]interface{}, err error) {
 	exts := []string{"", ".html"}
 	for _, ext := range strings.Split(p.cfg.MarkdownExt, `,`) {
 		exts = append(exts, "."+ext)
@@ -49,7 +73,7 @@ loop:
 		for _, ext := range exts {
 			filename, err = utils.JoinWithin(dir, base+ext)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 			content, err = os.ReadFile(filename)
 			if err == nil {
@@ -57,24 +81,21 @@ loop:
 				break loop
 			}
 			if !os.IsNotExist(err) {
-				return nil, err
+				return nil, nil, err
 			}
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("no template for %s", base)
+		return nil, nil, fmt.Errorf("no template for %s", base)
 	}
 	lineNo := 1
-	fm, err := frontmatter.Read(&content, &lineNo)
+	fm, err = frontmatter.Read(&content, &lineNo)
 	if err != nil {
 		return
 	}
-	if fmp != nil {
-		*fmp = fm
-	}
 	tpl, err = p.liquidEngine.ParseTemplateLocation(content, filename, lineNo)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	return
 }

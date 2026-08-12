@@ -8,6 +8,14 @@ import (
 	"github.com/osteele/liquid"
 )
 
+type pageDropData struct {
+	categories  []string
+	tags        []string
+	slug        string
+	siteRelPath string
+	id          string
+}
+
 // ToLiquid is part of the liquid.Drop interface.
 func (d *StaticFile) ToLiquid() interface{} {
 	return liquid.IterationKeyedMap(map[string]interface{}{
@@ -39,20 +47,19 @@ func (f *file) ToLiquid() interface{} {
 // ToLiquid is in the liquid.Drop interface.
 func (p *page) ToLiquid() interface{} {
 	var (
-		fm          = p.fm
-		relpath     = p.relPath
-		siteRelPath = filepath.ToSlash(p.site.RelativePath(p.filename))
-		ext         = filepath.Ext(relpath)
+		fm     = p.fm
+		stable = p.stableDropData()
+		ext    = filepath.Ext(p.relPath)
 	)
 	data := map[string]interface{}{
-		"categories":    p.Categories(),
+		"categories":    stable.categories,
 		"content":       p.maybeContent(),
 		"excerpt":       p.Excerpt(),
-		"id":            utils.TrimExt(p.URL()),
-		"path":          siteRelPath,
-		"relative_path": siteRelPath,
-		"slug":          fm.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relPath)))),
-		"tags":          p.Tags(),
+		"id":            stable.id,
+		"path":          stable.siteRelPath,
+		"relative_path": stable.siteRelPath,
+		"slug":          stable.slug,
+		"tags":          stable.tags,
 		"url":           p.URL(),
 
 		// de facto
@@ -76,6 +83,19 @@ func (p *page) ToLiquid() interface{} {
 		}
 	}
 	return liquid.IterationKeyedMap(data)
+}
+
+func (p *page) stableDropData() pageDropData {
+	p.dropOnce.Do(func() {
+		p.dropData = pageDropData{
+			categories:  p.Categories(),
+			tags:        p.Tags(),
+			slug:        p.fm.String("slug", utils.Slugify(utils.TrimExt(filepath.Base(p.relPath)))),
+			siteRelPath: filepath.ToSlash(p.site.RelativePath(p.filename)),
+			id:          utils.TrimExt(p.URL()),
+		}
+	})
+	return p.dropData
 }
 
 func (p *page) maybeContent() interface{} {

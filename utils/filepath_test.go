@@ -53,6 +53,18 @@ func TestJoinWithin(t *testing.T) {
 	require.ErrorContains(t, err, "absolute path")
 }
 
+func TestJoinWithinLexical(t *testing.T) {
+	root := t.TempDir()
+	inside, err := JoinWithinLexical(root, filepath.Join("nested", "file.html"))
+	require.NoError(t, err)
+	require.Equal(t, filepath.Join(root, "nested", "file.html"), inside)
+
+	_, err = JoinWithinLexical(root, filepath.Join("..", "secret.html"))
+	require.ErrorContains(t, err, "escapes")
+	_, err = JoinWithinLexical(root, filepath.Join(root, "secret.html"))
+	require.ErrorContains(t, err, "absolute path")
+}
+
 func TestJoinWithinRejectsSymlinkEscape(t *testing.T) {
 	parent := t.TempDir()
 	root := filepath.Join(parent, "root")

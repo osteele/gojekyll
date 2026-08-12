@@ -12,6 +12,32 @@ import (
 // JoinWithin joins name to root and rejects paths that escape root, including
 // through symlinks when the target exists.
 func JoinWithin(root, name string) (string, error) {
+	joined, err := JoinWithinLexical(root, name)
+	if err != nil {
+		return "", err
+	}
+	rootAbs, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+
+	resolvedRoot, rootErr := filepath.EvalSymlinks(rootAbs)
+	resolvedJoined, joinedErr := filepath.EvalSymlinks(joined)
+	if rootErr == nil && joinedErr == nil && !pathWithin(resolvedRoot, resolvedJoined) {
+		return "", fmt.Errorf("path %q escapes %q through a symlink", name, root)
+	}
+	if rootErr != nil && !os.IsNotExist(rootErr) {
+		return "", rootErr
+	}
+	if joinedErr != nil && !os.IsNotExist(joinedErr) {
+		return "", joinedErr
+	}
+	return joined, nil
+}
+
+// JoinWithinLexical joins name to root and rejects lexical path traversal.
+// Callers that open the result must separately prevent symbolic-link escapes.
+func JoinWithinLexical(root, name string) (string, error) {
 	if filepath.IsAbs(name) {
 		return "", fmt.Errorf("absolute path %q is not allowed", name)
 	}
@@ -27,17 +53,6 @@ func JoinWithin(root, name string) (string, error) {
 		return "", fmt.Errorf("path %q escapes %q", name, root)
 	}
 
-	resolvedRoot, rootErr := filepath.EvalSymlinks(rootAbs)
-	resolvedJoined, joinedErr := filepath.EvalSymlinks(joined)
-	if rootErr == nil && joinedErr == nil && !pathWithin(resolvedRoot, resolvedJoined) {
-		return "", fmt.Errorf("path %q escapes %q through a symlink", name, root)
-	}
-	if rootErr != nil && !os.IsNotExist(rootErr) {
-		return "", rootErr
-	}
-	if joinedErr != nil && !os.IsNotExist(joinedErr) {
-		return "", joinedErr
-	}
 	return joined, nil
 }
 

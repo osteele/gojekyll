@@ -70,6 +70,8 @@ type page struct {
 	content      string
 	contentError error
 	contentOnce  sync.Once
+	dropOnce     sync.Once
+	dropData     pageDropData
 	excerpt      interface{} // []byte or string, depending on rendering stage
 	rendered     bool
 }
@@ -114,6 +116,8 @@ func (p *page) reset() {
 	p.m.Lock()
 	defer p.m.Unlock()
 	p.contentOnce = sync.Once{}
+	p.dropOnce = sync.Once{}
+	p.dropData = pageDropData{}
 	p.content = ""
 	p.contentError = nil
 	p.excerpt = nil

@@ -80,7 +80,95 @@ is diluted in end-to-end builds because file I/O dominates wall-clock time.
 
 ## Performance analysis
 
-### CPU profile breakdown
+### Optimization experiments (2026-08-12)
+
+These experiments used the generated 2000-post site on a 2020 13-inch MacBook
+Pro with an Apple M1 (4 performance cores, 4 efficiency cores) and 16 GB RAM,
+running macOS 15.7.3 and Go 1.26.5. Each candidate was built as a separate
+binary and compared against the preceding retained version. Wall-clock
+measurements used `hyperfine`; peak resident memory and hardware instruction
+counts used `/usr/bin/time -l`.
+
+The host became heavily loaded during the later runs (load average above 17),
+so the final comparison used `GOMAXPROCS=1 GOGC=20`. This makes CPU work and
+retained memory more comparable even though the absolute wall times are not
+representative of an idle machine.
+
+#### Retained changes
+
+| Change | Result | Memory result |
+| ------ | ------ | ------------- |
+| Reuse confined `os.Root` instances for Liquid includes | Opposite-order multi-core A/B runs ranged from 4% slower to 9% faster, but user CPU fell about 9% and system CPU about 24% | No material increase under controlled GC |
+| Cache stable page drop fields | Single-core mean 14.63 s → 11.38 s (1.29×); user CPU 6.46 s → 4.63 s | No measured increase |
+| Cache resolved layouts and missing-layout probes | Single-core mean 10.33 s → 7.98 s (1.30×); user CPU 4.72 s → 3.82 s | 40–41 MB peak RSS for both variants under controlled GC |
+
+The controlled end-to-end comparison of the original and final binaries was:
+
+| Metric | Original | Final | Change |
+| ------ | -------- | ----- | ------ |
+| Wall time | 22.57 s | 15.39 s | 32% lower |
+| User CPU | 11.81 s | 8.81 s | 25% lower |
+| System CPU | 6.24 s | 4.61 s | 26% lower |
+| Instructions retired | 63.5 billion | 47.3 billion | 26% lower |
+| Peak RSS | 39.9 MB | 40.5 MB | no material change |
+
+#### Rejected changes
+
+| Experiment | Result | Decision |
+| ---------- | ------ | -------- |
+| Cache authorized include path strings in a `sync.Map` | Opposite-order runs alternated between 7% slower and 7% faster; CPU profiles improved but wall time did not | Removed because the synchronization and retained map had no repeatable end-to-end benefit |
+| Preserve generated output and compare rendered bytes before writing | 8% slower; user CPU rose from 5.43 s to 6.28 s | Removed because rendering plus byte comparison cost more than recreating output |
+| Combine destination cleanup and empty-directory removal into one recursive traversal | Opposite-order runs disagreed by 16–20% on the loaded host | Removed because it had no repeatable benefit and replaced simple, tested filesystem helpers |
+
+The output experiments show that avoiding writes is insufficient while every
+page is still rendered. A future incremental-output design should skip both
+rendering and writing based on source and template dependencies.
+
+#### Parallel scaling
+
+The final binary was also measured on a 500-post version of the generated site.
+These three-run samples were collected on the same loaded host, so they are a
+diagnostic of scaling rather than stable absolute timings.
+
+| `GOMAXPROCS` | Mean wall time |
+| ------------ | -------------- |
+| 1 | 2.60 s |
+| 2 | 1.69 s |
+| 4 | 1.77 s |
+| 8 | 1.31 s |
+
+Eight logical processors delivered about 2× the single-processor throughput.
+Source discovery and initial page rendering are serial. Layout/include
+rendering and output writes run concurrently with a limit of 20 active
+documents. Parallelizing initial rendering would require preserving the
+semantics of templates that inspect another page's content.
+
+#### Output concurrency and write cost
+
+The current binary was measured on a generated 1000-post site with output
+concurrency temporarily configurable. A dry run still rendered page bodies and
+layouts, but discarded the output. Normal runs also removed the previous output
+tree and created the new one. Forward and reverse sweeps were used because the
+host remained heavily loaded.
+
+| Mode | Forward sweep | Reverse sweep |
+| ---- | ------------- | ------------- |
+| Dry run | 1.41 s | 1.16 s |
+| 1 active output document | 3.53 s | 2.56 s |
+| 2 active output documents | 3.09 s | 2.59 s |
+| 4 active output documents | 2.42 s | 2.59 s |
+| 8 active output documents | 2.25 s | 2.31 s |
+| 20 active output documents | 2.22 s | 2.29 s |
+| 40 active output documents | 2.22 s | 2.47 s |
+
+At the production limit of 20, output-tree removal and output creation added
+36–50% of total wall time relative to the dry run. This identifies the output
+path as a large remaining cost, but does not distinguish storage bandwidth from
+filesystem metadata and syscall overhead. Concurrency saturated between 8 and
+20 active documents; raising the limit from 20 to 40 did not help. The temporary
+configuration hook was removed after the experiment.
+
+### Historical CPU profile breakdown (Liquid 1.8.1)
 
 Profiling `gojekyll build` on the generated 2000-post site (GOMAXPROCS=1) shows:
 

@@ -38,7 +38,8 @@ func includeFromDir(dir string, rc render.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filename, err := utils.JoinWithin(dir, args.Args[0])
+	// The renderer's rooted template store prevents symbolic-link escapes.
+	filename, err := utils.JoinWithinLexical(dir, args.Args[0])
 	if err != nil {
 		return "", err
 	}

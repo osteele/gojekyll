@@ -41,6 +41,7 @@ type Manager struct {
 	Options
 	cfg          config.Config
 	liquidEngine *liquid.Engine
+	layoutCache  sync.Map
 	sassTempDir  string
 	sassHash     string
 	warningMu    sync.Mutex
@@ -76,6 +77,11 @@ func (w Warning) String() string {
 func New(c config.Config, options Options) (*Manager, error) {
 	p := Manager{Options: options, cfg: c}
 	p.liquidEngine = p.makeLiquidEngine()
+	templateStore, err := newRootedTemplateStore(c.Source, options.ThemeDir)
+	if err != nil {
+		return nil, err
+	}
+	p.liquidEngine.RegisterTemplateStore(templateStore)
 	if err := p.copySASSFileIncludes(); err != nil {
 		return nil, err
 	}
