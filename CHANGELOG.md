@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Liquid Assign Dot Notation** (#60, #120): Enabled Jekyll-compatible dot notation on the left-hand side of `assign` tags
+
 ## [0.3.1] - 2026-02-27
 
 ### Fixed
