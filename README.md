@@ -1,7 +1,7 @@
 # Gojekyll
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-15-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 [![go badge][go-svg]][go-url]
@@ -243,15 +243,24 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://code.osteele.com/"><img src="https://avatars.githubusercontent.com/u/674?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Oliver Steele</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Code">💻</a> <a href="#design-osteele" title="Design">🎨</a> <a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Documentation">📖</a> <a href="#ideas-osteele" title="Ideas, Planning, & Feedback">🤔</a> <a href="#infra-osteele" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="#maintenance-osteele" title="Maintenance">🚧</a> <a href="#projectManagement-osteele" title="Project Management">📆</a> <a href="https://github.com/osteele/gojekyll/pulls?q=is%3Apr+reviewed-by%3Aosteele" title="Reviewed Pull Requests">👀</a> <a href="https://github.com/osteele/gojekyll/commits?author=osteele" title="Tests">⚠️</a></td>
-    <td align="center"><a href="https://bep.is/"><img src="https://avatars.githubusercontent.com/u/394382?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bjørn Erik Pedersen</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=bep" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://tqdev.com/"><img src="https://avatars.githubusercontent.com/u/1288217?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Maurits van der Schee</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=mevdschee" title="Code">💻</a></td>
     <td align="center"><a href="https://daniil.it/"><img src="https://avatars.githubusercontent.com/u/7339644?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Daniil Gentili</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=danog" title="Code">💻</a></td>
-    <td align="center"><a href="http://cameronelliott.com/"><img src="https://avatars.githubusercontent.com/u/868689?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cameron Elliott</b></sub></a><br /><a href="#ideas-cameronelliott" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/sirwart"><img src="https://avatars.githubusercontent.com/u/830101?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brian Smith</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=sirwart" title="Code">💻</a></td>
-    <td align="center"><a href="https://chimbori.com/"><img src="https://avatars.githubusercontent.com/u/24304662?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chimbori</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=chimbori" title="Code">💻</a></td>
+    <td align="center"><a href="https://chimbori.com/"><img src="https://avatars.githubusercontent.com/u/24304662?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chimbori</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=chimbori" title="Code">💻</a> <a href="https://github.com/osteele/gojekyll/issues?q=author%3Achimbori" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://tqdev.com/"><img src="https://avatars.githubusercontent.com/u/1288217?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Maurits van der Schee</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=mevdschee" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/MikeCongdon1"><img src="https://avatars.githubusercontent.com/u/11522648?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Mike Congdon</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=MikeCongdon1" title="Code">💻</a> <a href="https://github.com/osteele/gojekyll/issues?q=author%3AMikeCongdon1" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://bep.is/"><img src="https://avatars.githubusercontent.com/u/394382?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Bjørn Erik Pedersen</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/commits?author=bep" title="Documentation">📖</a></td>
   </tr>
   <tr>
-    <td align="center"><a href="https://bernsteinbear.com/"><img src="https://avatars.githubusercontent.com/u/401167?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Max Bernstein</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Atekknolagi" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://bernsteinbear.com/"><img src="https://avatars.githubusercontent.com/u/401167?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Max Bernstein</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Atekknolagi" title="Bug reports">🐛</a> <a href="#ideas-tekknolagi" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://www.cs.cornell.edu/~asampson/"><img src="https://avatars.githubusercontent.com/u/188033?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Adrian Sampson</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Asampsyo" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/yuqianyi1001"><img src="https://avatars.githubusercontent.com/u/52897651?v=4?s=100" width="100px;" alt=""/><br /><sub><b>愚千一</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Ayuqianyi1001" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://cameronelliott.com/"><img src="https://avatars.githubusercontent.com/u/868689?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Cameron Elliott</b></sub></a><br /><a href="#ideas-cameronelliott" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/manastungare"><img src="https://avatars.githubusercontent.com/u/343845?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Manas Tungare</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Amanastungare" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/edgan"><img src="https://avatars.githubusercontent.com/u/3506737?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nathan Grennan</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Aedgan" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/abhijeetbodas2001"><img src="https://avatars.githubusercontent.com/u/55339528?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Abhijeet Bodas</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Aabhijeetbodas2001" title="Bug reports">🐛</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/train860"><img src="https://avatars.githubusercontent.com/u/6874537?v=4?s=100" width="100px;" alt=""/><br /><sub><b>train860</b></sub></a><br /><a href="https://github.com/osteele/gojekyll/issues?q=author%3Atrain860" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
