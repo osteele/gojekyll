@@ -42,3 +42,24 @@ func TestIncludeRelativeTag(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, "include_relative target", strings.TrimSpace(string(s)))
 }
+
+func TestIncludeRelativeTagRejectsParentTraversal(t *testing.T) {
+	engine := liquid.NewEngine()
+	cfg := config.Default()
+	AddJekyllTags(engine, &cfg, nil, func(string) (string, bool) { return "", false })
+
+	path := "testdata/dir/include_relative_source.md"
+	tpl, err := engine.ParseTemplateLocation([]byte(`{% include_relative ../secret.html %}`), path, 1)
+	require.NoError(t, err)
+	_, err = tpl.Render(liquid.Bindings{})
+	require.ErrorContains(t, err, "escapes")
+}
+
+func TestIncludeTagRejectsParentTraversal(t *testing.T) {
+	engine := liquid.NewEngine()
+	cfg := config.Default()
+	AddJekyllTags(engine, &cfg, []string{"testdata/_includes"}, func(string) (string, bool) { return "", false })
+
+	_, err := engine.ParseAndRenderString(`{% include ../secret.html %}`, liquid.Bindings{})
+	require.ErrorContains(t, err, "escapes")
+}

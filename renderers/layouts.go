@@ -47,7 +47,10 @@ func (p *Manager) FindLayout(base string, fmp *map[string]interface{}) (tpl *liq
 loop:
 	for _, dir := range p.layoutDirs() {
 		for _, ext := range exts {
-			filename = filepath.Join(dir, base+ext)
+			filename, err = utils.JoinWithin(dir, base+ext)
+			if err != nil {
+				return nil, err
+			}
 			content, err = os.ReadFile(filename)
 			if err == nil {
 				found = true

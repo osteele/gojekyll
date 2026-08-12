@@ -2,9 +2,9 @@ package tags
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 
+	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid/render"
 )
 
@@ -19,8 +19,7 @@ func (tc tagContext) includeTag(rc render.Context) (s string, err error) {
 }
 
 func (tc tagContext) includeRelativeTag(rc render.Context) (string, error) {
-	// TODO "Note that you cannot use the ../ syntax"
-	return includeFromDir(path.Dir(rc.SourceFile()), rc)
+	return includeFromDir(filepath.Dir(rc.SourceFile()), rc)
 }
 
 func includeFromDir(dir string, rc render.Context) (string, error) {
@@ -39,6 +38,9 @@ func includeFromDir(dir string, rc render.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	filename := filepath.Join(dir, args.Args[0])
+	filename, err := utils.JoinWithin(dir, args.Args[0])
+	if err != nil {
+		return "", err
+	}
 	return rc.RenderFile(filename, map[string]interface{}{"include": include})
 }

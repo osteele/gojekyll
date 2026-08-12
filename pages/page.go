@@ -97,19 +97,26 @@ func (p *page) Reload() error {
 	if err := p.file.Reload(); err != nil {
 		return err
 	}
-	// FIXME use original defaults
 	raw, lineNo, err := readFrontMatter(&p.file)
 	if err != nil {
 		return err
 	}
 	p.firstLine = lineNo
 	p.raw = raw
+	if err := p.setPermalink(); err != nil {
+		return err
+	}
 	p.reset()
 	return nil
 }
 
 func (p *page) reset() {
+	p.m.Lock()
+	defer p.m.Unlock()
 	p.contentOnce = sync.Once{}
+	p.content = ""
+	p.contentError = nil
+	p.excerpt = nil
 	p.rendered = false
 }
 
@@ -123,7 +130,7 @@ func readFrontMatter(f *file) (b []byte, lineNo int, err error) {
 	if err != nil {
 		return
 	}
-	f.fm = f.fm.Merged(fm)
+	f.fm = f.dfm.Merged(fm)
 	return
 }
 

@@ -30,6 +30,9 @@ func (s *Site) findTheme() error {
 }
 
 func (s *Site) readThemeAssets() error {
+	if s.themeDir == "" {
+		return nil
+	}
 	err := s.readFiles(filepath.Join(s.themeDir, "assets"), s.themeDir)
 	if os.IsNotExist(err) {
 		return nil

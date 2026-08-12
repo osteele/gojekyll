@@ -76,6 +76,8 @@ func (s *Site) readFiles(dir, base string) error {
 		}
 		rel := utils.MustRel(base, filename)
 		switch {
+		case info.IsDir() && s.isDestinationPath(filename):
+			return filepath.SkipDir
 		case info.IsDir() && s.Exclude(rel):
 			return filepath.SkipDir
 		case info.IsDir():

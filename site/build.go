@@ -11,6 +11,9 @@ import (
 
 // Clean the destination. Remove files that aren't in keep_files, and resulting empty directories.
 func (s *Site) Clean() error {
+	if err := s.validateDestination(); err != nil {
+		return err
+	}
 	// If destination directory doesn't exist, there's nothing to clean
 	if _, err := os.Stat(s.DestDir()); os.IsNotExist(err) {
 		return nil

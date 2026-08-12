@@ -40,3 +40,28 @@ func TestURLPathClean(t *testing.T) {
 	require.Equal(t, "/b", URLPathClean("/a/../b"))
 	require.Equal(t, "/", URLPathClean("/"))
 }
+
+func TestJoinWithin(t *testing.T) {
+	root := t.TempDir()
+	inside, err := JoinWithin(root, filepath.Join("nested", "file.html"))
+	require.NoError(t, err)
+	require.Equal(t, filepath.Join(root, "nested", "file.html"), inside)
+
+	_, err = JoinWithin(root, filepath.Join("..", "secret.html"))
+	require.ErrorContains(t, err, "escapes")
+	_, err = JoinWithin(root, filepath.Join(root, "secret.html"))
+	require.ErrorContains(t, err, "absolute path")
+}
+
+func TestJoinWithinRejectsSymlinkEscape(t *testing.T) {
+	parent := t.TempDir()
+	root := filepath.Join(parent, "root")
+	outside := filepath.Join(parent, "outside")
+	require.NoError(t, os.Mkdir(root, 0o755))
+	require.NoError(t, os.Mkdir(outside, 0o755))
+	if err := os.Symlink(outside, filepath.Join(root, "link")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	_, err := JoinWithin(root, "link")
+	require.ErrorContains(t, err, "symlink")
+}

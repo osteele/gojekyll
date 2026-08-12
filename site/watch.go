@@ -97,7 +97,7 @@ func (s *Site) tryEventWatcher() (<-chan string, error) {
 		}
 
 		rel := utils.MustRel(sourceDir, path)
-		if path == s.DestDir() || s.shouldIgnoreDir(rel) {
+		if s.isDestinationPath(path) || s.shouldIgnoreDir(rel) {
 			return filepath.SkipDir
 		}
 
@@ -138,7 +138,7 @@ func (s *Site) makeEventWatcher() (<-chan string, error) {
 			if info.IsDir() {
 				// Skip excluded directories and destination directory
 				rel := utils.MustRel(sourceDir, path)
-				if path == s.DestDir() || s.shouldIgnoreDir(rel) {
+				if s.isDestinationPath(path) || s.shouldIgnoreDir(rel) {
 					return filepath.SkipDir
 				}
 				if err := w.Add(path); err != nil {

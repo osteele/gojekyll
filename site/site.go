@@ -166,21 +166,24 @@ func (s *Site) KeepFile(filename string) bool {
 
 // FilePathPage returns a Page, give a file path relative to site source directory.
 func (s *Site) FilePathPage(rel string) (Document, bool) {
-	// Normalize the input path to use OS-specific separators
-	// This handles cases where templates use forward slashes (e.g., {% link _c1/c1p1.md %})
-	rel = filepath.FromSlash(rel)
-
-	// This looks wasteful. If it shows up as a hotspot, you know what to do.
-	for _, p := range s.Routes {
-		if p.Source() != "" {
-			if r, err := filepath.Rel(s.SourceDir(), p.Source()); err == nil {
-				if r == rel {
-					return p, true
-				}
-			}
-		}
+	d := s.documentForRelativePath(rel)
+	if d != nil && s.Routes[d.URL()] == d {
+		return d, true
 	}
 	return nil, false
+}
+
+func (s *Site) documentForRelativePath(rel string) Document {
+	rel = filepath.Clean(filepath.FromSlash(rel))
+	for _, d := range s.docs {
+		if d.Source() == "" {
+			continue
+		}
+		if sourceRel, err := filepath.Rel(s.SourceDir(), d.Source()); err == nil && sourceRel == rel {
+			return d
+		}
+	}
+	return nil
 }
 
 // FilenameURLPath returns a page's URL path, give a relative file path relative to the site source directory.

@@ -32,47 +32,42 @@ func main() {
 
 func generate(dir string, posts, pages int) error {
 	start := time.Now()
-
 	if err := os.RemoveAll(dir); err != nil {
 		return err
 	}
-
-	dirs := []string{
-		filepath.Join(dir, "_layouts"),
-		filepath.Join(dir, "_includes"),
-		filepath.Join(dir, "_posts"),
+	if err := writeBenchmarkStructure(dir); err != nil {
+		return err
 	}
-	for _, d := range dirs {
-		if err := os.MkdirAll(d, 0o755); err != nil {
+	if err := writePosts(dir, posts); err != nil {
+		return err
+	}
+	if err := writePages(dir, pages); err != nil {
+		return err
+	}
+	printSummary(dir, posts, pages, time.Since(start))
+	return nil
+}
+
+func writeBenchmarkStructure(dir string) error {
+	for _, d := range []string{"_layouts", "_includes", "_posts"} {
+		if err := os.MkdirAll(filepath.Join(dir, d), 0o755); err != nil {
 			return err
 		}
 	}
-
-	// _config.yml
 	if err := writeFile(filepath.Join(dir, "_config.yml"), configYML); err != nil {
 		return err
 	}
-
-	// Layouts
-	for name, content := range layouts {
-		if err := writeFile(filepath.Join(dir, "_layouts", name), content); err != nil {
-			return err
+	for subdir, files := range map[string]map[string]string{"_layouts": layouts, "_includes": includes} {
+		for name, content := range files {
+			if err := writeFile(filepath.Join(dir, subdir, name), content); err != nil {
+				return err
+			}
 		}
 	}
+	return writeFile(filepath.Join(dir, "index.html"), indexHTML)
+}
 
-	// Includes
-	for name, content := range includes {
-		if err := writeFile(filepath.Join(dir, "_includes", name), content); err != nil {
-			return err
-		}
-	}
-
-	// index.html
-	if err := writeFile(filepath.Join(dir, "index.html"), indexHTML); err != nil {
-		return err
-	}
-
-	// Posts
+func writePosts(dir string, posts int) error {
 	categories := []string{"tech", "science", "travel", "food", "music"}
 	tags := []string{"go", "ruby", "python", "javascript", "rust", "benchmarks", "performance", "caching"}
 	funcMap := template.FuncMap{"title": titleCase}
@@ -97,8 +92,10 @@ func generate(dir string, posts, pages int) error {
 		}
 		f.Close()
 	}
+	return nil
+}
 
-	// Standalone pages
+func writePages(dir string, pages int) error {
 	pageTmpl := template.Must(template.New("page").Parse(pageTemplate))
 	for i := range pages {
 		path := filepath.Join(dir, fmt.Sprintf("page-%03d.html", i))
@@ -112,8 +109,10 @@ func generate(dir string, posts, pages int) error {
 		}
 		f.Close()
 	}
+	return nil
+}
 
-	elapsed := time.Since(start)
+func printSummary(dir string, posts, pages int, elapsed time.Duration) {
 	fmt.Printf("Generated benchmark site in %s:\n", dir)
 	fmt.Printf("  %d posts, %d pages\n", posts, pages)
 	fmt.Printf("  ~%d template parses per build (only ~15 unique templates)\n", posts*10+pages*5)
@@ -124,7 +123,6 @@ func generate(dir string, posts, pages int) error {
 	fmt.Println("To profile:")
 	fmt.Println("  go build && ./gojekyll benchmark -s", dir, "--profile")
 	fmt.Println("  go tool pprof gojekyll.prof")
-	return nil
 }
 
 type postData struct {

@@ -1,11 +1,50 @@
 package utils
 
 import (
+	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
 )
+
+// JoinWithin joins name to root and rejects paths that escape root, including
+// through symlinks when the target exists.
+func JoinWithin(root, name string) (string, error) {
+	if filepath.IsAbs(name) {
+		return "", fmt.Errorf("absolute path %q is not allowed", name)
+	}
+	rootAbs, err := filepath.Abs(root)
+	if err != nil {
+		return "", err
+	}
+	joined, err := filepath.Abs(filepath.Join(rootAbs, name))
+	if err != nil {
+		return "", err
+	}
+	if !pathWithin(rootAbs, joined) {
+		return "", fmt.Errorf("path %q escapes %q", name, root)
+	}
+
+	resolvedRoot, rootErr := filepath.EvalSymlinks(rootAbs)
+	resolvedJoined, joinedErr := filepath.EvalSymlinks(joined)
+	if rootErr == nil && joinedErr == nil && !pathWithin(resolvedRoot, resolvedJoined) {
+		return "", fmt.Errorf("path %q escapes %q through a symlink", name, root)
+	}
+	if rootErr != nil && !os.IsNotExist(rootErr) {
+		return "", rootErr
+	}
+	if joinedErr != nil && !os.IsNotExist(joinedErr) {
+		return "", joinedErr
+	}
+	return joined, nil
+}
+
+func pathWithin(root, candidate string) bool {
+	rel, err := filepath.Rel(filepath.Clean(root), filepath.Clean(candidate))
+	return err == nil && rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator))
+}
 
 // ParseFilenameDateTitle returns the date for a filename that uses Jekyll post convention.
 // It also returns a bool indicating whether a date was found.

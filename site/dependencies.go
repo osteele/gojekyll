@@ -1,6 +1,7 @@
 package site
 
 import (
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -57,6 +58,13 @@ func (s *Site) RequiresFullReload(paths []string) bool {
 			return true
 		case strings.HasPrefix(path, s.cfg.SassDir()):
 			return true
+		case s.documentForRelativePath(path) == nil:
+			return true
+		default:
+			_, err := os.Stat(filepath.Join(s.SourceDir(), filepath.FromSlash(path)))
+			if os.IsNotExist(err) {
+				return true
+			}
 		}
 	}
 	return false
@@ -89,6 +97,9 @@ loop:
 // Returns true if the file or a parent directory is excluded.
 // Cf. Site.Exclude.
 func (s *Site) fileAffectsBuild(rel string) bool {
+	if s.isDestinationPath(filepath.Join(s.SourceDir(), rel)) {
+		return false
+	}
 	for rel != "" {
 		switch {
 		case rel == ".":
