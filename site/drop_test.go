@@ -7,6 +7,7 @@ import (
 
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/pages"
+	"github.com/osteele/liquid"
 	"github.com/osteele/liquid/tags"
 	"github.com/stretchr/testify/require"
 )
@@ -70,6 +71,18 @@ func TestSite_readDataFiles_skips_directories(t *testing.T) {
 	// Both alpha and zulu should be loaded despite subdir/ between them
 	require.Contains(t, site.data, "alpha", "data file before directory should be loaded")
 	require.Contains(t, site.data, "zulu", "data file after directory should be loaded")
+}
+
+func TestSiteDataPreservesYAMLMappingOrderInTemplates(t *testing.T) {
+	drop := readTestSiteDrop(t)
+	engine := liquid.NewEngine()
+
+	result, err := engine.ParseAndRenderString(
+		`{% for pair in site.data.ordered %}{{ pair[0] }}{% unless forloop.last %},{% endunless %}{% endfor %}`,
+		liquid.Bindings{"site": drop},
+	)
+	require.NoError(t, err)
+	require.Equal(t, "zulu,alpha,middle", result)
 }
 
 func TestSite_ToLiquid_tags_vs_categories(t *testing.T) {

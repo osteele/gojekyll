@@ -1,6 +1,7 @@
 package renderers
 
 import (
+	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
@@ -10,9 +11,12 @@ import (
 	"github.com/osteele/gojekyll/config"
 	"github.com/osteele/gojekyll/filters"
 	"github.com/osteele/gojekyll/internal/sasserrors"
+	"github.com/osteele/gojekyll/logger"
 	"github.com/osteele/gojekyll/tags"
 	"github.com/osteele/gojekyll/utils"
 	"github.com/osteele/liquid"
+	"github.com/osteele/liquid/expressions"
+	"github.com/osteele/liquid/render"
 )
 
 // Global Sass transpiler singleton, shared across all Manager instances.
@@ -39,12 +43,33 @@ type Manager struct {
 	liquidEngine *liquid.Engine
 	sassTempDir  string
 	sassHash     string
+	warningMu    sync.Mutex
 }
 
 // Options configures a rendering manager.
 type Options struct {
 	RelativeFilenameToURL tags.LinkTagHandler
 	ThemeDir              string
+	WarningHandler        func(Warning)
+}
+
+// Warning is a non-fatal Liquid compatibility diagnostic.
+type Warning struct {
+	Path    string
+	Line    int
+	Message string
+}
+
+func (w Warning) String() string {
+	line := ""
+	if w.Line > 0 {
+		line = fmt.Sprintf(" (line %d)", w.Line)
+	}
+	path := ""
+	if w.Path != "" {
+		path = " in " + w.Path
+	}
+	return fmt.Sprintf("Liquid warning%s: %s%s", line, w.Message, path)
 }
 
 // New makes a rendering manager.
@@ -180,9 +205,53 @@ func (p *Manager) makeLiquidEngine() *liquid.Engine {
 	}
 	engine := liquid.NewEngine()
 	engine.EnableJekyllExtensions()
+	p.registerJekyllAssignTag(engine)
 	filters.AddJekyllFilters(engine, &p.cfg)
 	tags.AddJekyllTags(engine, &p.cfg, dirs, p.RelativeFilenameToURL)
 	return engine
+}
+
+func (p *Manager) registerJekyllAssignTag(engine *liquid.Engine) {
+	engine.RegisterTag("assign", func(ctx render.Context) (string, error) {
+		stmt, err := expressions.ParseStatement(expressions.AssignStatementSelector, ctx.TagArgs())
+		if err != nil {
+			return "", ctx.WrapError(err)
+		}
+		value, err := ctx.Evaluate(stmt.ValueFn)
+		if err != nil {
+			return "", err
+		}
+		if len(stmt.Path) == 1 {
+			ctx.Set(stmt.Path[0], value)
+			return "", nil
+		}
+		if err := ctx.SetPath(stmt.Path, value); err != nil {
+			if strings.HasPrefix(err.Error(), "cannot set property on non-object at ") {
+				loc := ctx.Errorf("")
+				p.warn(Warning{
+					Path: loc.Path(),
+					Line: loc.LineNumber(),
+					Message: fmt.Sprintf(
+						"`{%% assign %s %%}` has no effect because `%s` is not an assignable object",
+						ctx.TagArgs(), stmt.Path[0],
+					),
+				})
+				return "", nil
+			}
+			return "", ctx.WrapError(err)
+		}
+		return "", nil
+	})
+}
+
+func (p *Manager) warn(warning Warning) {
+	if p.WarningHandler != nil {
+		p.warningMu.Lock()
+		defer p.warningMu.Unlock()
+		p.WarningHandler(warning)
+		return
+	}
+	logger.Default().Warn("%s", warning)
 }
 
 // getSassTranspiler returns the global SASS transpiler singleton, initializing it if necessary.

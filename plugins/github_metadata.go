@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/google/go-github/github"
 	"github.com/osteele/gojekyll/config"
@@ -87,7 +89,75 @@ func (p jekyllGithubMetadataPlugin) ModifySiteDrop(s Site, d map[string]interfac
 	return err
 }
 
+const githubRepoCacheTTL = 10 * time.Minute
+
+type githubRepoCacheEntry struct {
+	repo      *github.Repository
+	expiresAt time.Time
+}
+
+type githubRepoFetch struct {
+	done chan struct{}
+	repo *github.Repository
+	err  error
+}
+
+type githubRepoCache struct {
+	mu       sync.Mutex
+	ttl      time.Duration
+	entries  map[string]githubRepoCacheEntry
+	inFlight map[string]*githubRepoFetch
+}
+
+func newGitHubRepoCache(ttl time.Duration) *githubRepoCache {
+	return &githubRepoCache{
+		ttl:      ttl,
+		entries:  make(map[string]githubRepoCacheEntry),
+		inFlight: make(map[string]*githubRepoFetch),
+	}
+}
+
+func (c *githubRepoCache) get(
+	nwo string,
+	now time.Time,
+	fetch func(string) (*github.Repository, error),
+) (*github.Repository, error) {
+	c.mu.Lock()
+	if entry, ok := c.entries[nwo]; ok && now.Before(entry.expiresAt) {
+		c.mu.Unlock()
+		return entry.repo, nil
+	}
+	if request, ok := c.inFlight[nwo]; ok {
+		c.mu.Unlock()
+		<-request.done
+		return request.repo, request.err
+	}
+	request := &githubRepoFetch{done: make(chan struct{})}
+	c.inFlight[nwo] = request
+	c.mu.Unlock()
+
+	request.repo, request.err = fetch(nwo)
+
+	c.mu.Lock()
+	if request.err == nil {
+		c.entries[nwo] = githubRepoCacheEntry{
+			repo:      request.repo,
+			expiresAt: now.Add(c.ttl),
+		}
+	}
+	delete(c.inFlight, nwo)
+	close(request.done)
+	c.mu.Unlock()
+	return request.repo, request.err
+}
+
+var cachedGitHubRepos = newGitHubRepoCache(githubRepoCacheTTL)
+
 func getGitHubRepo(nwo string) (*github.Repository, error) {
+	return cachedGitHubRepos.get(nwo, time.Now(), fetchGitHubRepo)
+}
+
+func fetchGitHubRepo(nwo string) (*github.Repository, error) {
 	ctx := context.Background()
 	var ts oauth2.TokenSource
 	if tok := os.Getenv("JEKYLL_GITHUB_TOKEN"); tok != "" {
