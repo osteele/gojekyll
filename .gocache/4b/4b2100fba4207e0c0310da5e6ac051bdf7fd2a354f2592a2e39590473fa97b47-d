@@ -1,9 +1,0 @@
-./block.go
-./doc.go
-./entities.go
-./esc.go
-./html.go
-./inline.go
-./markdown.go
-./node.go
-./smartypants.go
