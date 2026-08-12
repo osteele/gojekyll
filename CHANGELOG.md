@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Liquid Assign Dot Notation** (#60, #120): Enabled Jekyll-compatible dot notation on the left-hand side of `assign` tags
+- **Liquid Compatibility Warnings** (#129): Assignments to immutable Jekyll drops now emit source-located warnings and remain no-ops, matching Ruby Jekyll output
+
+### Changed
+
+- **GitHub Metadata Cache** (#43): Reuse successful GitHub repository metadata requests for ten minutes and coalesce concurrent requests
 
 ## [0.3.1] - 2026-02-27
 
