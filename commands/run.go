@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -11,6 +12,24 @@ import (
 	"github.com/osteele/gojekyll/site"
 	"github.com/osteele/gojekyll/version"
 )
+
+// commandEntry describes how to run one CLI subcommand.
+type commandEntry struct {
+	needsSite bool
+	run       func(*site.Site) error
+}
+
+var commandTable = map[string]commandEntry{
+	benchmark.FullCommand():  {needsSite: false, run: func(*site.Site) error { return benchmarkCommand() }},
+	pluginsApp.FullCommand(): {needsSite: false, run: func(*site.Site) error { pluginsCommand(); return nil }},
+	versionCmd.FullCommand(): {needsSite: false, run: func(*site.Site) error { return versionCommand() }},
+	build.FullCommand():      {needsSite: true, run: buildCommand},
+	clean.FullCommand():      {needsSite: true, run: cleanCommand},
+	render.FullCommand():     {needsSite: true, run: renderCommand},
+	routes.FullCommand():     {needsSite: true, run: func(s *site.Site) error { routesCommand(s); return nil }},
+	serve.FullCommand():      {needsSite: true, run: serveCommand},
+	variables.FullCommand():  {needsSite: true, run: variablesCommand},
+}
 
 // ParseAndRun parses and executes the command-line arguments.
 func ParseAndRun(args []string) error {
@@ -30,23 +49,22 @@ func ParseAndRun(args []string) error {
 	return run(cmd)
 }
 
-func run(cmd string) error { // nolint: gocyclo
-	// dispatcher gets to ignore cyclo threshold ^
+func run(cmd string) error {
 	// Set quiet mode on logger
 	log.SetQuiet(quiet)
 
 	if profile || cmd == benchmark.FullCommand() {
 		defer setupProfiling()()
 	}
-	// These commands run *without* loading the site
-	switch cmd {
-	case benchmark.FullCommand():
-		return benchmarkCommand()
-	case pluginsApp.FullCommand():
-		pluginsCommand()
-		return nil
-	case versionCmd.FullCommand():
-		return versionCommand()
+
+	entry, ok := commandTable[cmd]
+	if !ok {
+		// kingpin should have provided help and exited before here
+		panic(fmt.Sprintf("unknown command: %s", cmd))
+	}
+
+	if !entry.needsSite {
+		return entry.run(nil)
 	}
 
 	site, err := loadSite(*source, options)
@@ -59,26 +77,7 @@ func run(cmd string) error { // nolint: gocyclo
 	if err != nil {
 		return err
 	}
-
-	// These commands run *after* the site is loaded
-	switch cmd {
-	case build.FullCommand():
-		return buildCommand(site)
-	case clean.FullCommand():
-		return cleanCommand(site)
-	case render.FullCommand():
-		return renderCommand(site)
-	case routes.FullCommand():
-		routesCommand(site)
-		return nil
-	case serve.FullCommand():
-		return serveCommand(site)
-	case variables.FullCommand():
-		return variablesCommand(site)
-	default:
-		// kingpin should have provided help and exited before here
-		panic("exhaustive switch")
-	}
+	return entry.run(site)
 }
 
 // Load the site, and print the common banner settings.
