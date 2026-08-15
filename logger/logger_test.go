@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestLogger(t *testing.T) {
@@ -120,5 +122,50 @@ func TestPrintln(t *testing.T) {
 	output := outBuf.String()
 	if !strings.Contains(output, "test message") {
 		t.Errorf("Println output incorrect: %s", output)
+	}
+}
+
+// TestLoggerStateMatrix verifies output routing for every combination of
+// configured level, quiet mode, and message level.
+func TestLoggerStateMatrix(t *testing.T) {
+	tests := []struct {
+		name      string
+		level     Level
+		quiet     bool
+		callLevel Level
+		wantOut   bool
+		wantErr   bool
+	}{
+		{"info at info level", InfoLevel, false, InfoLevel, true, false},
+		{"debug at info level", InfoLevel, false, DebugLevel, false, false},
+		{"warn at info level", InfoLevel, false, WarnLevel, false, true},
+		{"error at warn level", WarnLevel, false, ErrorLevel, false, true},
+		{"info suppressed by quiet", InfoLevel, true, InfoLevel, false, false},
+		{"warn not suppressed by quiet", InfoLevel, true, WarnLevel, false, true},
+		{"debug suppressed by level and quiet", WarnLevel, true, DebugLevel, false, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var outBuf, errBuf bytes.Buffer
+			l := New()
+			l.SetOutput(&outBuf)
+			l.SetErrorOutput(&errBuf)
+			l.SetLevel(tt.level)
+			l.SetQuiet(tt.quiet)
+
+			l.log(tt.callLevel, "msg")
+
+			if tt.wantOut {
+				require.Contains(t, outBuf.String(), "msg")
+			} else {
+				require.Empty(t, outBuf.String())
+			}
+			if tt.wantErr {
+				require.Contains(t, errBuf.String(), "msg")
+			} else {
+				require.Empty(t, errBuf.String())
+			}
+		})
 	}
 }

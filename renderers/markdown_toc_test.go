@@ -3,6 +3,8 @@ package renderers
 import (
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestTOCGeneration(t *testing.T) {
@@ -357,6 +359,114 @@ func TestNoTocParagraphRemoval(t *testing.T) {
 	}
 	if !containsString(tocContent, "Ciabatta") {
 		t.Error("Ciabatta should appear in TOC")
+	}
+}
+
+// TestTOCMarkerStateTable enumerates marker context states and the expected
+// replace-or-leave-literal action.
+func TestTOCMarkerStateTable(t *testing.T) {
+	tests := []struct {
+		name          string
+		html          string
+		marker        string
+		wantProcessed bool
+		wantLiteral   bool
+	}{
+		{
+			name: "only content in unordered list",
+			html: `<h2 id="a">A</h2>
+<ul>
+<li>{:toc}</li>
+</ul>`,
+			marker:        "{:toc}",
+			wantProcessed: true,
+			wantLiteral:   false,
+		},
+		{
+			name: "standalone in paragraph",
+			html: `<h2 id="a">A</h2>
+<p>{:toc}</p>`,
+			marker:        "{:toc}",
+			wantProcessed: false,
+			wantLiteral:   true,
+		},
+		{
+			name: "unordered list with other text",
+			html: `<h2 id="a">A</h2>
+<ul>
+<li>TOC {:toc}</li>
+</ul>`,
+			marker:        "{:toc}",
+			wantProcessed: true,
+			wantLiteral:   false,
+		},
+		{
+			name: "in ordered list",
+			html: `<h2 id="a">A</h2>
+<ol>
+<li>{:toc}</li>
+</ol>`,
+			marker:        "{:toc}",
+			wantProcessed: false,
+			wantLiteral:   true,
+		},
+		{
+			name: "in code block",
+			html: `<h2 id="a">A</h2>
+<pre><code>{:toc}</code></pre>`,
+			marker:        "{:toc}",
+			wantProcessed: false,
+			wantLiteral:   true,
+		},
+		{
+			name: "inline in heading",
+			html: `<h2 id="a">A {:toc}</h2>
+<h2 id="b">B</h2>`,
+			marker:        "{:toc}",
+			wantProcessed: false,
+			wantLiteral:   true,
+		},
+		{
+			name: "block syntax is not processed",
+			html: `<h2 id="a">A</h2>
+<p>{::toc}</p>`,
+			marker:        "{::toc}",
+			wantProcessed: false,
+			wantLiteral:   true,
+		},
+		{
+			name: "whitespace variant in unordered list",
+			html: `<h2 id="a">A</h2>
+<ul>
+<li>{: toc }</li>
+</ul>`,
+			marker:        "{: toc }",
+			wantProcessed: true,
+			wantLiteral:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			out, err := processTOC([]byte(tt.html), nil)
+			require.NoError(t, err)
+			outStr := string(out)
+			hasTOC := containsString(outStr, `<ul id="markdown-toc">`)
+			hasLiteral := containsString(outStr, tt.marker)
+
+			if tt.wantProcessed && !hasTOC {
+				t.Errorf("expected TOC to be generated, got:\n%s", outStr)
+			}
+			if !tt.wantProcessed && hasTOC {
+				t.Errorf("did not expect TOC to be generated, got:\n%s", outStr)
+			}
+			if tt.wantLiteral && !hasLiteral {
+				t.Errorf("expected literal marker %q in output, got:\n%s", tt.marker, outStr)
+			}
+			if !tt.wantLiteral && hasLiteral {
+				t.Errorf("did not expect literal marker %q in output, got:\n%s", tt.marker, outStr)
+			}
+		})
 	}
 }
 
