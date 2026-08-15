@@ -465,24 +465,25 @@ func isEmptyOrContainsNode(elem *html.Node, target *html.Node) bool {
 	return true
 }
 
+// noOpMarker leaves the TOC marker unchanged in the DOM.
+func noOpMarker(*MarkerContext, string) error { return nil }
+
+// tocMarkerActions maps each marker context to the action that performs the
+// appropriate DOM replacement. Most contexts leave the marker literal.
+var tocMarkerActions = map[MarkerType]func(*MarkerContext, string) error{
+	MarkerInCodeBlock:     noOpMarker, // includes code blocks and ordered/non-only-content UL
+	MarkerStandalone:      noOpMarker,
+	MarkerInOrderedList:   noOpMarker,
+	MarkerInUnorderedList: replaceUnorderedListWithTOC,
+}
+
 // replaceTOCMarkerInDOM replaces a TOC marker in the DOM with the generated TOC HTML
 func replaceTOCMarkerInDOM(ctx *MarkerContext, tocHTML string) error {
-	switch ctx.Type {
-	case MarkerInCodeBlock, MarkerStandalone, MarkerInOrderedList:
-		// Don't replace these markers - they should be displayed literally
-		// - MarkerInCodeBlock: markers in code blocks remain literal
-		// - MarkerStandalone: Jekyll doesn't process {:toc} outside of lists
-		// - MarkerInOrderedList: Jekyll doesn't support {:toc} in <ol>
-		return nil
-
-	case MarkerInUnorderedList:
-		// Replace the entire <ul> parent with the TOC
-		// This is the ONLY Jekyll-compatible TOC replacement pattern
-		return replaceUnorderedListWithTOC(ctx, tocHTML)
-
-	default:
+	action, ok := tocMarkerActions[ctx.Type]
+	if !ok {
 		return fmt.Errorf("unknown marker type: %d", ctx.Type)
 	}
+	return action(ctx, tocHTML)
 }
 
 // replaceUnorderedListWithTOC replaces the entire <ul> element with the TOC HTML
