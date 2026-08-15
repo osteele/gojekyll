@@ -271,6 +271,7 @@ func TestSite_fileAffectsBuildStateTable(t *testing.T) {
 		{"default included file", nil, ".htaccess", true},
 		{"destination path", nil, "_site/index.html", false},
 		{"excluded directory prefix", nil, "node_modules/foo.js", false},
+		{"nested underscore directory", nil, "assets/_hidden/file.md", false},
 		{
 			name: "include overrides exclude for exact path",
 			setup: func(s *Site) {
@@ -280,7 +281,7 @@ func TestSite_fileAffectsBuildStateTable(t *testing.T) {
 			path:     "secret.md",
 			expected: true,
 		},
-		{"dotfile in subdirectory is currently treated as affecting build", nil, "dir/.hidden", true},
+		{"dotfile in subdirectory is excluded", nil, "dir/.hidden", false},
 	}
 
 	for _, tt := range tests {

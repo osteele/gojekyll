@@ -376,15 +376,14 @@ func classifyMarkerContext(textNode *html.Node, text string) *MarkerContext {
 
 	// Determine marker type based on context
 	// Jekyll's TOC replacement rules (verified against Jekyll 4.4.1):
-	// 1. {:toc} in <ul> where it's the only content -> replace entire <ul> with TOC
+	// 1. {:toc} in <ul> -> replace entire <ul> with TOC
 	// 2. {:toc} in <ol> -> leave as-is (Jekyll doesn't support this)
-	// 3. {:toc} standalone (not in a list) -> replace marker with TOC
+	// 3. {:toc} standalone (not in a list) -> leave as-is
 
 	// If we're in any list (UL or OL)
 	if (parentUL != nil || parentOL != nil) && parentLI != nil {
 		// {:toc} in unordered list - Jekyll's primary TOC pattern
-		// Only replace the entire list if {:toc} is the only content
-		if parentUL != nil && isOnlyContentInListItem(textNode, parentLI) {
+		if parentUL != nil && canReplaceUnorderedList(textNode, parentLI) {
 			return &MarkerContext{
 				Type:       MarkerInUnorderedList,
 				Node:       textNode,
@@ -417,21 +416,22 @@ func classifyMarkerContext(textNode *html.Node, text string) *MarkerContext {
 	}
 }
 
-// isOnlyContentInListItem checks if the marker is the only significant content in the <li>
-func isOnlyContentInListItem(textNode *html.Node, li *html.Node) bool {
-	// Walk all children of the <li> and check if there's only whitespace + the marker
+// canReplaceUnorderedList reports whether the TOC marker is inside an unordered
+// list item that can be replaced entirely with the generated TOC. It checks
+// that no sibling text or element content (other than whitespace or the marker
+// itself) would be discarded. It does not require the marker's own text node to
+// contain only the marker; Jekyll's "* TOC\n{:toc}" pattern includes other text
+// in the same node.
+func canReplaceUnorderedList(textNode *html.Node, li *html.Node) bool {
 	for c := li.FirstChild; c != nil; c = c.NextSibling {
 		if c.Type == html.TextNode {
-			// Check if this is our marker node or just whitespace
 			if c == textNode {
 				continue
 			}
-			// If there's non-whitespace text, it's not the only content
 			if strings.TrimSpace(c.Data) != "" {
 				return false
 			}
 		} else if c.Type == html.ElementNode {
-			// If there are other elements, need to check if they're empty or contain the marker
 			if !isEmptyOrContainsNode(c, textNode) {
 				return false
 			}

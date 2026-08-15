@@ -100,15 +100,8 @@ func (s *Site) fileAffectsBuild(rel string) bool {
 	if s.isDestinationPath(filepath.Join(s.SourceDir(), rel)) {
 		return false
 	}
-	for rel != "" {
-		switch {
-		case rel == ".":
-			return true
-		case utils.MatchList(s.cfg.Include, rel):
-			return true
-		case utils.MatchList(s.cfg.Exclude, rel):
-			return false
-		case strings.HasPrefix(rel, "."):
+	for rel != "" && rel != "." {
+		if s.Exclude(rel) {
 			return false
 		}
 		rel = filepath.Dir(rel)
