@@ -86,21 +86,31 @@ outer:
 	return buf.Bytes(), nil
 }
 
+// markdownMode describes how to handle one value of the markdown="..." attribute.
+type markdownMode struct {
+	process  bool
+	renderer func([]byte) ([]byte, error)
+}
+
+// markdownModes is the state-machine table for markdown attribute values.
+var markdownModes = map[string]markdownMode{
+	"1":     {process: true, renderer: _renderMarkdown},
+	"block": {process: true, renderer: _renderMarkdown},
+	"span":  {process: true, renderer: _renderMarkdownSpan},
+	"0":     {process: false},
+}
+
 // hasMarkdownAttr checks if the current tag has a markdown attribute
 func hasMarkdownAttr(z *html.Tokenizer) (bool, string) {
 	for {
 		k, v, more := z.TagAttr()
 		if string(k) == "markdown" {
 			value := string(v)
-			switch value {
-			case "1", "block", "span":
-				return true, value
-			case "0":
-				return false, value
-			default:
-				// Invalid or unknown markdown attribute value
-				return false, ""
+			if mode, ok := markdownModes[value]; ok {
+				return mode.process, value
 			}
+			// Invalid or unknown markdown attribute value
+			return false, ""
 		}
 		if !more {
 			return false, ""
@@ -153,14 +163,9 @@ loop:
 	var html []byte
 	var err error
 
-	switch mode {
-	case "span":
-		// For span mode, process inline markdown only
-		html, err = _renderMarkdownSpan(buf.Bytes())
-	case "block", "1":
-		// For block and 1 modes, process full markdown
-		html, err = _renderMarkdown(buf.Bytes())
-	default:
+	if mode, ok := markdownModes[mode]; ok && mode.renderer != nil {
+		html, err = mode.renderer(buf.Bytes())
+	} else {
 		// Should never happen as hasMarkdownAttr already filtered
 		html = buf.Bytes()
 	}

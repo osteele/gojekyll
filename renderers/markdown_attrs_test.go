@@ -124,3 +124,34 @@ func TestRenderInnerMarkdownDepthStateTable(t *testing.T) {
 		})
 	}
 }
+
+// renderBySwitch is a stand-in for the original switch-based mode dispatcher,
+// used only to compare dispatch performance against the map-based table.
+func renderBySwitch(mode string, src []byte) ([]byte, error) {
+	switch mode {
+	case "span":
+		return _renderMarkdownSpan(src)
+	case "block", "1":
+		return _renderMarkdown(src)
+	default:
+		return src, nil
+	}
+}
+
+func BenchmarkMarkdownModeDispatchMap(b *testing.B) {
+	src := []byte("*a*")
+	for i := 0; i < b.N; i++ {
+		mode := markdownModes["block"]
+		if mode.renderer == nil {
+			b.Fatal("missing renderer")
+		}
+		_, _ = mode.renderer(src)
+	}
+}
+
+func BenchmarkMarkdownModeDispatchSwitch(b *testing.B) {
+	src := []byte("*a*")
+	for i := 0; i < b.N; i++ {
+		_, _ = renderBySwitch("block", src)
+	}
+}
