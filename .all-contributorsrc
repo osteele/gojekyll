@@ -28,39 +28,12 @@
       ]
     },
     {
-      "login": "bep",
-      "name": "Bjørn Erik Pedersen",
-      "avatar_url": "https://avatars.githubusercontent.com/u/394382?v=4",
-      "profile": "https://bep.is/",
-      "contributions": [
-        "doc"
-      ]
-    },
-    {
-      "login": "mevdschee",
-      "name": "Maurits van der Schee",
-      "avatar_url": "https://avatars.githubusercontent.com/u/1288217?v=4",
-      "profile": "https://tqdev.com/",
-      "contributions": [
-        "code"
-      ]
-    },
-    {
       "login": "danog",
       "name": "Daniil Gentili",
       "avatar_url": "https://avatars.githubusercontent.com/u/7339644?v=4",
       "profile": "https://daniil.it/",
       "contributions": [
         "code"
-      ]
-    },
-    {
-      "login": "cameronelliott",
-      "name": "Cameron Elliott",
-      "avatar_url": "https://avatars.githubusercontent.com/u/868689?v=4",
-      "profile": "http://cameronelliott.com/",
-      "contributions": [
-        "ideas"
       ]
     },
     {
@@ -78,7 +51,36 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/24304662?v=4",
       "profile": "https://chimbori.com/",
       "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "mevdschee",
+      "name": "Maurits van der Schee",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1288217?v=4",
+      "profile": "https://tqdev.com/",
+      "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "MikeCongdon1",
+      "name": "Mike Congdon",
+      "avatar_url": "https://avatars.githubusercontent.com/u/11522648?v=4",
+      "profile": "https://github.com/MikeCongdon1",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "bep",
+      "name": "Bjørn Erik Pedersen",
+      "avatar_url": "https://avatars.githubusercontent.com/u/394382?v=4",
+      "profile": "https://bep.is/",
+      "contributions": [
+        "doc"
       ]
     },
     {
@@ -86,6 +88,70 @@
       "name": "Max Bernstein",
       "avatar_url": "https://avatars.githubusercontent.com/u/401167?v=4",
       "profile": "https://bernsteinbear.com/",
+      "contributions": [
+        "bug",
+        "ideas"
+      ]
+    },
+    {
+      "login": "sampsyo",
+      "name": "Adrian Sampson",
+      "avatar_url": "https://avatars.githubusercontent.com/u/188033?v=4",
+      "profile": "https://www.cs.cornell.edu/~asampson/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "yuqianyi1001",
+      "name": "愚千一",
+      "avatar_url": "https://avatars.githubusercontent.com/u/52897651?v=4",
+      "profile": "https://github.com/yuqianyi1001",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "cameronelliott",
+      "name": "Cameron Elliott",
+      "avatar_url": "https://avatars.githubusercontent.com/u/868689?v=4",
+      "profile": "http://cameronelliott.com/",
+      "contributions": [
+        "ideas"
+      ]
+    },
+    {
+      "login": "manastungare",
+      "name": "Manas Tungare",
+      "avatar_url": "https://avatars.githubusercontent.com/u/343845?v=4",
+      "profile": "https://github.com/manastungare",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "edgan",
+      "name": "Nathan Grennan",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3506737?v=4",
+      "profile": "https://github.com/edgan",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "abhijeetbodas2001",
+      "name": "Abhijeet Bodas",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55339528?v=4",
+      "profile": "https://github.com/abhijeetbodas2001",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "train860",
+      "name": "train860",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6874537?v=4",
+      "profile": "https://github.com/train860",
       "contributions": [
         "bug"
       ]

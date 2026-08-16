@@ -9,12 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Liquid Assign Dot Notation** (#60, #120): Enabled Jekyll-compatible dot notation on the left-hand side of `assign` tags
+- **Liquid Assign Dot Notation** (#60, #120): Enabled Jekyll-compatible dot notation on the left-hand side of `assign` tags. Thanks [@tekknolagi](https://github.com/tekknolagi) for requesting
 - **Liquid Compatibility Warnings** (#129): Assignments to immutable Jekyll drops now emit source-located warnings and remain no-ops, matching Ruby Jekyll output
+- **Benchmark Site Generator**: Added a generator for large synthetic sites, plus CPU profile findings and cache experiment conclusions in `docs/benchmarks.md`
 
 ### Changed
 
+- **Liquid Engine**: Updated liquid template engine from v1.9.1 to v1.9.2, which reduces parse and render allocations and corrects timezone padding in the `date` filter
 - **GitHub Metadata Cache** (#43): Reuse successful GitHub repository metadata requests for ten minutes and coalesce concurrent requests
+
+### Performance
+
+- **Page Drops and Template Resources**: Cached stable page drop fields, resolved layouts, and missing-layout probes, and reused confined roots for Liquid includes. On a generated 2000-post site this lowered build wall time 32%, user CPU 25%, and instructions retired 26%, with no material change in peak memory
+
+### Fixed
+
+- **Unsafe Build Destinations**: `build` now refuses a destination that is a filesystem root, the home directory, or a directory containing the source, instead of cleaning it
+- **Path Traversal in Includes and Layouts**: Include and layout paths that escape the source directory, including through symlinks, are now rejected
+- **Incremental Rebuilds**: Incremental reloads now fall back to a full reload when a changed file's frontmatter, URL, or published state changes, when the file is new, or when it has been deleted. `Reloaded` no longer discards the reloaded site
+- **Excluded Files in Watch Mode**: `fileAffectsBuild` now ignores paths inside the destination directory, so writing output no longer triggers a rebuild
+- **github-metadata Plugin**: The `jekyll-github-metadata` plugin no longer panics when the site is not in a git repository
 
 ## [0.3.1] - 2026-02-27
 
