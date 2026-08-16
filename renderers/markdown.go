@@ -51,12 +51,67 @@ func createGoldmarkConverter() goldmark.Markdown {
 // (optionally preceded by up to 3 spaces) and ends at a blank line.
 var htmlBlockStartRE = regexp.MustCompile(`(?i)^\s{0,3}</?(?:address|article|aside|blockquote|details|dialog|dd|div|dl|dt|fieldset|figcaption|figure|footer|form|h[1-6]|header|hgroup|hr|li|main|nav|ol|p|pre|section|summary|table|ul)\b`)
 
+// codeFenceDelimiter returns the marker character, length, and trailing
+// content of a fenced code block delimiter. Fenced code blocks are left
+// untouched, so that HTML-looking code samples keep their indentation.
+func codeFenceDelimiter(line []byte) (byte, int, []byte, bool) {
+	indent := 0
+	for indent < len(line) && indent < 4 && line[indent] == ' ' {
+		indent++
+	}
+	if indent == len(line) || indent == 4 {
+		return 0, 0, nil, false
+	}
+
+	marker := line[indent]
+	if marker != '`' && marker != '~' {
+		return 0, 0, nil, false
+	}
+
+	end := indent
+	for end < len(line) && line[end] == marker {
+		end++
+	}
+	length := end - indent
+	if length < 3 {
+		return 0, 0, nil, false
+	}
+	return marker, length, line[end:], true
+}
+
+func isCodeFenceClosingSuffix(suffix []byte) bool {
+	if len(suffix) > 0 && suffix[len(suffix)-1] == '\r' {
+		suffix = suffix[:len(suffix)-1]
+	}
+	return len(bytes.Trim(suffix, " \t")) == 0
+}
+
 func deIndentHTMLBlocks(md []byte) []byte {
 	lines := bytes.Split(md, []byte("\n"))
 	result := make([][]byte, 0, len(lines))
 	inHTMLBlock := false
+	inCodeFence := false
+	var fenceMarker byte
+	fenceLength := 0
 
 	for _, line := range lines {
+		marker, length, suffix, isFence := codeFenceDelimiter(line)
+		if inCodeFence {
+			if isFence && marker == fenceMarker && length >= fenceLength && isCodeFenceClosingSuffix(suffix) {
+				inCodeFence = false
+				fenceMarker = 0
+				fenceLength = 0
+			}
+			result = append(result, line)
+			continue
+		}
+		if isFence {
+			inCodeFence = true
+			fenceMarker = marker
+			fenceLength = length
+			result = append(result, line)
+			continue
+		}
 		if !inHTMLBlock {
 			if htmlBlockStartRE.Match(line) {
 				inHTMLBlock = true
