@@ -485,10 +485,10 @@ github.com/onsi/ginkgo/v2 v2.28.1 h1:S4hj+HbZp40fNKuLUQOYLDgZLwNUVn19N3Atb98NCyI
 github.com/onsi/ginkgo/v2 v2.28.1/go.mod h1:CLtbVInNckU3/+gC8LzkGUb9oF+e8W8TdUsxPwvdOgE=
 github.com/onsi/gomega v1.39.1 h1:1IJLAad4zjPn2PsnhH70V4DKRFlrCzGBNrNaru+Vf28=
 github.com/onsi/gomega v1.39.1/go.mod h1:hL6yVALoTOxeWudERyfppUcZXjMwIMLnuSfruD2lcfg=
-github.com/osteele/liquid v1.9.1 h1:76i+k5CNcwFEGhqxOhBp7kQuSlOu702FqE+sP217C9c=
-github.com/osteele/liquid v1.9.1/go.mod h1:1YhrjGls9Yttgtk74DrLqyENvRLHQQ3P/gIwMo4keW8=
-github.com/osteele/tuesday v1.0.4 h1:iX0xOLW08/FJtXUCr20ngYwOwBE6l/mf7mz8NIv4yl8=
-github.com/osteele/tuesday v1.0.4/go.mod h1:5fgEemYhErJF09RNEwU+PdYiwm5Ar7Bknlhs1CD/Ol8=
+github.com/osteele/liquid v1.9.2 h1:CNRBW07oR9jrfnr1LPbQp04h4KCsy1PRDA4kmNthlkU=
+github.com/osteele/liquid v1.9.2/go.mod h1:FwU+G/tGalaYsdjoUUU3OkAALpOhMDtlOkCtxy6puHE=
+github.com/osteele/tuesday v1.1.1 h1:Xsh3L1PkgghmxXQG4o2s2rS4+WQLnYZAoQrMFUxvVms=
+github.com/osteele/tuesday v1.1.1/go.mod h1:1OECHlpee4rY23/pdXRUUMPsldPSV714qetBr6BoRa0=
 github.com/otiai10/copy v1.2.0/go.mod h1:rrF5dJ5F0t/EWSYODDu4j9/vEeYHMkc8jt0zJChqQWw=
 github.com/otiai10/copy v1.14.0 h1:dCI/t1iTdYGtkvCuBG2BgR6KZa83PTclw4U5n2wAllU=
 github.com/otiai10/copy v1.14.0/go.mod h1:ECfuL02W+/FkTWZWgQqXPWZgW9oeKCSQ5qVfSc4qc4w=
